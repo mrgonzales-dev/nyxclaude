@@ -1539,6 +1539,7 @@ async function* openaiStreamToAnthropic(
     }
   >()
   let hasEmittedContentStart = false
+  let hasEmittedAnyContent = false
   let hasEmittedThinkingStart = false
   let hasClosedThinking = false
   const thinkFilter = createThinkTagFilter()
@@ -1723,6 +1724,7 @@ async function* openaiStreamToAnthropic(
         content_block: { type: 'text', text: '' },
       }
       hasEmittedContentStart = true
+      hasEmittedAnyContent = true
     }
 
     const visible = thinkFilter.feed(text)
@@ -2448,8 +2450,7 @@ async function* openaiStreamToAnthropic(
   // the user sees what happened instead of silent empty output.
   if (
     lastStopReason === 'end_turn' &&
-    !hasEmittedContentStart &&
-    !hasEmittedCurrentTool &&
+    !hasEmittedAnyContent &&
     activeToolCalls.size === 0
   ) {
     yield {

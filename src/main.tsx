@@ -3,7 +3,7 @@
 process.env.CLAUDE_CODE_USE_OPENAI = '1'
 process.env.OPENAI_BASE_URL = 'http://localhost:20128/v1'
 process.env.OPENAI_API_KEY = 'sk-acca5ed48c1a36b8-a87dbf-71d85711'
-process.env.OPENAI_MODEL = 'wbridge/swe-1-7'
+process.env.OPENAI_MODEL = 'wbridge/glm-5.2'
 process.env.ANTHROPIC_API_KEY = 'sk-acca5ed48c1a36b8-a87dbf-71d85711' // fallback for SDK init
 process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
 process.env.DISABLE_AUTOUPDATER = '1'

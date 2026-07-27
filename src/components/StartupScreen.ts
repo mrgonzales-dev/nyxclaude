@@ -66,7 +66,7 @@ export function detectProvider(modelOverride?: string): { name: string; model: s
   if (process.env.OPENAI_BASE_URL?.includes('localhost:20128')) {
     return {
       name: 'Omniroute',
-      model: process.env.OPENAI_MODEL || 'wbridge/swe-1-7',
+      model: process.env.OPENAI_MODEL || 'wbridge/glm-5.2',
       baseUrl: process.env.OPENAI_BASE_URL,
       isLocal: true,
     }

@@ -79,10 +79,14 @@ function buildContinuationSignals(): RegExp[] {
     // English: Action-transition phrases (requires intent + action)
     new RegExp(`\\bso now (i|let me|we) (need to|have to|should|must|will) (${v})\\b`, 'i'),
     new RegExp(`\\bnow i('ll| will) (${v})\\b`, 'i'),
-    new RegExp(`\\bi (will|shall|now|need to|have to|must|should) (now )?(${v})\\b`, 'i'),
+    new RegExp(`\\bi('ll| will| shall| now| need to| have to| must| should) (now )?(${v})\\b`, 'i'),
     new RegExp(`\\blet me (go ahead and |now )?(${v})\\b`, 'i'),
     new RegExp(`\\btime to (do|${vWithoutDo}|get started|begin|start)\\b`, 'i'),
-    new RegExp(`\\b(moving on to|next step is to|starting to|proceeding to|continuing with|applying (the|these) changes|${VERB_ING})\\b`, 'i'),
+    new RegExp(`\\b(moving on to|next step is to|starting to|proceeding to|continuing with|applying (the|these) changes)\\b`, 'i'),
+    // Gerund forms only count as continuation signals when preceded by "now"
+    // — bare gerunds like "building" or "testing" appear in descriptive text
+    // (e.g. "shell commands for building, testing, git") and cause false positives.
+    new RegExp(`\\bnow (?:${VERB_ING})\\b`, 'i'),
     // French: Support for common continuation phrasing (relaxed boundaries for accents and apostrophes)
     /(^|\s)(je passe (à|au)|ensuite|l'étape suivante est de|je continue avec|au suivant|passons à|je reviens vers vous|je suis en train d'|je vais maintenant)(\s|$|[a-zà-ÿ])/i,
     /(^|\s)(je (vais|dois|dois maintenant|vais maintenant) (faire|créer|écrire|modifier|ajouter|tester|vérifier|lancer|exécuter|procéder|démarrer|commencer|identifier|analyser|inspecter|revoir|chercher))(\s|$|[a-zà-ÿ])/i,
@@ -174,9 +178,16 @@ export function analyzeContinuationIntent(
   if (hasLateContinuationSignal) {
     // If the sentence is punctuated but has a transition word, only nudge if 
     // it's a strong 1st person intent or open tasks are present.
-    const hasTerminalPunctuation = /[.!??"'`)\]]\s*$/.test(lastText) || lastText.endsWith('`')
+    // Recognize emoji as terminal punctuation — messages ending with emoji
+    // (🚀, 👋, 🛠️, etc.) are complete, not truncated.
+    const hasTerminalPunctuation = /[.!??"'`)\]]\s*$/.test(lastText) ||
+      lastText.endsWith('`') ||
+      /\p{Emoji_Presentation}\p{Emoji_Modifier}*\s*$/u.test(lastText)
     if (hasTerminalPunctuation) {
-      const strongIntent = /\b(i (will|shall|need to|must|should|now)|let (me|us)|je (vais|reviens)|passons à|moving on to|continuing with|proceeding to|next step is to)\b/i.test(lowerText) || 
+      // strongIntent checks for 1st-person action signals that override
+      // terminal punctuation. "let me" alone is too broad — it matches
+      // "let me know" (a completion phrase). Require "let me" + verb.
+      const strongIntent = new RegExp(`\\b(i (will|shall|need to|must|should|now)|let (me|us) (?:go ahead and )?(?:now )?(?:${VERB_ALT})|je (vais|reviens)|passons à|moving on to|continuing with|proceeding to|next step is to)\\b`, 'i').test(lowerText) ||
                            /je suis en train d'/i.test(lowerText) || /◻/.test(lastText)
       const presentProgressive = new RegExp(`\\bnow (?:${VERB_ING})\\b`, 'i').test(lateText)
       // Imperative/declarative patterns also signal intent when punctuated
@@ -203,9 +214,13 @@ export function analyzeContinuationIntent(
   }
 
   // Global fallback for unpunctuated signals (must be a clear transition)
-  const hasTerminalPunctuation = /[.!??"'`)\]]\s*$/.test(lastText) || lastText.endsWith('`')
+  // Recognize emoji as terminal punctuation — messages ending with emoji
+  // (🚀, 👋, 🛠️, etc.) are complete, not truncated.
+  const hasTerminalPunctuation = /[.!??"'`)\]]\s*$/.test(lastText) ||
+    lastText.endsWith('`') ||
+    /\p{Emoji_Presentation}\p{Emoji_Modifier}*\s*$/u.test(lastText)
   if (
-    CONTINUATION_SIGNALS.some(re => re.test(lowerText)) && 
+    CONTINUATION_SIGNALS.some(re => re.test(lowerText)) &&
     !hasTerminalPunctuation
   ) {
     return { shouldNudge: true, reason: 'continuation_signal' }

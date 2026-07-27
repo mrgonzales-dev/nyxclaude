@@ -13,6 +13,7 @@ import { TaskGetTool } from './tools/TaskGetTool/TaskGetTool.js'
 import { TaskListTool } from './tools/TaskListTool/TaskListTool.js'
 import { TaskUpdateTool } from './tools/TaskUpdateTool/TaskUpdateTool.js'
 import { TodoWriteTool } from './tools/TodoWriteTool/TodoWriteTool.js'
+import { WebFetchTool } from './tools/WebFetchTool/WebFetchTool.js'
 import uniqBy from 'lodash-es/uniqBy.js'
 import {
   type ToolPermissionContext,
@@ -82,6 +83,7 @@ export function getAllBaseTools(): Tools {
     TaskGetTool,
     TaskUpdateTool,
     TodoWriteTool,
+    WebFetchTool,
   ].filter(Boolean)
 }
 

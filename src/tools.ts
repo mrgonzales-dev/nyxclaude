@@ -8,6 +8,10 @@ import { FileWriteTool } from './tools/FileWriteTool/FileWriteTool.js'
 // The GlobTool source files are kept for reference but no longer loaded.
 // import { GlobTool } from './tools/GlobTool/GlobTool.js'
 import { GrepTool } from './tools/GrepTool/GrepTool.js'
+import { TaskCreateTool } from './tools/TaskCreateTool/TaskCreateTool.js'
+import { TaskGetTool } from './tools/TaskGetTool/TaskGetTool.js'
+import { TaskListTool } from './tools/TaskListTool/TaskListTool.js'
+import { TaskUpdateTool } from './tools/TaskUpdateTool/TaskUpdateTool.js'
 import { TodoWriteTool } from './tools/TodoWriteTool/TodoWriteTool.js'
 import uniqBy from 'lodash-es/uniqBy.js'
 import {
@@ -73,6 +77,10 @@ export function getAllBaseTools(): Tools {
     FileReadTool,
     FileEditTool,
     FileWriteTool,
+    TaskCreateTool,
+    TaskListTool,
+    TaskGetTool,
+    TaskUpdateTool,
     TodoWriteTool,
   ].filter(Boolean)
 }
@@ -92,10 +100,13 @@ export function getTools(
 ): Tools {
   const denyRule = getDenyRuleForTool(permissionContext)
   if (!denyRule) {
-    return getAllBaseTools()
+    // NYX-AGENT: filter by isEnabled() so mutually exclusive tools
+    // (TodoWrite vs TaskCreate/TaskUpdate) don't both show up.
+    return getAllBaseTools().filter(tool => tool.isEnabled())
   }
 
   return getAllBaseTools().filter(tool => {
+    if (!tool.isEnabled()) return false
     if (denyRule.ruleContent) {
       return true
     }

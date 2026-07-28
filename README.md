@@ -1,8 +1,8 @@
 # nyxclaude
 
-A terminal AI coding agent harness. Forked from [openclaude](https://github.com/Gitlawb/openclaude) (which itself derives from Anthropic's Claude Code CLI), rebranded and hardwired to a local OpenAI-compatible LLM endpoint.
+A terminal AI coding agent harness. Forked from [openclaude](https://github.com/Gitlawb/openclaude) (which itself derives from Anthropic's Claude Code CLI), rebranded and stripped of Anthropic-specific auth and telemetry.
 
-nyxclaude talks to a single backend — an omniroute proxy at `http://localhost:20128/v1` running `wbridge/glm-5.2` — and strips out the multi-provider routing, telemetry, auto-update, and Anthropic-specific auth from upstream. What remains is a React/Ink TUI coding agent with bash, file tools, grep, skills, slash commands, and streaming output.
+nyxclaude uses `/provider` to configure any OpenAI-compatible LLM endpoint — local or cloud. No provider is hardcoded. On first run with no provider configured, the CLI shows "No provider · Run /provider" and blocks message submission until one is added. What remains is a React/Ink TUI coding agent with bash, file tools, grep, skills, slash commands, and streaming output.
 
 ## Status
 
@@ -20,7 +20,7 @@ See `AGENTS.md` for the local agent workflow rules.
 
 - Node.js `>=22.0.0` (runtime)
 - Bun `1.3.x`+ (source builds and tests only)
-- A running omniroute proxy at `localhost:20128` exposing an OpenAI-compatible `/v1` endpoint
+- An OpenAI-compatible LLM endpoint (local or cloud) — configured via `/provider`
 
 ## Quick Start
 
@@ -43,30 +43,39 @@ bun run dev          # build + launch from source
 bun run smoke        # build + --version check
 ```
 
+On first run, the startup screen shows `Provider  No provider`. Type `/provider` to add a provider — the wizard walks you through choosing a preset (OpenAI, Ollama, Gemini, DeepSeek, OpenRouter, custom, etc.), entering an API key, base URL, and model. The profile saves to `.nyxclaude-profile.json` (gitignored) and loads automatically on restart.
+
 ## Configuration
 
-The LLM endpoint, model, and API key are hardcoded at the top of `src/entrypoints/cli.tsx` and baked into the build. To change backends, edit those env assignments and rebuild:
+Provider config (endpoint, model, API key) is managed by `/provider` and stored in `.nyxclaude-profile.json` — not hardcoded in source. The profile loads at startup via `applyStartupEnvFromProfile()`.
 
-```ts
-process.env.OPENAI_BASE_URL = 'http://localhost:20128/v1'
-process.env.OPENAI_MODEL    = 'wbridge/glm-5.2'
-process.env.OPENAI_API_KEY  = '...'
+Operational env vars (telemetry, auto-updater, etc.) live in `.nyxclaude/settings.local.json` under the `env` key:
+
+```json
+{
+  "env": {
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_AUTOUPDATER": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "true"
+  }
+}
 ```
 
 Settings files (all gitignored):
 
-- `.nyxclaude/settings.local.json` — project-local settings
+- `.nyxclaude/settings.local.json` — project-local settings + operational env vars
+- `.nyxclaude-profile.json` — saved provider profile (created by `/provider`)
 - `~/.nyxclaude/settings.json` — user settings
 - `.nyxclaude/skills/` — project skills
 - `~/.nyxclaude/skills/` — user skills
 
 ## What's Different From Upstream
 
-- **Single backend.** Hardcoded to one OpenAI-compatible endpoint; provider routing, `/provider`, model picker discovery, and OAuth flows are stubbed or hidden.
-- **No telemetry, no auto-updater.** `DISABLE_TELEMETRY=1` and `DISABLE_AUTOUPDATER=1` set at startup.
+- **No hardcoded provider.** Provider config is managed by `/provider` and saved to `.nyxclaude-profile.json`. No Anthropic fallback — the CLI blocks message submission and shows "No provider · Run /provider" until configured.
+- **No telemetry, no auto-updater.** Set via `.nyxclaude/settings.local.json` env block, not source.
 - **MCP disabled by default.** Server connections are off; the MCP entrypoint still exists for standalone use.
 - **Chrome integration removed.** `claudeInChrome` skills and hooks are stubbed to no-ops.
-- **Simplified system prompt.** `CLAUDE_CODE_SIMPLE=1` selects a minimal prompt suited to small-context models.
 - **fff (Fast File Finder) integration.** In-process content and path search via a native FFI library, with ripgrep fallback.
 - **Branding.** Product name, wordmark, and startup banner all read `nyxclaude`.
 

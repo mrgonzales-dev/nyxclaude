@@ -102,7 +102,7 @@ export function Install({
         logForDebugging(`Install: Starting installation process (force=${force}, target=${target})`);
 
         // npm-only builds have no native binary to install. Downloading here
-        // would fetch the first-party Claude Code binary and replace the npm
+        // would fetch the first-party Nyxclaude binary and replace the npm
         // install the user is running, so just confirm the current install.
         if (!hasNativeDistribution()) {
           logForDebugging('Install: build has no native distribution; reporting npm installation instead');
@@ -133,7 +133,7 @@ export function Install({
 
         // Check specifically for lock failure
         if (result.lockFailed) {
-          throw new Error('Could not install - another process is currently installing Claude. Please try again in a moment.');
+          throw new Error('Could not install - another process is currently installing Nyxclaude. Please try again in a moment.');
         }
 
         // If we couldn't get the version, there might be an issue

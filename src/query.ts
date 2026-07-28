@@ -2250,7 +2250,7 @@ async function* queryLoop(
             // provider's model id against the new endpoint. Without this, the
             // outer loop re-derives `currentModel` from
             // `appState.mainLoopModelForSession ?? appState.mainLoopModel`,
-            // which still holds the previous provider's model (e.g. a Claude
+            // which still holds the previous provider's model (e.g. a Nyxclaude
             // id), and `resolveProviderRequest` lets that explicit
             // `options.model` win over the new profile's OPENAI_MODEL. Mirror
             // the model_fallback branch above which updates both
@@ -2838,7 +2838,7 @@ async function* queryLoop(
     })
 
     // Get queued commands snapshot before processing attachments.
-    // These will be sent as attachments so Claude can respond to them in the current turn.
+    // These will be sent as attachments so Nyxclaude can respond to them in the current turn.
     //
     // Drain pending notifications. LocalShellTask completions are 'next'
     // (when MONITOR_TOOL is on) and drain without Sleep. Other task types

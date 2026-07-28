@@ -19,7 +19,7 @@ export const en = {
   'commands.config.description': 'Open config panel',
   'commands.continue.description': 'Continue the current task',
   'commands.copy.description':
-    "Copy Claude's last response to clipboard (or /copy N for the Nth-latest)",
+    "Copy Nyxclaude's last response to clipboard (or /copy N for the Nth-latest)",
   'commands.context.description': 'Show current context usage',
   'commands.cost.description':
     'Show the total cost and duration of the current session',
@@ -48,7 +48,7 @@ export const en = {
   'commands.lsp.description':
     'Inspect and set up Language Server Protocol code intelligence',
   'commands.mcp.description': 'Manage MCP servers',
-  'commands.memory.description': 'Edit Claude memory files',
+  'commands.memory.description': 'Edit Nyxclaude memory files',
   'commands.onboard-github.description':
     'Interactive setup for GitHub Copilot: OAuth device login stored in secure storage',
   'commands.output-style.description':
@@ -93,7 +93,7 @@ export const en = {
   'skills.batch.whenToUse':
     'Use when the user wants to make a sweeping, mechanical change across many files (migrations, refactors, bulk renames) that can be decomposed into independent parallel units.',
   'skills.debug.ant.description':
-    'Debug your current Claude Code session by reading the session debug log. Includes all event logging',
+    'Debug your current Nyxclaude session by reading the session debug log. Includes all event logging',
   'skills.debug.default.description':
     'Enable debug logging for this session and help diagnose issues',
   'skills.loop.description':
@@ -103,5 +103,5 @@ export const en = {
   'skills.simplify.description':
     'Review changed code for reuse, quality, and efficiency, then fix any issues found.',
   'skills.update-config.description':
-    'Use this skill to configure the Claude Code harness via settings.json. Automated behaviors ("from now on when X", "each time X", "whenever X", "before/after X") require hooks configured in settings.json - the harness executes these, not Claude, so memory/preferences cannot fulfill them. Also use for: permissions ("allow X", "add permission", "move permission to"), env vars ("set X=Y"), hook troubleshooting, or any changes to settings.json/settings.local.json files. Examples: "allow npm commands", "add bq permission to global settings", "move permission to user settings", "set DEBUG=true", "when claude stops show X". For simple settings like theme/model, use Config tool.',
+    'Use this skill to configure the Nyxclaude harness via settings.json. Automated behaviors ("from now on when X", "each time X", "whenever X", "before/after X") require hooks configured in settings.json - the harness executes these, not Nyxclaude, so memory/preferences cannot fulfill them. Also use for: permissions ("allow X", "add permission", "move permission to"), env vars ("set X=Y"), hook troubleshooting, or any changes to settings.json/settings.local.json files. Examples: "allow npm commands", "add bq permission to global settings", "move permission to user settings", "set DEBUG=true", "when claude stops show X". For simple settings like theme/model, use Config tool.',
 } as const

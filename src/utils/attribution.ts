@@ -61,9 +61,9 @@ function formatClaudeCoAuthorName(model: string): string {
   if (!publicName) {
     return sanitizeCoAuthorNamePart(getPublicModelName(model))
   }
-  const coAuthorName = publicName.startsWith('Claude ')
+  const coAuthorName = publicName.startsWith('Nyxclaude ')
     ? publicName
-    : `Claude ${publicName}`
+    : `Nyxclaude ${publicName}`
   return sanitizeCoAuthorNamePart(coAuthorName)
 }
 
@@ -89,7 +89,7 @@ export function getDefaultCommitCoAuthorName({
     return formatClaudeCoAuthorName(model)
   }
 
-  // Unknown first-party models may be unreleased Claude codenames, so keep the
+  // Unknown first-party models may be unreleased Nyxclaude codenames, so keep the
   // historical public fallback. OpenAI-compatible providers should identify the
   // actual configured model instead of claiming Claude Opus.
   if (apiProvider === 'firstParty') {
@@ -154,7 +154,7 @@ export function getAttributionTexts(): AttributionTexts {
     return { commit: '', pr: '' }
   }
 
-  // First-party unknown models may be unreleased Claude codenames. Other
+  // First-party unknown models may be unreleased Nyxclaude codenames. Other
   // providers can safely use the configured public model string.
   const model = getMainLoopModel()
   const apiProvider = getAPIProvider()
@@ -361,12 +361,12 @@ async function getTranscriptStats(): Promise<{
 }
 
 /**
- * Get enhanced PR attribution text with Claude contribution stats.
+ * Get enhanced PR attribution text with Nyxclaude contribution stats.
  *
- * Format: "🤖 Generated with Claude Code (93% 3-shotted by claude-opus-4-5)"
+ * Format: "🤖 Generated with Nyxclaude (93% 3-shotted by claude-opus-4-5)"
  *
  * Rules:
- * - Shows Claude contribution percentage from commit attribution
+ * - Shows Nyxclaude contribution percentage from commit attribution
  * - Shows N-shotted where N is the prompt count (1-shotted, 2-shotted, etc.)
  * - Shows short model name (e.g., claude-opus-4-5)
  * - Returns default attribution if explicitly enabled and stats can't be computed
@@ -453,7 +453,7 @@ export async function getEnhancedPRAttribution(
     return DEFAULT_PR_ATTRIBUTION
   }
 
-  // Build the enhanced attribution: "🤖 Generated with Claude Code (93% 3-shotted by claude-opus-4-5, 2 memories recalled)"
+  // Build the enhanced attribution: "🤖 Generated with Nyxclaude (93% 3-shotted by claude-opus-4-5, 2 memories recalled)"
   const memSuffix =
     memoryAccessCount > 0
       ? `, ${memoryAccessCount} ${memoryAccessCount === 1 ? 'memory' : 'memories'} recalled`

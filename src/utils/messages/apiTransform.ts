@@ -18,7 +18,7 @@ export function deriveShortMessageId(uuid: string): string {
 /**
  * Appends internal snip metadata to the last text block of a user message.
  * Only mutates the API-bound copy, not the stored message.
- * This lets Claude reference message IDs when calling the snip tool.
+ * This lets Nyxclaude reference message IDs when calling the snip tool.
  */
 export function appendMessageTagToUserMessage(
   message: UserMessage,

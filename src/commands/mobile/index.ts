@@ -4,7 +4,7 @@ const mobile = {
   type: 'local-jsx',
   name: 'mobile',
   aliases: ['ios', 'android'],
-  description: 'Show QR code to download the Claude mobile app',
+  description: 'Show QR code to download the Nyxclaude mobile app',
   // NYX-AGENT: hidden (stubbed/disabled)
   isEnabled: () => false,
   isHidden: true,

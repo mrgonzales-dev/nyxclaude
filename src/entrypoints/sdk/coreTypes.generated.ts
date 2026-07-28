@@ -37,7 +37,7 @@ export type ConfigScope = "local" | "user" | "project"
 
 export type SdkBeta = "context-1m-2025-08-07"
 
-/** Claude decides when and how much to think (Opus 4.6+). */
+/** Nyxclaude decides when and how much to think (Opus 4.6+). */
 export type ThinkingAdaptive = {
   type: "adaptive"
 }
@@ -53,7 +53,7 @@ export type ThinkingDisabled = {
   type: "disabled"
 }
 
-/** Controls Claude's thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens. */
+/** Controls Nyxclaude's thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens. */
 export type ThinkingConfig = ({
   type: "adaptive"
 }) | ({

@@ -1770,9 +1770,9 @@ export function getSubscriptionName(): string {
 
   switch (subscriptionType) {
     case 'enterprise':
-      return 'Claude Enterprise'
+      return 'Nyxclaude Enterprise'
     case 'team':
-      return 'Claude Team'
+      return 'Nyxclaude Team'
     case 'max':
       return 'Claude Max'
     case 'pro':

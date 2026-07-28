@@ -7,7 +7,7 @@ import { join } from 'path'
  * Resolves the Nyxclaude config home override.
  *
  * Intentionally does not read `CLAUDE_CONFIG_DIR`: Nyxclaude config must stay
- * independent from Claude Code config and credentials.
+ * independent from Nyxclaude config and credentials.
  */
 export function resolveConfigDirEnv(options?: {
   nyxClaudeConfigDir?: string
@@ -198,7 +198,7 @@ export function isRunningOnHomespace(): boolean {
 }
 
 /**
- * Conservative check for whether Claude Code is running inside a protected
+ * Conservative check for whether Nyxclaude is running inside a protected
  * (privileged or ASL3+) COO namespace or cluster.
  *
  * Conservative means: when signals are ambiguous, assume protected. We would

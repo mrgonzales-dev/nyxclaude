@@ -521,7 +521,7 @@ async function getMessagesForSlashCommand(commandName: string, args: string, set
           precedingInputBlocks
         })
       }), createUserMessage({
-        content: `This skill can only be invoked by Claude, not directly by users. Ask Claude to use the "${commandName}" skill for you.`
+        content: `This skill can only be invoked by Nyxclaude, not directly by users. Ask Nyxclaude to use the "${commandName}" skill for you.`
       })],
       shouldQuery: false,
       command

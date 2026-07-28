@@ -54,7 +54,7 @@ import { writeFileSync } from 'fs'
 
 const pdf = await createPDF({
   title: 'My Report',
-  author: 'Claude',
+  author: 'Nyxclaude',
   pages: [{
     content: [
       { type: 'heading', text: 'Q4 Revenue Report', level: 1 },

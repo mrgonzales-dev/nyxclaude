@@ -1234,7 +1234,7 @@ export async function cleanupOldVersions(): Promise<void> {
 
   // The versions/staging/locks directories live under the shared
   // ~/.local/share/claude (etc.) paths, so on a machine that also has the
-  // first-party native Claude Code installed they hold THAT product's version
+  // first-party native Nyxclaude installed they hold THAT product's version
   // binaries. An npm-only build must not garbage-collect them: the protection
   // logic only recognizes its own launcher symlink, so it would delete
   // binaries a coexisting `claude` launcher still points to.

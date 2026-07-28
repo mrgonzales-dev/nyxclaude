@@ -434,7 +434,7 @@ function OAuthStatusMessage({
         {
           label: (
             <Text>
-              Claude account with subscription ·{' '}
+              Nyxclaude account with subscription ·{' '}
               <Text dimColor>Pro, Max, Team, or Enterprise</Text>
               {'\n'}
             </Text>

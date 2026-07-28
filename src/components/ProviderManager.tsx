@@ -2949,7 +2949,7 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
         value: ANTHROPIC_DEFAULT_PROFILE_ID,
         label: 'Use Anthropic (built-in)',
         description:
-          'Switch back to Claude now without a restart — saved profiles are kept',
+          'Switch back to Nyxclaude now without a restart — saved profiles are kept',
       })
     }
 

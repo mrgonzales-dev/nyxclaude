@@ -89,7 +89,7 @@ export async function update() {
   // Block updates for third-party providers using upstream Anthropic builds.
   // The update mechanism downloads from the first-party distribution bucket,
   // which would silently replace the Nyxclaude build with the upstream
-  // Claude Code binary. However, builds with a custom PACKAGE_URL (like
+  // Nyxclaude binary. However, builds with a custom PACKAGE_URL (like
   // Nyxclaude's `nyxclaude`) are safe to self-update.
   if (isThirdPartyBuildBlocked()) {
     writeToStdout(
@@ -265,7 +265,7 @@ export async function update() {
           : ''
         writeToStdout(
           chalk.yellow(
-            `Another Claude process${pidInfo} is currently running. Please try again in a moment.`,
+            `Another Nyxclaude process${pidInfo} is currently running. Please try again in a moment.`,
           ) + '\n',
         )
         await gracefulShutdown(0)

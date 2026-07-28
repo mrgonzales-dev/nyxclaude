@@ -94,7 +94,7 @@ const claudeAiSubscriberExternalTokenNotice: StatusNoticeDefinition = {
     const authTokenInfo = getAuthTokenSource();
     return <WarningNoticeRow marginTop={1}>
         <Text color="warning">
-          Auth conflict: Using {authTokenInfo.source} instead of Claude account
+          Auth conflict: Using {authTokenInfo.source} instead of Nyxclaude account
           subscription token. Either unset {authTokenInfo.source}, or run
           `claude /logout`.
         </Text>

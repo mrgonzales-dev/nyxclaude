@@ -613,7 +613,7 @@ export function renderModelSetting(setting: ModelName | ModelAlias): string {
  */
 export function getPublicModelDisplayName(model: ModelName): string | null {
   // For OpenAI-compatible/non-Anthropic providers, show the actual model name
-  // instead of interpreting provider-specific defaults as Claude aliases.
+  // instead of interpreting provider-specific defaults as Nyxclaude aliases.
   if (
     getAPIProvider() === 'openai' ||
     getAPIProvider() === 'gemini' ||
@@ -754,18 +754,18 @@ export function renderModelName(model: ModelName): string {
 
 /**
  * Returns a safe author name for public display (e.g., in git commit trailers).
- * Returns "Claude {ModelName}" for publicly known models, or "Claude ({model})"
+ * Returns "Nyxclaude {ModelName}" for publicly known models, or "Nyxclaude ({model})"
  * for unknown/internal models so the exact model name is preserved.
  *
  * @param model The full model name
- * @returns "Claude {ModelName}" for public models, or "Claude ({model})" for non-public models
+ * @returns "Nyxclaude {ModelName}" for public models, or "Nyxclaude ({model})" for non-public models
  */
 export function getPublicModelName(model: ModelName): string {
   const publicName = getPublicModelDisplayName(model)
   if (publicName) {
-    return `Claude ${publicName}`
+    return `Nyxclaude ${publicName}`
   }
-  return `Claude (${model})`
+  return `Nyxclaude (${model})`
 }
 
 /**
@@ -830,7 +830,7 @@ export function parseUserSpecifiedModel(
   }
 
   // Handle Codex aliases - map to actual model names. Preserve the [1m] tag the
-  // same way the Claude aliases above do: it is an explicit client-side opt-in
+  // same way the Nyxclaude aliases above do: it is an explicit client-side opt-in
   // to the 1M context window (see has1mContext), so dropping it here would
   // silently shrink a `codexplan[1m]`/`codexspark[1m]` session back to the
   // model default.

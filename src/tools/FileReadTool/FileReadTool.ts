@@ -260,7 +260,7 @@ const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp'])
 
 /**
  * Detects if a file path is a session-related file for analytics logging.
- * Only matches files within the Claude config directory (e.g., ~/.claude).
+ * Only matches files within the Nyxclaude config directory (e.g., ~/.claude).
  * Returns the type of session file or null if not a session file.
  */
 function detectSessionFileType(
@@ -268,7 +268,7 @@ function detectSessionFileType(
 ): 'session_memory' | 'session_transcript' | null {
   const configDir = getClaudeConfigHomeDir()
 
-  // Only match files within the Claude config directory
+  // Only match files within the Nyxclaude config directory
   if (!filePath.startsWith(configDir)) {
     return null
   }

@@ -5,7 +5,7 @@
 
 export type NotebookCellType = 'code' | 'markdown'
 
-/** Raw nbformat cell output variants (the subset Claude Code reads). */
+/** Raw nbformat cell output variants (the subset Nyxclaude reads). */
 export type NotebookCellOutput =
   | {
       output_type: 'stream'

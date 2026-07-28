@@ -267,7 +267,7 @@ The remote Ultraplan session did not produce a plan (${reason}). Inspect the ses
  *
  * Two producers, two event shapes:
  * - bughunter mode: run_hunt.sh is a SessionStart hook; its echo lands as
- *   {type:'system', subtype:'hook_progress', stdout:'...'}. Claude never
+ *   {type:'system', subtype:'hook_progress', stdout:'...'}. Nyxclaude never
  *   takes a turn so there are zero assistant messages.
  * - prompt mode: a real assistant turn wraps the review in the tag.
  *
@@ -688,7 +688,7 @@ function startRemoteSessionPolling(taskId: string, context: TaskContext): () => 
         consecutiveIdlePolls = 0;
       }
       const stableIdle = consecutiveIdlePolls >= STABLE_IDLE_POLLS;
-      // stableIdle is a prompt-mode completion signal (Claude stops writing
+      // stableIdle is a prompt-mode completion signal (Nyxclaude stops writing
       // → session idles → done). In bughunter mode the session is "idle" the
       // entire time the SessionStart hook runs; the previous guard checked
       // hasAssistantEvents as a prompt-mode proxy, but post_stage() now

@@ -241,7 +241,7 @@ export function isClaudeSettingsPath(filePath: string): boolean {
   )
 }
 
-// Always ask when Claude Code tries to edit its own config files
+// Always ask when Nyxclaude tries to edit its own config files
 function isClaudeConfigFilePath(filePath: string): boolean {
   if (isClaudeSettingsPath(filePath)) {
     return true
@@ -312,7 +312,7 @@ function isProjectDirPath(absolutePath: string): boolean {
 
 /**
  * Checks if the scratchpad directory feature is enabled.
- * The scratchpad is a per-session directory for Claude to write temporary files.
+ * The scratchpad is a per-session directory for Nyxclaude to write temporary files.
  * Controlled by the tengu_scratch Statsig gate.
  */
 export function isScratchpadEnabled(): boolean {
@@ -320,7 +320,7 @@ export function isScratchpadEnabled(): boolean {
 }
 
 /**
- * Returns the user-specific Claude temp directory name.
+ * Returns the user-specific Nyxclaude temp directory name.
  * On Unix: 'claude-{uid}' to prevent multi-user permission conflicts
  * On Windows: 'claude' (tmpdir() is already per-user)
  */
@@ -350,11 +350,11 @@ function ensureUsableTempDir(
 }
 
 /**
- * Returns the Claude temp directory path with symlinks resolved.
+ * Returns the Nyxclaude temp directory path with symlinks resolved.
  * Uses TMPDIR env var if set, otherwise:
  * - On Unix: /tmp/claude-{uid}/ (resolved to /private/tmp/claude-{uid}/ on macOS)
  * - On Windows: {tmpdir}/claude/ (e.g., C:\Users\{user}\AppData\Local\Temp\claude\)
- * This is a per-user temporary directory used by Claude Code for all temp files.
+ * This is a per-user temporary directory used by Nyxclaude for all temp files.
  *
  * NOTE: We resolve symlinks to ensure this path matches the resolved paths used
  * in permission checks. On macOS, /tmp is a symlink to /private/tmp, so without
@@ -395,7 +395,7 @@ export const getClaudeTempDir = memoize(function getClaudeTempDir(): string {
         try {
           ensureUsableTempDir(fs, fallbackDir)
           logForDebugging(
-            `Claude temp directory ${fullPath} is not writable; ` +
+            `Nyxclaude temp directory ${fullPath} is not writable; ` +
               `falling back to ${fallbackDir}`,
           )
           return fallbackDir
@@ -744,8 +744,8 @@ function hasSuspiciousWindowsPathPattern(path: string): boolean {
  *
  * This function performs comprehensive safety checks including:
  * - Suspicious Windows path patterns (NTFS streams, 8.3 names, long path prefixes, etc.)
- * - Claude config files (.claude/settings.json, .claude/commands/, .claude/agents/)
- * - MCP CLI state files (managed internally by Claude Code)
+ * - Nyxclaude config files (.claude/settings.json, .claude/commands/, .claude/agents/)
+ * - MCP CLI state files (managed internally by Nyxclaude)
  * - Dangerous files (.bashrc, .gitconfig, .git/, .vscode/, .idea/, etc.)
  *
  * IMPORTANT: This function checks BOTH the original path AND resolved symlink paths
@@ -775,7 +775,7 @@ export function checkPathSafetyForAutoEdit(
     }
   }
 
-  // Check for Claude config files on all paths
+  // Check for Nyxclaude config files on all paths
   for (const pathToCheck of pathsToCheck) {
     if (isClaudeConfigFilePath(pathToCheck)) {
       return {
@@ -1408,7 +1408,7 @@ export function checkWritePermissionForTool<Input extends AnyObject>(
   // also has a broader Edit(.claude) rule in userSettings (e.g. from sandbox
   // write-allow conversion), that rule would be found first and its source check
   // below would fail. Scope the search to session-only rules so the dialog's
-  // "allow Claude to edit its own settings for this session" option actually works.
+  // "allow Nyxclaude to edit its own settings for this session" option actually works.
   const claudeFolderAllowRule = matchingRuleForInput(
     path,
     {
@@ -1421,7 +1421,7 @@ export function checkWritePermissionForTool<Input extends AnyObject>(
     'allow',
   )
   if (claudeFolderAllowRule) {
-    // Check if this rule is scoped under a Claude config folder.
+    // Check if this rule is scoped under a Nyxclaude config folder.
     // Accepts broad project/global patterns ('/.nyxclaude/**',
     // '~/.nyxclaude/**') plus narrowed skill
     // patterns like '~/.nyxclaude/skills/my-skill/**' so users can grant
@@ -1450,7 +1450,7 @@ export function checkWritePermissionForTool<Input extends AnyObject>(
     }
   }
 
-  // 1.7. Check comprehensive safety validations (Windows patterns, Claude config, dangerous files)
+  // 1.7. Check comprehensive safety validations (Windows patterns, Nyxclaude config, dangerous files)
   // This MUST come before checking allow rules to prevent users from accidentally granting
   // permission to edit protected files
   const safetyCheck = checkPathSafetyForAutoEdit(path, pathsToCheck)
@@ -1743,7 +1743,7 @@ export function checkEditableInternalPath(
   }
 
   // .nyxclaude/launch.json — desktop preview config (dev server command + port).
-  // The desktop's preview_start MCP tool instructs Claude to create/update
+  // The desktop's preview_start MCP tool instructs Nyxclaude to create/update
   // this file as part of the preview workflow. Without this carve-out the
   // .nyxclaude/ DANGEROUS_DIRECTORIES check prompts for it, which in SDK mode
   // cascades: user clicks "Always allow" → setMode:acceptEdits suggestion

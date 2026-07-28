@@ -1,7 +1,7 @@
 /**
  * CYBER_RISK_INSTRUCTION
  *
- * Guidance for Claude's behavior when handling security-related requests.
+ * Guidance for Nyxclaude's behavior when handling security-related requests.
  *
  * This is an open-source fork. The instruction is tuned to favor completing
  * normal, benign coding work and to avoid refusing legitimate dual-use or

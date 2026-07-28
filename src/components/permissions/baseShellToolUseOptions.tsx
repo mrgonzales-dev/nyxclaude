@@ -231,7 +231,7 @@ export function buildBaseShellToolUseOptions<T extends string>({
       type: 'input',
       label: 'Yes',
       value: 'yes' as T,
-      placeholder: 'and tell Claude what to do next',
+      placeholder: 'and tell Nyxclaude what to do next',
       onChange: onAcceptFeedbackChange,
       allowEmptySubmitToCancel: true,
     })
@@ -298,7 +298,7 @@ export function buildBaseShellToolUseOptions<T extends string>({
     type: 'input',
     label: 'No, provide reason',
     value: 'no-with-reason' as T,
-    placeholder: 'tell Claude what to do differently',
+    placeholder: 'tell Nyxclaude what to do differently',
     onChange: onRejectFeedbackChange,
   })
 
@@ -307,7 +307,7 @@ export function buildBaseShellToolUseOptions<T extends string>({
       type: 'input',
       label: 'No',
       value: 'no' as T,
-      placeholder: 'and tell Claude what to do differently',
+      placeholder: 'and tell Nyxclaude what to do differently',
       onChange: onRejectFeedbackChange,
       allowEmptySubmitToCancel: true,
     })

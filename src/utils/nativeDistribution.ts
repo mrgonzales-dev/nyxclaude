@@ -5,7 +5,7 @@
  * Nyxclaude (`nyxclaude`) is distributed only as an npm package and
  * sets `NATIVE_PACKAGE_URL` to `undefined` in both define blocks of
  * `scripts/build.ts`. Without this gate, the native installer inherited from
- * upstream downloads the first-party Claude Code binary from Anthropic's GCS
+ * upstream downloads the first-party Nyxclaude binary from Anthropic's GCS
  * bucket, symlinks the launcher to it, and uninstalls the npm package the user
  * is actually running. Every native-installer surface (binary download,
  * launcher symlink, npm cleanup, native auto-update) must stay inert unless

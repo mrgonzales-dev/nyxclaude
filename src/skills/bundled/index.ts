@@ -1,7 +1,8 @@
 import { feature } from 'bun:bundle'
 import { registerBatchSkill } from './batch.js'
-import { shouldEnableClaudeInChromeSkill } from './claudeInChromeAccess.js'
-import { registerClaudeInChromeSkill } from './claudeInChrome.js'
+// NYX-AGENT: Chrome integration removed
+// import { shouldEnableClaudeInChromeSkill } from './claudeInChromeAccess.js'
+// import { registerClaudeInChromeSkill } from './claudeInChrome.js'
 import { registerDebugSkill } from './debug.js'
 import { registerKeybindingsSkill } from './keybindings.js'
 import { registerLoopSkill } from './loop.js'
@@ -55,9 +56,10 @@ export function initBundledSkills(): void {
     /* eslint-enable @typescript-eslint/no-require-imports */
     registerClaudeApiSkill()
   }
-  if (shouldEnableClaudeInChromeSkill()) {
-    registerClaudeInChromeSkill()
-  }
+  // NYX-AGENT: Chrome integration removed
+  // if (shouldEnableClaudeInChromeSkill()) {
+  //   registerClaudeInChromeSkill()
+  // }
   if (feature('RUN_SKILL_GENERATOR')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
     const { registerRunSkillGeneratorSkill } = require('./runSkillGenerator.js')

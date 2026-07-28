@@ -2,7 +2,7 @@
  * Commit-attribution tracking hooks (COMMIT_ATTRIBUTION-gated, internal-only).
  *
  * The closed-source implementation watches file edits and bash git activity
- * to attribute committed lines to Claude vs. the user. This open-source
+ * to attribute committed lines to Nyxclaude vs. the user. This open-source
  * build ships inert no-ops: the feature flag is disabled, and these
  * functions keep the importers (src/setup.ts, /clear cache reset,
  * post-compact cleanup) typechecking without any runtime behavior.

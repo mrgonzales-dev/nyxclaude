@@ -36,7 +36,8 @@ import keybindings from './commands/keybindings/index.js'
 import lsp from './commands/lsp/index.js'
 import login from './commands/login/index.js'
 import logout from './commands/logout/index.js'
-import installGitHubApp from './commands/install-github-app/index.js'
+// NYX-AGENT: Anthropic-specific GitHub App installer removed
+// import installGitHubApp from './commands/install-github-app/index.js'
 import installSlackApp from './commands/install-slack-app/index.js'
 import breakCache from './commands/break-cache/index.js'
 import cacheProbe from './commands/cache-probe/index.js'
@@ -98,9 +99,11 @@ const remoteControlServerCommand =
   feature('DAEMON') && feature('BRIDGE_MODE')
     ? require('./commands/remoteControlServer/index.js').default
     : null
-const voiceCommand = feature('VOICE_MODE')
-  ? require('./commands/voice/index.js').default
-  : null
+// NYX-AGENT: Voice mode removed (requires Anthropic auth)
+// const voiceCommand = feature('VOICE_MODE')
+//   ? require('./commands/voice/index.js').default
+//   : null
+const voiceCommand = null
 const workflowsCmd = feature('WORKFLOW_SCRIPTS')
   ? (
       require('./commands/workflows/index.js') as typeof import('./commands/workflows/index.js')
@@ -164,7 +167,8 @@ import {
 import antTrace from './commands/ant-trace/index.js'
 import perfIssue from './commands/perf-issue/index.js'
 import sandboxToggle from './commands/sandbox-toggle/index.js'
-import chrome from './commands/chrome/index.js'
+// NYX-AGENT: Chrome integration removed
+// import chrome from './commands/chrome/index.js'
 import stickers from './commands/stickers/index.js'
 import advisor from './commands/advisor.js'
 import ads from './commands/ads.js'
@@ -290,7 +294,8 @@ const COMMANDS = memoize((): Command[] => [
   btw,
   cacheProbe,
   cacheStats,
-  chrome,
+  // NYX-AGENT: Chrome integration removed
+  // chrome,
   clear,
   clearContextWindow,
   color,
@@ -319,7 +324,8 @@ const COMMANDS = memoize((): Command[] => [
   keybindings,
   knowledge,
   lsp,
-  installGitHubApp,
+  // NYX-AGENT: Anthropic-specific GitHub App installer removed
+  // installGitHubApp,
   installSlackApp,
   mcp,
   memory,

@@ -1,4 +1,4 @@
-// OAuth client for handling authentication flows with Claude services
+// OAuth client for handling authentication flows with Nyxclaude services
 import axios from 'axios'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

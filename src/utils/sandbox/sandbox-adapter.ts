@@ -157,7 +157,7 @@ function getCurrentCwdSettingsDenyWritePaths(cwd: string): string[] {
 }
 
 function getLegacyClaudeConfigDenyWritePaths(cwd: string): string[] {
-  return [resolve(cwd, '.claude')]
+  return [resolve(cwd, '.nyxclaude')]
 }
 
 /**

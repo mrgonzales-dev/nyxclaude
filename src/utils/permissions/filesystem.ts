@@ -299,7 +299,7 @@ function isSessionMemoryPath(absolutePath: string): boolean {
 
 /**
  * Check if file is within the current project's directory.
- * Path format: ~/.claude/projects/{sanitized-cwd}/...
+ * Path format: ~/.nyxclaude/projects/{sanitized-cwd}/...
  */
 function isProjectDirPath(absolutePath: string): boolean {
   const projectDir = getProjectDir(getCwd())
@@ -321,17 +321,17 @@ export function isScratchpadEnabled(): boolean {
 
 /**
  * Returns the user-specific Nyxclaude temp directory name.
- * On Unix: 'claude-{uid}' to prevent multi-user permission conflicts
- * On Windows: 'claude' (tmpdir() is already per-user)
+ * On Unix: 'nyxclaude-{uid}' to prevent multi-user permission conflicts
+ * On Windows: 'nyxclaude' (tmpdir() is already per-user)
  */
 export function getClaudeTempDirName(): string {
   if (getPlatform() === 'windows') {
-    return 'claude'
+    return 'nyxclaude'
   }
   // Use UID to create per-user directories, preventing permission conflicts
   // when multiple users share the same /tmp directory
   const uid = process.getuid?.() ?? 0
-  return `claude-${uid}`
+  return `nyxclaude-${uid}`
 }
 
 function ensureUsableTempDir(
@@ -388,7 +388,7 @@ export const getClaudeTempDir = memoize(function getClaudeTempDir(): string {
   } catch (e: unknown) {
     if (isFsInaccessible(e)) {
       const fallbackDirs = [
-        join(tmpdir(), 'claude-code', getClaudeTempDirName()) + sep,
+        join(tmpdir(), 'nyxclaude', getClaudeTempDirName()) + sep,
         join(getClaudeConfigHomeDir(), 'tmp', getClaudeTempDirName()) + sep,
       ]
       for (const fallbackDir of fallbackDirs) {
@@ -1663,7 +1663,7 @@ export function checkEditableInternalPath(
   // Template job's own directory. Env key hardcoded (vs importing JOB_ENV_KEY
   // from jobs/state) so tree-shaking eliminates the string from external
   // builds — spawn.test.ts asserts the string matches. Hijack guard: the env
-  // var value must itself resolve under ~/.claude/jobs/. Symlink guard: every
+  // var value must itself resolve under ~/.nyxclaude/jobs/. Symlink guard: every
   // resolved form of the target (lexical + symlink chain) must fall under some
   // resolved form of the job dir, so a symlink inside the job dir pointing at
   // e.g. ~/.ssh/authorized_keys does not get a free write. Resolving both
@@ -1809,7 +1809,7 @@ export function checkReadableInternalPath(
   }
 
   // Project directory (for reading past session memories)
-  // Path format: ~/.claude/projects/{sanitized-cwd}/...
+  // Path format: ~/.nyxclaude/projects/{sanitized-cwd}/...
   if (isProjectDirPath(normalizedPath)) {
     return {
       behavior: 'allow',

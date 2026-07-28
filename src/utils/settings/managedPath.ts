@@ -16,11 +16,11 @@ export const getManagedFilePath = memoize(function (): string {
 
   switch (getPlatform()) {
     case 'macos':
-      return '/Library/Application Support/ClaudeCode'
+      return '/Library/Application Support/Nyxclaude'
     case 'windows':
-      return 'C:\\Program Files\\ClaudeCode'
+      return 'C:\\Program Files\\Nyxclaude'
     default:
-      return '/etc/claude-code'
+      return '/etc/nyxclaude'
   }
 })
 

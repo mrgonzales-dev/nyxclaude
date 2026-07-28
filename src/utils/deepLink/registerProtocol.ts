@@ -30,9 +30,9 @@ import { which } from '../which.js'
 import { getUserBinDir, getXDGDataHome } from '../xdg.js'
 import { DEEP_LINK_PROTOCOL } from './parseDeepLink.js'
 
-export const MACOS_BUNDLE_ID = 'com.anthropic.claude-code-url-handler'
+export const MACOS_BUNDLE_ID = 'dev.mrgonzales.nyxclaude-url-handler'
 const APP_NAME = 'Nyxclaude URL Handler'
-const DESKTOP_FILE_NAME = 'claude-code-url-handler.desktop'
+const DESKTOP_FILE_NAME = 'nyxclaude-url-handler.desktop'
 const MACOS_APP_NAME = 'Nyxclaude URL Handler.app'
 
 // Shared between register* (writes these paths/values) and

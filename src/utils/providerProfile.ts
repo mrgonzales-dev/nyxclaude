@@ -1253,6 +1253,22 @@ export function hasExplicitProviderSelection(
   )
 }
 
+/**
+ * Returns true when no provider is configured at all — no CLAUDE_CODE_USE_*
+ * flags, no Anthropic credentials, and no profile-applied env. The CLI should
+ * prompt the user to run /provider instead of silently falling back to
+ * Anthropic (which would fail with a confusing "Not logged in" error).
+ */
+export function hasNoProviderConfigured(
+  processEnv: NodeJS.ProcessEnv = process.env,
+): boolean {
+  return (
+    !hasExplicitProviderSelection(processEnv) &&
+    !processEnv.ANTHROPIC_API_KEY &&
+    !processEnv.ANTHROPIC_AUTH_TOKEN
+  )
+}
+
 function hasExplicitNonOpenAIProviderSelection(
   processEnv: NodeJS.ProcessEnv = process.env,
 ): boolean {

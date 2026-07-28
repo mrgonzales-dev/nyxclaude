@@ -132,6 +132,7 @@ import { textForResubmit, handleMessageFromStream, type StreamingToolUse, type S
 import { getCurrentTurnCacheMetrics, resetCurrentTurn } from '../services/api/cacheStatsTracker.js';
 import { formatCacheMetricsCompact, formatCacheMetricsFull } from '../services/api/cacheMetrics.js';
 import { generateSessionTitle, titleOrNullForPromptFallback } from '../utils/sessionTitle.js';
+import { hasNoProviderConfigured } from '../utils/providerProfile.js';
 import { BASH_INPUT_TAG, COMMAND_MESSAGE_TAG, COMMAND_NAME_TAG, LOCAL_COMMAND_STDOUT_TAG } from '../constants/xml.js';
 import { escapeXml } from '../utils/xml.js';
 import type { ThinkingConfig } from '../utils/thinking.js';
@@ -3667,6 +3668,18 @@ export function REPL({
         void executeImmediateCommand();
         return; // Always return early - don't add to history or queue
       }
+    }
+
+    // NYXCLAUDE: block non-slash-command input when no provider is configured.
+    // Slash commands (especially /provider) are already handled above and
+    // returned early, so they bypass this guard.
+    if (!speculationAccept && !input.trim().startsWith('/') && hasNoProviderConfigured()) {
+      setMessages(prev => [...prev, createCommandInputMessage(input), createCommandInputMessage(`<${LOCAL_COMMAND_STDOUT_TAG}>No provider configured. Run /provider to add one.</${LOCAL_COMMAND_STDOUT_TAG}>`)]);
+      setInputValue('');
+      helpers.setCursorOffset(0);
+      setPastedContents({});
+      helpers.clearBuffer();
+      return;
     }
 
     // Remote mode: skip empty input early before any state mutations

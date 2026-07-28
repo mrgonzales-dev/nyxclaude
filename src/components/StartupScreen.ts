@@ -14,7 +14,7 @@ import {
 import { getLocalOpenAICompatibleProviderLabel } from '../utils/providerDiscovery.js'
 import { getSettings_DEPRECATED } from '../utils/settings/settings.js'
 import { parseUserSpecifiedModel } from '../utils/model/model.js'
-import { DEFAULT_GEMINI_MODEL } from '../utils/providerProfile.js'
+import { DEFAULT_GEMINI_MODEL, hasNoProviderConfigured } from '../utils/providerProfile.js'
 import { BRAND_TAGLINE } from '../constants/brand.js'
 import { getGlobalConfig } from '../utils/config.js'
 import { ANSI_DIM, ANSI_RESET, ansiRgb } from '../utils/terminalAnsi.js'
@@ -151,6 +151,12 @@ export function detectProvider(modelOverride?: string): { name: string; model: s
     }
     
     return { name, model: displayModel, baseUrl, isLocal }
+  }
+
+  // No provider configured — don't fall back to Anthropic (nyxclaude has no
+  // Anthropic auth). Prompt the user to run /provider instead.
+  if (hasNoProviderConfigured() && !modelOverride && !process.env.ANTHROPIC_MODEL && !process.env.CLAUDE_MODEL) {
+    return { name: 'No provider', model: '—', baseUrl: '—', isLocal: false }
   }
 
   // Default: Anthropic - check settings.model first, then env vars

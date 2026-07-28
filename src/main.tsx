@@ -1,13 +1,5 @@
-// NYXCLAUDE: hardcode omniroute as the LLM backend (OpenAI-compatible).
-// Must run before any other module reads process.env.
-process.env.CLAUDE_CODE_USE_OPENAI = '1'
-process.env.OPENAI_BASE_URL = 'http://localhost:20128/v1'
-process.env.OPENAI_API_KEY = 'sk-acca5ed48c1a36b8-a87dbf-71d85711'
-process.env.OPENAI_MODEL = 'wbridge/glm-5.2'
-process.env.ANTHROPIC_API_KEY = 'sk-acca5ed48c1a36b8-a87dbf-71d85711' // fallback for SDK init
-process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
-process.env.DISABLE_AUTOUPDATER = '1'
-process.env.DISABLE_TELEMETRY = '1'
+// NYXCLAUDE: provider config is no longer hardcoded here.
+// See src/entrypoints/cli.tsx for details. Add a provider via /provider.
 
 // These side-effects must run before all other imports:
 // 1. profileCheckpoint marks entry before heavy module evaluation begins

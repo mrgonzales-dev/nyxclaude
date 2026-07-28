@@ -1,16 +1,10 @@
 import { feature } from 'bun:bundle';
 
-// NYXCLAUDE: hardcode omniroute as the LLM backend (OpenAI-compatible).
-// Must run before any other module reads process.env.
-process.env.CLAUDE_CODE_USE_OPENAI = '1'
-process.env.OPENAI_BASE_URL = 'http://localhost:20128/v1'
-process.env.OPENAI_API_KEY = 'sk-acca5ed48c1a36b8-a87dbf-71d85711'
-process.env.OPENAI_MODEL = 'wbridge/glm-5.2'
-process.env.ANTHROPIC_API_KEY = 'sk-acca5ed48c1a36b8-a87dbf-71d85711'
-process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
-process.env.DISABLE_AUTOUPDATER = '1'
-process.env.DISABLE_TELEMETRY = '1'
-process.env.CLAUDE_CODE_SIMPLE = '1' // NYX: minimal system prompt for small-context models
+// NYXCLAUDE: provider config (OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL,
+// ANTHROPIC_API_KEY, CLAUDE_CODE_USE_OPENAI) is no longer hardcoded here.
+// Add a provider via /provider — it saves to .nyxclaude-profile.json and
+// loads at startup via applyStartupEnvFromProfile(). Operational env vars
+// (DISABLE_TELEMETRY, etc.) live in .nyxclaude/settings.local.json.
 
 // Defensive compatibility guard for environments where globalThis.File is
 // unexpectedly absent. Nyxclaude's supported runtime is Node >=22; this is

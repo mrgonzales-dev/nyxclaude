@@ -17,6 +17,7 @@ import {
   normalizeRecommendationGoal,
   type RecommendationGoal,
 } from './providerRecommendation.js'
+import { detectProviderFromEnv } from './providerAutoDetect.js'
 import { readGeminiAccessToken } from './geminiCredentials.js'
 import { getOllamaChatBaseUrl } from './providerDiscovery.js'
 import { getPrimaryModel } from './providerModels.js'
@@ -1255,18 +1256,22 @@ export function hasExplicitProviderSelection(
 
 /**
  * Returns true when no provider is configured at all — no CLAUDE_CODE_USE_*
- * flags, no Anthropic credentials, and no profile-applied env. The CLI should
- * prompt the user to run /provider instead of silently falling back to
- * Anthropic (which would fail with a confusing "Not logged in" error).
+ * flags, no provider API keys (OPENAI_API_KEY, GEMINI_API_KEY, etc.), no
+ * Anthropic credentials, and no profile-applied env. The CLI should prompt
+ * the user to run /provider instead of silently falling back to Anthropic
+ * (which would fail with a confusing "Not logged in" error).
  */
 export function hasNoProviderConfigured(
   processEnv: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  return (
-    !hasExplicitProviderSelection(processEnv) &&
-    !processEnv.ANTHROPIC_API_KEY &&
-    !processEnv.ANTHROPIC_AUTH_TOKEN
-  )
+  // If env was already applied from a provider profile, a provider is configured.
+  if (hasExplicitProviderSelection(processEnv)) {
+    return false
+  }
+  // detectProviderFromEnv is the authoritative check — it scans all known
+  // provider API keys (OPENAI, GEMINI, MISTRAL, GITHUB_TOKEN, CODEX, MINIMAX,
+  // XAI, NEARAI, FIREWORKS, LONGCAT, etc.) and the Codex auth file.
+  return detectProviderFromEnv(processEnv) === null
 }
 
 function hasExplicitNonOpenAIProviderSelection(

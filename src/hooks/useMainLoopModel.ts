@@ -6,6 +6,7 @@ import {
   type ModelName,
   parseUserSpecifiedModel,
 } from '../utils/model/model.js'
+import { hasNoProviderConfigured } from '../utils/providerProfile.js'
 
 // The value of the selector is a full model name that can be used directly in
 // API calls. Use this over getMainLoopModel() when the component needs to
@@ -24,6 +25,14 @@ export function useMainLoopModel(): ModelName {
   // while /model (which also re-resolves) displays another.
   const [, forceRerender] = useReducer(x => x + 1, 0)
   useEffect(() => onGrowthBookRefresh(forceRerender), [])
+
+  // NYXCLAUDE: when no provider is configured, return a placeholder instead
+  // of falling back to getDefaultMainLoopModelSetting() (which returns
+  // claude-sonnet-4-6). This prevents the footer from showing "Sonnet 4.6"
+  // and the effort indicator when there's no provider to serve the model.
+  if (hasNoProviderConfigured()) {
+    return '—'
+  }
 
   const model = parseUserSpecifiedModel(
     mainLoopModelForSession ??

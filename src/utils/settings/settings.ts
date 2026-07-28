@@ -922,21 +922,27 @@ export function hasSkipFullAccessModePermissionPrompt(): boolean {
 }
 
 /**
- * Returns true if any trusted settings source has enabled bypass permissions
- * mode availability. projectSettings is intentionally excluded — a malicious
- * project could otherwise enable bypass mode (security risk).
+ * Returns true if bypass permissions mode is available.
+ *
+ * NYX-AGENT: defaults to true — bypass mode is always available unless a
+ * trusted settings source explicitly sets allowBypassPermissionsMode: false.
+ * projectSettings is intentionally excluded — a malicious project could
+ * otherwise enable bypass mode (security risk).
  */
 export function hasAllowBypassPermissionsMode(): boolean {
-  return !!(
-    getSettingsForSource('userSettings')?.permissions
-      ?.allowBypassPermissionsMode ||
-    getSettingsForSource('localSettings')?.permissions
-      ?.allowBypassPermissionsMode ||
-    getSettingsForSource('flagSettings')?.permissions
-      ?.allowBypassPermissionsMode ||
-    getSettingsForSource('policySettings')?.permissions
-      ?.allowBypassPermissionsMode
-  )
+  const user = getSettingsForSource('userSettings')?.permissions
+    ?.allowBypassPermissionsMode
+  const local = getSettingsForSource('localSettings')?.permissions
+    ?.allowBypassPermissionsMode
+  const flag = getSettingsForSource('flagSettings')?.permissions
+    ?.allowBypassPermissionsMode
+  const policy = getSettingsForSource('policySettings')?.permissions
+    ?.allowBypassPermissionsMode
+  // Explicit false from any trusted source disables it; otherwise default on.
+  if (user === false || local === false || flag === false || policy === false) {
+    return false
+  }
+  return true
 }
 
 /**

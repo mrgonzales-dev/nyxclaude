@@ -55,6 +55,11 @@ const jobClassifierModule = feature('TEMPLATES')
 import type { QuerySource } from '../constants/querySource.js'
 import { executeAutoDream } from '../services/autoDream/autoDream.js'
 import type { GoalEvaluationDeps } from '../services/goal/controller.js'
+import {
+  evaluateMonitorAfterTurn,
+  type MonitorEvaluationDeps,
+  type MonitorState,
+} from '../services/monitor/controller.js'
 import { executePromptSuggestion } from '../services/PromptSuggestion/promptSuggestion.js'
 import { isBareMode, isEnvDefinedFalsy } from '../utils/envUtils.js'
 import {
@@ -98,6 +103,8 @@ export async function* handleStopHooks(
   stopHookActive?: boolean,
   goalEvaluationDeps?: GoalEvaluationDeps,
   stopHookExecutionDeps?: StopHookExecutionDeps,
+  monitorState?: MonitorState,
+  monitorEvaluationDeps?: MonitorEvaluationDeps,
 ): AsyncGenerator<
   | StreamEvent
   | RequestStartEvent
@@ -553,6 +560,37 @@ export async function* handleStopHooks(
         }
         return {
           blockingErrors: goalBlockingErrors,
+          preventContinuation: false,
+          stopHookActive: false,
+        }
+      }
+    }
+
+    // -- Monitor: independent LLM verifies the stop is valid ----------------
+    // Runs after stop hooks and goal evaluation pass. Uses a separate LLM
+    // instance (same model as the main loop) with a system prompt explaining
+    // its sole purpose is to check task completeness. Rejects premature stops
+    // by returning blocking messages that force the loop to continue.
+    //
+    // Safeguards: hard cap (MAX_MONITOR_REJECTIONS), no-progress detection
+    // (same incomplete task IDs across two rejections → allow stop), fast-path
+    // skip (no LLM call when all tasks are completed), and a kill switch
+    // (CLAUDE_CODE_DISABLE_MONITOR). See controller.ts for details.
+    if (monitorState) {
+      const monitorBlockingErrors = yield* evaluateMonitorAfterTurn({
+        messagesForQuery,
+        assistantMessages,
+        toolUseContext,
+        querySource,
+        monitorState,
+        deps: monitorEvaluationDeps ?? {},
+      })
+      if (monitorBlockingErrors.length > 0) {
+        for (const userMessage of monitorBlockingErrors) {
+          yield userMessage
+        }
+        return {
+          blockingErrors: monitorBlockingErrors,
           preventContinuation: false,
           stopHookActive: false,
         }

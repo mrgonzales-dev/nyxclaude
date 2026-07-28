@@ -128,6 +128,11 @@ import {
 import { AGENT_STEP_LIMIT_TOOL_RESULT_PREFIX } from './query/agentStepLimit.js'
 import { buildQueryConfig } from './query/config.js'
 import {
+  createMonitorState,
+  type MonitorEvaluationDeps,
+  type MonitorState,
+} from './services/monitor/controller.js'
+import {
   MAX_MESSAGES_COMPACTION_THRESHOLDS,
   getGlobalConfig,
   isValidMaxMessagesCompactionThreshold,
@@ -537,6 +542,10 @@ type State = {
   // Lets tests assert recovery paths fired without inspecting message contents.
   transition: Continue | undefined
   agentStepLimit: AgentStepLimitState | undefined
+  // Monitor state: tracks consecutive rejections and the last set of
+  // incomplete task IDs for the no-progress guard. Persisted across loop
+  // iterations so the monitor can detect stuck agents.
+  monitorState: MonitorState
 }
 
 export async function* query(
@@ -622,6 +631,7 @@ async function* queryLoop(
     pendingToolUseSummary: undefined,
     transition: undefined,
     agentStepLimit: normalizeAgentStepLimit(params.agentStepLimit),
+    monitorState: createMonitorState(),
   }
   const budgetTracker = feature('TOKEN_BUDGET') ? createBudgetTracker() : null
 
@@ -692,6 +702,7 @@ async function* queryLoop(
       stopHookActive,
       turnCount,
       agentStepLimit,
+      monitorState,
     } = state
     const effectiveMaxOutputTokensOverride =
       maxOutputTokensOverride === undefined
@@ -1939,6 +1950,7 @@ async function* queryLoop(
               turnCount,
               continuationNudgeCount: state.continuationNudgeCount,
               agentStepLimit,
+              monitorState,
               transition: {
                 reason: 'collapse_drain_retry',
                 committed: drained.committed,
@@ -2012,6 +2024,7 @@ async function* queryLoop(
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
             agentStepLimit,
+            monitorState,
             transition: { reason: 'reactive_compact_retry' },
           }
           state = next
@@ -2065,6 +2078,7 @@ async function* queryLoop(
           turnCount,
           continuationNudgeCount: state.continuationNudgeCount,
           agentStepLimit,
+          monitorState,
           transition: { reason: 'context_overflow_compact_retry' },
         }
         state = next
@@ -2111,6 +2125,7 @@ async function* queryLoop(
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
             agentStepLimit,
+            monitorState,
             transition: {
               reason: 'provider_max_tokens_retry',
               cap: providerMaxTokensCap,
@@ -2160,6 +2175,7 @@ async function* queryLoop(
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
             agentStepLimit,
+            monitorState,
             transition: { reason: 'max_output_tokens_escalate' },
           }
           state = next
@@ -2193,6 +2209,7 @@ async function* queryLoop(
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
             agentStepLimit,
+            monitorState,
             transition: {
               reason: 'max_output_tokens_recovery',
               attempt: maxOutputTokensRecoveryCount + 1,
@@ -2274,6 +2291,7 @@ async function* queryLoop(
               turnCount,
               continuationNudgeCount: state.continuationNudgeCount,
               agentStepLimit,
+              monitorState,
               transition: { reason: 'provider_fallback_retry' },
             }
             state = next
@@ -2308,6 +2326,8 @@ async function* queryLoop(
         stopHookActive,
         deps.goalEvaluationDeps,
         deps.stopHookExecutionDeps,
+        monitorState,
+        deps.monitorEvaluationDeps,
       )
 
       if (stopHookResult.preventContinuation) {
@@ -2342,6 +2362,7 @@ async function* queryLoop(
           turnCount,
           continuationNudgeCount: state.continuationNudgeCount,
           agentStepLimit,
+          monitorState,
           transition: { reason: 'stop_hook_blocking' },
         }
         state = next
@@ -2383,6 +2404,7 @@ async function* queryLoop(
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
             agentStepLimit,
+            monitorState,
             transition: { reason: 'token_budget_continuation' },
           }
           continue
@@ -2453,6 +2475,7 @@ async function* queryLoop(
               turnCount,
               continuationNudgeCount: state.continuationNudgeCount + 1,
               agentStepLimit,
+              monitorState,
               transition: { reason: 'continuation_nudge' },
             }
             state = next
@@ -3014,6 +3037,7 @@ async function* queryLoop(
       providerMaxOutputTokensCap,
       stopHookActive,
       agentStepLimit: nextAgentStepLimit,
+      monitorState,
       transition: { reason: 'next_turn' },
     }
     state = next

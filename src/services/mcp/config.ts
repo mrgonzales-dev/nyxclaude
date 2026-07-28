@@ -16,6 +16,7 @@ import {
 import { getCwd } from '../../utils/cwd.js'
 import { logForDebugging } from '../../utils/debug.js'
 import { getErrnoCode } from '../../utils/errors.js'
+import { isEnvTruthy } from '../../utils/envUtils.js'
 import { getFsImplementation } from '../../utils/fsOperations.js'
 import { safeParseJSON } from '../../utils/json.js'
 import { logError } from '../../utils/log.js'
@@ -1077,6 +1078,14 @@ export async function getClaudeCodeMcpConfigs(
   servers: Record<string, ScopedMcpServerConfig>
   errors: PluginError[]
 }> {
+  // NYX-AGENT: MCP server connections disabled by default.
+  // Set NYXCLAUDE_ENABLE_MCP=1 to re-enable. The MCP infrastructure
+  // (client, config, commands, tools) is kept intact; only server
+  // connections are short-circuited so no external processes spawn.
+  if (!isEnvTruthy(process.env.NYXCLAUDE_ENABLE_MCP)) {
+    return { servers: {}, errors: [] }
+  }
+
   const { servers: enterpriseServers } = getMcpConfigsByScope('enterprise')
 
   // If an enterprise mcp config exists, do not use any others; this has exclusive control over all MCP servers

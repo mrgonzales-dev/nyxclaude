@@ -1,10 +1,10 @@
 {
-  "name": "nyx-agent",
+  "name": "nyxclaude",
   "version": "0.26.0",
   "description": "nyxclaude — AI coding agent harness",
   "type": "module",
   "bin": {
-    "nyx-agent": "./bin/nyxclaude"
+    "nyxclaude": "./bin/nyxclaude"
   },
   "exports": {
     "./package.json": "./package.json",

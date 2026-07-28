@@ -965,7 +965,7 @@ export const connectToServer = memoize(
         (serverRef.type === 'stdio' || !serverRef.type) &&
         isClaudeInChromeMCPServer(name)
       ) {
-        // NYX-AGENT: Chrome integration removed — this branch is unreachable
+        // NYXCLAUDE: Chrome integration removed — this branch is unreachable
         // since isClaudeInChromeMCPServer always returns false for real servers,
         // but keep the guard to satisfy the type checker.
         throw new Error('Chrome MCP server is not available (integration removed)')

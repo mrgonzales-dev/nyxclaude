@@ -1,4 +1,4 @@
-// NYX-AGENT: Chrome integration removed — stubbed.
+// NYXCLAUDE: Chrome integration removed — stubbed.
 import type { ScopedMcpServerConfig } from '../../services/mcp/types.js'
 
 export type ClaudeInChromeStartupMode = 'disabled' | 'explicit' | 'auto'

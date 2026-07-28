@@ -1,4 +1,4 @@
-// NYX-AGENT: Chrome integration removed — stubbed.
+// NYXCLAUDE: Chrome integration removed — stubbed.
 
 export const CHROME_EXTENSION_URL = ''
 

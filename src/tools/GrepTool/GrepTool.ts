@@ -14,7 +14,7 @@ import {
   relativizeContentLine,
   toRelativePath,
 } from '../../utils/path.js'
-// NYX-AGENT: fff (Fast File Finder) integration — in-process content search
+// NYXCLAUDE: fff (Fast File Finder) integration — in-process content search
 // that replaces ripgrep forks for the common case.
 import { getFileFinder } from '../../services/fff.js'
 import {
@@ -333,7 +333,7 @@ export const GrepTool = buildTool({
     },
     { abortController, getAppState },
   ) {
-    // NYX-AGENT: try fff (in-process, warm index) first. Fall back to
+    // NYXCLAUDE: try fff (in-process, warm index) first. Fall back to
     // ripgrep when fff is unavailable or the query uses features fff
     // doesn't support (multiline regex, --type filtering).
     const finder = getFileFinder()
@@ -389,7 +389,7 @@ export const GrepTool = buildTool({
   },
 } satisfies ToolDef<InputSchema, Output>)
 
-// NYX-AGENT: fff-based grep implementation. Uses the long-lived FileFinder
+// NYXCLAUDE: fff-based grep implementation. Uses the long-lived FileFinder
 // index for sub-10ms content search. Post-filters for glob/path/ignore
 // patterns that fff's grep() doesn't natively support.
 async function callWithFff(
@@ -663,7 +663,7 @@ function matchSingleGlob(filePath: string, pattern: string): boolean {
   return new RegExp(regex).test(filePath)
 }
 
-// NYX-AGENT: ripgrep fallback — the original GrepTool.call() logic, extracted
+// NYXCLAUDE: ripgrep fallback — the original GrepTool.call() logic, extracted
 // as a standalone function for use when fff is unavailable or unsupported.
 async function callWithRipgrep(
   input: {

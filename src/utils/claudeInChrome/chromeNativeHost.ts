@@ -1,4 +1,4 @@
-// NYX-AGENT: Chrome integration removed — stubbed.
+// NYXCLAUDE: Chrome integration removed — stubbed.
 
 export function sendChromeMessage(_message: string): void {
   // no-op

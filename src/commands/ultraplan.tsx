@@ -457,7 +457,7 @@ export default {
   name: 'ultraplan',
   description: `~10–30 min · Nyxclaude on the web drafts an advanced plan you can edit and approve. See ${CCR_TERMS_URL}`,
   argumentHint: '<prompt>',
-  // NYX-AGENT: hidden (stubbed/disabled)
+  // NYXCLAUDE: hidden (stubbed/disabled)
   isEnabled: () => false,
   isHidden: true,
   load: () => Promise.resolve({

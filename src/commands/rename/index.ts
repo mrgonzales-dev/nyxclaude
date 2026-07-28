@@ -4,7 +4,7 @@ const rename = {
   type: 'local-jsx',
   name: 'rename',
   description: 'Rename the current conversation',
-  // NYX-AGENT: hidden (stubbed/disabled)
+  // NYXCLAUDE: hidden (stubbed/disabled)
   isEnabled: () => false,
   isHidden: true,
   immediate: true,

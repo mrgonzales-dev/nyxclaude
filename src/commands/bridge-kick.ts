@@ -13,7 +13,7 @@ const bridgeKick = {
   type: 'local',
   name: 'bridge-kick',
   description: 'Inject bridge failure states for manual recovery testing',
-  // NYX-AGENT: hidden (stubbed/disabled)
+  // NYXCLAUDE: hidden (stubbed/disabled)
   isEnabled: () => false,
   isHidden: true,
   supportsNonInteractive: false,

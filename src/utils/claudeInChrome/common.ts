@@ -1,4 +1,4 @@
-// NYX-AGENT: Chrome integration removed — stubbed.
+// NYXCLAUDE: Chrome integration removed — stubbed.
 // All functions return empty/false/null. Constants kept for import compatibility.
 
 export const CLAUDE_IN_CHROME_MCP_SERVER_NAME = 'claude-in-chrome'

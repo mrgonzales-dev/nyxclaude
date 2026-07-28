@@ -1,4 +1,4 @@
-// NYX-AGENT: Chrome integration removed — all functions stubbed to no-op/false.
+// NYXCLAUDE: Chrome integration removed — all functions stubbed to no-op/false.
 // The source has been removed to eliminate the @ant/claude-for-chrome-mcp
 // dependency and all Chrome extension integration code.
 

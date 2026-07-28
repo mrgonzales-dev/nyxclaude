@@ -9,7 +9,7 @@ export default () =>
     description: hasAnthropicApiKeyAuth()
       ? 'Switch Anthropic accounts'
       : 'Sign in with your Anthropic account',
-    // NYX-AGENT: hidden (stubbed/disabled)
+    // NYXCLAUDE: hidden (stubbed/disabled)
     isEnabled: () => false,
     isHidden: true,
     load: () => import('./login.js'),

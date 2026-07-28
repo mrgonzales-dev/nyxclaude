@@ -924,7 +924,7 @@ export function hasSkipFullAccessModePermissionPrompt(): boolean {
 /**
  * Returns true if bypass permissions mode is available.
  *
- * NYX-AGENT: defaults to true — bypass mode is always available unless a
+ * NYXCLAUDE: defaults to true — bypass mode is always available unless a
  * trusted settings source explicitly sets allowBypassPermissionsMode: false.
  * projectSettings is intentionally excluded — a malicious project could
  * otherwise enable bypass mode (security risk).

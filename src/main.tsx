@@ -1,4 +1,4 @@
-// NYX-AGENT: hardcode omniroute as the LLM backend (OpenAI-compatible).
+// NYXCLAUDE: hardcode omniroute as the LLM backend (OpenAI-compatible).
 // Must run before any other module reads process.env.
 process.env.CLAUDE_CODE_USE_OPENAI = '1'
 process.env.OPENAI_BASE_URL = 'http://localhost:20128/v1'
@@ -3684,7 +3684,7 @@ async function run(): Promise<CommanderCommand> {
         }
       }
       const initialMessages = deepLinkBanner ? [deepLinkBanner, ...hookMessages] : hookMessages.length > 0 ? hookMessages : undefined;
-      // NYX-AGENT: inject banner as first system message
+      // NYXCLAUDE: inject banner as first system message
       const nyxBanner = createSystemMessage(
         WORDMARK.join('\n') + '\n\n' + BRAND_TAGLINE,
         'info',

@@ -36,7 +36,7 @@ import keybindings from './commands/keybindings/index.js'
 import lsp from './commands/lsp/index.js'
 import login from './commands/login/index.js'
 import logout from './commands/logout/index.js'
-// NYX-AGENT: Anthropic-specific GitHub App installer removed
+// NYXCLAUDE: Anthropic-specific GitHub App installer removed
 // import installGitHubApp from './commands/install-github-app/index.js'
 import installSlackApp from './commands/install-slack-app/index.js'
 import breakCache from './commands/break-cache/index.js'
@@ -99,7 +99,7 @@ const remoteControlServerCommand =
   feature('DAEMON') && feature('BRIDGE_MODE')
     ? require('./commands/remoteControlServer/index.js').default
     : null
-// NYX-AGENT: Voice mode removed (requires Anthropic auth)
+// NYXCLAUDE: Voice mode removed (requires Anthropic auth)
 // const voiceCommand = feature('VOICE_MODE')
 //   ? require('./commands/voice/index.js').default
 //   : null
@@ -167,7 +167,7 @@ import {
 import antTrace from './commands/ant-trace/index.js'
 import perfIssue from './commands/perf-issue/index.js'
 import sandboxToggle from './commands/sandbox-toggle/index.js'
-// NYX-AGENT: Chrome integration removed
+// NYXCLAUDE: Chrome integration removed
 // import chrome from './commands/chrome/index.js'
 import stickers from './commands/stickers/index.js'
 import advisor from './commands/advisor.js'
@@ -294,7 +294,7 @@ const COMMANDS = memoize((): Command[] => [
   btw,
   cacheProbe,
   cacheStats,
-  // NYX-AGENT: Chrome integration removed
+  // NYXCLAUDE: Chrome integration removed
   // chrome,
   clear,
   clearContextWindow,
@@ -324,7 +324,7 @@ const COMMANDS = memoize((): Command[] => [
   keybindings,
   knowledge,
   lsp,
-  // NYX-AGENT: Anthropic-specific GitHub App installer removed
+  // NYXCLAUDE: Anthropic-specific GitHub App installer removed
   // installGitHubApp,
   installSlackApp,
   mcp,

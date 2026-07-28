@@ -455,7 +455,7 @@ export async function getSystemPrompt(
 ): Promise<string[]> {
   if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
     return [
-      `You are nyx-agent, a coding agent powered by omniroute.\n\nCWD: ${getCwd()}\nDate: ${getSessionStartDate()}`,
+      `You are nyxclaude, a coding agent powered by omniroute.\n\nCWD: ${getCwd()}\nDate: ${getSessionStartDate()}`,
     ]
   }
 

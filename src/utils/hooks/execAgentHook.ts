@@ -5,7 +5,7 @@ import { logEvent } from '../../services/analytics/index.js'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../../services/analytics/metadata.js'
 import type { ToolUseContext } from '../../Tool.js'
 import { type Tool, toolMatchesName } from '../../Tool.js'
-// NYX-AGENT: SyntheticOutputTool deleted, stub
+// NYXCLAUDE: SyntheticOutputTool deleted, stub
 const SYNTHETIC_OUTPUT_TOOL_NAME = ''
 import { ALL_AGENT_DISALLOWED_TOOLS } from '../../tools.js'
 import { asAgentId } from '../../types/ids.js'

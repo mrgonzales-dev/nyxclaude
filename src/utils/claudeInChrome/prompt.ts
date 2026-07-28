@@ -1,4 +1,4 @@
-// NYX-AGENT: Chrome integration removed — all prompts stubbed to empty strings.
+// NYXCLAUDE: Chrome integration removed — all prompts stubbed to empty strings.
 
 export const BASE_CHROME_PROMPT = ''
 export const CHROME_TOOL_SEARCH_INSTRUCTIONS = ''

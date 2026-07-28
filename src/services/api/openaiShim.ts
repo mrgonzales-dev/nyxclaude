@@ -1387,7 +1387,7 @@ function convertNonStreamingResponseToAnthropicMessage(
   // Some reasoning models (e.g. GLM-5) put their chain-of-thought in
   // reasoning_content while content stays null. Preserve it as a thinking
   // block, but do not surface it as visible assistant text.
-  // NYX-AGENT: also handle `reasoning` field (omniroute/wbridge uses this name)
+  // NYXCLAUDE: also handle `reasoning` field (omniroute/wbridge uses this name)
   const reasoningText = choice?.message?.reasoning_content ?? choice?.message?.reasoning
   if (typeof reasoningText === 'string' && reasoningText) {
     content.push({ type: 'thinking', thinking: reasoningText })
@@ -1870,7 +1870,7 @@ async function* openaiStreamToAnthropic(
 
       for (const choice of chunk.choices ?? []) {
         throwIfStreamAborted(signal)
-        // NYX-AGENT: debug stream chunks (enable with NYXCLAUDE_DEBUG_API=1)
+        // NYXCLAUDE: debug stream chunks (enable with NYXCLAUDE_DEBUG_API=1)
         if (process.env.NYXCLAUDE_DEBUG_API) {
           const d = choice.delta as Record<string, unknown> | undefined
           if (d && (d.content || d.reasoning || d.reasoning_content || choice.finish_reason)) {
@@ -1882,7 +1882,7 @@ async function* openaiStreamToAnthropic(
         // Reasoning models (e.g. GLM-5, DeepSeek) may stream chain-of-thought
         // in `reasoning_content` before the actual reply appears in `content`.
         // Emit reasoning as a thinking block and content as a text block.
-        // NYX-AGENT: also handle `reasoning` field (omniroute/wbridge uses this name)
+        // NYXCLAUDE: also handle `reasoning` field (omniroute/wbridge uses this name)
         const reasoningContent = delta.reasoning_content ?? delta.reasoning
         if (reasoningContent != null && reasoningContent !== '') {
           if (!hasEmittedThinkingStart) {
@@ -2444,7 +2444,7 @@ async function* openaiStreamToAnthropic(
 
   throwIfStreamAborted(signal)
 
-  // NYX-AGENT: Detect empty responses (model returned finish_reason without
+  // NYXCLAUDE: Detect empty responses (model returned finish_reason without
   // any content or tool calls). This happens with some models when the tool
   // descriptions trigger a refusal or confusion. Surface it as an error so
   // the user sees what happened instead of silent empty output.
@@ -3089,7 +3089,7 @@ class OpenAIShimMessages {
         }>,
         { skipStrict: fastPath.skipStrictTools },
       )
-      // NYX-AGENT: omniroute accepts full tool descriptions (tested 10KB+ OK)
+      // NYXCLAUDE: omniroute accepts full tool descriptions (tested 10KB+ OK)
       // No truncation needed — the LLM needs the full prompt to know when/how
       // to use each tool (especially TodoWrite, which has 200+ lines of examples)
       if (converted.length > 0) {
@@ -3797,7 +3797,7 @@ class OpenAIShimMessages {
           : effectiveTransport === 'anthropic_messages' ? buildAnthropicMessagesBody()
           : effectiveTransport === 'gemini' ? buildGeminiBody()
           : body
-      // NYX-AGENT: debug log to see what's sent to omniroute
+      // NYXCLAUDE: debug log to see what's sent to omniroute
       if (process.env.NYXCLAUDE_DEBUG_API) {
         try {
           const { writeFileSync } = require('fs')

@@ -37,7 +37,7 @@ export const RUNTIME_DEPENDENCY_CONTRACT: Readonly<Record<string, string>> = {
   '@orama/orama': '3.1.18',
   '@orama/plugin-data-persistence': '3.1.18',
   '@vscode/ripgrep': '1.18.0',
-  // NYX-AGENT: fff native file search library (node SDK)
+  // NYXCLAUDE: fff native file search library (node SDK)
   '@ff-labs/fff-node': '0.10.1',
 }
 

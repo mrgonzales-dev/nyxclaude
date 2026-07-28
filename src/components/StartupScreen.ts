@@ -56,13 +56,13 @@ export function paintLine(text: string, stops: readonly RGB[], lineT: number): s
 
 // ─── Filled Block Text Logo ───────────────────────────────────────────────────
 
-// NYX-AGENT: NYX wordmark from brand constants (ANSI Shadow font)
+// NYXCLAUDE: NYX wordmark from brand constants (ANSI Shadow font)
 import { WORDMARK } from '../constants/brand.js'
 
 // ─── Provider detection ───────────────────────────────────────────────────────
 
 export function detectProvider(modelOverride?: string): { name: string; model: string; baseUrl: string; isLocal: boolean } {
-  // NYX-AGENT: hardcoded omniroute provider display
+  // NYXCLAUDE: hardcoded omniroute provider display
   if (process.env.OPENAI_BASE_URL?.includes('localhost:20128')) {
     return {
       name: 'Omniroute',
@@ -229,7 +229,7 @@ export function printStartupScreen(modelOverride?: string): void {
   out.push(boxRow(sRow, W, sLen, BORDER))
 
   out.push(`${ansiRgb(...BORDER)}\u255a${'\u2550'.repeat(W - 2)}\u255d${RESET}`)
-  out.push(`  ${DIM}${ansiRgb(...DIMCOL)}nyx-agent ${RESET}${ansiRgb(...ACCENT)}v${MACRO.DISPLAY_VERSION ?? MACRO.VERSION}${RESET}`)
+  out.push(`  ${DIM}${ansiRgb(...DIMCOL)}nyxclaude ${RESET}${ansiRgb(...ACCENT)}v${MACRO.DISPLAY_VERSION ?? MACRO.VERSION}${RESET}`)
   out.push('')
 
   process.stdout.write(out.join('\n') + '\n')

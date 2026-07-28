@@ -5,7 +5,7 @@ export default {
   type: 'local-jsx',
   name: 'logout',
   description: 'Sign out from your Anthropic account',
-  // NYX-AGENT: hidden (stubbed/disabled)
+  // NYXCLAUDE: hidden (stubbed/disabled)
   isEnabled: () => false,
   isHidden: true,
   load: () => import('./logout.js'),

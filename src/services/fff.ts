@@ -1,4 +1,4 @@
-// NYX-AGENT: fff (Fast File Finder) singleton service.
+// NYXCLAUDE: fff (Fast File Finder) singleton service.
 //
 // Wraps @ff-labs/fff-node's FileFinder in a process-wide singleton so the
 // GrepTool (and any future consumer) can share one long-lived index instead

@@ -4,7 +4,7 @@ import { BashTool } from './tools/BashTool/BashTool.js'
 import { FileEditTool } from './tools/FileEditTool/FileEditTool.js'
 import { FileReadTool } from './tools/FileReadTool/FileReadTool.js'
 import { FileWriteTool } from './tools/FileWriteTool/FileWriteTool.js'
-// NYX-AGENT: GlobTool unregistered — fff's grep + fileSearch covers path search.
+// NYXCLAUDE: GlobTool unregistered — fff's grep + fileSearch covers path search.
 // The GlobTool source files are kept for reference but no longer loaded.
 // import { GlobTool } from './tools/GlobTool/GlobTool.js'
 import { GrepTool } from './tools/GrepTool/GrepTool.js'
@@ -21,18 +21,18 @@ import {
 import { getDenyRuleForTool } from './utils/permissions/permissions.js'
 import { hasEmbeddedSearchTools } from './utils/embeddedTools.js'
 
-// NYX-AGENT: REPL tool constants stubbed (REPLTool deleted)
+// NYXCLAUDE: REPL tool constants stubbed (REPLTool deleted)
 const REPL_TOOL_NAME = ''
 const REPL_ONLY_TOOLS: string[] = []
 export { REPL_ONLY_TOOLS }
 
-// NYX-AGENT: SyntheticOutputTool deleted, stub
+// NYXCLAUDE: SyntheticOutputTool deleted, stub
 const SYNTHETIC_OUTPUT_TOOL_NAME = ''
 
-// NYX-AGENT: AgentTool deleted, re-export from constants for compatibility
+// NYXCLAUDE: AgentTool deleted, re-export from constants for compatibility
 export { ALL_AGENT_DISALLOWED_TOOLS } from './constants/tools.js'
 
-// NYX-AGENT: filterToolsByDenyRules - simple implementation
+// NYXCLAUDE: filterToolsByDenyRules - simple implementation
 export function filterToolsByDenyRules(tools: Tools, _permissionContext: ToolPermissionContext): Tools {
   return tools
 }
@@ -72,7 +72,7 @@ export function getToolsForDefaultPreset(): string[] {
 export function getAllBaseTools(): Tools {
   return [
     BashTool,
-    // NYX-AGENT: GlobTool unregistered (fff covers path search via grep).
+    // NYXCLAUDE: GlobTool unregistered (fff covers path search via grep).
     // GrepTool now uses fff in-process with ripgrep fallback.
     ...(hasEmbeddedSearchTools() ? [] : [GrepTool]),
     FileReadTool,
@@ -102,7 +102,7 @@ export function getTools(
 ): Tools {
   const denyRule = getDenyRuleForTool(permissionContext)
   if (!denyRule) {
-    // NYX-AGENT: filter by isEnabled() so mutually exclusive tools
+    // NYXCLAUDE: filter by isEnabled() so mutually exclusive tools
     // (TodoWrite vs TaskCreate/TaskUpdate) don't both show up.
     return getAllBaseTools().filter(tool => tool.isEnabled())
   }
@@ -124,6 +124,6 @@ export function assembleToolPool(
   builtinTools: Tools,
   _mcpTools?: Tools,
 ): Tools {
-  // NYX-AGENT: MCP tools removed, just return builtin tools
+  // NYXCLAUDE: MCP tools removed, just return builtin tools
   return uniqBy(builtinTools, tool => tool.name)
 }

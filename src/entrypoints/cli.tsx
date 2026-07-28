@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle';
 
-// NYX-AGENT: hardcode omniroute as the LLM backend (OpenAI-compatible).
+// NYXCLAUDE: hardcode omniroute as the LLM backend (OpenAI-compatible).
 // Must run before any other module reads process.env.
 process.env.CLAUDE_CODE_USE_OPENAI = '1'
 process.env.OPENAI_BASE_URL = 'http://localhost:20128/v1'
@@ -746,7 +746,7 @@ export async function main(
     } = await importers.earlyInput();
     startCapturingEarlyInput();
   }
-  // NYX-AGENT: warm the fff (Fast File Finder) index before the main CLI
+  // NYXCLAUDE: warm the fff (Fast File Finder) index before the main CLI
   // runs so the first grep/glob the model issues is already hot. Non-fatal:
   // if the native lib is missing, GrepTool falls back to ripgrep.
   try {

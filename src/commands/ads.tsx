@@ -152,7 +152,7 @@ const ads = {
   argumentHint: 'on | off',
   // The earn code is a credential — redact inline `/ads on <code>` args from history.
   isSensitive: true,
-  // NYX-AGENT: hidden (not relevant to nyx-agent)
+  // NYXCLAUDE: hidden (not relevant to nyxclaude)
   isEnabled: () => false,
   isHidden: true,
   load: () => Promise.resolve({ call }),

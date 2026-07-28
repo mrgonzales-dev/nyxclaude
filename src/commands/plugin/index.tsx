@@ -4,7 +4,7 @@ const plugin = {
   name: 'plugin',
   aliases: ['plugins', 'marketplace'],
   description: 'Manage Nyxclaude plugins',
-  // NYX-AGENT: hidden (stubbed/disabled)
+  // NYXCLAUDE: hidden (stubbed/disabled)
   isEnabled: () => false,
   isHidden: true,
   immediate: true,

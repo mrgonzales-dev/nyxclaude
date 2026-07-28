@@ -1078,7 +1078,7 @@ export async function getClaudeCodeMcpConfigs(
   servers: Record<string, ScopedMcpServerConfig>
   errors: PluginError[]
 }> {
-  // NYX-AGENT: MCP server connections disabled by default.
+  // NYXCLAUDE: MCP server connections disabled by default.
   // Set NYXCLAUDE_ENABLE_MCP=1 to re-enable. The MCP infrastructure
   // (client, config, commands, tools) is kept intact; only server
   // connections are short-circuited so no external processes spawn.

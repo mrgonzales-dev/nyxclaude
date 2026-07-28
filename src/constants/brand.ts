@@ -1,5 +1,5 @@
 /**
- * NYX-AGENT brand identity — single source of truth for the product name,
+ * NYXCLAUDE brand identity — single source of truth for the product name,
  * tagline, accent color, and wordmark art used across the TUI.
  *
  * The accent is cyan. Theme entries derived from it MUST stay
@@ -7,7 +7,7 @@
  * parses theme values with `parseRGB`, which only matches `rgb(...)` strings.
  */
 
-export const BRAND_NAME = 'nyx-agent'
+export const BRAND_NAME = 'nyxclaude'
 
 export const BRAND_TAGLINE = 'AI harness · omniroute'
 

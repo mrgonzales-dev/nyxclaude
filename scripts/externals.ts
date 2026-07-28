@@ -40,7 +40,7 @@ export const COMMON_EXTERNALS: string[] = [
   // tree-sitter-wasms ships per-language .wasm files resolved via
   // require.resolve at runtime — same bundling concern as web-tree-sitter.
   'tree-sitter-wasms',
-  // NYX-AGENT: fff (Fast File Finder) — native C library loaded via ffi-rs.
+  // NYXCLAUDE: fff (Fast File Finder) — native C library loaded via ffi-rs.
   // Ships compiled JS + platform-specific native binary. Keep external so
   // the native binary path resolves correctly at runtime under node.
   '@ff-labs/fff-node',

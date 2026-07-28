@@ -5,7 +5,7 @@ const feedback = {
   name: 'feedback',
   description: `Submit feedback about Nyxclaude`,
   argumentHint: '[report]',
-  // NYX-AGENT: hidden (stubbed/disabled)
+  // NYXCLAUDE: hidden (stubbed/disabled)
   isEnabled: () => false,
   isHidden: true,
   load: () => import('./feedback.js'),

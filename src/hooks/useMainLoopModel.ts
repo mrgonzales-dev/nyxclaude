@@ -26,12 +26,12 @@ export function useMainLoopModel(): ModelName {
   const [, forceRerender] = useReducer(x => x + 1, 0)
   useEffect(() => onGrowthBookRefresh(forceRerender), [])
 
-  // NYXCLAUDE: when no provider is configured, return a placeholder instead
+  // NYXCLAUDE: when no provider is configured, return empty string instead
   // of falling back to getDefaultMainLoopModelSetting() (which returns
   // claude-sonnet-4-6). This prevents the footer from showing "Sonnet 4.6"
   // and the effort indicator when there's no provider to serve the model.
   if (hasNoProviderConfigured()) {
-    return '—'
+    return ''
   }
 
   const model = parseUserSpecifiedModel(

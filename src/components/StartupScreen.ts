@@ -156,7 +156,7 @@ export function detectProvider(modelOverride?: string): { name: string; model: s
   // No provider configured — don't fall back to Anthropic (nyxclaude has no
   // Anthropic auth). Prompt the user to run /provider instead.
   if (hasNoProviderConfigured() && !modelOverride && !process.env.ANTHROPIC_MODEL && !process.env.CLAUDE_MODEL) {
-    return { name: 'No provider', model: '—', baseUrl: '—', isLocal: false }
+    return { name: 'No provider', model: '', baseUrl: '', isLocal: false }
   }
 
   // Default: Anthropic - check settings.model first, then env vars
@@ -220,11 +220,15 @@ export function printStartupScreen(modelOverride?: string): void {
   const provC: RGB = p.isLocal ? [130, 175, 130] : ACCENT
   let [r, l] = lbl('Provider', p.name, provC)
   out.push(boxRow(r, W, l, BORDER))
-  ;[r, l] = lbl('Model', p.model)
-  out.push(boxRow(r, W, l, BORDER))
-  const ep = p.baseUrl.length > 38 ? p.baseUrl.slice(0, 35) + '...' : p.baseUrl
-  ;[r, l] = lbl('Endpoint', ep)
-  out.push(boxRow(r, W, l, BORDER))
+  if (p.model) {
+    ;[r, l] = lbl('Model', p.model)
+    out.push(boxRow(r, W, l, BORDER))
+  }
+  if (p.baseUrl) {
+    const ep = p.baseUrl.length > 38 ? p.baseUrl.slice(0, 35) + '...' : p.baseUrl
+    ;[r, l] = lbl('Endpoint', ep)
+    out.push(boxRow(r, W, l, BORDER))
+  }
 
   out.push(`${ansiRgb(...BORDER)}\u2560${'\u2550'.repeat(W - 2)}\u2563${RESET}`)
 

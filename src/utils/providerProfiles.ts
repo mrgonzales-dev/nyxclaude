@@ -16,6 +16,7 @@ import { getPrimaryModel, parseModelList } from './providerModels.js'
 import {
   buildCompatibilityProcessEnv,
   createProfileFile,
+  loadProfileFile,
   saveProfileFile,
   buildBedrockProfileEnv,
   buildGeminiProfileEnv,
@@ -307,6 +308,26 @@ export function _setSavedModelOverrideForTesting(model: string | undefined): voi
 function getSavedModelOverrideForProfile(
   profile: ProviderProfile,
 ): string | undefined {
+  // Check the startup profile file first — it's the authoritative source for
+  // the last model selected via /model (written by persistActiveProviderProfileModel).
+  // The startup file is provider-anchored: it contains the model in the env var
+  // that matches the active provider (OPENAI_MODEL, ANTHROPIC_MODEL, etc.).
+  // Bypass profileSupportsModel for the startup file since it was explicitly
+  // written by our code — the model may be a discovered model not in the
+  // profile's configured list or the route catalog.
+  const persisted = loadProfileFile()
+  if (persisted?.env) {
+    const startupModel = trimOrUndefined(
+      persisted.env.OPENAI_MODEL ??
+        persisted.env.ANTHROPIC_MODEL ??
+        persisted.env.GEMINI_MODEL ??
+        persisted.env.MISTRAL_MODEL,
+    )
+    if (startupModel) {
+      return startupModel
+    }
+  }
+
   const savedModel = trimOrUndefined(
     savedModelOverrideForTesting ?? getSettings_DEPRECATED()?.model,
   )

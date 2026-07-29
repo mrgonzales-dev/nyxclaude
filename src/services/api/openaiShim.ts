@@ -42,8 +42,8 @@ import {
   refreshCodexAccessTokenIfNeeded,
 } from '../../utils/codexCredentials.js'
 import { logForDebugging } from '../../utils/debug.js'
-import { anthropicSsePassthrough as parseAnthropicSsePassthrough, createReaderCanceller, createStreamAbortError, getStreamIdleTimeoutMs, readWithIdleTimeout, StreamIdleTimeoutError, throwIfStreamAborted } from './openaiShim/streamControl.js'
-export { getStreamIdleTimeoutMs } from './openaiShim/streamControl.js'
+import { anthropicSsePassthrough as parseAnthropicSsePassthrough, createReaderCanceller, createStreamAbortError, getStreamIdleTimeoutMs, readWithIdleTimeout, StreamIdleTimeoutError, StreamStallBudgetExceededError, throwIfStreamAborted } from './openaiShim/streamControl.js'
+export { getStreamIdleTimeoutMs, StreamStallBudgetExceededError } from './openaiShim/streamControl.js'
 import { isBareMode, isEnvTruthy } from '../../utils/envUtils.js'
 import {
   resolveModelReasoningControl,
@@ -1692,6 +1692,20 @@ async function* openaiStreamToAnthropic(
   let lastDataTime = Date.now()
   let streamComplete = false
 
+  // Stall detection: log gaps > STALL_THRESHOLD_MS between chunks and abort
+  // if cumulative stall time exceeds STALL_BUDGET_MS. The 90s idle timeout
+  // (readWithIdleTimeout) catches completely dead streams, but a stream that
+  // sends one chunk every 89s would keep resetting the idle timer and hang
+  // for up to QueryGuard's 30-min hard max. This budget catches slowly dying
+  // streams and falls back to non-streaming mode.
+  // Mirrors the stall detection on the Anthropic native path (claude.ts:2232)
+  // but adds the cumulative budget abort that the Anthropic path lacks.
+  const STALL_THRESHOLD_MS = 30_000
+  const STALL_BUDGET_MS = 60_000
+  let lastEventTime: number | null = null
+  let totalStallTime = 0
+  let stallCount = 0
+
   const closeActiveContentBlock = async function* () {
     if (!hasEmittedContentStart) return
 
@@ -1821,6 +1835,33 @@ async function* openaiStreamToAnthropic(
         break
       }
       if (value) lastDataTime = Date.now()
+
+      // Stall detection: measure gap from last chunk, log if > threshold,
+      // abort if cumulative stall time exceeds budget.
+      const now = Date.now()
+      if (lastEventTime !== null) {
+        const gap = now - lastEventTime
+        if (gap > STALL_THRESHOLD_MS) {
+          stallCount++
+          totalStallTime += gap
+          logForDebugging(
+            `OpenAI-compatible SSE stall #${stallCount}: ${(gap / 1000).toFixed(1)}s gap (cumulative ${(totalStallTime / 1000).toFixed(1)}s, budget ${STALL_BUDGET_MS / 1000}s)`,
+            { level: 'warn' },
+          )
+          if (totalStallTime > STALL_BUDGET_MS) {
+            logForDebugging(
+              `OpenAI-compatible SSE stall budget exceeded: ${(totalStallTime / 1000).toFixed(1)}s cumulative, aborting stream`,
+              { level: 'error' },
+            )
+            readerCanceller.cancel()
+            throw new StreamStallBudgetExceededError(
+              STALL_BUDGET_MS,
+              totalStallTime,
+            )
+          }
+        }
+      }
+      lastEventTime = now
 
       throwIfStreamAborted(signal)
       buffer += decoder.decode(value, { stream: true })
@@ -4364,4 +4405,5 @@ export const __test = {
   getStreamIdleTimeoutMs,
   readWithIdleTimeout,
   StreamIdleTimeoutError,
+  StreamStallBudgetExceededError,
 }

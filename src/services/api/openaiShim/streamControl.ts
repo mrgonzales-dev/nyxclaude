@@ -8,6 +8,15 @@ export class StreamIdleTimeoutError extends Error {
   }
 }
 
+export class StreamStallBudgetExceededError extends Error {
+  constructor(budgetMs: number, cumulativeMs: number) {
+    super(
+      `Stream stall budget exceeded - ${cumulativeMs / 1000}s cumulative stalls exceeded ${budgetMs / 1000}s budget`,
+    )
+    this.name = 'StreamStallBudgetExceededError'
+  }
+}
+
 export function createStreamAbortError(): DOMException {
   return new DOMException('Aborted', 'AbortError')
 }

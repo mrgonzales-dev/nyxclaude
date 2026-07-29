@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { DEFAULT_REPL_MAX_TURNS, resolveReplMaxTurns } from './replMaxTurns.js'
+import { resolveReplMaxTurns } from './replMaxTurns.js'
 
 const screenDir = import.meta.dirname
 
@@ -25,9 +25,8 @@ function objectBody(source: string, marker: RegExp): string {
 }
 
 describe('interactive REPL max-turn cap', () => {
-  test('supplies the local interactive default at runtime', () => {
-    expect(DEFAULT_REPL_MAX_TURNS).toBe(50)
-    expect(resolveReplMaxTurns()).toBe(50)
+  test('has no default cap at runtime', () => {
+    expect(resolveReplMaxTurns()).toBeUndefined()
   })
 
   test('preserves an explicit interactive cap at runtime', () => {

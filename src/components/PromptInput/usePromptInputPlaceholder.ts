@@ -64,6 +64,8 @@ export function usePromptInputPlaceholder({
     ) {
       return getExampleCommandFromCache()
     }
+
+    return 'Ask Nyx what you need..'
   }, [
     input,
     queuedCommands,

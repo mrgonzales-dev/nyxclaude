@@ -1291,19 +1291,27 @@ export function persistActiveProviderProfileModel(
     return null
   }
 
-  // Runtime model selection is a session-level choice handled by
-  // mainLoopModelOverride (see src/hooks/useMainLoopModel.ts), not a
-  // profile edit. Whether the chosen model is already part of the
-  // profile's list or not, do NOT mutate profile.model here:
-  //   - if it IS in the list, the list is already correct (no-op)
-  //   - if it ISN'T, the user picked an out-of-list model for the
-  //     session and the profile's list should only change via an
-  //     explicit provider edit, not by side-effect of /model.
-  // An earlier implementation prepended out-of-list models to the
-  // profile, which (a) contradicted this contract, (b) caused
-  // unbounded list growth on rotation, and (c) used a separator
-  // inferred from a single-character substring of the model field
-  // that broke on mixed-separator inputs.
+  // Do NOT mutate the profile's configured model list — see issue #1360.
+  // An earlier implementation prepended out-of-list models to the list,
+  // which (a) contradicted the documented contract, (b) caused unbounded
+  // list growth on rotation, and (c) used a separator inferred from a
+  // single-character substring of the model field that broke on
+  // mixed-separator inputs.
+  //
+  // Instead, re-write the startup profile file (.nyxclaude-profile.json)
+  // with the selected model in the env vars. On restart, the env var
+  // (e.g. OPENAI_MODEL) takes priority over settings.model in
+  // getUserSpecifiedModelSetting, so the last selected model sticks
+  // without mutating the profile's configured list. The profile's model
+  // list only changes via an explicit provider edit (/provider).
+  const startupProfile = buildStartupProfileFromActiveProfile(activeProfile, {
+    modelOverride: nextModel,
+  })
+  if (startupProfile) {
+    const file = createProfileFile(startupProfile.profile, startupProfile.env)
+    saveProfileFile(file)
+  }
+
   return activeProfile
 }
 
@@ -1336,6 +1344,7 @@ export function getProfileModelOptions(
 
 function buildOpenAICompatibleStartupEnv(
   activeProfile: ProviderProfile,
+  options?: { modelOverride?: string },
 ): ProfileEnv | null {
   if (isCodexBaseUrl(activeProfile.baseUrl)) {
     return null
@@ -1343,11 +1352,12 @@ function buildOpenAICompatibleStartupEnv(
   const isAimlapiProfile =
     activeProfile.provider === 'aimlapi' ||
     resolveRouteIdFromBaseUrl(activeProfile.baseUrl) === 'aimlapi'
+  const effectiveModel = options?.modelOverride ?? activeProfile.model
 
   if (activeProfile.apiKey) {
     const strictEnv = buildOpenAIProfileEnv({
       goal: 'balanced',
-      model: activeProfile.model,
+      model: effectiveModel,
       baseUrl: activeProfile.baseUrl,
       apiKey: activeProfile.apiKey,
       apiFormat: activeProfile.apiFormat,
@@ -1397,7 +1407,7 @@ function buildOpenAICompatibleStartupEnv(
 
   const env: ProfileEnv = {
     OPENAI_BASE_URL: activeProfile.baseUrl,
-    OPENAI_MODEL: getPrimaryModel(activeProfile.model),
+    OPENAI_MODEL: getPrimaryModel(effectiveModel),
     ...(activeProfile.apiFormat ? { OPENAI_API_FORMAT: activeProfile.apiFormat } : {}),
     ...(activeProfile.azureStyle ? { OPENAI_AZURE_STYLE: '1' } : {}),
     ...(activeProfile.authHeader ? { OPENAI_AUTH_HEADER: activeProfile.authHeader } : {}),
@@ -1406,7 +1416,7 @@ function buildOpenAICompatibleStartupEnv(
     ...(activeProfile.maxContextLength
       ? {
           CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS: JSON.stringify({
-            [getPrimaryModel(activeProfile.model)]: activeProfile.maxContextLength,
+            [getPrimaryModel(effectiveModel)]: activeProfile.maxContextLength,
           }),
         }
       : {}),
@@ -1468,18 +1478,20 @@ function buildOpenAICompatibleStartupEnv(
 
 function buildStartupProfileFromActiveProfile(
   activeProfile: ProviderProfile,
+  options?: { modelOverride?: string },
 ): {
   profile: ProviderProfileStartup
   env: ProfileEnv
 } | null {
   const { route, compatibilityMode } = resolveProfileCompatibility(activeProfile.provider)
+  const model = options?.modelOverride ?? getPrimaryModel(activeProfile.model)
 
   switch (compatibilityMode) {
     case 'anthropic':
       if (route.vendorId === 'minimax') {
         const env =
           buildMiniMaxProfileEnv({
-            model: getPrimaryModel(activeProfile.model),
+            model,
             baseUrl: activeProfile.baseUrl,
             apiKey: activeProfile.apiKey,
             processEnv: process.env,
@@ -1492,7 +1504,7 @@ function buildStartupProfileFromActiveProfile(
         profile: 'anthropic',
         env: applySupportedProfileCustomHeaders(activeProfile, {
           ANTHROPIC_BASE_URL: activeProfile.baseUrl,
-          ANTHROPIC_MODEL: getPrimaryModel(activeProfile.model),
+          ANTHROPIC_MODEL: model,
           ...buildAnthropicCredentialEnv(
             activeProfile.provider,
             activeProfile.apiKey,
@@ -1502,7 +1514,7 @@ function buildStartupProfileFromActiveProfile(
     case 'gemini': {
       const env =
         buildGeminiProfileEnv({
-          model: getPrimaryModel(activeProfile.model),
+          model,
           baseUrl: activeProfile.baseUrl,
           apiKey: activeProfile.apiKey,
           authMode: 'api-key',
@@ -1515,7 +1527,7 @@ function buildStartupProfileFromActiveProfile(
     case 'mistral': {
       const env =
         buildMistralProfileEnv({
-          model: getPrimaryModel(activeProfile.model),
+          model,
           baseUrl: activeProfile.baseUrl,
           apiKey: activeProfile.apiKey,
           processEnv: process.env,
@@ -1534,7 +1546,7 @@ function buildStartupProfileFromActiveProfile(
         env: applySupportedProfileCustomHeaders(
           activeProfile,
           buildGithubCompatibleProfileEnv({
-            model: getPrimaryModel(activeProfile.model),
+            model,
             baseUrl: activeProfile.baseUrl,
             apiKey: activeProfile.apiKey,
             gatewayId:
@@ -1549,7 +1561,7 @@ function buildStartupProfileFromActiveProfile(
       return {
         profile: 'bedrock',
         env: applySupportedProfileCustomHeaders(activeProfile, buildBedrockProfileEnv({
-          model: getPrimaryModel(activeProfile.model),
+          model,
           baseUrl: activeProfile.baseUrl,
         })),
       }
@@ -1557,7 +1569,7 @@ function buildStartupProfileFromActiveProfile(
       return {
         profile: 'vertex',
         env: applySupportedProfileCustomHeaders(activeProfile, buildVertexProfileEnv({
-          model: getPrimaryModel(activeProfile.model),
+          model,
           baseUrl: activeProfile.baseUrl,
         })),
       }
@@ -1565,7 +1577,7 @@ function buildStartupProfileFromActiveProfile(
       if (route.gatewayId === 'nvidia-nim') {
         const env =
           buildNvidiaNimProfileEnv({
-            model: getPrimaryModel(activeProfile.model),
+            model,
             baseUrl: activeProfile.baseUrl,
             apiKey: activeProfile.apiKey,
             processEnv: process.env,
@@ -1578,7 +1590,7 @@ function buildStartupProfileFromActiveProfile(
       if (route.vendorId === 'minimax') {
         const env =
           buildMiniMaxProfileEnv({
-            model: getPrimaryModel(activeProfile.model),
+            model,
             baseUrl: activeProfile.baseUrl,
             apiKey: activeProfile.apiKey,
             processEnv: process.env,
@@ -1591,7 +1603,7 @@ function buildStartupProfileFromActiveProfile(
       if (route.vendorId === 'venice') {
         const env =
           buildVeniceProfileEnv({
-            model: getPrimaryModel(activeProfile.model),
+            model,
             baseUrl: activeProfile.baseUrl,
             apiKey: activeProfile.apiKey,
             processEnv: process.env,
@@ -1604,7 +1616,7 @@ function buildStartupProfileFromActiveProfile(
       if (route.vendorId === 'xiaomi-mimo') {
         const env =
           buildXiaomiMimoProfileEnv({
-            model: getPrimaryModel(activeProfile.model),
+            model,
             baseUrl: activeProfile.baseUrl,
             apiKey: activeProfile.apiKey,
             processEnv: process.env,
@@ -1617,7 +1629,7 @@ function buildStartupProfileFromActiveProfile(
       if (route.routeId === 'atlas-cloud') {
         const env =
           buildAtlasCloudProfileEnv({
-            model: getPrimaryModel(activeProfile.model),
+            model,
             baseUrl: activeProfile.baseUrl,
             apiKey: activeProfile.apiKey,
             processEnv: process.env,
@@ -1628,7 +1640,7 @@ function buildStartupProfileFromActiveProfile(
       }
 
       if (route.vendorId === 'nearai') {
-        const env = buildOpenAICompatibleStartupEnv(activeProfile)
+        const env = buildOpenAICompatibleStartupEnv(activeProfile, { modelOverride: model })
         return env ? { profile: 'openai', env } : null
       }
 
@@ -1643,14 +1655,14 @@ function buildStartupProfileFromActiveProfile(
       if (route.vendorId === 'xai' && !activeProfile.apiKey) {
         const env = applySupportedProfileCustomHeaders(activeProfile, {
           ...buildXaiOAuthProfileEnv({
-            model: getPrimaryModel(activeProfile.model),
+            model,
           }),
           OPENAI_BASE_URL: activeProfile.baseUrl,
         })
         return { profile: 'xai', env }
       }
 
-      const env = buildOpenAICompatibleStartupEnv(activeProfile)
+      const env = buildOpenAICompatibleStartupEnv(activeProfile, { modelOverride: model })
       return env ? { profile: 'openai', env } : null
     }
   }

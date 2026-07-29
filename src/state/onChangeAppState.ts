@@ -12,7 +12,10 @@ import { getGlobalConfig, saveGlobalConfig } from '../utils/config.js'
 import { toError } from '../utils/errors.js'
 import { logError } from '../utils/log.js'
 import { applyConfigEnvironmentVariables } from '../utils/managedEnv.js'
-import { persistActiveProviderProfileModel } from '../utils/providerProfiles.js'
+import {
+  getActiveProviderProfile,
+  persistActiveProviderProfileModel,
+} from '../utils/providerProfiles.js'
 import {
   permissionModeFromString,
   toExternalPermissionMode,
@@ -126,7 +129,11 @@ export function onChangeAppState({
 
     // Keep active provider profiles in sync with /model choices so restarts
     // keep using the last selected model instead of the profile's old default.
-    if (process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED === '1') {
+    // Check for an active profile rather than CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+    // because the flag is only set by the managed profile path, not when the
+    // startup file loads the env directly — without this, /model picks never
+    // persist when the startup file is the source of the provider env.
+    if (getActiveProviderProfile()) {
       persistActiveProviderProfileModel(newState.mainLoopModel)
     }
   }

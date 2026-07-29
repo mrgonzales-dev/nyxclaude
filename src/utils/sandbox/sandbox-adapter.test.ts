@@ -88,7 +88,7 @@ describe('convertToSandboxRuntimeConfig', () => {
     const config = convertToSandboxRuntimeConfig({} as SettingsJson)
 
     const representativeLegacyPaths = [
-      resolve(getOriginalCwd(), '.claude', 'CLAUDE.md'),
+      resolve(getOriginalCwd(), '.claude', 'AGENTS.md'),
       resolve(activeCwd, '.claude', 'credentials.json'),
       resolve(process.env.CLAUDE_CONFIG_DIR!, 'plugins', 'plugin.json'),
       resolve(process.env.CLAUDE_CONFIG_DIR!, 'scheduled-tasks', 'task.json'),

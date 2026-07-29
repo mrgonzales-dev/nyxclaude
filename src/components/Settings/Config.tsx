@@ -1107,7 +1107,7 @@ export function Config({
     }
   }] : []),   ...(shouldShowExternalIncludesToggle ? [{
     id: 'showExternalIncludesDialog',
-    label: pendingScope === 'User' ? 'User CLAUDE.md external includes' : 'External CLAUDE.md includes',
+    label: pendingScope === 'User' ? 'User AGENTS.md external includes' : 'External AGENTS.md includes',
     value: (() => {
       const cfg = getCurrentProjectConfig();
       return cfg[pendingScope === 'User' ? 'hasClaudeMdExternalIncludesApprovedForUser' : 'hasClaudeMdExternalIncludesApproved'] ? 'true' : 'false';

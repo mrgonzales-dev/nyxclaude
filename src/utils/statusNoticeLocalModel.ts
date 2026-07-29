@@ -61,7 +61,7 @@ function summarizeContextWarning(
         id: warning.type,
         message: warning.message,
         details: warning.details,
-        summary: `CLAUDE.md: ${warning.currentValue} large ${plural(warning.currentValue, 'file')}`,
+        summary: `AGENTS.md: ${warning.currentValue} large ${plural(warning.currentValue, 'file')}`,
       }
     case 'unreachable_rules':
       return null

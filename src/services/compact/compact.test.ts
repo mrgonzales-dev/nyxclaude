@@ -789,7 +789,7 @@ async function restoreCompactTestMocks() {
   )
   // projectInstructions: the stub above replaces the whole module with only
   // getProjectInstructionFilePaths, so every other export becomes undefined.
-  // Downstream CLAUDE.md discovery in runAgent.routing.test.ts then crashes in
+  // Downstream AGENTS.md discovery in runAgent.routing.test.ts then crashes in
   // processMemoryFile(). Restore the full real module shape.
   mock.module('../../utils/projectInstructions.js', () => ({
     ..._realProjectInstructionsModule,

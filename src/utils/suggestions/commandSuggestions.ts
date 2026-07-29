@@ -828,7 +828,7 @@ export function applyCommandSuggestion(
   }
 }
 
-// Helper function at bottom of file per CLAUDE.md
+// Helper function at bottom of file per AGENTS.md
 function cleanWord(word: string) {
   return word.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')
 }

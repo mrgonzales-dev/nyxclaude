@@ -1762,7 +1762,7 @@ async function getSelectedLinesFromIDE(
 /**
  * Computes the directories to process for nested memory file loading.
  * Returns two lists:
- * - nestedDirs: Directories between CWD and targetPath (processed for CLAUDE.md + all rules)
+ * - nestedDirs: Directories between CWD and targetPath (processed for AGENTS.md + all rules)
  * - cwdLevelDirs: Directories from root to CWD (processed for conditional rules only)
  *
  * @param targetPath The target file path
@@ -1778,7 +1778,7 @@ async function getSelectedLinesFromIDE(
  * from slipping past a security check. Applying it here would go the wrong way
  * — on a case-sensitive filesystem `/work/MyApp` and `/work/myapp` are two
  * unrelated projects, and folding them together would load the other project's
- * CLAUDE.md/AGENTS.md as nested memory.
+ * AGENTS.md as nested memory.
  *
  * `relative()` gets the boundary right but is not case-faithful on Windows: it
  * compares components case-insensitively, so `C:\work\MyApp` -> `C:\work\myapp\src`
@@ -1833,7 +1833,7 @@ export function getDirectoriesToProcess(
   // Containment must be tested on path boundaries, not string prefixes: a
   // sibling whose name merely starts with the CWD's name (cwd `/work/myapp`,
   // target in `/work/myapp-backend`) is not "between CWD and targetPath", but
-  // startsWith accepts it — so its CLAUDE.md loaded as Project memory purely
+  // startsWith accepts it — so its AGENTS.md loaded as Project memory purely
   // because of how the directory happened to be spelled.
   while (currentDir !== originalCwd && currentDir !== parse(currentDir).root) {
     if (isPathUnder(currentDir, originalCwd)) {
@@ -1890,7 +1890,7 @@ export function memoryFilesToAttachments(
   for (const memoryFile of memoryFiles) {
     // Dedup: loadedNestedMemoryPaths is a non-evicting Set; readFileState
     // is a 100-entry LRU that drops entries in busy sessions, so relying
-    // on it alone re-injects the same CLAUDE.md on every eviction cycle.
+    // on it alone re-injects the same AGENTS.md on every eviction cycle.
     if (toolUseContext.loadedNestedMemoryPaths?.has(memoryFile.path)) {
       continue
     }
@@ -1948,12 +1948,12 @@ export function memoryFilesToAttachments(
 
 /**
  * Loads nested memory files for a given file path and returns them as attachments.
- * This function performs directory traversal to find CLAUDE.md files and conditional rules
+ * This function performs directory traversal to find AGENTS.md files and conditional rules
  * that apply to the target file path.
  *
  * Processing order (must be preserved):
  * 1. Managed/User conditional rules matching targetPath
- * 2. Nested directories (CWD → target): CLAUDE.md + unconditional + conditional rules
+ * 2. Nested directories (CWD → target): AGENTS.md + unconditional + conditional rules
  * 3. CWD-level directories (root → CWD): conditional rules only
  *
  * @param filePath The file path to get nested memory files for
@@ -1998,7 +1998,7 @@ async function getNestedMemoryAttachmentsForFile(
     )
 
     // Phase 3: Process nested directories (CWD → target)
-    // Each directory gets: CLAUDE.md + unconditional rules + conditional rules
+    // Each directory gets: AGENTS.md + unconditional rules + conditional rules
     for (const dir of nestedDirs) {
       const memoryFiles = (
         await getMemoryFilesForNestedDirectory(dir, filePath, processedPaths)
@@ -2473,7 +2473,7 @@ async function getChangedFilesWithDependencies(
 }
 
 /**
- * Processes paths that need nested memory attachments and checks for nested CLAUDE.md files
+ * Processes paths that need nested memory attachments and checks for nested AGENTS.md files
  * Uses nestedMemoryAttachmentTriggers field from ToolUseContext
  */
 async function getNestedMemoryAttachments(

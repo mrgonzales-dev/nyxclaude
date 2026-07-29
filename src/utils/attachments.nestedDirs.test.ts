@@ -13,7 +13,7 @@ describe('getDirectoriesToProcess', () => {
   test('does not treat a name-prefixed sibling as nested under the CWD', () => {
     // `/work/myapp-backend` is a sibling of the CWD, not a directory "between
     // CWD and targetPath". A string-prefix test accepted it because the name
-    // starts with "myapp", so its CLAUDE.md was loaded as Project memory —
+    // starts with "myapp", so its AGENTS.md was loaded as Project memory —
     // e.g. `cd /work/myapp && claude --add-dir ../myapp-backend`.
     const { nestedDirs } = getDirectoriesToProcess(
       join(PREFIXED_SIBLING, 'src', 'a.ts'),
@@ -48,7 +48,7 @@ describe('getDirectoriesToProcess', () => {
   test('does not treat a case-variant sibling as nested', () => {
     // On a case-sensitive filesystem /work/MyApp and /work/myapp are two
     // unrelated projects. A case-folding containment check would merge them and
-    // load the other project's CLAUDE.md/AGENTS.md as nested project memory.
+    // load the other project's AGENTS.md as nested project memory.
     const caseVariant = join(WORK, 'MyApp')
     const { nestedDirs } = getDirectoriesToProcess(
       join(CWD, 'src', 'a.ts'),

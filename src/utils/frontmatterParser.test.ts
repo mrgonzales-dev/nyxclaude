@@ -43,7 +43,7 @@ test('returns unbalanced braces unchanged rather than throwing', () => {
 
 test('keeps an empty brace group literal instead of yielding an empty path', () => {
   // `{}` is not an alternation. Expanding it to '' would make parseSkillPaths
-  // and the CLAUDE.md path parser drop the empty string and treat the file as
+  // and the AGENTS.md path parser drop the empty string and treat the file as
   // having NO path restriction (activating everywhere). Keep it literal so the
   // pattern matches a literal `{}` (i.e. effectively nothing) instead.
   expect(splitPathInFrontmatter('{}')).toEqual(['{}'])

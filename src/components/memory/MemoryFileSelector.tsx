@@ -50,7 +50,7 @@ export function MemoryFileSelector(t0) {
   } = t0;
   const existingMemoryFiles = use(getMemoryFiles()) as MemoryFileInfo[];
   const originalCwd = getOriginalCwd();
-  const userMemoryPath = join(getClaudeConfigHomeDir(), "CLAUDE.md");
+  const userMemoryPath = join(getClaudeConfigHomeDir(), "AGENTS.md");
   const projectMemoryPath = getProjectMemoryPathForSelector(existingMemoryFiles, originalCwd);
   const projectMemoryFileName = basename(projectMemoryPath);
   const hasUserMemory = existingMemoryFiles.some(f => f.path === userMemoryPath);

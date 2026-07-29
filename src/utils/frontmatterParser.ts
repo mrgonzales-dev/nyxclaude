@@ -48,7 +48,7 @@ export type FrontmatterData = {
   // Glob patterns for file paths this skill applies to. Accepts either a
   // comma-separated string or a YAML list of strings.
   // When set, the skill is only activated when the model touches matching files
-  // Uses the same format as CLAUDE.md paths frontmatter
+  // Uses the same format as AGENTS.md paths frontmatter
   paths?: string | string[] | null
   // Shell to use for !`cmd` and ```! blocks in skill/command .md content.
   // 'bash' (default) or 'powershell'. File-scoped — applies to all !-blocks.
@@ -287,7 +287,7 @@ function expandBraces(pattern: string): string[] {
     // Empty brace group `{}` is not an alternation. The previous regex required
     // at least one inner character, so `{}` stayed literal; expanding it to an
     // empty alternative would collapse `paths: "{}"` to `[""]`, and both
-    // parseSkillPaths and the CLAUDE.md path parser filter that empty string and
+    // parseSkillPaths and the AGENTS.md path parser filter that empty string and
     // treat the file as having NO path restriction (applying everywhere).
     // Keep the `{}` literal, but still expand any later groups in the suffix.
     return expandBraces(pattern.slice(close + 1)).map(

@@ -28,7 +28,7 @@ function declineUser(current: any) {
   return { ...current, hasClaudeMdExternalIncludesApprovedForUser: false, hasClaudeMdExternalIncludesWarningShownForUser: true };
 }
 function getUserClaudeMdDisplayPath(): string {
-  return getDisplayPath(join(getClaudeConfigHomeDir(), 'CLAUDE.md'));
+  return getDisplayPath(join(getClaudeConfigHomeDir(), 'AGENTS.md'));
 }
 export function ClaudeMdExternalIncludesDialog(t0: Props) {
   const $ = _c(18);
@@ -46,11 +46,11 @@ export function ClaudeMdExternalIncludesDialog(t0: Props) {
   }, [onDone, scope]);
   const handleEscape = React.useCallback(() => handleSelection("no"), [handleSelection]);
   const title = scope === 'User'
-    ? "Allow user CLAUDE.md file imports?"
-    : "Allow external CLAUDE.md file imports?";
+    ? "Allow user AGENTS.md file imports?"
+    : "Allow external AGENTS.md file imports?";
   const description = scope === 'User'
-    ? <Text>Your user CLAUDE.md ({getUserClaudeMdDisplayPath()}) imports files outside the current working directory.</Text>
-    : <Text>This project's CLAUDE.md imports files outside the current working directory. Never allow this for third-party repositories.</Text>;
+    ? <Text>Your user AGENTS.md ({getUserClaudeMdDisplayPath()}) imports files outside the current working directory.</Text>
+    : <Text>This project's AGENTS.md imports files outside the current working directory. Never allow this for third-party repositories.</Text>;
   return (
     <Dialog title={title} color="warning" onCancel={handleEscape} hideBorder={!isStandaloneDialog} hideInputGuide={!isStandaloneDialog}>
       {description}

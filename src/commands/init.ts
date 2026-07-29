@@ -2,15 +2,15 @@ import type { Command } from '../commands.js'
 import { maybeMarkProjectOnboardingComplete } from '../projectOnboardingState.js'
 import { isNewInitEnabled } from './initMode.js'
 
-const OLD_INIT_PROMPT = `Please analyze this codebase and create a CLAUDE.md file, which will be given to future instances of Claude Code to operate in this repository.
+const OLD_INIT_PROMPT = `Please analyze this codebase and create a AGENTS.md file, which will be given to future instances of Claude Code to operate in this repository.
 
 What to add:
 1. Commands that will be commonly used, such as how to build, lint, and run tests. Include the necessary commands to develop in this codebase, such as how to run a single test.
 2. High-level code architecture and structure so that future instances can be productive more quickly. Focus on the "big picture" architecture that requires reading multiple files to understand.
 
 Usage notes:
-- If there's already a CLAUDE.md, suggest improvements to it.
-- When you make the initial CLAUDE.md, do not repeat yourself and do not include obvious instructions like "Provide helpful error messages to users", "Write unit tests for all new utilities", "Never include sensitive information (API keys, tokens) in code or commits".
+- If there's already a AGENTS.md, suggest improvements to it.
+- When you make the initial AGENTS.md, do not repeat yourself and do not include obvious instructions like "Provide helpful error messages to users", "Write unit tests for all new utilities", "Never include sensitive information (API keys, tokens) in code or commits".
 - Avoid listing every component or file structure that can be easily discovered.
 - Don't include generic development practices.
 - If there are Cursor rules (in .cursor/rules/ or .cursorrules) or Copilot rules (in .github/copilot-instructions.md), make sure to include the important parts.
@@ -19,19 +19,19 @@ Usage notes:
 - Be sure to prefix the file with the following text:
 
 \`\`\`
-# CLAUDE.md
+# AGENTS.md
 
 This file provides guidance to Nyxclaude when working with code in this repository.
 \`\`\``
 
-const NEW_INIT_PROMPT = `Set up a minimal AGENTS.md (and optionally CLAUDE.local.md, skills, and hooks) for this repo. The root project instruction file is loaded into every Nyxclaude session, so it must be concise — only include what the agent would get wrong without it.
+const NEW_INIT_PROMPT = `Set up a minimal AGENTS.md (and optionally AGENTS.local.md, skills, and hooks) for this repo. The root project instruction file is loaded into every Nyxclaude session, so it must be concise — only include what the agent would get wrong without it.
 
 ## Phase 1: Ask what to set up
 
 Use AskUserQuestion to find out what the user wants:
 
 - "Which instruction files should /init set up?"
-  Options: "Project AGENTS.md" | "Personal CLAUDE.local.md" | "Both project + personal"
+  Options: "Project AGENTS.md" | "Personal AGENTS.local.md" | "Both project + personal"
   Description for project: "Team-shared instructions checked into source control — architecture, coding standards, common workflows."
   Description for personal: "Your private preferences for this project (gitignored, not shared) — your role, sandbox URLs, preferred test data, workflow quirks."
 
@@ -42,7 +42,7 @@ Use AskUserQuestion to find out what the user wants:
 
 ## Phase 2: Explore the codebase
 
-Launch a subagent to survey the codebase, and ask it to read key files to understand the project: manifest files (package.json, Cargo.toml, pyproject.toml, go.mod, pom.xml, etc.), README, Makefile/build configs, CI config, existing CLAUDE.md, .nyxclaude/rules/, AGENTS.md, .cursor/rules or .cursorrules, .github/copilot-instructions.md, .windsurfrules, .clinerules, .mcp.json.
+Launch a subagent to survey the codebase, and ask it to read key files to understand the project: manifest files (package.json, Cargo.toml, pyproject.toml, go.mod, pom.xml, etc.), README, Makefile/build configs, CI config, existing AGENTS.md, .nyxclaude/rules/, .cursor/rules or .cursorrules, .github/copilot-instructions.md, .windsurfrules, .clinerules, .mcp.json.
 
 Detect:
 - Build, test, and lint commands (especially non-standard ones)
@@ -52,7 +52,7 @@ Detect:
 - Non-obvious gotchas, required env vars, or workflow quirks
 - Existing .nyxclaude/skills/ and .nyxclaude/rules/ directories
 - Formatter configuration (prettier, biome, ruff, black, gofmt, rustfmt, or a unified format script like \`npm run format\` / \`make fmt\`)
-- Git worktree usage: run \`git worktree list\` to check if this repo has multiple worktrees (only relevant if the user wants a personal CLAUDE.local.md)
+- Git worktree usage: run \`git worktree list\` to check if this repo has multiple worktrees (only relevant if the user wants a personal AGENTS.local.md)
 
 Note what you could NOT figure out from code alone — these become interview questions.
 
@@ -62,11 +62,11 @@ Use AskUserQuestion to gather what you still need to write good instruction file
 
 If the user chose project AGENTS.md or both: ask about codebase practices — non-obvious commands, gotchas, branch/PR conventions, required env setup, testing quirks. Skip things already in README or obvious from manifest files. Do not mark any options as "recommended" — this is about how their team works, not best practices.
 
-If the user chose personal CLAUDE.local.md or both: ask about them, not the codebase. Do not mark any options as "recommended" — this is about their personal preferences, not best practices. Examples of questions:
+If the user chose personal AGENTS.local.md or both: ask about them, not the codebase. Do not mark any options as "recommended" — this is about their personal preferences, not best practices. Examples of questions:
   - What's their role on the team? (e.g., "backend engineer", "data scientist", "new hire onboarding")
   - How familiar are they with this codebase and its languages/frameworks? (so the agent can calibrate explanation depth)
   - Do they have personal sandbox URLs, test accounts, API key paths, or local setup details the agent should know?
-  - Only if Phase 2 found multiple git worktrees: ask whether their worktrees are nested inside the main repo (e.g., \`.nyxclaude/worktrees/<name>/\`) or siblings/external (e.g., \`../myrepo-feature/\`). If nested, the upward file walk finds the main repo's CLAUDE.local.md automatically — no special handling needed. If sibling/external, the personal content should live in a home-directory file (e.g., \`~/.nyxclaude/<project-name>-instructions.md\`) and each worktree gets a one-line CLAUDE.local.md stub that imports it: \`@~/.nyxclaude/<project-name>-instructions.md\`. Never put this import in the project AGENTS.md — that would check a personal reference into the team-shared file.
+  - Only if Phase 2 found multiple git worktrees: ask whether their worktrees are nested inside the main repo (e.g., \`.nyxclaude/worktrees/<name>/\`) or siblings/external (e.g., \`../myrepo-feature/\`). If nested, the upward file walk finds the main repo's AGENTS.local.md automatically — no special handling needed. If sibling/external, the personal content should live in a home-directory file (e.g., \`~/.nyxclaude/<project-name>-instructions.md\`) and each worktree gets a one-line AGENTS.local.md stub that imports it: \`@~/.nyxclaude/<project-name>-instructions.md\`. Never put this import in the project AGENTS.md — that would check a personal reference into the team-shared file.
   - Any communication preferences? (e.g., "be terse", "always explain tradeoffs", "don't summarize at the end")
 
 **Synthesize a proposal from Phase 2 findings** — e.g., format-on-edit if a formatter exists, a project verification workflow if tests exist, an AGENTS.md note for anything from the gap-fill answers that's a guideline rather than a workflow. For each, pick the artifact type that fits, **constrained by the Phase 1 skills+hooks choice**:
@@ -95,7 +95,7 @@ If the user chose personal CLAUDE.local.md or both: ask about them, not the code
 
 Write a minimal AGENTS.md at the project root. Every line must pass this test: "Would removing this cause the agent to make mistakes?" If no, cut it.
 
-If the repo already has a checked-in root \`CLAUDE.md\` and does NOT already have a root \`AGENTS.md\`, do NOT silently create a second root instruction file. In that case, update the existing root \`CLAUDE.md\` in place by default. Only create or migrate to root \`AGENTS.md\` if the user explicitly asks to migrate.
+If the repo already has a checked-in root \`AGENTS.md\`, do NOT silently create a second root instruction file. In that case, update the existing root \`AGENTS.md\` in place by default.
 
 **Consume \`note\` entries from the Phase 3 preference queue whose target is AGENTS.md** (team-level notes) — add each as a concise line in the most relevant section. These are the behaviors the user wants the agent to follow but didn't need guaranteed (e.g., "propose a plan before implementing", "explain the tradeoffs when refactoring"). Leave personal-targeted notes for Phase 5.
 
@@ -135,11 +135,11 @@ For projects with multiple concerns, suggest organizing instructions into \`.nyx
 
 For projects with distinct subdirectories (monorepos, multi-module projects, etc.): mention that subdirectory AGENTS.md files can be added for module-specific instructions (they're loaded automatically when the agent works in those directories). Offer to create them if the user wants.
 
-## Phase 5: Write CLAUDE.local.md (if user chose personal or both)
+## Phase 5: Write AGENTS.local.md (if user chose personal or both)
 
-Write a minimal CLAUDE.local.md at the project root. This file is automatically loaded alongside AGENTS.md. After creating it, add \`CLAUDE.local.md\` to the project's .gitignore so it stays private.
+Write a minimal AGENTS.local.md at the project root. This file is automatically loaded alongside AGENTS.md. After creating it, add \`AGENTS.local.md\` to the project's .gitignore so it stays private.
 
-**Consume \`note\` entries from the Phase 3 preference queue whose target is CLAUDE.local.md** (personal-level notes) — add each as a concise line. If the user chose personal-only in Phase 1, this is the sole consumer of note entries.
+**Consume \`note\` entries from the Phase 3 preference queue whose target is AGENTS.local.md** (personal-level notes) — add each as a concise line. If the user chose personal-only in Phase 1, this is the sole consumer of note entries.
 
 Include:
 - The user's role and familiarity with the codebase (so the agent can calibrate explanations)
@@ -148,9 +148,9 @@ Include:
 
 Keep it short — only include what would make the agent's responses noticeably better for this user.
 
-If Phase 2 found multiple git worktrees and the user confirmed they use sibling/external worktrees (not nested inside the main repo): the upward file walk won't find a single CLAUDE.local.md from all worktrees. Write the actual personal content to \`~/.nyxclaude/<project-name>-instructions.md\` and make CLAUDE.local.md a one-line stub that imports it: \`@~/.nyxclaude/<project-name>-instructions.md\`. The user can copy this one-line stub to each sibling worktree. Never put this import in the project AGENTS.md. If worktrees are nested inside the main repo (e.g., \`.nyxclaude/worktrees/\`), no special handling is needed — the main repo's CLAUDE.local.md is found automatically.
+If Phase 2 found multiple git worktrees and the user confirmed they use sibling/external worktrees (not nested inside the main repo): the upward file walk won't find a single AGENTS.local.md from all worktrees. Write the actual personal content to \`~/.nyxclaude/<project-name>-instructions.md\` and make AGENTS.local.md a one-line stub that imports it: \`@~/.nyxclaude/<project-name>-instructions.md\`. The user can copy this one-line stub to each sibling worktree. Never put this import in the project AGENTS.md. If worktrees are nested inside the main repo (e.g., \`.nyxclaude/worktrees/\`), no special handling is needed — the main repo's AGENTS.local.md is found automatically.
 
-If CLAUDE.local.md already exists: read it, propose specific additions, and do not silently overwrite.
+If AGENTS.local.md already exists: read it, propose specific additions, and do not silently overwrite.
 
 ## Phase 6: Suggest and create skills (if user chose "Skills + hooks" or "Skills only")
 

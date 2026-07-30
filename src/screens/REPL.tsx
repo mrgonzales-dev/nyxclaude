@@ -1694,17 +1694,10 @@ export function REPL({
       bashTools.current.add(tool);
     }
     bashToolsProcessedIdx.current = messagesRef.current.length;
-    // The viewer's latest prompt — used only by the opt-in earning tip for
-    // contextual ad matching (sanitized + sent only when sponsored tips are on).
-    const lastUserMsg = messagesRef.current.findLast(selectableUserMessagesFilter);
-    const latestUserMessage = lastUserMsg
-      ? getContentText(lastUserMsg.message.content) ?? undefined
-      : undefined;
     const tipCtx = {
       theme,
       readFileState: readFileState.current,
       bashTools: bashTools.current,
-      latestUserMessage
     };
     void getTipToShowOnSpinner(tipCtx).then(async tip => {
       if (tip) {

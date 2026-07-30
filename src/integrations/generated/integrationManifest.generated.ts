@@ -435,11 +435,7 @@ export const PROVIDER_PRESET_MANIFEST = [
     ],
     "modelEnvVars": [
       "OPENAI_MODEL"
-    ],
-    "badge": {
-      "text": "Sponsor",
-      "color": "success"
-    }
+    ]
   },
   {
     "preset": "xiaomi-mimo-token",
@@ -455,11 +451,7 @@ export const PROVIDER_PRESET_MANIFEST = [
     ],
     "modelEnvVars": [
       "OPENAI_MODEL"
-    ],
-    "badge": {
-      "text": "Sponsor",
-      "color": "success"
-    }
+    ]
   },
   {
     "preset": "zai",

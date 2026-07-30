@@ -1,5 +1,6 @@
 // biome-ignore-all assist/source/organizeImports: internal-only import markers must not be reordered
 import { toolMatchesName, type Tool, type Tools } from './Tool.js'
+import { AgentTool } from './tools/AgentTool/AgentTool.js'
 import { BashTool } from './tools/BashTool/BashTool.js'
 import { FileEditTool } from './tools/FileEditTool/FileEditTool.js'
 import { FileReadTool } from './tools/FileReadTool/FileReadTool.js'
@@ -71,6 +72,7 @@ export function getToolsForDefaultPreset(): string[] {
  */
 export function getAllBaseTools(): Tools {
   return [
+    AgentTool,
     BashTool,
     // NYXCLAUDE: GlobTool unregistered (fff covers path search via grep).
     // GrepTool now uses fff in-process with ripgrep fallback.
@@ -100,30 +102,30 @@ export function getTools(
   permissionContext: ToolPermissionContext,
   _mode?: string,
 ): Tools {
-  const denyRule = getDenyRuleForTool(permissionContext)
-  if (!denyRule) {
-    // NYXCLAUDE: filter by isEnabled() so mutually exclusive tools
-    // (TodoWrite vs TaskCreate/TaskUpdate) don't both show up.
-    return getAllBaseTools().filter(tool => tool.isEnabled())
-  }
-
+  // NYXCLAUDE: filter by isEnabled() so mutually exclusive tools
+  // (TodoWrite vs TaskCreate/TaskUpdate) don't both show up.
   return getAllBaseTools().filter(tool => {
     if (!tool.isEnabled()) return false
-    if (denyRule.ruleContent) {
-      return true
-    }
-    return !toolMatchesName(tool.name, denyRule.tool)
+    const denyRule = getDenyRuleForTool(permissionContext, tool)
+    if (!denyRule) return true
+    // If the deny rule has content (e.g. "Bash(git *)"), it only denies
+    // specific sub-patterns, not the whole tool — keep the tool.
+    if (denyRule.ruleValue.ruleContent) return true
+    // Blanket deny for this tool name
+    return !toolMatchesName(tool, denyRule.ruleValue.toolName)
   })
 }
 
 /**
  * Assembles the full tool pool from built-in tools and any dynamically
  * registered tools (e.g., MCP tools).
+ * Accepts a permission context (used by REPL/SDK callers) and optional MCP tools.
  */
 export function assembleToolPool(
-  builtinTools: Tools,
+  permissionContext: ToolPermissionContext,
   _mcpTools?: Tools,
 ): Tools {
-  // NYXCLAUDE: MCP tools removed, just return builtin tools
+  // NYXCLAUDE: MCP tools removed, just return filtered builtin tools
+  const builtinTools = getTools(permissionContext)
   return uniqBy(builtinTools, tool => tool.name)
 }

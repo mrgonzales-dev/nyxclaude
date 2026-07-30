@@ -1,4 +1,5 @@
-// NYX: AgentTool deleted, stubbed
+import { isEnvTruthy } from '../../utils/envUtils.js'
+
 export function isForkSubagentEnabled(): boolean {
-  return false
+  return isEnvTruthy(process.env.NYXCLAUDE_FORK_SUBAGENT)
 }

@@ -848,6 +848,7 @@ async function* queryLoop(
       ? microcompactResult?.compactionInfo?.pendingCacheEdits
       : undefined
     queryCheckpoint('query_microcompact_end')
+    toolUseContext.queryActivity?.registerActivity('query:prep:microcompact')
 
     // Project the collapsed context view and maybe commit more collapses.
     // Runs BEFORE autocompact so that if collapse gets us under the
@@ -970,6 +971,7 @@ async function* queryLoop(
       snipTokensFreed,
     )
     queryCheckpoint('query_autocompact_end')
+    toolUseContext.queryActivity?.registerActivity('query:prep:autocompact')
 
     if (compactionResult) {
       // A full rewrite removes the interrupted turn this correction context
@@ -1380,6 +1382,7 @@ async function* queryLoop(
         try {
           let streamingFallbackOccured = false
           queryCheckpoint('query_api_streaming_start')
+          toolUseContext.queryActivity?.registerActivity('query:prep:api_call')
           params.onModelRequestStart?.()
           try {
             for await (const message of deps.callModel({

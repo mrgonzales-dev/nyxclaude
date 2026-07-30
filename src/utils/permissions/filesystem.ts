@@ -435,7 +435,7 @@ export const getBundledSkillsRoot = memoize(
 
 /**
  * Returns the project temp directory path with trailing separator.
- * Path format: /tmp/claude-{uid}/{sanitized-cwd}/
+ * Path format: /tmp/nyxclaude-{uid}/{sanitized-cwd}/
  */
 export function getProjectTempDir(): string {
   return join(getClaudeTempDir(), sanitizePath(getOriginalCwd())) + sep
@@ -443,7 +443,7 @@ export function getProjectTempDir(): string {
 
 /**
  * Returns the scratchpad directory path for the current session.
- * Path format: /tmp/claude-{uid}/{sanitized-cwd}/{sessionId}/scratchpad/
+ * Path format: /tmp/nyxclaude-{uid}/{sanitized-cwd}/{sessionId}/scratchpad/
  */
 export function getScratchpadDir(): string {
   return join(getProjectTempDir(), getSessionId(), 'scratchpad')

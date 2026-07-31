@@ -3900,7 +3900,7 @@ export function REPL({
     // keep onSubmit stable across message updates (see L2384/L2400/L2662).
     // Without this, each setMessages call (~30× per turn) recreates
     // onSubmit, pinning the REPL render scope (1776B) + that render's
-    // messages array in downstream closures (PromptInput, handleAutoRunIssue).
+    // messages array in downstream closures (PromptInput).
     // Heap analysis showed ~9 REPL scopes and ~15 messages array versions
     // accumulating after #20174/#20175, all traced to this dep.
     mainLoopModel, pastedContents, ideSelection, setUserInputOnProcessing, setAbortController, addNotification, onQuery, stashedPrompt, setStashedPrompt, setAppState, onBeforeQuery, canUseTool, remoteSession, setMessages, awaitPendingHooks, repinScroll, takeInterruptionCorrectionReminder, restoreInterruptionCorrectionReminder]);

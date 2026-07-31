@@ -122,7 +122,7 @@ export async function processSessionStartHooks(
       )
 
       // Continue execution - plugin hooks won't be available, but project-level hooks
-      // from .claude/settings.json (loaded via captureHooksConfigSnapshot) will still work
+      // from .nyxclaude/settings.json (loaded via captureHooksConfigSnapshot) will still work
     }
   }
 

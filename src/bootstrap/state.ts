@@ -116,13 +116,13 @@ type State = {
   // preserve the distinction between bypassPermissions and fullAccess before
   // the app is fully mounted.
   sessionDangerousPermissionMode: 'bypassPermissions' | 'fullAccess' | null
-  // Session-only flag gating the .claude/scheduled_tasks.json watcher
+  // Session-only flag gating the .nyxclaude/scheduled_tasks.json watcher
   // (useScheduledTasks). Set by cronScheduler.start() when the JSON has
   // entries, or by CronCreateTool. Not persisted.
   scheduledTasksEnabled: boolean
   // Session-only cron tasks created via CronCreate with durable: false.
   // Fire on schedule like file-backed tasks but are never written to
-  // .claude/scheduled_tasks.json — they die with the process. Typed via
+  // .nyxclaude/scheduled_tasks.json — they die with the process. Typed via
   // SessionCronTask below (not importing from cronTasks.ts keeps
   // bootstrap a leaf of the import DAG).
   sessionCronTasks: SessionCronTask[]

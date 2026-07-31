@@ -195,7 +195,7 @@ export function shortErrorStack(e: unknown, maxFrames = 5): string {
  *  EPERM     — operation not permitted
  *  EROFS     — read-only filesystem
  *  ENOTDIR   — a path component is not a directory (e.g. a file named
- *              `.claude` exists where a directory is expected)
+ *              `.nyxclaude` exists where a directory is expected)
  *  ELOOP     — too many symlink levels (circular symlinks)
  */
 export function isFsInaccessible(e: unknown): e is NodeJS.ErrnoException {

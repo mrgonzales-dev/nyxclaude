@@ -5,7 +5,7 @@
  * Nyxclaude plugins statistics repository. The cache is refreshed if older
  * than 24 hours.
  *
- * Cache location: ~/.claude/plugins/install-counts-cache.json
+ * Cache location: ~/.nyxclaude/plugins/install-counts-cache.json
  */
 
 import axios from 'axios'

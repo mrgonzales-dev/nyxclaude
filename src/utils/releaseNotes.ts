@@ -44,7 +44,7 @@ export const RELEASES_URL = NYXCLAUDE_RELEASES_URL
 
 /**
  * Get the path for the cached changelog file.
- * The changelog is stored at ~/.claude/cache/changelog.md
+ * The changelog is stored at ~/.nyxclaude/cache/changelog.md
  */
 function getChangelogCachePath(): string {
   return join(getClaudeConfigHomeDir(), 'cache', 'changelog.md')

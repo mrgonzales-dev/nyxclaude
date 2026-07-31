@@ -479,7 +479,7 @@ const checkDependencies = memoize((): SandboxDependencyCheck => {
 /**
  * Read sandbox.enabled only from trusted settings sources.
  * projectSettings is intentionally excluded — a malicious repo could
- * otherwise disable the sandbox via .claude/settings.json.
+ * otherwise disable the sandbox via .nyxclaude/settings.json.
  */
 function getSandboxEnabledSetting(): boolean {
   try {

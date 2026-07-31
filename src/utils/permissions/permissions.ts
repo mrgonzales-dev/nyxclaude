@@ -1253,7 +1253,7 @@ export async function checkRuleBasedPermissions(
     return toolPermissionResult
   }
 
-  // 1g. Safety checks (e.g. .git/, .claude/, .vscode/, shell configs) are
+  // 1g. Safety checks (e.g. .git/, .nyxclaude/, .vscode/, shell configs) are
   // bypass-immune — they must prompt even when a PreToolUse hook returned
   // allow. Full Access is the explicit second-level opt-in that skips them.
   // checkPathSafetyForAutoEdit returns {type:'safetyCheck'} for these.
@@ -1656,7 +1656,7 @@ async function hasPermissionsToUseToolInner(
     return toolPermissionResult
   }
 
-  // 1g. Safety checks (e.g. .git/, .claude/, .vscode/, shell configs) are
+  // 1g. Safety checks (e.g. .git/, .nyxclaude/, .vscode/, shell configs) are
   // bypass-immune — they must prompt even in bypassPermissions mode. Full
   // Access is the explicit second-level opt-in that skips these prompts.
   // checkPathSafetyForAutoEdit returns {type:'safetyCheck'} for these paths.

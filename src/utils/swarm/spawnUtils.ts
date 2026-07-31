@@ -124,7 +124,7 @@ const TEAMMATE_ENV_VARS = [
   'NYXCLAUDE_CONFIG_DIR',
   'CLAUDE_CONFIG_DIR',
   // CCR marker — teammates need this for CCR-aware code paths. Auth finds
-  // its own way via /home/claude/.claude/remote/.oauth_token regardless;
+  // its own way via /home/claude/.nyxclaude/remote/.oauth_token regardless;
   // the FD env var wouldn't help (pipe FDs don't cross tmux).
   'CLAUDE_CODE_REMOTE',
   // Auto-memory gate (memdir/paths.ts) checks REMOTE && !MEMORY_DIR to
@@ -160,7 +160,7 @@ export function buildInheritedEnvVars(): string {
     'CLAUDECODE=1',
     'CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1',
     // Teammates should inherit the leader-selected provider route instead of
-    // replaying persisted ~/.claude or settings.env provider defaults.
+    // replaying persisted ~/.nyxclaude or settings.env provider defaults.
     'CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST=1',
   ]
 

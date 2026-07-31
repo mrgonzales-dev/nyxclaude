@@ -142,7 +142,7 @@ export function attachErrorLogSink(newSink: ErrorLogSink): void {
  * - Debug logs (visible via `claude --debug` or `tail -f ~/.claude/debug/latest`)
  * - In-memory error log (accessible via `getInMemoryErrors()`, useful for including
  *   in bug reports or displaying recent errors to users)
- * - Persistent error log file (only for internal 'ant' users, stored in ~/.claude/errors/)
+ * - Persistent error log file (only for internal 'ant' users, stored in ~/.nyxclaude/errors/)
  *
  * Usage:
  * ```ts

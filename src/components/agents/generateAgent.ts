@@ -71,9 +71,9 @@ When a user describes what they want an agent to do, you will:
     - <example>
       Context: User is creating an agent for Nyxclaude product questions.
       user: "How do I configure Nyxclaude hooks?"
-      assistant: "I'm going to use the ${AGENT_TOOL_NAME} tool to launch the claude-code-guide agent to answer the question"
+      assistant: "I'm going to use the ${AGENT_TOOL_NAME} tool to launch the nyxclaude-guide agent to answer the question"
       <commentary>
-      Since the user is asking how to use Nyxclaude, use the claude-code-guide agent.
+      Since the user is asking how to use Nyxclaude, use the nyxclaude-guide agent.
       </commentary>
     </example>
   - If the user mentioned or implied that the agent should be used proactively, you should include examples of this.

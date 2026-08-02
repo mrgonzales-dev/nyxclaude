@@ -7,10 +7,6 @@ import { getIsNonInteractiveSession } from '../bootstrap/state.js'
 import { getCurrentWorktreeSession } from '../utils/worktree.js'
 import { getSessionStartDate } from './common.js'
 import { getInitialSettings } from '../utils/settings/settings.js'
-// import {
-//   AGENT_TOOL_NAME,
-//   VERIFICATION_AGENT_TYPE,
-// } from '../tools/AgentTool/constants.js'
 const AGENT_TOOL_NAME = 'Agent'
 const VERIFICATION_AGENT_TYPE = 'verifier'
 import { FILE_WRITE_TOOL_NAME } from '../tools/FileWriteTool/prompt.js'
@@ -22,11 +18,9 @@ import type { Tools } from '../Tool.js'
 import type { Command } from '../types/command.js'
 import { BASH_TOOL_NAME } from '../tools/BashTool/toolName.js'
 import {
-  getCanonicalName,
   getMarketingNameForModel,
 } from '../utils/model/model.js'
 import { getSkillToolCommands } from 'src/commands.js'
-// import { SKILL_TOOL_NAME } from '../tools/SkillTool/constants.js'
 const SKILL_TOOL_NAME = 'Skill'
 import { getOutputStyleConfig } from './outputStyles.js'
 import type {
@@ -37,13 +31,8 @@ import { GLOB_TOOL_NAME } from 'src/tools/GlobTool/prompt.js'
 import { GREP_TOOL_NAME } from 'src/tools/GrepTool/prompt.js'
 import { hasEmbeddedSearchTools } from 'src/utils/embeddedTools.js'
 import { ASK_USER_QUESTION_TOOL_NAME } from '../tools/AskUserQuestionTool/prompt.js'
-// import {
-//   EXPLORE_AGENT,
-//   EXPLORE_AGENT_MIN_QUERIES,
-// } from 'src/tools/AgentTool/built-in/exploreAgent.js'
 const EXPLORE_AGENT = { agentType: 'explore' }
 const EXPLORE_AGENT_MIN_QUERIES = 5
-// import { areExplorePlanAgentsEnabled } from 'src/tools/AgentTool/builtInAgents.js'
 function areExplorePlanAgentsEnabled(): boolean {
   return false
 }
@@ -52,14 +41,12 @@ import {
   getScratchpadDir,
 } from '../utils/permissions/filesystem.js'
 import { isEnvTruthy } from '../utils/envUtils.js'
-// import { isReplModeEnabled } from '../tools/REPLTool/constants.js'
 function isReplModeEnabled(): boolean {
   return false
 }
 import { feature } from 'bun:bundle'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js'
 import { shouldUseGlobalCacheScope } from '../utils/betas.js'
-// import { isForkSubagentEnabled } from '../tools/AgentTool/forkSubagent.js'
 function isForkSubagentEnabled(): boolean {
   return false
 }
@@ -73,8 +60,6 @@ const SLEEP_TOOL_NAME = 'Sleep'
 import { TICK_TAG } from './xml.js'
 import { logForDebugging } from '../utils/debug.js'
 import { loadMemoryPrompt } from '../memdir/memdir.js'
-import { isUndercover } from '../utils/undercover.js'
-import { getAntModelOverrideConfig } from '../utils/model/antModels.js'
 import { isMcpInstructionsDeltaEnabled } from '../utils/mcpInstructionsDelta.js'
 
 // Dead code elimination: conditional imports for feature-gated modules
@@ -125,7 +110,6 @@ export const CLAUDE_CODE_DOCS_MAP_URL = ''
 export const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
   '__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__'
 
-// @[MODEL LAUNCH]: Update the latest frontier model.
 const FRONTIER_MODEL_NAME = 'GLM-5.2 High'
 
 function getHooksSection(): string {
@@ -135,12 +119,6 @@ function getHooksSection(): string {
 function getSystemRemindersSection(): string {
   return `- Tool results and user messages may include <system-reminder> tags. <system-reminder> tags contain useful information and reminders. They are automatically added by the system, and bear no direct relation to the specific tool results or user messages in which they appear.
 - The conversation has unlimited context through automatic summarization.`
-}
-
-function getAntModelOverrideSection(): string | null {
-  if (process.env.USER_TYPE !== 'ant') return null
-  if (isUndercover()) return null
-  return getAntModelOverrideConfig()?.defaultSystemPromptSuffix || null
 }
 
 function getLanguageSection(
@@ -205,16 +183,6 @@ function getSimpleDoingTasksSection(): string {
     `Don't add features, refactor code, or make "improvements" beyond what was asked. A bug fix doesn't need surrounding code cleaned up. A simple feature doesn't need extra configurability. Don't add docstrings, comments, or type annotations to code you didn't change. Only add comments where the logic isn't self-evident.`,
     `Don't add error handling, fallbacks, or validation for scenarios that can't happen. Trust internal code and framework guarantees. Only validate at system boundaries (user input, external APIs). Don't use feature flags or backwards-compatibility shims when you can just change the code.`,
     `Don't create helpers, utilities, or abstractions for one-time operations. Don't design for hypothetical future requirements. The right amount of complexity is what the task actually requires—no speculative abstractions, but no half-finished implementations either. Three similar lines of code is better than a premature abstraction.`,
-    // @[MODEL LAUNCH]: Update comment writing for Capybara — remove or soften once the model stops over-commenting by default
-    ...(process.env.USER_TYPE === 'ant'
-      ? [
-          `Default to writing no comments. Only add one when the WHY is non-obvious: a hidden constraint, a subtle invariant, a workaround for a specific bug, behavior that would surprise a reader. If removing the comment wouldn't confuse a future reader, don't write it.`,
-          `Don't explain WHAT the code does, since well-named identifiers already do that. Don't reference the current task, fix, or callers ("used by X", "added for the Y flow", "handles the case from issue #123"), since those belong in the PR description and rot as the codebase evolves.`,
-          `Don't remove existing comments unless you're removing the code they describe or you know they're wrong. A comment that looks pointless to you may encode a constraint or a lesson from a past bug that isn't visible in the current diff.`,
-          // @[MODEL LAUNCH]: capy v8 thoroughness counterweight (PR #24302) — un-gate once validated on external via A/B
-          `Before reporting a task complete, verify it actually works: run the test, execute the script, check the output. Minimum complexity means no gold-plating, not skipping the finish line. If you can't verify (no test exists, can't run the code), say so explicitly rather than claiming success.`,
-        ]
-      : []),
   ]
 
   const userHelpSubitems = [
@@ -225,12 +193,6 @@ function getSimpleDoingTasksSection(): string {
   const items = [
     `The user will primarily request you to perform software engineering tasks. These may include solving bugs, adding new functionality, refactoring code, explaining code, and more. When given an unclear or generic instruction, consider it in the context of these software engineering tasks and the current working directory. For example, if the user asks you to change "methodName" to snake case, do not reply with just "method_name", instead find the method in the code and modify the code.`,
     `You are highly capable and often allow users to complete ambitious tasks that would otherwise be too complex or take too long. You should defer to user judgement about whether a task is too large to attempt.`,
-    // @[MODEL LAUNCH]: capy v8 assertiveness counterweight (PR #24302) — un-gate once validated on external via A/B
-    ...(process.env.USER_TYPE === 'ant'
-      ? [
-          `If you notice the user's request is based on a misconception, or spot a bug adjacent to what they asked about, say so. You're a collaborator, not just an executor—users benefit from your judgment, not just your compliance.`,
-        ]
-      : []),
     `In general, do not propose changes to code you haven't read. If a user asks about or wants you to modify a file, read it first. Understand existing code before suggesting modifications.`,
     `Do not create files unless they're absolutely necessary for achieving your goal. Generally prefer editing an existing file to creating a new one, as this prevents file bloat and builds on existing work more effectively.`,
     `Avoid giving time estimates or predictions for how long tasks will take, whether for your own work or for users planning projects. Focus on what needs to be done, not how long it might take.`,
@@ -240,17 +202,9 @@ function getSimpleDoingTasksSection(): string {
     `Be careful not to introduce security vulnerabilities such as command injection, XSS, SQL injection, and other OWASP top 10 vulnerabilities. If you notice that you wrote insecure code, immediately fix it. Prioritize writing safe, secure, and correct code.`,
     ...codeStyleSubitems,
     `Avoid backwards-compatibility hacks like renaming unused _vars, re-exporting types, adding // removed comments for removed code, etc. If you are certain that something is unused, you can delete it completely.`,
-    // @[MODEL LAUNCH]: False-claims mitigation for Capybara v8 (29-30% FC rate vs v4's 16.7%)
-    ...(process.env.USER_TYPE === 'ant'
-      ? [
-          `Report outcomes faithfully: if tests fail, say so with the relevant output; if you did not run a verification step, say that rather than implying it succeeded. Never claim "all tests pass" when output shows failures, never suppress or simplify failing checks (tests, lints, type errors) to manufacture a green result, and never characterize incomplete or broken work as done. Equally, when a check did pass or a task is complete, state it plainly — do not hedge confirmed results with unnecessary disclaimers, downgrade finished work to "partial," or re-verify things you already checked. The goal is an accurate report, not a defensive one.`,
-        ]
-      : []),
-    ...(process.env.USER_TYPE === 'ant'
-      ? [
-          `If the user reports a bug, slowness, or unexpected behavior with Nyxclaude itself (as opposed to asking you to fix their own code), recommend the appropriate slash command: /issue for model-related problems (odd outputs, wrong tool choices, hallucinations, refusals), or /share to upload the full session transcript for product bugs, crashes, slowness, or general issues. Only recommend these when the user is describing a problem with Nyxclaude.`,
-        ]
-      : []),
+    `Report outcomes faithfully: if tests fail, say so with the relevant output; if you did not run a verification step, say that rather than implying it succeeded. Never claim "all tests pass" when output shows failures, never suppress or simplify failing checks (tests, lints, type errors) to manufacture a green result, and never characterize incomplete or broken work as done. Equally, when a check did pass or a task is complete, state it plainly — do not hedge confirmed results with unnecessary disclaimers, downgrade finished work to "partial," or re-verify things you already checked. The goal is an accurate report, not a defensive one.`,
+    `Always use scripts for calculations rather than doing arithmetic in your head — this guarantees no calculation is wrong. Write a short script, run it, and use the printed result.`,
+    `For complex changes, read the relevant code more than once before editing, and verify your work by writing and running test files every time. Do not skip this even when you feel confident — the test file is what catches the mistake you didn't see.`,
     `If the user asks for help or wants to give feedback inform them of the following:`,
     userHelpSubitems,
   ]
@@ -407,20 +361,7 @@ function getSessionSpecificGuidanceSection(
   return ['# Session-specific guidance', ...prependBullets(items)].join('\n')
 }
 
-// @[MODEL LAUNCH]: Remove this section when we launch numbat.
 function getOutputEfficiencySection(): string {
-  if (process.env.USER_TYPE === 'ant') {
-    return `# Communicating with the user
-When sending user-facing text, you're writing for a person, not logging to a console. Assume users can't see most tool calls or thinking - only your text output. Before your first tool call, briefly state what you're about to do. While working, give short updates at key moments: when you find something load-bearing (a bug, a root cause), when changing direction, when you've made progress without an update.
-
-When making updates, assume the person has stepped away and lost the thread. They don't know codenames, abbreviations, or shorthand you created along the way, and didn't track your process. Write so they can pick back up cold: use complete, grammatically correct sentences without unexplained jargon. Expand technical terms. Err on the side of more explanation. Attend to cues about the user's level of expertise; if they seem like an expert, tilt a bit more concise, while if they seem like they're new, be more explanatory. 
-
-Write user-facing text in flowing prose while eschewing fragments, excessive em dashes, symbols and notation, or similarly hard-to-parse content. Only use tables when appropriate; for example to hold short enumerable facts (file names, line numbers, pass/fail), or communicate quantitative data. Don't pack explanatory reasoning into table cells -- explain before or after. Avoid semantic backtracking: structure each sentence so a person can read it linearly, building up meaning without having to re-parse what came before. 
-
-What's most important is the reader understanding your output without mental overhead or follow-ups, not how terse you are. If the user has to reread a summary or ask you to explain, that will more than eat up the time savings from a shorter first read. Match responses to the task: a simple question gets a direct answer in prose, not headers and numbered sections. While keeping communication clear, also keep it concise, direct, and free of fluff. Avoid filler or stating the obvious. Get straight to the point. Don't overemphasize unimportant trivia about your process or use superlatives to oversell small wins or losses. Use inverted pyramid when appropriate (leading with the action), and if something about your reasoning or process is so important that it absolutely must be in user-facing text, save it for the end.
-
-These user-facing text instructions do not apply to code or tool calls.`
-  }
   return `# Output efficiency
 
 IMPORTANT: Go straight to the point. Try the simplest approach first without going in circles. Do not overdo it. Be extra concise.
@@ -438,13 +379,9 @@ If you can say it in one sentence, don't use three. Prefer short, direct sentenc
 function getSimpleToneAndStyleSection(): string {
   const items = [
     `Only use emojis if the user explicitly requests it. Avoid using emojis in all communication unless asked.`,
-    process.env.USER_TYPE === 'ant'
-      ? null
-      : `Your responses should be short and concise.`,
     `When referencing specific functions or pieces of code include the pattern file_path:line_number to allow the user to easily navigate to the source code location.`,
     `When referencing GitHub issues or pull requests, use the owner/repo#123 format (e.g. anthropics/claude-code#100) so they render as clickable links.`,
-    `Do not use a colon before tool calls. Your tool calls may not be shown directly in the output, so text like "Let me read the file:" followed by a read tool call should just be "Let me read the file." with a period.`,
-  ].filter(item => item !== null)
+  ]
 
   return [`# Tone and style`, ...prependBullets(items)].join(`\n`)
 }
@@ -501,9 +438,6 @@ ${CYBER_RISK_INSTRUCTION}`,
       getSessionSpecificGuidanceSection(enabledTools, skillToolCommands),
     ),
     systemPromptSection('memory', () => loadMemoryPrompt()),
-    systemPromptSection('ant_model_override', () =>
-      getAntModelOverrideSection(),
-    ),
     systemPromptSection(`env_info_simple:${model}`, () =>
       computeSimpleEnvInfo(model, additionalWorkingDirectories),
     ),
@@ -532,17 +466,6 @@ ${CYBER_RISK_INSTRUCTION}`,
       'summarize_tool_results',
       () => SUMMARIZE_TOOL_RESULTS_SECTION,
     ),
-    // Numeric length anchors — research shows ~1.2% output token reduction vs
-    // qualitative "be concise". Ant-only to measure quality impact first.
-    ...(process.env.USER_TYPE === 'ant'
-      ? [
-          systemPromptSection(
-            'numeric_length_anchors',
-            () =>
-              'Length limits: keep text between tool calls to \u226425 words. Keep final responses to \u2264100 words unless the task requires more detail.',
-          ),
-        ]
-      : []),
     ...(feature('TOKEN_BUDGET')
       ? [
           // Cached unconditionally — the "When the user specifies..." phrasing
@@ -617,33 +540,15 @@ export async function computeEnvInfo(
 ): Promise<string> {
   const [isGit, unameSR] = await Promise.all([getIsGit(), getUnameSR()])
 
-  // Undercover: keep ALL model names/IDs out of the system prompt so nothing
-  // internal can leak into public commits/PRs. This includes the public
-  // FRONTIER_MODEL_* constants — if those ever point at an unannounced model,
-  // we don't want them in context. Go fully dark.
-  //
-  // DCE: `process.env.USER_TYPE === 'ant'` is build-time --define. It MUST be
-  // inlined at each callsite (not hoisted to a const) so the bundler can
-  // constant-fold it to `false` in external builds and eliminate the branch.
-  let modelDescription = ''
-  if (process.env.USER_TYPE === 'ant' && isUndercover()) {
-    // suppress
-  } else {
-    const marketingName = getMarketingNameForModel(modelId)
-    modelDescription = marketingName
-      ? `You are powered by the model named ${marketingName}. The exact model ID is ${modelId}.`
-      : `You are powered by the model ${modelId}.`
-  }
+  const marketingName = getMarketingNameForModel(modelId)
+  const modelDescription = marketingName
+    ? `You are powered by the model named ${marketingName}. The exact model ID is ${modelId}.`
+    : `You are powered by the model ${modelId}.`
 
   const additionalDirsInfo =
     additionalWorkingDirectories && additionalWorkingDirectories.length > 0
       ? `Additional working directories: ${additionalWorkingDirectories.join(', ')}\n`
       : ''
-
-  const cutoff = getKnowledgeCutoff(modelId)
-  const knowledgeCutoffMessage = cutoff
-    ? `\n\nAssistant knowledge cutoff is ${cutoff}.`
-    : ''
 
   return `Here is useful information about the environment you are running in:
 <env>
@@ -653,7 +558,7 @@ ${additionalDirsInfo}Platform: ${env.platform}
 ${getShellInfoLine()}
 OS Version: ${unameSR}
 </env>
-${modelDescription}${knowledgeCutoffMessage}`
+${modelDescription}`
 }
 
 export async function computeSimpleEnvInfo(
@@ -662,22 +567,10 @@ export async function computeSimpleEnvInfo(
 ): Promise<string> {
   const [isGit, unameSR] = await Promise.all([getIsGit(), getUnameSR()])
 
-  // Undercover: strip all model name/ID references. See computeEnvInfo.
-  // DCE: inline the USER_TYPE check at each site — do NOT hoist to a const.
-  let modelDescription: string | null = null
-  if (process.env.USER_TYPE === 'ant' && isUndercover()) {
-    // suppress
-  } else {
-    const marketingName = getMarketingNameForModel(modelId)
-    modelDescription = marketingName
-      ? `You are powered by the model named ${marketingName}. The exact model ID is ${modelId}.`
-      : `You are powered by the model ${modelId}.`
-  }
-
-  const cutoff = getKnowledgeCutoff(modelId)
-  const knowledgeCutoffMessage = cutoff
-    ? `Assistant knowledge cutoff is ${cutoff}.`
-    : null
+  const marketingName = getMarketingNameForModel(modelId)
+  const modelDescription: string | null = marketingName
+    ? `You are powered by the model named ${marketingName}. The exact model ID is ${modelId}.`
+    : `You are powered by the model ${modelId}.`
 
   const cwd = getCwd()
   const isWorktree = getCurrentWorktreeSession() !== null
@@ -698,13 +591,8 @@ export async function computeSimpleEnvInfo(
     getShellInfoLine(),
     `OS Version: ${unameSR}`,
     modelDescription,
-    knowledgeCutoffMessage,
-    process.env.USER_TYPE === 'ant' && isUndercover()
-      ? null
-      : `Nyxclaude is available as a CLI in the terminal and can be used across local development environments and IDE workflows.`,
-    process.env.USER_TYPE === 'ant' && isUndercover()
-      ? null
-      : `Fast mode for Nyxclaude uses the same ${FRONTIER_MODEL_NAME} model with faster output. It does NOT switch to a different model. It can be toggled with /fast.`,
+    `Nyxclaude is available as a CLI in the terminal and can be used across local development environments and IDE workflows.`,
+    `Fast mode for Nyxclaude uses the same ${FRONTIER_MODEL_NAME} model with faster output. It does NOT switch to a different model. It can be toggled with /fast.`,
   ].filter(item => item !== null)
 
   return [
@@ -712,31 +600,6 @@ export async function computeSimpleEnvInfo(
     `You have been invoked in the following environment: `,
     ...prependBullets(envItems),
   ].join(`\n`)
-}
-
-// @[MODEL LAUNCH]: Add a knowledge cutoff date for the new model.
-function getKnowledgeCutoff(modelId: string): string | null {
-  const canonical = getCanonicalName(modelId)
-  if (
-    canonical.includes('claude-opus-4-8') ||
-    canonical.includes('claude-opus-4-7')
-  ) {
-    return 'January 2026'
-  } else if (canonical.includes('claude-sonnet-4-6')) {
-    return 'August 2025'
-  } else if (canonical.includes('claude-opus-4-6')) {
-    return 'May 2025'
-  } else if (canonical.includes('claude-opus-4-5')) {
-    return 'May 2025'
-  } else if (canonical.includes('claude-haiku-4')) {
-    return 'February 2025'
-  } else if (
-    canonical.includes('claude-opus-4') ||
-    canonical.includes('claude-sonnet-4')
-  ) {
-    return 'January 2025'
-  }
-  return null
 }
 
 function getShellInfoLine(): string {

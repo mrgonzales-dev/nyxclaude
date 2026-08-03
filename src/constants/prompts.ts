@@ -381,6 +381,7 @@ function getSimpleToneAndStyleSection(): string {
     `Only use emojis if the user explicitly requests it. Avoid using emojis in all communication unless asked.`,
     `When referencing specific functions or pieces of code include the pattern file_path:line_number to allow the user to easily navigate to the source code location.`,
     `When referencing GitHub issues or pull requests, use the owner/repo#123 format (e.g. anthropics/claude-code#100) so they render as clickable links.`,
+    `When explaining something, always end with a "To summarize:" section containing exactly one sentence that summarizes what you just explained. Drop any poetic tone or speech — be technical but also layman in your summarization. Never be poetic.`,
   ]
 
   return [`# Tone and style`, ...prependBullets(items)].join(`\n`)

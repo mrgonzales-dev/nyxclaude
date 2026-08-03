@@ -21,7 +21,6 @@
     "src/entrypoints/sdk.d.ts",
     "src/entrypoints/sdk/coreTypes.generated.ts",
     "scripts/windows/nyxclaude-aliases.ps1",
-    "vendor/node-domexception-shim/",
     "docs/windows-aliases-and-launchers.md",
     "README.md"
   ],
@@ -203,8 +202,7 @@
   "overrides": {
     "ip-address": "10.2.0",
     "google-auth-library": "10.6.2",
-    "lodash-es": "4.18.1",
-    "node-domexception": "file:vendor/node-domexception-shim"
+    "lodash-es": "4.18.1"
   },
   "allowScripts": {
     "protobufjs@7.6.4": true,

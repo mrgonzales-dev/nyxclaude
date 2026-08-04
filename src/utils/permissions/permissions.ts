@@ -1466,7 +1466,7 @@ export async function checkPlanModePermissions(
         : undefined
     const isSafeOneShot =
       typeof agentType === 'string' &&
-      ONE_SHOT_BUILTIN_AGENT_TYPES.has(agentType) &&
+      ONE_SHOT_BUILTIN_AGENT_TYPES.includes(agentType) &&
       definition?.source === 'built-in'
     const hasUnsafeWrapperOptions =
       rawAgentInput.name !== undefined ||

@@ -396,12 +396,28 @@ export type NormalizedShimUsage = {
  */
 export function buildAnthropicUsageFromRawUsage(
   raw: RawUsage,
+  minPromptTokens: number = 0,
 ): NormalizedShimUsage {
   const cacheRead = extractCacheReadFromRawUsage(raw)
   const u = (raw ?? {}) as Record<string, unknown>
   const rawInput =
     asNumber(u.input_tokens) || asNumber(u.prompt_tokens)
   const fresh = rawInput >= cacheRead ? rawInput - cacheRead : rawInput
+  // Sanity check: some OpenAI-compatible proxies (e.g. omniroute/wbridge)
+  // report a bogus prompt_tokens in the streaming usage chunk (always 1)
+  // regardless of actual context size. When the caller provides a floor
+  // derived from the known system-prompt size and the reported fresh input
+  // is below it, the usage data is implausible — return all-zeros so
+  // downstream code (isAllZeroUsage → tokenCountWithEstimation) falls back
+  // to local estimation instead of trusting the lie.
+  if (minPromptTokens > 0 && fresh < minPromptTokens) {
+    return {
+      input_tokens: 0,
+      output_tokens: 0,
+      cache_creation_input_tokens: 0,
+      cache_read_input_tokens: 0,
+    }
+  }
   const output =
     asNumber(u.output_tokens) || asNumber(u.completion_tokens)
   return {

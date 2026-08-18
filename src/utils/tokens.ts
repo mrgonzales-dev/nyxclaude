@@ -198,6 +198,12 @@ export function tokenCountFromLastAPIResponse(messages: Message[]): number {
     const message = messages[i]
     const usage = message ? getTokenUsage(message) : undefined
     if (usage) {
+      // Skip all-zero usage records (bogus provider data — see
+      // tokenCountWithEstimation for details) and keep walking back.
+      if (isAllZeroUsage(usage)) {
+        i--
+        continue
+      }
       return getTokenCountFromUsage(usage)
     }
     i--
@@ -575,6 +581,15 @@ export function tokenCountWithEstimation(messages: readonly Message[]): number {
     const message = messages[i]
     const usage = message ? getTokenUsage(message) : undefined
     if (message && usage) {
+      // Skip all-zero usage records — these are emitted by the shim when a
+      // provider reports implausible prompt_tokens (e.g. omniroute/wbridge
+      // streaming returns prompt_tokens=1). Treating them as real would make
+      // the context look tiny and break auto-compact. Skip and keep walking
+      // back to find a real usage record, or fall through to full estimation.
+      if (isAllZeroUsage(usage)) {
+        i--
+        continue
+      }
       // Walk back past any earlier sibling records split from the same API
       // response (same message.id) so interleaved tool_results between them
       // are included in the estimation slice.

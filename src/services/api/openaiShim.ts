@@ -85,6 +85,7 @@ import {
 } from './codexShim.js'
 import { buildAnthropicUsageFromRawUsage } from './cacheMetrics.js'
 import { compressToolHistory } from './compressToolHistory.js'
+import { roughTokenCountEstimation } from '../tokenEstimation.js'
 import {
   fetchWithProxyRetry,
   type ProxyRetryFetcher,
@@ -183,6 +184,13 @@ const GITHUB_429_BASE_DELAY_SEC = 1
 const GITHUB_429_MAX_DELAY_SEC = 32
 const CREDENTIAL_POOL_COOLDOWN_MS = 30_000
 const DEFAULT_API_TIMEOUT_MS = 600_000
+
+/**
+ * Error text emitted when the model returns finish_reason=stop with no content
+ * and no tool calls. Exported so the query loop can detect it and auto-proceed.
+ */
+export const EMPTY_RESPONSE_ERROR_TEXT =
+  '[Error: The model returned an empty response (finish_reason=stop with no content). This can happen when tool descriptions are too complex or trigger model refusal. Try simplifying your request or check NYXCLAUDE_DEBUG_API=1 for details.]'
 const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 90_000
 const MAX_STREAM_IDLE_TIMEOUT_MS = 2_147_483_647
 const GEMINI_API_HOST = 'generativelanguage.googleapis.com'
@@ -845,6 +853,7 @@ function makeMessageId(): string {
 
 function convertChunkUsage(
   usage: OpenAIStreamChunk['usage'] | undefined,
+  minPromptTokens: number = 0,
 ): Partial<AnthropicUsage> | undefined {
   if (!usage) return undefined
   // Delegates to the shared helper so this path, codexShim.makeUsage,
@@ -852,6 +861,7 @@ function convertChunkUsage(
   // produce byte-identical output for the same raw input.
   return buildAnthropicUsageFromRawUsage(
     usage as unknown as Record<string, unknown>,
+    minPromptTokens,
   )
 }
 
@@ -1376,6 +1386,7 @@ type NonStreamingOpenAIResponse = {
 function convertNonStreamingResponseToAnthropicMessage(
   data: NonStreamingOpenAIResponse,
   model: string,
+  minPromptTokens: number = 0,
 ) {
   const choice = data.choices?.[0]
   const content: Array<Record<string, unknown>> = []
@@ -1504,6 +1515,7 @@ function convertNonStreamingResponseToAnthropicMessage(
     stop_sequence: null,
     usage: buildAnthropicUsageFromRawUsage(
       data.usage as unknown as Record<string, unknown> | undefined,
+      minPromptTokens,
     ),
   }
 }
@@ -1524,6 +1536,7 @@ async function* openaiStreamToAnthropic(
   signal?: AbortSignal,
   isOllama = false,
   requestUrl?: string,
+  minPromptTokens: number = 0,
 ): AsyncGenerator<AnthropicStreamEvent> {
   const messageId = makeMessageId()
   const allowHy3ToolCalls = isHy3Model(model)
@@ -1604,7 +1617,7 @@ async function* openaiStreamToAnthropic(
     // fallback preserves tool_calls, Anthropic stop-reason mapping, array
     // content normalization, <think>-tag stripping, and raw text tool-call
     // recovery — then re-emit the resulting message as stream events.
-    const message = convertNonStreamingResponseToAnthropicMessage(parsed, model)
+    const message = convertNonStreamingResponseToAnthropicMessage(parsed, model, minPromptTokens)
 
     yield {
       type: 'message_start',
@@ -1907,7 +1920,7 @@ async function* openaiStreamToAnthropic(
         )
       }
 
-      const chunkUsage = convertChunkUsage(chunk.usage)
+      const chunkUsage = convertChunkUsage(chunk.usage, minPromptTokens)
 
       for (const choice of chunk.choices ?? []) {
         throwIfStreamAborted(signal)
@@ -2504,7 +2517,7 @@ async function* openaiStreamToAnthropic(
       index: contentBlockIndex,
       delta: {
         type: 'text_delta',
-        text: '[Error: The model returned an empty response (finish_reason=stop with no content). This can happen when tool descriptions are too complex or trigger model refusal. Try simplifying your request or check NYXCLAUDE_DEBUG_API=1 for details.]',
+        text: EMPTY_RESPONSE_ERROR_TEXT,
       },
     }
     yield { type: 'content_block_stop', index: contentBlockIndex }
@@ -2656,6 +2669,22 @@ class OpenAIShimMessages {
       const response = await self._doRequest(request, params, options, requestProcessEnv)
       httpResponse = response
 
+      // Compute a floor for the prompt-token sanity check from the known
+      // request size (system prompt + messages). Some OpenAI-compatible
+      // proxies (omniroute/wbridge) report a bogus prompt_tokens in the
+      // streaming usage chunk — sometimes 1, sometimes an inconsistent
+      // partial value. When the reported fresh input is below this floor,
+      // the usage is implausible and gets zeroed out so downstream code
+      // falls back to local estimation. Using the full request (not just
+      // the system prompt) catches milder bugs where the reported value
+      // is above the system prompt alone but still far below the real
+      // request size. Only applied to the OpenAI chat-completions paths —
+      // Anthropic-native, Codex/Responses, and Gemini paths keep the
+      // default 0 (no check).
+      const minPromptTokens = roughTokenCountEstimation(
+        convertSystemPrompt(params.system) + JSON.stringify(params.messages),
+      )
+
       if (params.stream) {
         const isResponsesStream = response.url?.includes('/responses')
         const isMessagesStream = response.url?.includes('/messages')
@@ -2675,7 +2704,7 @@ class OpenAIShimMessages {
                 ? anthropicSsePassthrough(response, request.resolvedModel, streamSignal)
                 : isGeminiStream
                   ? geminiSseToAnthropic(response, request.resolvedModel, streamSignal)
-                  : openaiStreamToAnthropic(response, request.resolvedModel, streamSignal, isLikelyOllamaEndpoint(request.baseUrl), response.url || undefined),
+                  : openaiStreamToAnthropic(response, request.resolvedModel, streamSignal, isLikelyOllamaEndpoint(request.baseUrl), response.url || undefined, minPromptTokens),
           options?.signal,
           cancelBeforeIteration,
         )
@@ -2710,7 +2739,7 @@ class OpenAIShimMessages {
               request.resolvedModel,
             )
           }
-          return self._convertNonStreamingResponse(parsed, request.resolvedModel)
+          return self._convertNonStreamingResponse(parsed, request.resolvedModel, minPromptTokens)
         }
       }
 
@@ -2735,7 +2764,7 @@ class OpenAIShimMessages {
       const contentType = response.headers.get('content-type') ?? ''
       if (contentType.includes('application/json')) {
         const data = await response.json()
-        return self._convertNonStreamingResponse(data, request.resolvedModel)
+        return self._convertNonStreamingResponse(data, request.resolvedModel, minPromptTokens)
       }
 
       const textBody = await response.text().catch(() => '')
@@ -4305,8 +4334,9 @@ class OpenAIShimMessages {
   private _convertNonStreamingResponse(
     data: NonStreamingOpenAIResponse,
     model: string,
+    minPromptTokens: number = 0,
   ) {
-    return convertNonStreamingResponseToAnthropicMessage(data, model)
+    return convertNonStreamingResponseToAnthropicMessage(data, model, minPromptTokens)
   }
 
   private _convertGeminiToAnthropicResponse(

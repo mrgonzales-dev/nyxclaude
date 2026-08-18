@@ -66,6 +66,7 @@ import {
   createMicrocompactBoundaryMessage,
 } from './utils/messages.js'
 import { analyzeContinuationIntent } from './utils/continuation.js'
+import { EMPTY_RESPONSE_ERROR_TEXT } from './services/api/openaiShim.js'
 import { generateToolUseSummary } from './services/toolUseSummary/toolUseSummaryGenerator.js'
 import { prependUserContext, appendSystemContext } from './utils/api.js'
 import {
@@ -213,6 +214,7 @@ function* yieldMissingToolResultBlocks(
  */
 const MAX_OUTPUT_TOKENS_RECOVERY_LIMIT = 3
 const MAX_CONTINUATION_NUDGES = 20
+const MAX_EMPTY_RESPONSE_PROCEEDS = 3
 
 type AgentStepLimitConfig = {
   maxSteps: number
@@ -538,6 +540,10 @@ type State = {
   // Capped at MAX_CONTINUATION_NUDGES to prevent infinite nudge loops
   // when the model keeps matching continuation signals without tool calls.
   continuationNudgeCount: number
+  // Count of empty-response auto-proceeds within the current turn.
+  // Capped at MAX_EMPTY_RESPONSE_PROCEEDS to prevent infinite loops
+  // when the model keeps returning empty responses.
+  emptyResponseProceedCount: number
   // Why the previous iteration continued. Undefined on first iteration.
   // Lets tests assert recovery paths fired without inspecting message contents.
   transition: Continue | undefined
@@ -628,6 +634,7 @@ async function* queryLoop(
     hasAttemptedProviderFallback: false,
     turnCount: 1,
     continuationNudgeCount: 0,
+    emptyResponseProceedCount: 0,
     pendingToolUseSummary: undefined,
     transition: undefined,
     agentStepLimit: normalizeAgentStepLimit(params.agentStepLimit),
@@ -1952,6 +1959,7 @@ async function* queryLoop(
               stopHookActive: undefined,
               turnCount,
               continuationNudgeCount: state.continuationNudgeCount,
+              emptyResponseProceedCount: state.emptyResponseProceedCount,
               agentStepLimit,
               monitorState,
               transition: {
@@ -2026,6 +2034,7 @@ async function* queryLoop(
             stopHookActive: undefined,
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
+            emptyResponseProceedCount: state.emptyResponseProceedCount,
             agentStepLimit,
             monitorState,
             transition: { reason: 'reactive_compact_retry' },
@@ -2080,6 +2089,7 @@ async function* queryLoop(
           stopHookActive: undefined,
           turnCount,
           continuationNudgeCount: state.continuationNudgeCount,
+          emptyResponseProceedCount: state.emptyResponseProceedCount,
           agentStepLimit,
           monitorState,
           transition: { reason: 'context_overflow_compact_retry' },
@@ -2127,6 +2137,7 @@ async function* queryLoop(
             stopHookActive: undefined,
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
+            emptyResponseProceedCount: state.emptyResponseProceedCount,
             agentStepLimit,
             monitorState,
             transition: {
@@ -2177,6 +2188,7 @@ async function* queryLoop(
             stopHookActive: undefined,
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
+            emptyResponseProceedCount: state.emptyResponseProceedCount,
             agentStepLimit,
             monitorState,
             transition: { reason: 'max_output_tokens_escalate' },
@@ -2211,6 +2223,7 @@ async function* queryLoop(
             stopHookActive: undefined,
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
+            emptyResponseProceedCount: state.emptyResponseProceedCount,
             agentStepLimit,
             monitorState,
             transition: {
@@ -2293,6 +2306,7 @@ async function* queryLoop(
               stopHookActive: undefined,
               turnCount,
               continuationNudgeCount: state.continuationNudgeCount,
+              emptyResponseProceedCount: state.emptyResponseProceedCount,
               agentStepLimit,
               monitorState,
               transition: { reason: 'provider_fallback_retry' },
@@ -2316,6 +2330,69 @@ async function* queryLoop(
       if (lastMessage?.isApiErrorMessage) {
         void executeStopFailureHooks(lastMessage, toolUseContext)
         return { reason: 'completed' }
+      }
+
+      // Empty-response auto-proceed: when the model returns finish_reason=stop
+      // with no content (detected by openaiShim and surfaced as an error text
+      // block), automatically send "proceed" to nudge the model to continue.
+      // This avoids treating an empty response as a completed turn.
+      //
+      // Guard: only for interactive main-thread query sources — don't inject
+      // "proceed" during compact, session_memory, or any forked/background
+      // flow (insights, hook_agent, extract_memories, etc.) where an empty
+      // response is often a legitimate terminal signal.
+      // Cap: MAX_EMPTY_RESPONSE_PROCEEDS to prevent infinite loops.
+      if (
+        assistantMessages.length > 0 &&
+        (querySource === 'sdk' ||
+          (typeof querySource === 'string' &&
+            querySource.startsWith('repl_main_thread'))) &&
+        state.emptyResponseProceedCount < MAX_EMPTY_RESPONSE_PROCEEDS
+      ) {
+        const lastAssistant = assistantMessages.at(-1)
+        if (lastAssistant?.type === 'assistant') {
+          const textBlocks = lastAssistant.message.content.filter(
+            (b): b is Extract<typeof b, { type: 'text' }> =>
+              b.type === 'text',
+          )
+          // The shim emits exactly one text block containing only the error
+          // text. Match precisely to avoid false positives if the model quotes
+          // the error in legitimate output.
+          const isSoleErrorBlock =
+            textBlocks.length === 1 &&
+            textBlocks[0].text === EMPTY_RESPONSE_ERROR_TEXT
+
+          if (isSoleErrorBlock) {
+            logForDebugging(
+              `Empty response auto-proceed triggered (${state.emptyResponseProceedCount + 1}/${MAX_EMPTY_RESPONSE_PROCEEDS})`,
+            )
+            const proceed = createUserMessage({
+              content: 'proceed',
+              isMeta: true,
+            })
+            const next: State = {
+              messages: [...messagesForQuery, ...assistantMessages, proceed],
+              toolUseContext,
+              autoCompactTracking: tracking,
+              maxOutputTokensRecoveryCount: 0,
+              hasAttemptedReactiveCompact: false,
+              hasAttemptedContextOverflowRecovery: false,
+              hasAttemptedProviderFallback: false,
+              maxOutputTokensOverride: undefined,
+              providerMaxOutputTokensCap,
+              pendingToolUseSummary: undefined,
+              stopHookActive: undefined,
+              turnCount,
+              continuationNudgeCount: state.continuationNudgeCount,
+              emptyResponseProceedCount: state.emptyResponseProceedCount + 1,
+              agentStepLimit,
+              monitorState,
+              transition: { reason: 'empty_response_proceed' },
+            }
+            state = next
+            continue
+          }
+        }
       }
 
       const stopHookResult = yield* handleStopHooks(
@@ -2364,6 +2441,7 @@ async function* queryLoop(
           stopHookActive: stopHookResult.stopHookActive,
           turnCount,
           continuationNudgeCount: state.continuationNudgeCount,
+          emptyResponseProceedCount: state.emptyResponseProceedCount,
           agentStepLimit,
           monitorState,
           transition: { reason: 'stop_hook_blocking' },
@@ -2406,6 +2484,7 @@ async function* queryLoop(
             stopHookActive: undefined,
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
+            emptyResponseProceedCount: state.emptyResponseProceedCount,
             agentStepLimit,
             monitorState,
             transition: { reason: 'token_budget_continuation' },
@@ -2477,6 +2556,7 @@ async function* queryLoop(
               stopHookActive: undefined,
               turnCount,
               continuationNudgeCount: state.continuationNudgeCount + 1,
+              emptyResponseProceedCount: state.emptyResponseProceedCount,
               agentStepLimit,
               monitorState,
               transition: { reason: 'continuation_nudge' },
@@ -3035,6 +3115,7 @@ async function* queryLoop(
       hasAttemptedContextOverflowRecovery: false,
       hasAttemptedProviderFallback: false,
       continuationNudgeCount: 0,
+      emptyResponseProceedCount: 0,
       pendingToolUseSummary: nextPendingToolUseSummary,
       maxOutputTokensOverride: undefined,
       providerMaxOutputTokensCap,

@@ -41,7 +41,7 @@ import {
   getDeferredToolsDeltaAttachment,
   getMcpInstructionsDeltaAttachment,
 } from '../../utils/attachments.js'
-import { getGlobalConfig, getMemoryPath } from '../../utils/config.js'
+import { getMemoryPath } from '../../utils/config.js'
 import { COMPACT_MAX_OUTPUT_TOKENS } from '../../utils/context.js'
 import { createChildAbortController } from '../../utils/abortController.js'
 import {
@@ -99,7 +99,6 @@ import {
 } from '../../utils/toolSearch.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../analytics/growthbook.js'
 import { isAnthropicProvider } from '../../utils/betas.js'
-import { parseUserSpecifiedModel } from '../../utils/model/model.js'
 import { isGithubNativeAnthropicMode } from '../../utils/model/providers.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -461,15 +460,7 @@ export async function compactConversation(
     // The GB flag is kept as a kill-switch.
     // streamCompactSummary() (below) follows the same gate; see also the
     // provider-gate tests in src/services/compact/compact.test.ts.
-    const rawCompactModel = getGlobalConfig().compactModel
-    const compactModel =
-      rawCompactModel !== undefined
-        ? parseUserSpecifiedModel(rawCompactModel)
-        : undefined
-    const modelChangesForCompaction =
-      compactModel !== undefined && compactModel !== context.options.mainLoopModel
     const promptCacheSharingEnabled =
-      !modelChangesForCompaction &&
       isCompactionCacheSharingCompatible(context.options.mainLoopModel) &&
       getFeatureValue_CACHED_MAY_BE_STALE(
         'tengu_compact_cache_prefix',
@@ -1208,18 +1199,10 @@ async function streamCompactSummary({
   // prompt cache; other 3P providers are incompatible and would send
   // Anthropic-only params that they reject. The shared predicate makes this
   // safe to call from 3P provider paths.
-  const rawCompactModel = getGlobalConfig().compactModel
-  const compactModel =
-    rawCompactModel !== undefined
-      ? parseUserSpecifiedModel(rawCompactModel)
-      : undefined
-  const modelChangesForCompaction =
-    compactModel !== undefined && compactModel !== context.options.mainLoopModel
   const cacheSharingAvailable = isCompactionCacheSharingCompatible(
     context.options.mainLoopModel,
   )
   const promptCacheSharingEnabled =
-    !modelChangesForCompaction &&
     cacheSharingAvailable &&
     getFeatureValue_CACHED_MAY_BE_STALE(
       'tengu_compact_cache_prefix',
@@ -1382,10 +1365,9 @@ async function streamCompactSummary({
       let response: AssistantMessage | undefined
       context.setResponseLength?.(() => 0)
 
-      // Check if tool search is enabled for the model actually used for
-      // compaction (compactModel when set, otherwise mainLoopModel).
+      // Check if tool search is enabled for the model used for compaction.
       const useToolSearch = await isToolSearchEnabled(
-        compactModel ?? context.options.mainLoopModel,
+        context.options.mainLoopModel,
         context.options.tools,
         async () => appState.toolPermissionContext,
         context.options.agentDefinitions.activeAgents,
@@ -1432,13 +1414,13 @@ async function streamCompactSummary({
             const appState = context.getAppState()
             return appState.toolPermissionContext
           },
-          model: compactModel ?? context.options.mainLoopModel,
+          model: context.options.mainLoopModel,
           toolChoice: undefined,
           isNonInteractiveSession: context.options.isNonInteractiveSession,
           hasAppendSystemPrompt: !!context.options.appendSystemPrompt,
           maxOutputTokensOverride: Math.min(
             COMPACT_MAX_OUTPUT_TOKENS,
-            getMaxOutputTokensForModel(compactModel ?? context.options.mainLoopModel),
+            getMaxOutputTokensForModel(context.options.mainLoopModel),
           ),
           querySource: 'compact',
           agents: context.options.agentDefinitions.activeAgents,

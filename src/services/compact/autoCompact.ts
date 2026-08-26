@@ -60,8 +60,8 @@ export function getEffectiveContextWindowSize(
   // Floor: effective context must be at least the summary reservation plus a
   // usable buffer. If it goes lower, the auto-compact threshold becomes
   // negative and fires on every message (issue #635). This floor buffer is
-  // intentionally decoupled from AUTOCOMPACT_BUFFER_TOKENS: the latter is the
-  // (larger) threshold buffer used by getAutoCompactThreshold(), while this
+  // intentionally decoupled from the ratio-based threshold: the latter scales
+  // with context window size via AUTOCOMPACT_THRESHOLD_RATIO, while this
   // stays at the conservative 13k so getEffectiveContextWindowSize() —
   // also consumed by tool-history compression — is unchanged (issue #1949).
   const autocompactBuffer = AUTOCOMPACT_FLOOR_BUFFER_TOKENS
@@ -88,18 +88,16 @@ export type AutoCompactTrackingState = {
   forceReason?: 'memory-pressure' | 'message-count' | 'context-overflow'
 }
 
-// Threshold buffer: auto-compact fires when token usage reaches this far below
-// the effective context window. Bumped from 13_000 -> 30_000 so compaction runs
-// earlier and with less accumulated history, bounding per-turn latency growth
-// in a single session (issue #1949). Kept below the effective-context floor
-// (AUTOCOMPACT_FLOOR_BUFFER_TOKENS) for large-context models; for small-context
-// models getAutoCompactThreshold() falls back to the floor buffer so the
-// threshold can never go negative (issue #635).
-export const AUTOCOMPACT_BUFFER_TOKENS = 30_000
+// Auto-compact fires when token usage reaches 80% of the effective context
+// window. This scales proportionally with model context size: a 128K model
+// compacts at 102K, a 1M model at 819K. Previously a fixed 30K buffer caused
+// premature compaction on small-context models and late compaction on
+// large-context models.
+export const AUTOCOMPACT_THRESHOLD_RATIO = 0.80
 
 // Conservative floor buffer for getEffectiveContextWindowSize(). Must guarantee
 // a non-negative auto-compact threshold for small-context models, so it stays at
-// the pre-#1949 value of 13_000 and is decoupled from AUTOCOMPACT_BUFFER_TOKENS.
+// the pre-#1949 value of 13_000 and is decoupled from the ratio-based threshold.
 const AUTOCOMPACT_FLOOR_BUFFER_TOKENS = 13_000
 
 export const WARNING_THRESHOLD_BUFFER_TOKENS = 20_000
@@ -197,19 +195,16 @@ export function resolveAutoCompactCircuitBreakerState(args: {
 export function getAutoCompactThreshold(model: string): number {
   const effectiveContextWindow = getEffectiveContextWindowSize(model)
 
-  // Increase the buffer gradually between the old 13k and new 30k values.
-  // This keeps the threshold monotonic and preserves the 20k warning/error
-  // headroom consumed by calculateTokenWarningState(). A direct switch would
-  // make a one-token window increase cause an earlier compact, and can make
-  // the warning threshold negative for mid-sized context windows.
-  const buffer = Math.min(
-    AUTOCOMPACT_BUFFER_TOKENS,
-    Math.max(
-      AUTOCOMPACT_FLOOR_BUFFER_TOKENS,
-      effectiveContextWindow - AUTOCOMPACT_BUFFER_TOKENS,
-    ),
+  // Threshold at 80% of effective context window, scaled proportionally.
+  // Floor ensures small-context models keep enough headroom for the
+  // warning/error buffers in calculateTokenWarningState().
+  const ratioThreshold = Math.floor(
+    effectiveContextWindow * AUTOCOMPACT_THRESHOLD_RATIO,
   )
-  const autocompactThreshold = effectiveContextWindow - buffer
+  const autocompactThreshold = Math.max(
+    ratioThreshold,
+    AUTOCOMPACT_FLOOR_BUFFER_TOKENS,
+  )
 
   // Override for easier testing of autocompact
   const envPercent = process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
@@ -251,8 +246,8 @@ export function calculateTokenWarningState(
     Math.round(((rawContextWindow - tokenUsage) / rawContextWindow) * 100),
   )
 
-  const warningThreshold = threshold - WARNING_THRESHOLD_BUFFER_TOKENS
-  const errorThreshold = threshold - ERROR_THRESHOLD_BUFFER_TOKENS
+  const warningThreshold = Math.max(0, threshold - WARNING_THRESHOLD_BUFFER_TOKENS)
+  const errorThreshold = Math.max(0, threshold - ERROR_THRESHOLD_BUFFER_TOKENS)
 
   const isAboveWarningThreshold = tokenUsage >= warningThreshold
   const isAboveErrorThreshold = tokenUsage >= errorThreshold

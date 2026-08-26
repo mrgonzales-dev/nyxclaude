@@ -331,8 +331,8 @@ describe('getAutoCompactThreshold', () => {
     const { getAutoCompactThreshold } = await importAutoCompact()
 
     // The effective window is floor-raised to 33k in this configuration.
-    // Selecting the 30k buffer here would compact after only 3k tokens.
-    expect(getAutoCompactThreshold('claude-sonnet-4')).toBe(20_000)
+    // 80% of 33k = 26_400. Floor at 13k does not apply (26_400 > 13k).
+    expect(getAutoCompactThreshold('claude-sonnet-4')).toBe(26_400)
   })
 
   test('keeps compaction and warning thresholds usable across mid-sized windows', async () => {
@@ -340,9 +340,9 @@ describe('getAutoCompactThreshold', () => {
     const { calculateTokenWarningState, getAutoCompactThreshold } =
       await importAutoCompact()
 
-    // The effective window is 44k. Do not consume so much headroom that the
-    // 20k warning/error buffer makes a fresh conversation immediately warn.
-    expect(getAutoCompactThreshold('claude-sonnet-4')).toBe(30_000)
+    // The effective window is 44k. 80% of 44k = 35_200.
+    // Warning threshold = 35_200 - 20_000 = 15_200, so 0 tokens does not warn.
+    expect(getAutoCompactThreshold('claude-sonnet-4')).toBe(35_200)
     expect(
       calculateTokenWarningState(0, 'claude-sonnet-4').isAboveWarningThreshold,
     ).toBe(false)

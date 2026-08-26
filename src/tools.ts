@@ -5,9 +5,7 @@ import { BashTool } from './tools/BashTool/BashTool.js'
 import { FileEditTool } from './tools/FileEditTool/FileEditTool.js'
 import { FileReadTool } from './tools/FileReadTool/FileReadTool.js'
 import { FileWriteTool } from './tools/FileWriteTool/FileWriteTool.js'
-// NYXCLAUDE: GlobTool unregistered — fff's grep + fileSearch covers path search.
-// The GlobTool source files are kept for reference but no longer loaded.
-// import { GlobTool } from './tools/GlobTool/GlobTool.js'
+import { GlobTool } from './tools/GlobTool/GlobTool.js'
 import { GrepTool } from './tools/GrepTool/GrepTool.js'
 import { TaskCreateTool } from './tools/TaskCreateTool/TaskCreateTool.js'
 import { TaskGetTool } from './tools/TaskGetTool/TaskGetTool.js'
@@ -74,9 +72,7 @@ export function getAllBaseTools(): Tools {
   return [
     AgentTool,
     BashTool,
-    // NYXCLAUDE: GlobTool unregistered (fff covers path search via grep).
-    // GrepTool now uses fff in-process with ripgrep fallback.
-    ...(hasEmbeddedSearchTools() ? [] : [GrepTool]),
+    ...(hasEmbeddedSearchTools() ? [] : [GlobTool, GrepTool]),
     FileReadTool,
     FileEditTool,
     FileWriteTool,

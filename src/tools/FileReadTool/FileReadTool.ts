@@ -9,7 +9,7 @@ import {
   PDF_MAX_PAGES_PER_READ,
 } from '../../constants/apiLimits.js'
 import { hasBinaryExtension } from '../../constants/files.js'
-import { memoryFreshnessNote } from '../../memdir/memoryAge.js'
+import { memoryFreshnessNote } from '../../utils/memoryStubs.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
 import { logEvent } from '../../services/analytics/index.js'
 import {

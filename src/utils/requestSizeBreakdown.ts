@@ -1,5 +1,5 @@
 import type { ContextData } from './analyzeContext.js'
-import { redactSecrets } from '../services/teamMemorySync/secretScanner.js'
+import { redactSecrets } from '../utils/memoryStubs.js'
 import { formatFileSize, formatTokens } from './format.js'
 import { redactUrlForDisplay } from './redaction.js'
 

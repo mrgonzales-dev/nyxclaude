@@ -5,7 +5,7 @@ import { useElapsedTime } from '../../hooks/useElapsedTime.js';
 import type { KeyboardEvent } from '../../ink/events/keyboard-event.js';
 import { Box, Text } from '../../ink.js';
 import { useKeybindings } from '../../keybindings/useKeybinding.js';
-import type { DreamTaskState } from '../../tasks/DreamTask/DreamTask.js';
+import type { DreamTaskState } from '../../utils/memoryStubs.js';
 import { plural } from '../../utils/stringUtils.js';
 import { Byline } from '../design-system/Byline.js';
 import { Dialog } from '../design-system/Dialog.js';

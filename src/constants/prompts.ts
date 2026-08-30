@@ -59,7 +59,7 @@ import {
 const SLEEP_TOOL_NAME = 'Sleep'
 import { TICK_TAG } from './xml.js'
 import { logForDebugging } from '../utils/debug.js'
-import { loadMemoryPrompt } from '../memdir/memdir.js'
+import { loadMemoryPrompt } from '../utils/memoryStubs.js'
 import { isMcpInstructionsDeltaEnabled } from '../utils/mcpInstructionsDelta.js'
 
 // Dead code elimination: conditional imports for feature-gated modules

@@ -31,8 +31,8 @@ import {
   getTotalCost,
 } from './cost-tracker.js'
 import type { CanUseToolFn } from './hooks/useCanUseTool.js'
-import { loadMemoryPrompt } from './memdir/memdir.js'
-import { hasAutoMemPathOverride } from './memdir/paths.js'
+import { loadMemoryPrompt } from './utils/memoryStubs.js'
+import { hasAutoMemPathOverride } from './utils/memoryStubs.js'
 import { query as defaultQuery } from './query.js'
 import { categorizeRetryableAPIError } from './services/api/errors.js'
 import type { AutoCompactTrackingState } from './services/compact/autoCompact.js'

@@ -46,8 +46,8 @@ import {
   getAdditionalDirectoriesForClaudeMd,
   getOriginalCwd,
 } from '../bootstrap/state.js'
-import { truncateEntrypointContent } from '../memdir/memdir.js'
-import { getAutoMemEntrypoint, isAutoMemoryEnabled } from '../memdir/paths.js'
+import { truncateEntrypointContent } from '../utils/memoryStubs.js'
+import { getAutoMemEntrypoint, isAutoMemoryEnabled } from '../utils/memoryStubs.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js'
 import {
   getCurrentProjectConfig,

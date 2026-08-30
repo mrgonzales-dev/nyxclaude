@@ -241,9 +241,9 @@ import { getLocalISODate } from '../constants/common.js'
 import { getPDFPageCount } from './pdf.js'
 import { PDF_AT_MENTION_INLINE_THRESHOLD } from '../constants/apiLimits.js'
 import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.js'
-import { findRelevantMemories } from '../memdir/findRelevantMemories.js'
-import { memoryAge, memoryFreshnessText } from '../memdir/memoryAge.js'
-import { getAutoMemPath, isAutoMemoryEnabled } from '../memdir/paths.js'
+import { findRelevantMemories } from '../utils/memoryStubs.js'
+import { memoryAge, memoryFreshnessText } from '../utils/memoryStubs.js'
+import { getAutoMemPath, isAutoMemoryEnabled } from '../utils/memoryStubs.js'
 import { getAgentMemoryDir } from '../tools/AgentTool/agentMemory.js'
 import {
   readUnreadMessages,

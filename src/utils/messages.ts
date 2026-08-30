@@ -28,7 +28,7 @@ import {
   OUTPUT_STYLE_CONFIG,
   resolveOutputStyle,
 } from '../constants/outputStyles.js'
-import { isAutoMemoryEnabled } from '../memdir/paths.js'
+import { isAutoMemoryEnabled } from '../utils/memoryStubs.js'
 import {
   checkStatsigFeatureGate_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,

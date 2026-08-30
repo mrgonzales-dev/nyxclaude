@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle'
 import { getShortcutDisplay } from '../keybindings/shortcutFormat.js'
-import { isExtractModeActive } from '../memdir/paths.js'
+import { isExtractModeActive } from '../utils/memoryStubs.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
@@ -53,7 +53,7 @@ const jobClassifierModule = feature('TEMPLATES')
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 import type { QuerySource } from '../constants/querySource.js'
-import { executeAutoDream } from '../services/autoDream/autoDream.js'
+import { executeAutoDream } from '../utils/memoryStubs.js'
 import type { GoalEvaluationDeps } from '../services/goal/controller.js'
 import {
   evaluateMonitorAfterTurn,

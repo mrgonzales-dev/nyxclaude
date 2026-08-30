@@ -4,7 +4,7 @@ import { PRODUCT_DISPLAY_NAME } from '../../../../constants/product.js';
 import type { KeyboardEvent } from '../../../../ink/events/keyboard-event.js';
 import { Box, Text } from '../../../../ink.js';
 import { useKeybinding } from '../../../../keybindings/useKeybinding.js';
-import { isAutoMemoryEnabled } from '../../../../memdir/paths.js';
+import { isAutoMemoryEnabled } from '../../../../utils/memoryStubs.js';
 import type { Tools } from '../../../../Tool.js';
 import { getMemoryScopeDisplay } from '../../../../tools/AgentTool/agentMemory.js';
 import type { AgentDefinition } from '../../../../tools/AgentTool/loadAgentsDir.js';

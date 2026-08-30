@@ -108,7 +108,7 @@ const featureFlags: Record<string, boolean> = {
   BUILTIN_EXPLORE_PLAN_AGENTS: true,  // Built-in Explore/Plan specialized subagents
   BUDDY: true,                        // Buddy mode for paired programming
   MONITOR_TOOL: true,                 // MCP server monitoring/streaming tool
-  TEAMMEM: true,                      // Team memory management
+  TEAMMEM: false,                     // NYXCLAUDE: Team memory removed
   MESSAGE_ACTIONS: true,              // Message action buttons in the UI
 
   // ── Enabled: new activations ────────────────────────────────────────
@@ -121,7 +121,7 @@ const featureFlags: Record<string, boolean> = {
   HISTORY_PICKER: true,               // Enhanced interactive prompt history picker
   QUICK_SEARCH: true,                 // Ctrl+G quick search across prompts
   SHOT_STATS: true,                   // Shot distribution stats in session summary
-  EXTRACT_MEMORIES: true,             // Auto-extract durable memories from conversations
+  EXTRACT_MEMORIES: false,            // NYXCLAUDE: Memory system removed
   FORK_SUBAGENT: true,                // Implicit context-forking when omitting subagent_type
   RESUME_COMPACT_PROMPT: true,        // Prompt to compact on /resume + determinate progress bar
   VERIFICATION_AGENT: true,           // Built-in read-only agent for test/verification

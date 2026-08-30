@@ -382,7 +382,7 @@ import { drainSdkEvents } from '../utils/sdkEventQueue.js'
 import { initializeGrowthBook } from '../services/analytics/growthbook.js'
 import { errorMessage, toError } from '../utils/errors.js'
 import { sleep } from '../utils/sleep.js'
-import { isExtractModeActive } from '../memdir/paths.js'
+import { isExtractModeActive } from '../utils/memoryStubs.js'
 
 // Dead code elimination: conditional imports
 /* eslint-disable @typescript-eslint/no-require-imports */

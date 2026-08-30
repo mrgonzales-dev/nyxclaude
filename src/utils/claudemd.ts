@@ -802,6 +802,13 @@ export async function processMdRules({
 }
 
 export const getMemoryFiles = memoize(
+  async (_forceIncludeExternal: boolean = false): Promise<MemoryFileInfo[]> => {
+    // NYXCLAUDE: Memory system removed — return empty array.
+    return []
+  },
+)
+
+export const _getMemoryFilesOriginal = memoize(
   async (forceIncludeExternal: boolean = false): Promise<MemoryFileInfo[]> => {
     const startTime = Date.now()
     logForDiagnosticsNoPII('info', 'memory_files_started')

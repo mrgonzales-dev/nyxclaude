@@ -36,6 +36,13 @@ import {
 } from '../../bootstrap/state.js'
 import { createAutoMemCanUseTool } from '../extractMemories/extractMemories.js'
 import { buildConsolidationPrompt } from './consolidationPrompt.js'
+
+// NYXCLAUDE: Memory system removed — stub initAutoDream to no-op.
+export function initAutoDream(): void {}
+
+// Keep imports referenced so the bundler doesn't tree-shake wrong.
+void createAutoMemCanUseTool
+void buildConsolidationPrompt
 import {
   readLastConsolidatedAt,
   listSessionsTouchedSince,

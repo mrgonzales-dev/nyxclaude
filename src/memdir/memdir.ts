@@ -443,6 +443,12 @@ export function buildSearchingPastContextSection(autoMemDir: string): string[] {
  * Returns null when auto memory is disabled.
  */
 export async function loadMemoryPrompt(): Promise<string | null> {
+  // NYXCLAUDE: Memory system removed — return null to skip the Memory section
+  // in the system prompt entirely.
+  return null
+}
+
+export async function _loadMemoryPromptOriginal(): Promise<string | null> {
   const autoEnabled = isAutoMemoryEnabled()
 
   const skipIndex = getFeatureValue_CACHED_MAY_BE_STALE(

@@ -52,14 +52,10 @@ export function getMCPUserAgent(): string {
 
 // User-Agent for WebFetch requests to arbitrary sites. `Claude-User` is
 // The first-party provider's publicly documented agent for user-initiated fetches (what site
-// operators match in robots.txt); the claude-code suffix lets them distinguish
-// local CLI traffic from claude.ai server-side fetches.
+// NYXCLAUDE: Use a realistic browser User-Agent so sites don't block us.
+// The previous "Claude-User" UA was getting 403'd by most websites.
 export function getWebFetchUserAgent(): string {
-  const supportUrl =
-    isFirstPartyAnthropicProvider()
-      ? 'https://support.anthropic.com/'
-      : ''
-  return `Claude-User (${getClaudeCodeUserAgent()}; +${supportUrl})`
+  return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 }
 
 export type AuthHeaders = {

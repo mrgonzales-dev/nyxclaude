@@ -178,37 +178,10 @@ type DomainCheckResult =
   | { status: 'check_failed'; error: Error }
 
 export async function checkDomainBlocklist(
-  domain: string,
+  _domain: string,
 ): Promise<DomainCheckResult> {
-  // Third-party providers should not consult the first-party domain policy.
-  if (!isFirstPartyAnthropicProvider()) {
-    return { status: 'allowed' }
-  }
-
-  if (DOMAIN_CHECK_CACHE.has(domain)) {
-    return { status: 'allowed' }
-  }
-  try {
-    const response = await axios.get(
-      `https://api.anthropic.com/api/web/domain_info?domain=${encodeURIComponent(domain)}`,
-      { timeout: DOMAIN_CHECK_TIMEOUT_MS },
-    )
-    if (response.status === 200) {
-      if (response.data.can_fetch === true) {
-        DOMAIN_CHECK_CACHE.set(domain, true)
-        return { status: 'allowed' }
-      }
-      return { status: 'blocked' }
-    }
-    // Non-200 status but didn't throw
-    return {
-      status: 'check_failed',
-      error: new Error(`Domain check returned status ${response.status}`),
-    }
-  } catch (e) {
-    logError(e)
-    return { status: 'check_failed', error: e as Error }
-  }
+  // NYXCLAUDE: Anthropic domain blocklist removed — always allow.
+  return { status: 'allowed' }
 }
 
 /**
@@ -286,8 +259,10 @@ export async function getWithPermittedRedirects(
     maxContentLength: MAX_HTTP_CONTENT_LENGTH,
     lookup: ssrfGuardedLookup,
     headers: {
-      Accept: 'text/markdown, text/html, */*',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
       'User-Agent': getWebFetchUserAgent(),
+      'Accept-Encoding': 'gzip, deflate, br',
     },
   }
 

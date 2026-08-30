@@ -952,11 +952,15 @@ function shouldRetry(error: APIError, persistentRetryEnabled: boolean): boolean 
     return !isClaudeAISubscriber() || isEnterpriseSubscriber()
   }
 
-  // Clear API key cache on 401 and allow retry.
-  // OAuth token handling is done in the main retry loop via handleOAuth401Error.
+  // Clear API key cache on 401. Only retry when the token can be refreshed:
+  //   - CCR mode: auth is via infrastructure JWTs, so 401 is a transient blip
+  //   - OAuth token present: the retry loop will call handleOAuth401Error to refresh
+  // Otherwise (plain API key with no OAuth token) 401 is permanent — fail fast
+  // so the user sees the error immediately instead of 10 retries with backoff.
   if (error.status === 401) {
     clearApiKeyHelperCache()
-    return true
+    if (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)) return true
+    return !!getClaudeAIOAuthTokens()?.accessToken
   }
 
   // Retry on 403 "token revoked" (same refresh logic as 401, see above)

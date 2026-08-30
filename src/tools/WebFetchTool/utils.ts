@@ -259,10 +259,20 @@ export async function getWithPermittedRedirects(
     maxContentLength: MAX_HTTP_CONTENT_LENGTH,
     lookup: ssrfGuardedLookup,
     headers: {
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
       'Accept-Language': 'en-US,en;q=0.9',
-      'User-Agent': getWebFetchUserAgent(),
       'Accept-Encoding': 'gzip, deflate, br',
+      'User-Agent': getWebFetchUserAgent(),
+      'Sec-Ch-Ua': '"Chromium";v="131", "Not_A Brand";v="24", "Google Chrome";v="131"',
+      'Sec-Ch-Ua-Mobile': '?0',
+      'Sec-Ch-Ua-Platform': '"Linux"',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'same-origin',
+      'Sec-Fetch-User': '?1',
+      'Upgrade-Insecure-Requests': '1',
+      'Cache-Control': 'max-age=0',
+      Referer: new URL(url).origin + '/',
     },
   }
 
@@ -277,7 +287,13 @@ export async function getWithPermittedRedirects(
         (error.code === 'ECONNABORTED' ||
           error.code === 'ETIMEDOUT' ||
           error.message?.toLowerCase().includes('timeout')))
-    if (isTimeoutLike && !signal.aborted) {
+    // NYXCLAUDE: Also retry 403 with native fetch — some sites block axios
+    // but accept native fetch with the same headers.
+    const is403 =
+      axios.isAxiosError(error) &&
+      error.response &&
+      error.response.status === 403
+    if ((isTimeoutLike || is403) && !signal.aborted) {
       try {
         const fetchResponse = await fetch(url, {
           signal,

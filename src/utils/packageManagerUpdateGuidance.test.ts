@@ -3,7 +3,7 @@ import type { PackageManager } from './nativeInstaller/packageManagers.js'
 import { resolvePackageManagerUpdateGuidance } from './packageManagerUpdateGuidance.js'
 
 const UPSTREAM_PACKAGE_URL = '@anthropic-ai/claude-code'
-const OPENCLAUDE_PACKAGE_URL = '@gitlawb/openclaude'
+const NYXCLAUDE_PACKAGE_URL = 'nyxclaude'
 
 describe('resolvePackageManagerUpdateGuidance', () => {
   test.each([
@@ -16,7 +16,7 @@ describe('resolvePackageManagerUpdateGuidance', () => {
       expect(
         resolvePackageManagerUpdateGuidance(manager, UPSTREAM_PACKAGE_URL),
       ).toEqual({
-        message: `OpenClaude is managed by ${managerName}. Use ${managerName} to update OpenClaude.`,
+        message: `Nyxclaude is managed by ${managerName}. Use ${managerName} to update Nyxclaude.`,
         managerName,
         command,
       })
@@ -24,15 +24,15 @@ describe('resolvePackageManagerUpdateGuidance', () => {
   )
 
   test.each(['homebrew', 'winget', 'apk'] as const)(
-    'does not guess an upstream command for an OpenClaude %s install',
+    'does not guess an upstream command for an Nyxclaude %s install',
     manager => {
       const guidance = resolvePackageManagerUpdateGuidance(
         manager,
-        OPENCLAUDE_PACKAGE_URL,
+        NYXCLAUDE_PACKAGE_URL,
       )
 
       expect(guidance.command).toBeUndefined()
-      expect(guidance.message).toContain('OpenClaude')
+      expect(guidance.message).toContain('Nyxclaude')
       expect(guidance.message.toLowerCase()).toContain(manager === 'homebrew' ? 'homebrew' : manager)
       expect(JSON.stringify(guidance)).not.toContain('brew upgrade claude-code')
       expect(JSON.stringify(guidance)).not.toContain('Anthropic.ClaudeCode')
@@ -45,7 +45,7 @@ describe('resolvePackageManagerUpdateGuidance', () => {
       resolvePackageManagerUpdateGuidance('homebrew', '@example/custom-cli'),
     ).toEqual({
       message:
-        'OpenClaude is managed by Homebrew. Use Homebrew to update OpenClaude.',
+        'Nyxclaude is managed by Homebrew. Use Homebrew to update Nyxclaude.',
       managerName: 'Homebrew',
     })
   })
@@ -54,10 +54,10 @@ describe('resolvePackageManagerUpdateGuidance', () => {
     'uses safe generic guidance for %s',
     manager => {
       expect(
-        resolvePackageManagerUpdateGuidance(manager, OPENCLAUDE_PACKAGE_URL),
+        resolvePackageManagerUpdateGuidance(manager, NYXCLAUDE_PACKAGE_URL),
       ).toEqual({
         message:
-          'OpenClaude is managed by a package manager. Use your package manager to update OpenClaude.',
+          'Nyxclaude is managed by a package manager. Use your package manager to update Nyxclaude.',
       })
     },
   )

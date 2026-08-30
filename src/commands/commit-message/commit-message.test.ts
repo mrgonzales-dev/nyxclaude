@@ -29,42 +29,42 @@ afterEach(() => {
 
 describe('commit-message command helpers', () => {
   it('parses quoted co-author names with a plain email', () => {
-    expect(parseCoAuthor('"GPT 5.5" noreply@openclaude.dev')).toEqual({
+    expect(parseCoAuthor('"GPT 5.5" noreply@nyxclaude.dev')).toEqual({
       name: 'GPT 5.5',
-      email: 'noreply@openclaude.dev',
+      email: 'noreply@nyxclaude.dev',
     })
   })
 
   it('parses co-author trailers with angle-bracket emails', () => {
-    expect(parseCoAuthor('OpenClaude (gpt-5.5) <noreply@openclaude.dev>')).toEqual(
+    expect(parseCoAuthor('Nyxclaude (gpt-5.5) <noreply@nyxclaude.dev>')).toEqual(
       {
-        name: 'OpenClaude (gpt-5.5)',
-        email: 'noreply@openclaude.dev',
+        name: 'Nyxclaude (gpt-5.5)',
+        email: 'noreply@nyxclaude.dev',
       },
     )
   })
 
   it('rejects co-author trailers with empty sanitized names', () => {
-    expect(parseCoAuthor('"  " noreply@openclaude.dev')).toBeNull()
-    expect(parseCoAuthor('"  " <noreply@openclaude.dev>')).toBeNull()
+    expect(parseCoAuthor('"  " noreply@nyxclaude.dev')).toBeNull()
+    expect(parseCoAuthor('"  " <noreply@nyxclaude.dev>')).toBeNull()
   })
 
   it('strips one pair of matching quotes from custom attribution text', () => {
-    expect(stripMatchingQuotes('"Generated with OpenClaude"')).toBe(
-      'Generated with OpenClaude',
+    expect(stripMatchingQuotes('"Generated with Nyxclaude"')).toBe(
+      'Generated with Nyxclaude',
     )
-    expect(stripMatchingQuotes("'Generated with OpenClaude'")).toBe(
-      'Generated with OpenClaude',
+    expect(stripMatchingQuotes("'Generated with Nyxclaude'")).toBe(
+      'Generated with Nyxclaude',
     )
-    expect(stripMatchingQuotes('"Generated with OpenClaude')).toBe(
-      '"Generated with OpenClaude',
+    expect(stripMatchingQuotes('"Generated with Nyxclaude')).toBe(
+      '"Generated with Nyxclaude',
     )
   })
 
   it('formats a sanitized co-author trailer', () => {
     expect(
-      formatCoAuthorTrailer('OpenClaude <gpt>\n', '<noreply@openclaude.dev>'),
-    ).toBe('Co-Authored-By: OpenClaude gpt <noreply@openclaude.dev>')
+      formatCoAuthorTrailer('Nyxclaude <gpt>\n', '<noreply@nyxclaude.dev>'),
+    ).toBe('Co-Authored-By: Nyxclaude gpt <noreply@nyxclaude.dev>')
   })
 
   it('makes set scope explicit with example text', () => {
@@ -72,13 +72,13 @@ describe('commit-message command helpers', () => {
       'Controls only the attribution text appended after /commit messages.',
     )
     expect(USAGE).toContain(
-      '/commit-message set "Generated with OpenClaude using GPT-5.5"',
+      '/commit-message set "Generated with Nyxclaude using GPT-5.5"',
     )
     expect(USAGE).not.toContain('/commit-message set-attribution')
   })
 
   it('describes default reset as privacy-preserving', async () => {
-    tempSettingsDir = mkdtempSync(join(tmpdir(), 'openclaude-settings-'))
+    tempSettingsDir = mkdtempSync(join(tmpdir(), 'nyxclaude-settings-'))
     setClaudeConfigHomeDirForTesting(tempSettingsDir)
     getClaudeConfigHomeDir.cache?.clear?.()
 

@@ -44,11 +44,11 @@ test('partner id override is shared with the inference header', () => {
   expect(
     withResolvedPartnerHeader({
       'x-aimlapi-partner-id': 'part_catalog',
-      'X-Title': 'OpenClaude',
+      'X-Title': 'Nyxclaude',
     }),
   ).toEqual({
     'X-AIMLAPI-Partner-ID': 'part_override',
-    'X-Title': 'OpenClaude',
+    'X-Title': 'Nyxclaude',
   })
 })
 

@@ -56,25 +56,25 @@ function createApp(stdin: NodeJS.ReadStream): App {
 }
 
 describe('App stdin mode setup', () => {
-  const originalDataMode = process.env.OPENCLAUDE_USE_DATA_STDIN
-  const originalReadableMode = process.env.OPENCLAUDE_USE_READABLE_STDIN
+  const originalDataMode = process.env.NYXCLAUDE_USE_DATA_STDIN
+  const originalReadableMode = process.env.NYXCLAUDE_USE_READABLE_STDIN
 
   afterEach(() => {
     if (originalDataMode === undefined) {
-      delete process.env.OPENCLAUDE_USE_DATA_STDIN
+      delete process.env.NYXCLAUDE_USE_DATA_STDIN
     } else {
-      process.env.OPENCLAUDE_USE_DATA_STDIN = originalDataMode
+      process.env.NYXCLAUDE_USE_DATA_STDIN = originalDataMode
     }
     if (originalReadableMode === undefined) {
-      delete process.env.OPENCLAUDE_USE_READABLE_STDIN
+      delete process.env.NYXCLAUDE_USE_READABLE_STDIN
     } else {
-      process.env.OPENCLAUDE_USE_READABLE_STDIN = originalReadableMode
+      process.env.NYXCLAUDE_USE_READABLE_STDIN = originalReadableMode
     }
   })
 
   test('uses readable stdin by default without switching the stream to flowing mode', () => {
-    delete process.env.OPENCLAUDE_USE_DATA_STDIN
-    delete process.env.OPENCLAUDE_USE_READABLE_STDIN
+    delete process.env.NYXCLAUDE_USE_DATA_STDIN
+    delete process.env.NYXCLAUDE_USE_READABLE_STDIN
     const stdin = createFakeStdin()
     const app = createApp(stdin)
 
@@ -88,8 +88,8 @@ describe('App stdin mode setup', () => {
   })
 
   test('resumes stdin only for opt-in data mode', () => {
-    process.env.OPENCLAUDE_USE_DATA_STDIN = '1'
-    delete process.env.OPENCLAUDE_USE_READABLE_STDIN
+    process.env.NYXCLAUDE_USE_DATA_STDIN = '1'
+    delete process.env.NYXCLAUDE_USE_READABLE_STDIN
     const stdin = createFakeStdin()
     const app = createApp(stdin)
 
@@ -102,9 +102,9 @@ describe('App stdin mode setup', () => {
     app.handleSetRawMode(false)
   })
 
-  test('uses data mode when OPENCLAUDE_USE_READABLE_STDIN=0', () => {
-    delete process.env.OPENCLAUDE_USE_DATA_STDIN
-    process.env.OPENCLAUDE_USE_READABLE_STDIN = '0'
+  test('uses data mode when NYXCLAUDE_USE_READABLE_STDIN=0', () => {
+    delete process.env.NYXCLAUDE_USE_DATA_STDIN
+    process.env.NYXCLAUDE_USE_READABLE_STDIN = '0'
     const stdin = createFakeStdin()
     const app = createApp(stdin)
 

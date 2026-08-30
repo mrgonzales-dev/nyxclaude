@@ -27,7 +27,7 @@ describe('Conversation Arc Scale and Stability', () => {
 
   beforeEach(async () => {
     await acquireSharedMutationLock('conversationArc.perf')
-    configDir = mkdtempSync(join(tmpdir(), 'openclaude-arc-perf-'))
+    configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-arc-perf-'))
     setClaudeConfigHomeDirForTesting(configDir)
     resetGlobalGraph()
     clearMemoryOnly()

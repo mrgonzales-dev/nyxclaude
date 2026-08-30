@@ -25,8 +25,8 @@ const TRANSPORT_KIND_PROVIDER_TYPE_LABELS: Partial<
 > = {
   'anthropic-native': 'Anthropic native API',
   'gemini-native': 'Gemini API',
-  bedrock: 'AWS Bedrock Claude API',
-  vertex: 'Google Vertex Claude API',
+  bedrock: 'AWS Bedrock API',
+  vertex: 'Google Vertex API',
   'anthropic-proxy': 'Anthropic-compatible API',
   local: 'OpenAI-compatible API',
   'openai-compatible': 'OpenAI-compatible API',
@@ -967,7 +967,33 @@ export function getRouteProviderTypeLabel(
   )
 }
 
+// Memoization cache for resolveRouteIdFromBaseUrl. This function is called
+// hundreds of times during startup with the same baseUrl (via
+// resolveOpenAIShimRuntimeContext → resolveProviderRequest →
+// getAdditionalModelOptionsCacheScope → optionMatchesModel). Each call
+// iterates 308 routes and creates a new URL() per route. The result is a
+// pure function of (baseUrl, requireDiscovery) and never changes during a
+// process lifetime, so a Map cache eliminates the O(N×R) hot loop.
+const _routeIdFromBaseUrlCache = new Map<string, string | null>()
+
 export function resolveRouteIdFromBaseUrl(
+  baseUrl?: string,
+  options?: {
+    requireDiscovery?: boolean
+  },
+): string | null {
+  const cacheKey = `${options?.requireDiscovery ? '1' : '0'}:${baseUrl ?? ''}`
+  const cached = _routeIdFromBaseUrlCache.get(cacheKey)
+  if (cached !== undefined) {
+    return cached
+  }
+
+  const result = _resolveRouteIdFromBaseUrlUncached(baseUrl, options)
+  _routeIdFromBaseUrlCache.set(cacheKey, result)
+  return result
+}
+
+function _resolveRouteIdFromBaseUrlUncached(
   baseUrl?: string,
   options?: {
     requireDiscovery?: boolean
@@ -1044,8 +1070,74 @@ function profileRouteHonorsBaseUrlBoundary(
   return true
 }
 
+// Memoization cache for resolveActiveRouteIdFromEnv. Called hundreds of
+// times during startup with the same env snapshot. Cache key combines the
+// relevant env values + profile options. Cache is cleared when env changes
+// (e.g. profile switch) via _clearRouteResolutionCache().
+const _activeRouteIdCache = new Map<string, string | null>()
+
+// Lazy import to avoid circular dependency at module load time.
+let _clearAdditionalModelOptionsCacheScopeFn: (() => void) | null = null
+function _clearAdditionalModelOptionsCacheScope(): void {
+  if (!_clearAdditionalModelOptionsCacheScopeFn) {
+    // Lazy require to break the circular dependency
+    // (providerConfig imports from routeMetadata).
+    try {
+      const mod = require('../services/api/providerConfig.js') as typeof import('../services/api/providerConfig.js')
+      _clearAdditionalModelOptionsCacheScopeFn = mod._clearAdditionalModelOptionsCacheScope
+    } catch {
+      // In bundled mode, require may not work — the cache clear is best-effort.
+      return
+    }
+  }
+  _clearAdditionalModelOptionsCacheScopeFn()
+}
+
+export function _clearRouteResolutionCache(): void {
+  _routeIdFromBaseUrlCache.clear()
+  _activeRouteIdCache.clear()
+  _clearAdditionalModelOptionsCacheScope()
+}
+
 export function resolveActiveRouteIdFromEnv(
   processEnv: NodeJS.ProcessEnv = process.env,
+  options?: {
+    activeProfileProvider?: string
+    activeProfileBaseUrl?: string
+  },
+): string | null {
+  // Build a cache key from the env values that affect the result.
+  // Using the full processEnv object as key would be O(n) per call; instead
+  // we hash only the fields this function reads.
+  const cacheKey = [
+    options?.activeProfileProvider ?? '',
+    options?.activeProfileBaseUrl ?? '',
+    processEnv.CLAUDE_CODE_USE_GEMINI,
+    processEnv.CLAUDE_CODE_USE_MISTRAL,
+    processEnv.CLAUDE_CODE_USE_GITHUB,
+    processEnv.CLAUDE_CODE_USE_BEDROCK,
+    processEnv.CLAUDE_CODE_USE_VERTEX,
+    processEnv.CLAUDE_CODE_USE_OPENAI,
+    processEnv.ANTHROPIC_BASE_URL,
+    processEnv.ANTHROPIC_MODEL,
+    processEnv.ANTHROPIC_AUTH_TOKEN,
+    processEnv.ANTHROPIC_API_KEY,
+    processEnv.OPENAI_BASE_URL,
+    processEnv.OPENAI_API_BASE,
+  ].join('\x00')
+
+  const cached = _activeRouteIdCache.get(cacheKey)
+  if (cached !== undefined) {
+    return cached
+  }
+
+  const result = _resolveActiveRouteIdFromEnvUncached(processEnv, options)
+  _activeRouteIdCache.set(cacheKey, result)
+  return result
+}
+
+function _resolveActiveRouteIdFromEnvUncached(
+  processEnv: NodeJS.ProcessEnv,
   options?: {
     activeProfileProvider?: string
     activeProfileBaseUrl?: string

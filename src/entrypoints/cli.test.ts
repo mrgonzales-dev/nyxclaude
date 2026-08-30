@@ -1,6 +1,6 @@
 /**
  * Regression tests for issue #402 — NODE_OPTIONS heap cap
- * Closes: Gitlawb/openclaude#402 — JavaScript heap OOM during large tasks
+ * Closes: Gitlawb/nyxclaude#402 — JavaScript heap OOM during large tasks
  */
 
 import {
@@ -159,7 +159,7 @@ describe('cli.tsx — --provider startup ordering', () => {
 
   beforeEach(() => {
     clearRememberedProviderFlagForTests()
-    tempDir = mkdtempSync(join(tmpdir(), 'openclaude-cli-env-file-test-'))
+    tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-cli-env-file-test-'))
     for (const key of providerEnvKeys) {
       originalEnv.set(key, process.env[key])
       delete process.env[key]
@@ -383,10 +383,10 @@ describe('cli.tsx — background routing behavior', () => {
     },
   } as unknown as Parameters<CliMain>[1]
   const originalAutoRunGuard =
-    process.env.OPENCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN
+    process.env.NYXCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN
 
   beforeAll(async () => {
-    process.env.OPENCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN = '1'
+    process.env.NYXCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN = '1'
 
     const entrypoint = await import('./cli.js')
     runCliEntrypoint = entrypoint.main
@@ -394,9 +394,9 @@ describe('cli.tsx — background routing behavior', () => {
 
   afterAll(() => {
     if (originalAutoRunGuard === undefined) {
-      delete process.env.OPENCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN
+      delete process.env.NYXCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN
     } else {
-      process.env.OPENCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN =
+      process.env.NYXCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN =
         originalAutoRunGuard
     }
   })
@@ -499,11 +499,11 @@ describe('Node 24 premature exit regression (issue #1678)', () => {
         process.stdout.isTTY = true;
         process.stdin.isTTY = true;
         process.stdin.setRawMode = () => {};
-        process.env.OPENCLAUDE_DISABLE_TELEMETRY = '1';
+        process.env.NYXCLAUDE_DISABLE_TELEMETRY = '1';
         process.env.OPENGATEWAY_API_KEY = 'dummy';
 
         // Ensure the CLI auto-runs even if the test runner disabled it globally
-        delete process.env.OPENCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN;
+        delete process.env.NYXCLAUDE_DISABLE_CLI_ENTRYPOINT_AUTO_RUN;
 
         // Use absolute import to work from os.tmpdir()
         // If the entrypoint uses void main(), this promise resolves immediately.

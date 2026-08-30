@@ -282,7 +282,7 @@ test('buildAPIProviderProperties redacts token-bearing direct provider base URLs
 })
 
 test('buildAPIProviderProperties redacts proxy credentials and mTLS paths', async () => {
-  const home = '/home/openclaude-status-test'
+  const home = '/home/nyxclaude-status-test'
   process.env.HOME = home
   process.env.CLAUDE_CODE_USE_OPENAI = '1'
   delete process.env.http_proxy

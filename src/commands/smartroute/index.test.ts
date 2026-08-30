@@ -18,9 +18,9 @@ const AGENT_MODELS = {
   main: { model: 'claude-opus-4-5' },
 }
 const SMART_ROUTING_ENV_KEYS = [
-  'OPENCLAUDE_SMART_ROUTING',
-  'OPENCLAUDE_SMART_ROUTING_SIMPLE',
-  'OPENCLAUDE_SMART_ROUTING_STRONG',
+  'NYXCLAUDE_SMART_ROUTING',
+  'NYXCLAUDE_SMART_ROUTING_SIMPLE',
+  'NYXCLAUDE_SMART_ROUTING_STRONG',
 ] as const
 
 function makeContext(initial: Partial<SettingsJson> = {}) {
@@ -66,9 +66,9 @@ describe('/smartroute command', () => {
   })
 
   test('status shows env-backed role values when settings have no smartRouting block', async () => {
-    process.env.OPENCLAUDE_SMART_ROUTING = '1'
-    process.env.OPENCLAUDE_SMART_ROUTING_SIMPLE = 'mini'
-    process.env.OPENCLAUDE_SMART_ROUTING_STRONG = 'main'
+    process.env.NYXCLAUDE_SMART_ROUTING = '1'
+    process.env.NYXCLAUDE_SMART_ROUTING_SIMPLE = 'mini'
+    process.env.NYXCLAUDE_SMART_ROUTING_STRONG = 'main'
     const ctx = makeContext()
     const res = expectText(await call('', ctx))
     expect(res.value).toContain('status: enabled')
@@ -84,9 +84,9 @@ describe('/smartroute command', () => {
   })
 
   test('on accepts env-backed roles and persists the normalized settings block', async () => {
-    process.env.OPENCLAUDE_SMART_ROUTING = '1'
-    process.env.OPENCLAUDE_SMART_ROUTING_SIMPLE = 'mini'
-    process.env.OPENCLAUDE_SMART_ROUTING_STRONG = 'main'
+    process.env.NYXCLAUDE_SMART_ROUTING = '1'
+    process.env.NYXCLAUDE_SMART_ROUTING_SIMPLE = 'mini'
+    process.env.NYXCLAUDE_SMART_ROUTING_STRONG = 'main'
     const ctx = makeContext()
     const res = expectText(await call('on', ctx))
     expect(res.value).toContain('Smart routing enabled')
@@ -124,9 +124,9 @@ describe('/smartroute command', () => {
   })
 
   test('setting one role preserves env-backed defaults instead of shadowing them with a partial block', async () => {
-    process.env.OPENCLAUDE_SMART_ROUTING = '1'
-    process.env.OPENCLAUDE_SMART_ROUTING_SIMPLE = 'mini'
-    process.env.OPENCLAUDE_SMART_ROUTING_STRONG = 'main'
+    process.env.NYXCLAUDE_SMART_ROUTING = '1'
+    process.env.NYXCLAUDE_SMART_ROUTING_SIMPLE = 'mini'
+    process.env.NYXCLAUDE_SMART_ROUTING_STRONG = 'main'
     const ctx = makeContext()
     await call('simple main', ctx)
     expect(writeSpy).toHaveBeenCalledWith('userSettings', {

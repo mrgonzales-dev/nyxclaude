@@ -88,10 +88,10 @@ const ENV_KEYS = [
   'OPENCODE_API_KEY',
   'DISABLE_COMPACT',
   'DISABLE_AUTO_COMPACT',
-  'OPENCLAUDE_MAX_ACTIVE_MESSAGES',
-  'OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP',
-  'OPENCLAUDE_MAX_MEMORY_MB',
-  'OPENCLAUDE_CONFIG_DIR',
+  'NYXCLAUDE_MAX_ACTIVE_MESSAGES',
+  'NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP',
+  'NYXCLAUDE_MAX_MEMORY_MB',
+  'NYXCLAUDE_CONFIG_DIR',
   'WEB_SEARCH_PROVIDER',
   'WEB_SEARCH_TIMEOUT_SEC',
   'WEB_SEARCH_API',
@@ -119,8 +119,8 @@ beforeEach(() => {
     originalEnv[key] = process.env[key]
     delete process.env[key]
   }
-  tempConfigDir = mkdtempSync(join(tmpdir(), 'openclaude-system-check-'))
-  process.env.OPENCLAUDE_CONFIG_DIR = tempConfigDir
+  tempConfigDir = mkdtempSync(join(tmpdir(), 'nyxclaude-system-check-'))
+  process.env.NYXCLAUDE_CONFIG_DIR = tempConfigDir
   resetSettingsCache()
 })
 
@@ -698,7 +698,7 @@ describe('system-check memory guard diagnostics', () => {
       const results = buildMemoryGuardChecks({
         autoCompactEnabled: true,
         maxMessagesCompactionThreshold,
-        env: { OPENCLAUDE_MAX_ACTIVE_MESSAGES: '500' },
+        env: { NYXCLAUDE_MAX_ACTIVE_MESSAGES: '500' },
       })
 
       expect(results).toContainEqual({
@@ -713,7 +713,7 @@ describe('system-check memory guard diagnostics', () => {
     const results = buildMemoryGuardChecks({
       autoCompactEnabled: true,
       maxMessagesCompactionThreshold: '100',
-      env: { OPENCLAUDE_MAX_ACTIVE_MESSAGES: '500' },
+      env: { NYXCLAUDE_MAX_ACTIVE_MESSAGES: '500' },
     })
 
     expect(results).toContainEqual({
@@ -728,7 +728,7 @@ describe('system-check memory guard diagnostics', () => {
       autoCompactEnabled: true,
       maxMessagesCompactionThreshold: undefined,
       env: {
-        OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP: 'not-a-number',
+        NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP: 'not-a-number',
       },
     })
 
@@ -744,7 +744,7 @@ describe('system-check memory guard diagnostics', () => {
       autoCompactEnabled: true,
       maxMessagesCompactionThreshold: undefined,
       env: {
-        OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP: '500',
+        NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP: '500',
       },
     })
 
@@ -806,8 +806,8 @@ describe('system-check memory guard diagnostics', () => {
       autoCompactEnabled: true,
       maxMessagesCompactionThreshold: '100',
       env: {
-        OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP: '0',
-        OPENCLAUDE_MAX_MEMORY_MB: '4096',
+        NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP: '0',
+        NYXCLAUDE_MAX_MEMORY_MB: '4096',
       },
     })
 
@@ -815,7 +815,7 @@ describe('system-check memory guard diagnostics', () => {
       ok: false,
       label: 'Active-message hard cap',
       detail:
-        'Disabled by OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP=0; long sessions can grow without the active-message safety cap.',
+        'Disabled by NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP=0; long sessions can grow without the active-message safety cap.',
     })
     expect(results).toContainEqual({
       ok: true,
@@ -846,7 +846,7 @@ describe('checkNodeVersion', () => {
       ok: false,
       label: 'Node.js version',
       detail:
-        'Detected 20.11.1. OpenClaude requires Node.js >=22.0.0. Install Node 22 LTS or newer, then reinstall/re-run OpenClaude.',
+        'Detected 20.11.1. Nyxclaude requires Node.js >=22.0.0. Install Node 22 LTS or newer, then reinstall/re-run Nyxclaude.',
     })
   })
 
@@ -862,7 +862,7 @@ describe('checkNodeVersion', () => {
       ok: false,
       label: 'Node.js version',
       detail:
-        'Unable to run `node --version`: spawn node ENOENT. OpenClaude requires Node.js >=22.0.0 on PATH.',
+        'Unable to run `node --version`: spawn node ENOENT. Nyxclaude requires Node.js >=22.0.0 on PATH.',
     })
   })
 
@@ -871,7 +871,7 @@ describe('checkNodeVersion', () => {
       ok: false,
       label: 'Node.js version',
       detail:
-        'Detected 20.11.1. OpenClaude requires Node.js >=22.0.0. Install Node 22 LTS or newer, then reinstall/re-run OpenClaude.',
+        'Detected 20.11.1. Nyxclaude requires Node.js >=22.0.0. Install Node 22 LTS or newer, then reinstall/re-run Nyxclaude.',
     })
   })
 

@@ -18,7 +18,7 @@ const originalEnv = {
   OPENAI_MODEL: process.env.OPENAI_MODEL,
   CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
   GITHUB_TOKEN: process.env.GITHUB_TOKEN,
-  OPENCLAUDE_LOCAL_FAST_PATH: process.env.OPENCLAUDE_LOCAL_FAST_PATH,
+  NYXCLAUDE_LOCAL_FAST_PATH: process.env.NYXCLAUDE_LOCAL_FAST_PATH,
   OPENCODE_API_KEY: process.env.OPENCODE_API_KEY,
 }
 
@@ -190,7 +190,7 @@ beforeEach(async () => {
   delete process.env.OPENAI_API_FORMAT
   delete process.env.CLAUDE_CODE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
-  delete process.env.OPENCLAUDE_LOCAL_FAST_PATH
+  delete process.env.NYXCLAUDE_LOCAL_FAST_PATH
   delete process.env.OPENCODE_API_KEY
 })
 

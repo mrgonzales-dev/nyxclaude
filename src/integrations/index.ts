@@ -143,6 +143,7 @@ export {
   normalizeXiaomiMimoBaseUrl,
   resolveActiveRouteIdFromEnv,
   resolveRouteIdFromBaseUrl,
+  _clearRouteResolutionCache,
   routeSupportsApiFormatSelection,
   routeSupportsAuthHeaders,
   routeSupportsCustomHeaders,

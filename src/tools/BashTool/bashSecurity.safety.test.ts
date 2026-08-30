@@ -15,14 +15,14 @@ describe('bash security check respects safety level (issue #1616)', () => {
   })
 
   it('passes benign command substitution under permissive mode', () => {
-    process.env.OPENCLAUDE_SAFETY_LEVEL = 'permissive'
+    process.env.NYXCLAUDE_SAFETY_LEVEL = 'permissive'
     resetSafetyLevelCache()
     const result = bashCommandIsSafe_DEPRECATED('echo "built $(date)"')
     expect(result.behavior).toBe('passthrough')
   })
 
   it('passes benign command substitution in the async guard under permissive mode', async () => {
-    process.env.OPENCLAUDE_SAFETY_LEVEL = 'permissive'
+    process.env.NYXCLAUDE_SAFETY_LEVEL = 'permissive'
     resetSafetyLevelCache()
     const result = await bashCommandIsSafeAsync_DEPRECATED('echo "built $(date)"')
     expect(result.behavior).toBe('passthrough')

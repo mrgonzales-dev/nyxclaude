@@ -81,9 +81,9 @@ describe('readSmartRouting', () => {
   describe('env fallback (settings override env)', () => {
     test('env enables routing when settings say nothing', () => {
       const env = {
-        OPENCLAUDE_SMART_ROUTING: '1',
-        OPENCLAUDE_SMART_ROUTING_SIMPLE: 'mini',
-        OPENCLAUDE_SMART_ROUTING_STRONG: 'main',
+        NYXCLAUDE_SMART_ROUTING: '1',
+        NYXCLAUDE_SMART_ROUTING_SIMPLE: 'mini',
+        NYXCLAUDE_SMART_ROUTING_STRONG: 'main',
       } as unknown as NodeJS.ProcessEnv
       expect(readSmartRouting(null, env)).toEqual({
         enabled: true,
@@ -96,9 +96,9 @@ describe('readSmartRouting', () => {
 
     test('settings block present (even disabled) overrides env', () => {
       const env = {
-        OPENCLAUDE_SMART_ROUTING: '1',
-        OPENCLAUDE_SMART_ROUTING_SIMPLE: 'mini',
-        OPENCLAUDE_SMART_ROUTING_STRONG: 'main',
+        NYXCLAUDE_SMART_ROUTING: '1',
+        NYXCLAUDE_SMART_ROUTING_SIMPLE: 'mini',
+        NYXCLAUDE_SMART_ROUTING_STRONG: 'main',
       } as unknown as NodeJS.ProcessEnv
       // settings explicitly disables -> env's enable does not apply
       expect(readSmartRouting(settingsWith({ enabled: false }), env)).toEqual({ enabled: false })

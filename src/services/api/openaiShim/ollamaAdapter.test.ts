@@ -21,7 +21,7 @@ const originalEnv = {
   CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
   CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
   CLAUDE_CODE_USE_MISTRAL: process.env.CLAUDE_CODE_USE_MISTRAL,
-  OPENCLAUDE_OLLAMA_NUM_CTX: process.env.OPENCLAUDE_OLLAMA_NUM_CTX,
+  NYXCLAUDE_OLLAMA_NUM_CTX: process.env.NYXCLAUDE_OLLAMA_NUM_CTX,
   OLLAMA_CONTEXT_LENGTH: process.env.OLLAMA_CONTEXT_LENGTH,
 }
 const originalFetch = globalThis.fetch
@@ -39,7 +39,7 @@ beforeEach(async () => {
   delete process.env.CLAUDE_CODE_USE_OPENAI
   delete process.env.CLAUDE_CODE_USE_GEMINI
   delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.OPENCLAUDE_OLLAMA_NUM_CTX
+  delete process.env.NYXCLAUDE_OLLAMA_NUM_CTX
   delete process.env.OLLAMA_CONTEXT_LENGTH
 })
 
@@ -89,9 +89,9 @@ test('builds native URLs and selects the configured Ollama context length', () =
   expect(getOllamaNumCtx()).toBe(32768)
   process.env.OLLAMA_CONTEXT_LENGTH = '32768'
   expect(getOllamaNumCtx()).toBe(32768)
-  process.env.OPENCLAUDE_OLLAMA_NUM_CTX = '65536'
+  process.env.NYXCLAUDE_OLLAMA_NUM_CTX = '65536'
   expect(getOllamaNumCtx()).toBe(65536)
-  process.env.OPENCLAUDE_OLLAMA_NUM_CTX = 'invalid'
+  process.env.NYXCLAUDE_OLLAMA_NUM_CTX = 'invalid'
   expect(getOllamaNumCtx()).toBe(32768)
 })
 

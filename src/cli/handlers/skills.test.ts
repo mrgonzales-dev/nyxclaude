@@ -47,7 +47,7 @@ title: Sample Skill
 description: Sample skill used by install tests.
 version: 0.1.0
 category: test
-author: OpenClaude Tests
+author: Nyxclaude Tests
 license: MIT
 trust: local
 ---
@@ -64,7 +64,7 @@ title: Git Commit
 description: Nested git commit skill used by install tests.
 version: 0.1.0
 category: test
-author: OpenClaude Tests
+author: Nyxclaude Tests
 license: MIT
 trust: local
 ---
@@ -89,7 +89,7 @@ title: Unsafe Skill
 description: Invalid skill used by install tests.
 version: 0.1.0
 category: test
-author: OpenClaude Tests
+author: Nyxclaude Tests
 license: MIT
 trust: local
 ---
@@ -145,7 +145,7 @@ function buildRegistryEntry(
     trust: 'official',
     version: '0.1.0',
     license: 'MIT',
-    author: 'OpenClaude Tests',
+    author: 'Nyxclaude Tests',
     source: join(sourceDir, 'SKILL.md'),
     ...overrides,
   }
@@ -153,7 +153,7 @@ function buildRegistryEntry(
 
 function stagedInstallTempDirs(): string[] {
   return readdirSync(tmpdir()).filter(entry =>
-    entry.startsWith('openclaude-skill-install-'),
+    entry.startsWith('nyxclaude-skill-install-'),
   )
 }
 
@@ -162,7 +162,7 @@ function assertNoNewStagedInstallDirs(before: string[]): void {
 }
 
 async function withTempDir<T>(fn: (tempDir: string) => Promise<T>): Promise<T> {
-  const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-skill-install-test-'))
+  const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-skill-install-test-'))
   try {
     return await fn(tempDir)
   } finally {
@@ -380,7 +380,7 @@ test.serial('installs a local skill directory into project skills by default', a
     await skillsInstallHandler(source, { projectDir: cwd })
 
     const installed = readFileSync(
-      join(cwd, '.openclaude', 'skills', 'sample-skill', 'SKILL.md'),
+      join(cwd, '.nyxclaude', 'skills', 'sample-skill', 'SKILL.md'),
       'utf8',
     )
     assert.equal(installed, VALID_SKILL)
@@ -440,7 +440,7 @@ test.serial('installs existing minimal local skill metadata format', async () =>
 
     assert.equal(
       readFileSync(
-        join(cwd, '.openclaude', 'skills', 'minimal-skill', 'SKILL.md'),
+        join(cwd, '.nyxclaude', 'skills', 'minimal-skill', 'SKILL.md'),
         'utf8',
       ),
       MINIMAL_EXISTING_FORMAT_SKILL,
@@ -460,13 +460,13 @@ test.serial('preserves namespaced names when installing local skill directories'
 
     const nestedPath = join(
       cwd,
-      '.openclaude',
+      '.nyxclaude',
       'skills',
       'git',
       'commit',
       'SKILL.md',
     )
-    const flatPath = join(cwd, '.openclaude', 'skills', 'commit', 'SKILL.md')
+    const flatPath = join(cwd, '.nyxclaude', 'skills', 'commit', 'SKILL.md')
     assert.equal(existsSync(flatPath), false)
     assert.equal(readFileSync(nestedPath, 'utf8'), NAMESPACED_SKILL)
   })
@@ -476,11 +476,11 @@ test.serial('refuses to overwrite installed skills without --force', async () =>
   await withTempDir(async tempDir => {
     const cwd = join(tempDir, 'project')
     const source = writeSkillDir(join(tempDir, 'source'))
-    mkdirSync(join(cwd, '.openclaude', 'skills', 'sample-skill'), {
+    mkdirSync(join(cwd, '.nyxclaude', 'skills', 'sample-skill'), {
       recursive: true,
     })
     writeFileSync(
-      join(cwd, '.openclaude', 'skills', 'sample-skill', 'SKILL.md'),
+      join(cwd, '.nyxclaude', 'skills', 'sample-skill', 'SKILL.md'),
       'existing skill content',
       'utf8',
     )
@@ -489,7 +489,7 @@ test.serial('refuses to overwrite installed skills without --force', async () =>
 
     assert.equal(process.exitCode, 1)
     const installed = readFileSync(
-      join(cwd, '.openclaude', 'skills', 'sample-skill', 'SKILL.md'),
+      join(cwd, '.nyxclaude', 'skills', 'sample-skill', 'SKILL.md'),
       'utf8',
     )
     assert.equal(installed, 'existing skill content')
@@ -506,11 +506,11 @@ test.serial('installs a registry skill by id from a local registry file', async 
       registryPath,
       JSON.stringify([
         buildRegistryEntry(sourceDir, {
-          repo: 'https://github.com/Gitlawb/openclaude-skills',
+          repo: 'https://github.com/Gitlawb/nyxclaude-skills',
           path: 'skills/sample-skill/SKILL.md',
-          homepage: 'https://github.com/Gitlawb/openclaude-skills/tree/main/skills/sample-skill',
+          homepage: 'https://github.com/Gitlawb/nyxclaude-skills/tree/main/skills/sample-skill',
           sha256: sha256OfSkillSource(VALID_SKILL),
-          min_openclaude_version: '0.1.0',
+          min_nyxclaude_version: '0.1.0',
           tools_required: ['Read', 'Bash'],
         }),
       ]),
@@ -524,18 +524,18 @@ test.serial('installs a registry skill by id from a local registry file', async 
 
     const installedMetadata = JSON.parse(
       readFileSync(
-        join(cwd, '.openclaude', 'skills', 'sample-skill', 'skill.json'),
+        join(cwd, '.nyxclaude', 'skills', 'sample-skill', 'skill.json'),
         'utf8',
       ),
     ) as {
       trust: string
       sha256: string
-      min_openclaude_version: string
+      min_nyxclaude_version: string
       tools_required: string[]
     }
     assert.equal(installedMetadata.trust, 'official')
     assert.equal(installedMetadata.sha256, sha256OfSkillSource(VALID_SKILL))
-    assert.equal(installedMetadata.min_openclaude_version, '0.1.0')
+    assert.equal(installedMetadata.min_nyxclaude_version, '0.1.0')
     assert.deepEqual(installedMetadata.tools_required, ['Read', 'Bash'])
   })
 })
@@ -566,7 +566,7 @@ test.serial('resolves relative registry skill sources from the registry file', a
     assert.equal(process.exitCode, 0)
     assert.equal(
       readFileSync(
-        join(cwd, '.openclaude', 'skills', 'sample-skill', 'SKILL.md'),
+        join(cwd, '.nyxclaude', 'skills', 'sample-skill', 'SKILL.md'),
         'utf8',
       ),
       VALID_SKILL,
@@ -595,12 +595,12 @@ test.serial('rejects registry skills without a sha256 pin', async () => {
     })
 
     assert.equal(process.exitCode, 1)
-    assert.equal(existsSync(join(cwd, '.openclaude', 'skills')), false)
+    assert.equal(existsSync(join(cwd, '.nyxclaude', 'skills')), false)
     assertNoNewStagedInstallDirs(stagedBefore)
   })
 })
 
-test.serial('rejects registry skills that require a newer OpenClaude version', async () => {
+test.serial('rejects registry skills that require a newer Nyxclaude version', async () => {
   await withTempDir(async tempDir => {
     const cwd = join(tempDir, 'project')
     const sourceDir = writeSkillDir(join(tempDir, 'registry-source'))
@@ -611,7 +611,7 @@ test.serial('rejects registry skills that require a newer OpenClaude version', a
       JSON.stringify([
         buildRegistryEntry(sourceDir, {
           sha256: sha256OfSkillSource(VALID_SKILL),
-          min_openclaude_version: '999.0.0',
+          min_nyxclaude_version: '999.0.0',
         }),
       ]),
       'utf8',
@@ -624,7 +624,7 @@ test.serial('rejects registry skills that require a newer OpenClaude version', a
     })
 
     assert.equal(process.exitCode, 1)
-    assert.equal(existsSync(join(cwd, '.openclaude', 'skills')), false)
+    assert.equal(existsSync(join(cwd, '.nyxclaude', 'skills')), false)
     assertNoNewStagedInstallDirs(stagedBefore)
   })
 })
@@ -641,7 +641,7 @@ test.serial('rejects path-like skill names before installing raw markdown', asyn
     await skillsInstallHandler(sourceFile, { projectDir: cwd })
 
     assert.equal(process.exitCode, 1)
-    assert.equal(existsSync(join(cwd, '.openclaude', 'skills')), false)
+    assert.equal(existsSync(join(cwd, '.nyxclaude', 'skills')), false)
   })
 })
 
@@ -668,7 +668,7 @@ test.serial('rejects registry names that would escape the install root', async (
     })
 
     assert.equal(process.exitCode, 1)
-    assert.equal(existsSync(join(cwd, '.openclaude', 'skills')), false)
+    assert.equal(existsSync(join(cwd, '.nyxclaude', 'skills')), false)
   })
 })
 
@@ -683,7 +683,7 @@ test.serial('rejects direct HTTP URL installs without a sha256 pin', async () =>
     })
 
     assert.equal(process.exitCode, 1)
-    assert.equal(existsSync(join(cwd, '.openclaude', 'skills')), false)
+    assert.equal(existsSync(join(cwd, '.nyxclaude', 'skills')), false)
     assertNoNewStagedInstallDirs(stagedBefore)
   })
 })
@@ -725,7 +725,7 @@ test.serial('removes only the targeted project skill directory', async () => {
     })
     await withTempDir(async tempDir => {
       const cwd = join(tempDir, 'project')
-      const skillsRoot = join(cwd, '.openclaude', 'skills')
+      const skillsRoot = join(cwd, '.nyxclaude', 'skills')
       const targetName = 'remove-target-skill'
       const target = join(skillsRoot, targetName)
       const sibling = join(skillsRoot, 'sibling-skill')
@@ -866,7 +866,7 @@ test.serial('does not remove skills from --add-dir directories', async () => {
       const cwd = join(tempDir, 'project')
       const addDir = join(tempDir, 'additional-project')
       const targetName = 'add-dir-skill'
-      const target = join(addDir, '.openclaude', 'skills', targetName)
+      const target = join(addDir, '.nyxclaude', 'skills', targetName)
       const originalSettingsState = enableUserAndProjectSettingSources()
       mkdirSync(cwd, { recursive: true })
       mkdirSync(target, { recursive: true })

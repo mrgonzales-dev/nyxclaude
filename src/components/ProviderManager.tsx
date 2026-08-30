@@ -235,7 +235,7 @@ const FORM_STEPS: Array<{
 
 const GITHUB_PROVIDER_ID = '__github_models__'
 const GITHUB_PROVIDER_LABEL = 'GitHub Models'
-const ANTHROPIC_PROVIDER_LABEL = 'Anthropic (built-in)'
+const ANTHROPIC_PROVIDER_LABEL = 'Built-in (Anthropic API)'
 const GITHUB_PROVIDER_DEFAULT_MODEL = 'github:copilot'
 const GITHUB_PROVIDER_DEFAULT_BASE_URL = 'https://models.github.ai/inference'
 const CODEX_OAUTH_PROVIDER_NAME = 'Codex OAuth'
@@ -2947,7 +2947,7 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
     if (includeAnthropic && (activeProfileId || isGithubActive)) {
       selectOptions.push({
         value: ANTHROPIC_DEFAULT_PROFILE_ID,
-        label: 'Use Anthropic (built-in)',
+        label: 'Use Built-in (Anthropic API)',
         description:
           'Switch back to Nyxclaude now without a restart — saved profiles are kept',
       })

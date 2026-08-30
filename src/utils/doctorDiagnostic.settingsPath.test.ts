@@ -13,7 +13,7 @@ let tempDir: string | null = null
 let originalCwd: string | null = null
 
 function createProject(): string {
-  tempDir = mkdtempSync(join(tmpdir(), 'openclaude-settings-drift-'))
+  tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-settings-drift-'))
   return tempDir
 }
 
@@ -53,7 +53,7 @@ describe('detectStaleProjectSettingsPaths', () => {
   test('does not warn when the matching canonical project settings file exists', async () => {
     const project = createProject()
     writeJson(join(project, '.claude', 'settings.json'))
-    writeJson(join(project, '.openclaude', 'settings.json'))
+    writeJson(join(project, '.nyxclaude', 'settings.json'))
 
     await expect(detectStaleProjectSettingsPaths(project)).resolves.toBeNull()
   })
@@ -66,8 +66,8 @@ describe('detectStaleProjectSettingsPaths', () => {
 
   test('does not warn when only canonical settings files exist', async () => {
     const project = createProject()
-    writeJson(join(project, '.openclaude', 'settings.json'))
-    writeJson(join(project, '.openclaude', 'settings.local.json'))
+    writeJson(join(project, '.nyxclaude', 'settings.json'))
+    writeJson(join(project, '.nyxclaude', 'settings.local.json'))
 
     await expect(detectStaleProjectSettingsPaths(project)).resolves.toBeNull()
   })

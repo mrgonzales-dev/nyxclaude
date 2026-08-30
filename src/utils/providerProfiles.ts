@@ -47,6 +47,7 @@ import {
   routeSupportsCustomHeaders,
   resolveProfileRoute,
   resolveRouteIdFromBaseUrl,
+  _clearRouteResolutionCache,
   type ResolvedProfileRoute,
   type ProviderPreset,
 } from '../integrations/index.js'
@@ -897,6 +898,7 @@ export function clearProviderProfileEnvFromProcessEnv(
   clearManagedProfileEnv(processEnv)
   delete processEnv[PROFILE_ENV_APPLIED_FLAG]
   delete processEnv[PROFILE_ENV_APPLIED_ID]
+  _clearRouteResolutionCache()
 }
 
 export function applyProviderProfileToProcessEnv(
@@ -906,6 +908,9 @@ export function applyProviderProfileToProcessEnv(
   const { route, compatibilityMode } = resolveProfileCompatibility(profile.provider)
   const primaryModel = options?.primaryModel ?? getPrimaryModel(profile.model)
   let profileEnv: ProfileEnv
+
+  // Invalidate route resolution caches since env vars are about to change.
+  _clearRouteResolutionCache()
 
   if (route.routeId === 'unknown-fallback') {
     // Safe fallback for unrecognised providers — OpenAI-compatible so the

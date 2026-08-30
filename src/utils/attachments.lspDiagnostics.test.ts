@@ -191,7 +191,7 @@ describe('LSP diagnostic attachment filtering', () => {
             start: { line: 0, character: 0 },
             end: { line: 0, character: 0 },
           },
-          source: 'openclaude-lsp',
+          source: 'nyxclaude-lsp',
           code: 'diagnostic-storm',
         },
       ],

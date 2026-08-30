@@ -113,7 +113,7 @@ mock.module('./execFileNoThrow.js', () => ({
 }))
 
 beforeEach(async () => {
-  await acquireSharedMutationLock('utils/openclaudeInstallSurfaces.test.ts')
+  await acquireSharedMutationLock('utils/nyxclaudeInstallSurfaces.test.ts')
 })
 
 afterEach(() => {
@@ -159,34 +159,34 @@ async function mockEnvPlatform(platform: 'darwin' | 'win32') {
   }))
 }
 
-test('install command displays ~/.local/bin/openclaude on non-Windows', async () => {
+test('install command displays ~/.local/bin/nyxclaude on non-Windows', async () => {
   await mockEnvPlatform('darwin')
 
   const { getInstallationPath } = await importFreshInstallCommand()
 
-  expect(getInstallationPath()).toBe('~/.local/bin/openclaude')
+  expect(getInstallationPath()).toBe('~/.local/bin/nyxclaude')
 })
 
-test('install command displays openclaude.exe path on Windows', async () => {
+test('install command displays nyxclaude.exe path on Windows', async () => {
   await mockEnvPlatform('win32')
 
   const { getInstallationPath } = await importFreshInstallCommand()
 
   expect(getInstallationPath()).toBe(
-    join(homedir(), '.local', 'bin', 'openclaude.exe').replace(/\//g, '\\'),
+    join(homedir(), '.local', 'bin', 'nyxclaude.exe').replace(/\//g, '\\'),
   )
 })
 
-test('native installer uses openclaude launcher for OpenClaude package', async () => {
+test('native installer uses nyxclaude launcher for Nyxclaude package', async () => {
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
+    PACKAGE_URL: 'nyxclaude',
   }
 
   const { getBinaryName, getExecutableName } = await importFreshInstaller()
 
   expect(getBinaryName('linux-x64')).toBe('claude')
-  expect(getExecutableName('linux-x64')).toBe('openclaude')
-  expect(getExecutableName('win32-x64')).toBe('openclaude.exe')
+  expect(getExecutableName('linux-x64')).toBe('nyxclaude')
+  expect(getExecutableName('win32-x64')).toBe('nyxclaude.exe')
 })
 
 test('native installer preserves claude launcher for Anthropic package', async () => {
@@ -200,23 +200,23 @@ test('native installer preserves claude launcher for Anthropic package', async (
   expect(getExecutableName('win32-x64')).toBe('claude.exe')
 })
 
-test('deep-link protocol resolver uses openclaude launcher for OpenClaude package', async () => {
+test('deep-link protocol resolver uses nyxclaude launcher for Nyxclaude package', async () => {
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
+    PACKAGE_URL: 'nyxclaude',
   }
 
   const { getProtocolBinaryName } = await importFreshProtocolRegistration()
 
-  expect(getProtocolBinaryName('linux')).toBe('openclaude')
-  expect(getProtocolBinaryName('win32')).toBe('openclaude.exe')
+  expect(getProtocolBinaryName('linux')).toBe('nyxclaude')
+  expect(getProtocolBinaryName('win32')).toBe('nyxclaude.exe')
 })
 
 test('install command repairs launcher after npm cleanup before final check', async () => {
   // A native distribution must be configured for the native install flow to
   // run at all; without it the command short-circuits to the npm-only path.
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
-    NATIVE_PACKAGE_URL: '@gitlawb/openclaude-native',
+    PACKAGE_URL: 'nyxclaude',
+    NATIVE_PACKAGE_URL: 'nyxclaude-native',
     DISPLAY_VERSION: '0.0.0-test',
   }
 
@@ -269,7 +269,7 @@ test('install command repairs launcher after npm cleanup before final check', as
         target: '1.2.3',
         onDone: (result: string) => {
           try {
-            expect(result).toBe('OpenClaude installation completed successfully')
+            expect(result).toBe('Nyxclaude installation completed successfully')
             resolve()
           } catch (error) {
             reject(error)
@@ -299,19 +299,19 @@ test('install command repairs launcher after npm cleanup before final check', as
   ])
 })
 
-test('cleanupNpmInstallations removes only openclaude local install dir', async () => {
-  const testHome = await fsPromises.mkdtemp(join(tmpdir(), 'openclaude-cleanup-'))
-  const openClaudeLocalDir = join(testHome, '.openclaude', 'local')
+test('cleanupNpmInstallations removes only nyxclaude local install dir', async () => {
+  const testHome = await fsPromises.mkdtemp(join(tmpdir(), 'nyxclaude-cleanup-'))
+  const nyxClaudeLocalDir = join(testHome, '.nyxclaude', 'local')
   const claudeLocalDir = join(testHome, '.claude', 'local')
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
-    NATIVE_PACKAGE_URL: '@gitlawb/openclaude-native',
+    PACKAGE_URL: 'nyxclaude',
+    NATIVE_PACKAGE_URL: 'nyxclaude-native',
   }
   process.env.HOME = testHome
   process.env.USERPROFILE = testHome
-  process.env.OPENCLAUDE_CONFIG_DIR = join(testHome, '.openclaude')
+  process.env.NYXCLAUDE_CONFIG_DIR = join(testHome, '.nyxclaude')
   delete process.env.CLAUDE_CONFIG_DIR
-  await fsPromises.mkdir(openClaudeLocalDir, { recursive: true })
+  await fsPromises.mkdir(nyxClaudeLocalDir, { recursive: true })
   await fsPromises.mkdir(claudeLocalDir, { recursive: true })
 
   simulateNpmUninstallFailure = true
@@ -320,28 +320,28 @@ test('cleanupNpmInstallations removes only openclaude local install dir', async 
     const { cleanupNpmInstallations } = await importFreshInstaller()
     await cleanupNpmInstallations()
 
-    await expect(fsPromises.stat(openClaudeLocalDir)).rejects.toThrow()
+    await expect(fsPromises.stat(nyxClaudeLocalDir)).rejects.toThrow()
     await expect(fsPromises.stat(claudeLocalDir)).resolves.toBeTruthy()
-    expect(npmUninstallPackages).toContain('@gitlawb/openclaude')
+    expect(npmUninstallPackages).toContain('nyxclaude')
     expect(npmUninstallPackages).not.toContain('@anthropic-ai/claude-code')
   } finally {
     await fsPromises.rm(testHome, { recursive: true, force: true })
   }
 })
 
-test('cleanupNpmInstallations manual fallback removes openclaude npm shim', async () => {
+test('cleanupNpmInstallations manual fallback removes nyxclaude npm shim', async () => {
   await mockEnvPlatform('darwin')
 
-  const testHome = join(process.cwd(), 'work', 'openclaude-install-home-test')
+  const testHome = join(process.cwd(), 'work', 'nyxclaude-install-home-test')
   const npmPrefix = join(testHome, '.npm-global')
-  const shimPath = join(npmPrefix, 'bin', 'openclaude')
+  const shimPath = join(npmPrefix, 'bin', 'nyxclaude')
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
-    NATIVE_PACKAGE_URL: '@gitlawb/openclaude-native',
+    PACKAGE_URL: 'nyxclaude',
+    NATIVE_PACKAGE_URL: 'nyxclaude-native',
   }
   process.env.HOME = testHome
   process.env.USERPROFILE = testHome
-  process.env.OPENCLAUDE_CONFIG_DIR = join(testHome, '.openclaude')
+  process.env.NYXCLAUDE_CONFIG_DIR = join(testHome, '.nyxclaude')
   delete process.env.CLAUDE_CONFIG_DIR
   fakeNpmPrefix = npmPrefix
   simulateNpmUninstallEnotempty = true
@@ -361,15 +361,15 @@ test('cleanupNpmInstallations manual fallback removes openclaude npm shim', asyn
 
 // ---------------------------------------------------------------------------
 // npm-only builds (NATIVE_PACKAGE_URL unset): every native-installer surface
-// must stay inert. Without these gates, `openclaude install` downloads the
+// must stay inert. Without these gates, `nyxclaude install` downloads the
 // first-party Claude Code binary from the GCS bucket, symlinks
-// ~/.local/bin/openclaude to it, and uninstalls the npm package the user is
+// ~/.local/bin/nyxclaude to it, and uninstalls the npm package the user is
 // actually running.
 // ---------------------------------------------------------------------------
 
 test('installLatest is inert without a native distribution', async () => {
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
+    PACKAGE_URL: 'nyxclaude',
     NATIVE_PACKAGE_URL: undefined,
   }
   recordedDownloadCalls = []
@@ -387,7 +387,7 @@ test('installLatest is inert without a native distribution', async () => {
 
 test('repairNativeLauncher is inert without a native distribution', async () => {
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
+    PACKAGE_URL: 'nyxclaude',
     NATIVE_PACKAGE_URL: undefined,
   }
 
@@ -399,16 +399,16 @@ test('repairNativeLauncher is inert without a native distribution', async () => 
 })
 
 test('cleanupNpmInstallations keeps the npm install without a native distribution', async () => {
-  const testHome = await fsPromises.mkdtemp(join(tmpdir(), 'openclaude-npm-only-'))
-  const openClaudeLocalDir = join(testHome, '.openclaude', 'local')
+  const testHome = await fsPromises.mkdtemp(join(tmpdir(), 'nyxclaude-npm-only-'))
+  const nyxClaudeLocalDir = join(testHome, '.nyxclaude', 'local')
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
+    PACKAGE_URL: 'nyxclaude',
     NATIVE_PACKAGE_URL: undefined,
   }
   process.env.HOME = testHome
   process.env.USERPROFILE = testHome
-  process.env.OPENCLAUDE_CONFIG_DIR = join(testHome, '.openclaude')
-  await fsPromises.mkdir(openClaudeLocalDir, { recursive: true })
+  process.env.NYXCLAUDE_CONFIG_DIR = join(testHome, '.nyxclaude')
+  await fsPromises.mkdir(nyxClaudeLocalDir, { recursive: true })
   // If the gate regressed, uninstalls would run and surface as errors here
   // instead of hitting the machine's real npm prefix.
   simulateNpmUninstallFailure = true
@@ -418,7 +418,7 @@ test('cleanupNpmInstallations keeps the npm install without a native distributio
     const result = await cleanupNpmInstallations()
 
     expect(result).toEqual({ removed: 0, errors: [], warnings: [] })
-    await expect(fsPromises.stat(openClaudeLocalDir)).resolves.toBeTruthy()
+    await expect(fsPromises.stat(nyxClaudeLocalDir)).resolves.toBeTruthy()
   } finally {
     await fsPromises.rm(testHome, { recursive: true, force: true })
   }
@@ -426,7 +426,7 @@ test('cleanupNpmInstallations keeps the npm install without a native distributio
 
 test('checkInstall reports nothing without a native distribution', async () => {
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
+    PACKAGE_URL: 'nyxclaude',
     NATIVE_PACKAGE_URL: undefined,
   }
   delete process.env.DISABLE_INSTALLATION_CHECKS
@@ -438,7 +438,7 @@ test('checkInstall reports nothing without a native distribution', async () => {
 
 test('cleanupOldVersions leaves the shared versions directory alone without a native distribution', async () => {
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
+    PACKAGE_URL: 'nyxclaude',
     NATIVE_PACKAGE_URL: undefined,
   }
 
@@ -446,7 +446,7 @@ test('cleanupOldVersions leaves the shared versions directory alone without a na
   // native Claude Code install. Redirect all XDG roots to a temp dir and
   // plant more unprotected version binaries than VERSION_RETENTION_COUNT:
   // an ungated cleanup would delete all but the newest two.
-  const xdgRoot = await fsPromises.mkdtemp(join(tmpdir(), 'openclaude-xdg-'))
+  const xdgRoot = await fsPromises.mkdtemp(join(tmpdir(), 'nyxclaude-xdg-'))
   const versionsDir = join(xdgRoot, 'data', 'claude', 'versions')
   await fsPromises.mkdir(versionsDir, { recursive: true })
   const versions = ['1.0.0', '1.0.1', '1.0.2', '1.0.3']
@@ -477,7 +477,7 @@ test('cleanupOldVersions leaves the shared versions directory alone without a na
 
 test('install command skips the native installer without a native distribution', async () => {
   ;(globalThis as Record<string, unknown>).MACRO = {
-    PACKAGE_URL: '@gitlawb/openclaude',
+    PACKAGE_URL: 'nyxclaude',
     NATIVE_PACKAGE_URL: undefined,
     DISPLAY_VERSION: '0.0.0-test',
   }
@@ -527,7 +527,7 @@ test('install command skips the native installer without a native distribution',
       createElement(Install, {
         onDone: (result: string) => {
           try {
-            expect(result).toBe('OpenClaude installation completed successfully')
+            expect(result).toBe('Nyxclaude installation completed successfully')
             resolve()
           } catch (error) {
             reject(error)

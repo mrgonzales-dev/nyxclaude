@@ -189,7 +189,7 @@ test('codex auth error redacts descriptor-declared provider secret values used a
   const providerSecret = 'ogw-provider-secret'
   process.env.CLAUDE_CODE_USE_OPENAI = '1'
   process.env.CLAUDE_CODE_SIMPLE = '1'
-  process.env.CODEX_AUTH_JSON_PATH = `/tmp/openclaude-provider-validation-missing-auth-${process.pid}.json`
+  process.env.CODEX_AUTH_JSON_PATH = `/tmp/nyxclaude-provider-validation-missing-auth-${process.pid}.json`
   process.env.OPENAI_BASE_URL = 'https://chatgpt.com/backend-api/codex'
   process.env.OPENAI_MODEL = providerSecret
   process.env.OPENGATEWAY_API_KEY = providerSecret
@@ -309,7 +309,7 @@ test('xai validation surfaces sign-in guidance when no credential source is set'
   })
   expect(error).not.toBeNull()
   expect(error!).toContain('XAI_API_KEY is required')
-  expect(error!).toContain('openclaude auth xai login')
+  expect(error!).toContain('nyxclaude auth xai login')
 })
 
 test('xai validation accepts stored OAuth credentials even without an env marker', async () => {

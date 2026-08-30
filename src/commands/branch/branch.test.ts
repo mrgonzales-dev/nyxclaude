@@ -244,10 +244,10 @@ async function setupSourceTranscript(
   entries: Record<string, unknown>[],
   options: { separateSessionProjectDir?: boolean } = {},
 ): Promise<string> {
-  const projectCwd = await mkdtemp(join(tmpdir(), 'openclaude-branch-cwd-'))
-  const configDir = await mkdtemp(join(tmpdir(), 'openclaude-branch-config-'))
+  const projectCwd = await mkdtemp(join(tmpdir(), 'nyxclaude-branch-cwd-'))
+  const configDir = await mkdtemp(join(tmpdir(), 'nyxclaude-branch-config-'))
   const sessionProjectDir = options.separateSessionProjectDir
-    ? await mkdtemp(join(tmpdir(), 'openclaude-branch-session-dir-'))
+    ? await mkdtemp(join(tmpdir(), 'nyxclaude-branch-session-dir-'))
     : null
   tempDirs.push(projectCwd, configDir)
   if (sessionProjectDir) tempDirs.push(sessionProjectDir)

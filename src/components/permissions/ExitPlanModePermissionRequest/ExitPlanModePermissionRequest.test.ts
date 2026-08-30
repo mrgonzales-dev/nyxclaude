@@ -47,7 +47,7 @@ describe('buildPlanApprovalOptions', () => {
       usedPercent: 42,
       isAutoModeAvailable: false,
       dangerousPlanExitMode: 'fullAccess',
-      planAuthorName: 'OpenClaude',
+      planAuthorName: 'Nyxclaude',
       onFeedbackChange: () => {},
     })
 
@@ -68,7 +68,7 @@ describe('buildPlanApprovalOptions', () => {
       usedPercent: 42,
       isAutoModeAvailable: false,
       dangerousPlanExitMode: 'bypassPermissions',
-      planAuthorName: 'OpenClaude',
+      planAuthorName: 'Nyxclaude',
       onFeedbackChange: () => {},
     })
 

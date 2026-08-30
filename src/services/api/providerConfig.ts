@@ -26,6 +26,7 @@ import { getCatalogEntriesForRoute } from '../../integrations/registry.js'
 import {
   getRouteDefaultModel,
   isClinePassBaseUrl,
+  _clearRouteResolutionCache,
 } from '../../integrations/routeMetadata.js'
 import {
   openAIShimSupportsApiFormatForModel,
@@ -1188,7 +1189,27 @@ export function resolveProviderRequest(options?: {
   }
 }
 
+// Memoization: getAdditionalModelOptionsCacheScope is a pure function of
+// process.env and is called thousands of times during startup via
+// optionMatchesModel → getRouteCatalogModelOption → getActiveOpenAIRouteId.
+// Cache the result; clear on profile switch via _clearRouteResolutionCache.
+let _additionalModelOptionsCacheScope: string | null | undefined = undefined
+
+export function _clearAdditionalModelOptionsCacheScope(): void {
+  _additionalModelOptionsCacheScope = undefined
+}
+
 export function getAdditionalModelOptionsCacheScope(): string | null {
+  if (_additionalModelOptionsCacheScope !== undefined) {
+    return _additionalModelOptionsCacheScope
+  }
+
+  const result = _getAdditionalModelOptionsCacheScopeUncached()
+  _additionalModelOptionsCacheScope = result
+  return result
+}
+
+function _getAdditionalModelOptionsCacheScopeUncached(): string | null {
   if (!isEnvTruthy(process.env.CLAUDE_CODE_USE_OPENAI)) {
     if (!isEnvTruthy(process.env.CLAUDE_CODE_USE_GEMINI) &&
         !isEnvTruthy(process.env.CLAUDE_CODE_USE_MISTRAL) &&

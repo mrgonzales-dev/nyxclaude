@@ -38,7 +38,7 @@ const envKeys = [
   'CLAUDE_DISABLE_STREAM_WATCHDOG',
   'CLAUDE_ENABLE_STREAM_WATCHDOG',
   'CLAUDE_STREAM_IDLE_TIMEOUT_MS',
-  'OPENCLAUDE_MAX_RETRIES',
+  'NYXCLAUDE_MAX_RETRIES',
   'VCR_RECORD',
 ] as const
 
@@ -302,7 +302,7 @@ beforeEach(async () => {
   process.env.ANTHROPIC_API_KEY = 'sk-test-watchdog'
   process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = fixturesRoot
   process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS = '25'
-  process.env.OPENCLAUDE_MAX_RETRIES = '0'
+  process.env.NYXCLAUDE_MAX_RETRIES = '0'
   process.env.VCR_RECORD = '1'
 })
 

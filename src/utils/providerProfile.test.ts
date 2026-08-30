@@ -60,7 +60,7 @@ async function importFreshProviderProfileModule() {
   return import(`./providerProfile.js?ts=${nonce}`)
 }
 
-const missingCodexAuthPath = join(tmpdir(), 'openclaude-missing-codex-auth.json')
+const missingCodexAuthPath = join(tmpdir(), 'nyxclaude-missing-codex-auth.json')
 
 beforeEach(async () => {
   await acquireEnvMutex()
@@ -1273,7 +1273,7 @@ test('codex launch ignores placeholder codex env keys', async () => {
 })
 
 test('codex launch prefers auth account id over stale persisted value', async () => {
-  const codexHome = mkdtempSync(join(tmpdir(), 'openclaude-codex-'))
+  const codexHome = mkdtempSync(join(tmpdir(), 'nyxclaude-codex-'))
   try {
     writeFileSync(
       join(codexHome, 'auth.json'),
@@ -1513,7 +1513,7 @@ test('gemini profiles require a key', () => {
 })
 
 test('saveProfileFile writes a profile that loadProfileFile can read back', () => {
-  const cwd = mkdtempSync(join(tmpdir(), 'openclaude-profile-file-'))
+  const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-profile-file-'))
 
   try {
     const persisted = createProfileFile('openai', {
@@ -1535,7 +1535,7 @@ test('saveProfileFile writes a profile that loadProfileFile can read back', () =
 })
 
 test('saveProfileFile restricts permissions when overwriting an existing profile', () => {
-  const cwd = mkdtempSync(join(tmpdir(), 'openclaude-profile-mode-'))
+  const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-profile-mode-'))
 
   try {
     const filePath = join(cwd, PROFILE_FILE_NAME)
@@ -1558,8 +1558,8 @@ test('saveProfileFile restricts permissions when overwriting an existing profile
 })
 
 test('saveProfileFile defaults to user config instead of the working directory', async () => {
-  const cwd = mkdtempSync(join(tmpdir(), 'openclaude-workspace-profile-'))
-  const configRoot = mkdtempSync(join(tmpdir(), 'openclaude-config-profile-'))
+  const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-workspace-profile-'))
+  const configRoot = mkdtempSync(join(tmpdir(), 'nyxclaude-config-profile-'))
   const configDir = join(configRoot, 'config')
   const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
@@ -1597,8 +1597,8 @@ test('saveProfileFile defaults to user config instead of the working directory',
 })
 
 test('loadProfileFile keeps project-local files as a legacy fallback', async () => {
-  const cwd = mkdtempSync(join(tmpdir(), 'openclaude-legacy-profile-'))
-  const configDir = mkdtempSync(join(tmpdir(), 'openclaude-empty-config-profile-'))
+  const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-legacy-profile-'))
+  const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-empty-config-profile-'))
   const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
@@ -1630,8 +1630,8 @@ test('loadProfileFile keeps project-local files as a legacy fallback', async () 
 })
 
 test('loadProfileFile does not fall back when user config profile is invalid', async () => {
-  const cwd = mkdtempSync(join(tmpdir(), 'openclaude-invalid-profile-'))
-  const configDir = mkdtempSync(join(tmpdir(), 'openclaude-invalid-config-profile-'))
+  const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-invalid-profile-'))
+  const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-invalid-config-profile-'))
   const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
@@ -1664,8 +1664,8 @@ test('loadProfileFile does not fall back when user config profile is invalid', a
 })
 
 test('deleteProfileFile clears the default profile and legacy workspace fallback', async () => {
-  const cwd = mkdtempSync(join(tmpdir(), 'openclaude-delete-profile-'))
-  const configDir = mkdtempSync(join(tmpdir(), 'openclaude-delete-config-profile-'))
+  const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-delete-profile-'))
+  const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-delete-config-profile-'))
   const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
@@ -1706,8 +1706,8 @@ test('deleteProfileFile clears the default profile and legacy workspace fallback
 })
 
 test('deleteProfileFile with configDir and cwd clears both user config and legacy fallback', () => {
-  const cwd = mkdtempSync(join(tmpdir(), 'openclaude-delete-mixed-profile-'))
-  const configDir = mkdtempSync(join(tmpdir(), 'openclaude-delete-mixed-config-profile-'))
+  const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-delete-mixed-profile-'))
+  const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-delete-mixed-config-profile-'))
   const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
@@ -1773,7 +1773,7 @@ test('buildCodexProfileEnv tags OAuth-saved profiles so logout can remove them s
 })
 
 test('clearPersistedCodexOAuthProfile removes only persisted Codex OAuth profiles', async () => {
-  const cwd = mkdtempSync(join(tmpdir(), 'openclaude-codex-oauth-profile-'))
+  const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-codex-oauth-profile-'))
 
   try {
     const providerProfileModule = await import(
@@ -1818,8 +1818,8 @@ test('clearPersistedCodexOAuthProfile removes only persisted Codex OAuth profile
 })
 
 test('clearPersistedCodexOAuthProfile clears both default and legacy OAuth profiles', async () => {
-  const cwd = mkdtempSync(join(tmpdir(), 'openclaude-clear-oauth-profile-'))
-  const configDir = mkdtempSync(join(tmpdir(), 'openclaude-clear-oauth-config-'))
+  const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-clear-oauth-profile-'))
+  const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-clear-oauth-config-'))
   const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
@@ -1999,7 +1999,7 @@ test('buildStartupEnvFromProfile leaves explicit provider selections untouched',
 })
 
 test('legacy openai saved profiles still deserialize and rebuild startup env', async () => {
-  const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
+  const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
 
   try {
     saveProfileFile(
@@ -2030,7 +2030,7 @@ test('legacy openai saved profiles still deserialize and rebuild startup env', a
 })
 
 test('legacy openai saved profiles preserve OPENAI_API_KEYS during startup rebuild', async () => {
-  const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
+  const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
 
   try {
     saveProfileFile(
@@ -2062,7 +2062,7 @@ test('legacy openai saved profiles preserve OPENAI_API_KEYS during startup rebui
 })
 
 test('legacy openai saved profiles let live singular keys override saved pools during startup rebuild', async () => {
-  const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
+  const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
 
   try {
     saveProfileFile(
@@ -2089,7 +2089,7 @@ test('legacy openai saved profiles let live singular keys override saved pools d
   }
 })
 test('legacy openai saved profiles ignore delimiter-only shell OPENAI_API_KEYS during startup rebuild', async () => {
-  const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
+  const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
 
   try {
     saveProfileFile(
@@ -2115,7 +2115,7 @@ test('legacy openai saved profiles ignore delimiter-only shell OPENAI_API_KEYS d
   }
 })
 test('legacy anthropic saved profiles still deserialize and rebuild startup env', async () => {
-  const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
+  const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
 
   try {
     saveProfileFile(
@@ -2146,7 +2146,7 @@ test('legacy anthropic saved profiles still deserialize and rebuild startup env'
 })
 
 test('bedrock persisted profiles load and rebuild the dedicated startup env', async () => {
-  const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
+  const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
 
   try {
     saveProfileFile(
@@ -2256,7 +2256,7 @@ test('applySavedProfileToCurrentSession replaces empty active OpenAI key for Cod
 
 test('buildStartupEnvFromProfile preserves plural-profile env when the legacy file is stale', async () => {
   // Regression: a user saves a provider via /provider (plural system).
-  // addProviderProfile does NOT sync the legacy .openclaude-profile.json,
+  // addProviderProfile does NOT sync the legacy .nyxclaude-profile.json,
   // so the legacy file retains whatever it had from an earlier setup (e.g.
   // OpenAI defaults). At startup, applyActiveProviderProfileFromConfig()
   // correctly applies the active plural profile (Moonshot) first, marking

@@ -85,7 +85,7 @@ describe('builtInCommandNames', () => {
       },
     })
     try {
-      const skillDir = join(cwd, '.openclaude', 'skills', 'debug')
+      const skillDir = join(cwd, '.nyxclaude', 'skills', 'debug')
       await mkdir(skillDir, { recursive: true })
       await writeFile(
         join(skillDir, 'SKILL.md'),
@@ -655,7 +655,7 @@ describe('formatDescriptionWithSource', () => {
     expect(formatDescriptionWithSource(command)).toBe('Đánh giá pull request')
   })
 
-  test('falls back to English when an OpenClaude localization key is missing', () => {
+  test('falls back to English when an Nyxclaude localization key is missing', () => {
     const command = {
       name: 'example',
       type: 'prompt',

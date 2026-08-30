@@ -140,7 +140,7 @@ describe("Secure Storage Platform Implementations", () => {
 
   describe("Config-Dir Isolation", () => {
     test("service name ignores CLAUDE_CONFIG_DIR", () => {
-      delete process.env.OPENCLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       delete process.env.CLAUDE_CONFIG_DIR;
       const defaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
@@ -148,48 +148,48 @@ describe("Secure Storage Platform Implementations", () => {
       const otherName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       expect(otherName).toBe(defaultName);
-      expect(otherName).toContain("OpenClaude");
+      expect(otherName).toContain("Nyxclaude");
       expect(otherName).toContain(CREDENTIALS_SERVICE_SUFFIX);
     });
 
-    test("service name changes with OPENCLAUDE_CONFIG_DIR", () => {
-      delete process.env.OPENCLAUDE_CONFIG_DIR;
+    test("service name changes with NYXCLAUDE_CONFIG_DIR", () => {
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       delete process.env.CLAUDE_CONFIG_DIR;
       const defaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
-      process.env.OPENCLAUDE_CONFIG_DIR = "/tmp/preferred-config";
+      process.env.NYXCLAUDE_CONFIG_DIR = "/tmp/preferred-config";
       delete process.env.CLAUDE_CONFIG_DIR;
       const preferredName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       expect(preferredName).not.toBe(defaultName);
-      expect(preferredName).toContain("OpenClaude");
+      expect(preferredName).toContain("Nyxclaude");
       expect(preferredName).toContain(CREDENTIALS_SERVICE_SUFFIX);
     });
 
-    test("service name stays default when OPENCLAUDE_CONFIG_DIR points at default config dir", () => {
-      delete process.env.OPENCLAUDE_CONFIG_DIR;
+    test("service name stays default when NYXCLAUDE_CONFIG_DIR points at default config dir", () => {
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       delete process.env.CLAUDE_CONFIG_DIR;
       const defaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
-      process.env.OPENCLAUDE_CONFIG_DIR = join(homedir(), ".openclaude");
+      process.env.NYXCLAUDE_CONFIG_DIR = join(homedir(), ".nyxclaude");
       const explicitDefaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       expect(explicitDefaultName).toBe(defaultName);
     });
 
-    test("service name stays default when OPENCLAUDE_CONFIG_DIR has a trailing separator", () => {
-      delete process.env.OPENCLAUDE_CONFIG_DIR;
+    test("service name stays default when NYXCLAUDE_CONFIG_DIR has a trailing separator", () => {
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       delete process.env.CLAUDE_CONFIG_DIR;
       const defaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
-      process.env.OPENCLAUDE_CONFIG_DIR = `${join(homedir(), ".openclaude")}/`;
+      process.env.NYXCLAUDE_CONFIG_DIR = `${join(homedir(), ".nyxclaude")}/`;
       const explicitDefaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       expect(explicitDefaultName).toBe(defaultName);
     });
 
     test("Linux storage ignores CLAUDE_CONFIG_DIR scoped service name", () => {
-      delete process.env.OPENCLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       delete process.env.CLAUDE_CONFIG_DIR;
       process.env.CLAUDE_CONFIG_DIR = "/tmp/linux-scoped";
       const expectedName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
@@ -200,8 +200,8 @@ describe("Secure Storage Platform Implementations", () => {
       expect(args).toContain(expectedName);
     });
 
-    test("Linux storage uses OPENCLAUDE_CONFIG_DIR scoped service name", () => {
-      process.env.OPENCLAUDE_CONFIG_DIR = "/tmp/linux-preferred-scoped";
+    test("Linux storage uses NYXCLAUDE_CONFIG_DIR scoped service name", () => {
+      process.env.NYXCLAUDE_CONFIG_DIR = "/tmp/linux-preferred-scoped";
       delete process.env.CLAUDE_CONFIG_DIR;
       const expectedName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
@@ -212,7 +212,7 @@ describe("Secure Storage Platform Implementations", () => {
     });
 
     test("Windows storage ignores CLAUDE_CONFIG_DIR scoped resource name", () => {
-      delete process.env.OPENCLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       delete process.env.CLAUDE_CONFIG_DIR;
       process.env.CLAUDE_CONFIG_DIR = "/tmp/win-scoped";
       const expectedName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
@@ -225,8 +225,8 @@ describe("Secure Storage Platform Implementations", () => {
       expect(getCommandInput()).toContain("secret-token");
     });
 
-    test("Windows storage uses OPENCLAUDE_CONFIG_DIR scoped resource name", () => {
-      process.env.OPENCLAUDE_CONFIG_DIR = "/tmp/win-preferred-scoped";
+    test("Windows storage uses NYXCLAUDE_CONFIG_DIR scoped resource name", () => {
+      process.env.NYXCLAUDE_CONFIG_DIR = "/tmp/win-preferred-scoped";
       delete process.env.CLAUDE_CONFIG_DIR;
       const expectedName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
@@ -271,14 +271,14 @@ describe("Secure Storage Platform Implementations", () => {
     });
 
     test("delete() includes legacy assembly load when explicitly enabled", () => {
-      process.env.OPENCLAUDE_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT = "1";
+      process.env.NYXCLAUDE_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT = "1";
       windowsCredentialStorage.delete();
       const script = getPowerShellScript(1);
       expect(script).toContain("Add-Type -AssemblyName System.Runtime.WindowsRuntime");
     });
 
     test("escapes double quotes in username", () => {
-      process.env.OPENCLAUDE_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT = "1";
+      process.env.NYXCLAUDE_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT = "1";
       process.env.USER = 'user"name';
       windowsCredentialStorage.read();
       const script = getPowerShellScript(1);
@@ -296,7 +296,7 @@ describe("Secure Storage Platform Implementations", () => {
     });
 
     test("read() falls back to legacy PasswordVault when explicitly enabled", () => {
-      process.env.OPENCLAUDE_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT = "1";
+      process.env.NYXCLAUDE_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT = "1";
       mockExecaSync
         .mockImplementationOnce(() => execaResult({ stdout: "{not-json" }))
         .mockImplementationOnce(() => execaResult({ stdout: JSON.stringify(testData) }));
@@ -308,7 +308,7 @@ describe("Secure Storage Platform Implementations", () => {
     });
 
     test("read() fails closed when the legacy PasswordVault payload is invalid JSON", () => {
-      process.env.OPENCLAUDE_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT = "1";
+      process.env.NYXCLAUDE_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT = "1";
       mockExecaSync
         .mockImplementationOnce(() => execaResult({ exitCode: 1 }))
         .mockImplementationOnce(() => execaResult({ stdout: "{not-json" }));

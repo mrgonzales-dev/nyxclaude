@@ -1,4 +1,5 @@
 import { feature } from 'bun:bundle';
+import { getClearTerminalSequence } from '../ink/clearTerminal.js';
 
 // NYXCLAUDE: provider config (OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL,
 // ANTHROPIC_API_KEY, CLAUDE_CODE_USE_OPENAI) is no longer hardcoded here.
@@ -515,6 +516,8 @@ export async function main(
   // Print the gradient startup screen before the Ink UI loads. Plain CLI
   // management subcommands should stay script-friendly and avoid the banner.
   if (args[0] !== 'skills') {
+    // Clear the terminal first so the banner starts on a clean screen.
+    process.stdout.write(getClearTerminalSequence())
     const { printStartupScreen } = await importers.startupScreen()
     printStartupScreen(earlyModelFlag)
   }
@@ -547,21 +550,7 @@ export async function main(
     console.log(prompt.join('\n'));
     return;
   }
-  if (process.argv[2] === '--claude-in-chrome-mcp') {
-    profileCheckpoint('cli_claude_in_chrome_mcp_path');
-    const {
-      runClaudeInChromeMcpServer
-    } = await import('../utils/claudeInChrome/mcpServer.js');
-    await runClaudeInChromeMcpServer();
-    return;
-  } else if (process.argv[2] === '--chrome-native-host') {
-    profileCheckpoint('cli_chrome_native_host_path');
-    const {
-      runChromeNativeHost
-    } = await import('../utils/claudeInChrome/chromeNativeHost.js');
-    await runChromeNativeHost();
-    return;
-  } else if (feature('CHICAGO_MCP') && process.argv[2] === '--computer-use-mcp') {
+  if (feature('CHICAGO_MCP') && process.argv[2] === '--computer-use-mcp') {
     profileCheckpoint('cli_computer_use_mcp_path');
     const {
       runComputerUseMcpServer

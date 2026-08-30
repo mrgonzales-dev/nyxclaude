@@ -276,14 +276,14 @@ test('checkSandboxAutoAllow caps fanout when astSubcommands is null', () => {
 
 test('git commit governance policy runs through the production Bash permission path', async () => {
   const originalCwd = getOriginalCwd()
-  const projectDir = await mkdtemp(join(tmpdir(), 'openclaude-git-policy-'))
+  const projectDir = await mkdtemp(join(tmpdir(), 'nyxclaude-git-policy-'))
 
   try {
     setOriginalCwd(projectDir)
     setAllowedSettingSources([...SETTING_SOURCES])
-    await mkdir(join(projectDir, '.openclaude'), { recursive: true })
+    await mkdir(join(projectDir, '.nyxclaude'), { recursive: true })
     await writeFile(
-      join(projectDir, '.openclaude', 'settings.local.json'),
+      join(projectDir, '.nyxclaude', 'settings.local.json'),
       JSON.stringify({
         git: { forbiddenCommitMessagePatterns: ['Generated with'] },
       }),
@@ -291,55 +291,55 @@ test('git commit governance policy runs through the production Bash permission p
     resetSettingsCache()
 
     const result = await bashToolHasPermission(
-      { command: 'git commit -m "fix: policy\n\nGenerated with OpenClaude"' },
+      { command: 'git commit -m "fix: policy\n\nGenerated with Nyxclaude"' },
       makeToolUseContext(),
     )
     const compoundResult = await bashToolHasPermission(
       {
         command:
-          'cd repo && git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'cd repo && git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
       },
       makeToolUseContext(),
     )
     const safeCommitThenEchoResult = await bashToolHasPermission(
       {
         command:
-          'git commit -m "safe" && echo -m "Generated with OpenClaude"',
+          'git commit -m "safe" && echo -m "Generated with Nyxclaude"',
       },
       makeToolUseContext(),
     )
     const commandWrappedResult = await bashToolHasPermission(
       {
         command:
-          'command git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'command git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
       },
       makeToolUseContext(),
     )
     const commandPathWrappedResult = await bashToolHasPermission(
       {
         command:
-          'command -p git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'command -p git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
       },
       makeToolUseContext(),
     )
     const envWrappedResult = await bashToolHasPermission(
       {
         command:
-          'env git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'env git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
       },
       makeToolUseContext(),
     )
     const envSplitStringWrappedResult = await bashToolHasPermission(
       {
         command:
-          'env -S \'git commit -m "fix: policy\n\nGenerated with OpenClaude"\'',
+          'env -S \'git commit -m "fix: policy\n\nGenerated with Nyxclaude"\'',
       },
       makeToolUseContext(),
     )
     const envSplitStringAssignmentWrappedResult = await bashToolHasPermission(
       {
         command:
-          'env -S \'GIT_AUTHOR_NAME=bot git commit -m "fix: policy\n\nGenerated with OpenClaude"\'',
+          'env -S \'GIT_AUTHOR_NAME=bot git commit -m "fix: policy\n\nGenerated with Nyxclaude"\'',
       },
       makeToolUseContext(),
     )

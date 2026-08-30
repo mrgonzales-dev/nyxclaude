@@ -41,10 +41,10 @@ export const en = {
   'commands.insights.description':
     'Generate a report analyzing your Nyxclaude sessions',
   'commands.install-github-app.description':
-    'Set up Claude GitHub Actions for a repository',
+    'Set up GitHub Actions for a repository',
   'commands.knowledge.description': 'Manage native Knowledge Graph',
-  'commands.login.description': 'Sign in with your Anthropic account',
-  'commands.logout.description': 'Sign out from your Anthropic account',
+  'commands.login.description': 'Sign in with your API provider account',
+  'commands.logout.description': 'Sign out from your API provider account',
   'commands.lsp.description':
     'Inspect and set up Language Server Protocol code intelligence',
   'commands.mcp.description': 'Manage MCP servers',

@@ -30,7 +30,7 @@ beforeAll(async () => {
     BUILD_TIME: new Date().toISOString(),
     ISSUES_EXPLAINER:
       'report the issue at nyxclaude issues',
-    PACKAGE_URL: '@gitlawb/openclaude',
+    PACKAGE_URL: 'nyxclaude',
     NATIVE_PACKAGE_URL: undefined,
   }
 

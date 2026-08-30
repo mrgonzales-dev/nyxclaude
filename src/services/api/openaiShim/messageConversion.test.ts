@@ -121,7 +121,7 @@ test('preserves valid tool_result and drops orphan tool_result', () => {
   const messages = convertMessages([
     {
       role: 'assistant',
-      content: [{ type: 'tool_use', id: 'valid_call_1', name: 'Search', input: { query: 'openclaude' } }],
+      content: [{ type: 'tool_use', id: 'valid_call_1', name: 'Search', input: { query: 'nyxclaude' } }],
     },
     {
       role: 'user',

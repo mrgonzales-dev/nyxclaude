@@ -298,12 +298,12 @@ describe('requestPermissionModeChange', () => {
 
 describe('stripDangerousPermissionsForAutoMode permissive safety', () => {
   afterEach(() => {
-    delete process.env.OPENCLAUDE_SAFETY_LEVEL
+    delete process.env.NYXCLAUDE_SAFETY_LEVEL
     resetSafetyLevelCache()
   })
 
   test('keeps focused Bash interpreter allow rules in permissive safety mode', () => {
-    process.env.OPENCLAUDE_SAFETY_LEVEL = 'permissive'
+    process.env.NYXCLAUDE_SAFETY_LEVEL = 'permissive'
     resetSafetyLevelCache()
 
     const updated = stripDangerousPermissionsForAutoMode({
@@ -321,7 +321,7 @@ describe('stripDangerousPermissionsForAutoMode permissive safety', () => {
   })
 
   test('still strips broad classifier-bypass allow rules in permissive safety mode', () => {
-    process.env.OPENCLAUDE_SAFETY_LEVEL = 'permissive'
+    process.env.NYXCLAUDE_SAFETY_LEVEL = 'permissive'
     resetSafetyLevelCache()
 
     const updated = stripDangerousPermissionsForAutoMode({

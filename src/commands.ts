@@ -34,8 +34,6 @@ import init from './commands/init.js'
 import initVerifiers from './commands/init-verifiers.js'
 import keybindings from './commands/keybindings/index.js'
 import lsp from './commands/lsp/index.js'
-import login from './commands/login/index.js'
-import logout from './commands/logout/index.js'
 // NYXCLAUDE: Anthropic-specific GitHub App installer removed
 // import installGitHubApp from './commands/install-github-app/index.js'
 import installSlackApp from './commands/install-slack-app/index.js'
@@ -143,7 +141,6 @@ import permissions from './commands/permissions/index.js'
 import plan from './commands/plan/index.js'
 import fast from './commands/fast/index.js'
 import passes from './commands/passes/index.js'
-import privacySettings from './commands/privacy-settings/index.js'
 import provider from './commands/provider/index.js'
 import hooks from './commands/hooks/index.js'
 import files from './commands/files/index.js'
@@ -381,11 +378,10 @@ const COMMANDS = memoize((): Command[] => [
   thinkbackPlay,
   permissions,
   plan,
-  privacySettings,
   hooks,
   exportCommand,
   sandboxToggle,
-  ...(!isUsing3PServices() ? [logout, login()].filter(Boolean) : []),
+  ...(!isUsing3PServices() ? [].filter(Boolean) : []),
   passes,
   ...(peersCmd ? [peersCmd] : []),
   tasks,

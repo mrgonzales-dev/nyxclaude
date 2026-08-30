@@ -16,7 +16,7 @@ afterEach(async () => {
 })
 
 async function makeProjectDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'openclaude-conventions-'))
+  const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-conventions-'))
   tempDirs.push(dir)
   return dir
 }
@@ -180,7 +180,7 @@ test('forceScanConventions does not write cache or throw before /wiki init', asy
     'utf8',
   )
 
-  // Must not throw even though .openclaude/ does not exist.
+  // Must not throw even though .nyxclaude/ does not exist.
   const result = await forceScanConventions(cwd)
   expect(result.saved).toBe(false)
 

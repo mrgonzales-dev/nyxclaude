@@ -35,7 +35,7 @@ let tempDir: string
 beforeEach(async () => {
   await acquireSharedMutationLock('utils/managedEnv.test.ts')
   enableConfigs()
-  tempDir = mkdtempSync(join(tmpdir(), 'openclaude-managed-env-test-'))
+  tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-managed-env-test-'))
 
   for (const key of ENV_KEYS) {
     originalEnv.set(key, process.env[key])

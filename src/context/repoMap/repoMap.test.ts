@@ -588,12 +588,12 @@ describe('cache', () => {
     }).not.toThrow()
   })
 
-  test('stores repo map cache under OPENCLAUDE_CONFIG_DIR when configured', async () => {
+  test('stores repo map cache under NYXCLAUDE_CONFIG_DIR when configured', async () => {
     const configDir = mkdtempSync(join(tmpdir(), 'repomap-config-home-'))
     const expectedCacheDir = join(configDir, 'repomap-cache')
     const {
       CLAUDE_CONFIG_DIR: _legacyConfigDir,
-      OPENCLAUDE_CONFIG_DIR: _openClaudeConfigDir,
+      NYXCLAUDE_CONFIG_DIR: _nyxClaudeConfigDir,
       ...env
     } = process.env
 
@@ -619,7 +619,7 @@ describe('cache', () => {
           env: {
             ...env,
             FORCE_COLOR: '0',
-            OPENCLAUDE_CONFIG_DIR: configDir,
+            NYXCLAUDE_CONFIG_DIR: configDir,
           },
         },
       )

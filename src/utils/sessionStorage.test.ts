@@ -142,7 +142,7 @@ function snipBoundary(
 }
 
 async function writeJsonl(entries: unknown[]): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+  const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-session-storage-'))
   tempDirs.push(dir)
   const filePath = join(dir, 'session.jsonl')
   await writeFile(filePath, `${entries.map(e => JSON.stringify(e)).join('\n')}\n`)
@@ -246,7 +246,7 @@ afterEach(async () => {
 test('recordTranscript respects prompt-history opt-out for replay state', async () => {
   await withSessionPersistence(async () => {
     const configDir = await mkdtemp(
-      join(tmpdir(), 'openclaude-session-storage-config-'),
+      join(tmpdir(), 'nyxclaude-session-storage-config-'),
     )
     tempDirs.push(configDir)
     setClaudeConfigHomeDirForTesting(configDir)
@@ -547,7 +547,7 @@ test('restoreSessionMetadata clears cached goal when resumed transcript has no g
       goal: createGoalState('stale previous session goal', ts),
     })
 
-    const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+    const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-session-storage-'))
     tempDirs.push(dir)
     const filePath = join(dir, `${sessionId}.jsonl`)
     await writeFile(
@@ -571,7 +571,7 @@ test('restoreSessionMetadata clears cached goal when resumed transcript has expl
       goal: createGoalState('stale previous session goal', ts),
     })
 
-    const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+    const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-session-storage-'))
     tempDirs.push(dir)
     const filePath = join(dir, `${sessionId}.jsonl`)
     await writeFile(
@@ -596,7 +596,7 @@ test('restoreSessionMetadata re-appends the resumed active goal instead of stale
     })
     const resumedGoal = createGoalState('resumed current goal', ts)
 
-    const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+    const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-session-storage-'))
     tempDirs.push(dir)
     const filePath = join(dir, `${sessionId}.jsonl`)
     await writeFile(
@@ -629,7 +629,7 @@ test('restoreSessionMetadata clears cached branch when resumed transcript has no
     }
     restoreSessionMetadata({ sessionBranch: staleBranch })
 
-    const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+    const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-session-storage-'))
     tempDirs.push(dir)
     const filePath = join(dir, `${sessionId}.jsonl`)
     await writeFile(
@@ -649,7 +649,7 @@ test('restoreSessionMetadata clears cached branch when resumed transcript has no
 
 test('recordGoalState writes goal metadata durably before resolving', async () => {
   await withSessionPersistence(async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+    const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-session-storage-'))
     tempDirs.push(dir)
     const filePath = join(dir, `${sessionId}.jsonl`)
     switchSession(sessionId as never, dir)
@@ -679,11 +679,11 @@ test('recordGoalState writes goal metadata durably before resolving', async () =
 
 test('loadSameRepoMessageLogsProgressive preserves branch metadata across worktrees', async () => {
   const configDir = await mkdtemp(
-    join(tmpdir(), 'openclaude-session-storage-config-'),
+    join(tmpdir(), 'nyxclaude-session-storage-config-'),
   )
   tempDirs.push(configDir)
   const worktreesRoot = await mkdtemp(
-    join(tmpdir(), 'openclaude-session-storage-worktrees-'),
+    join(tmpdir(), 'nyxclaude-session-storage-worktrees-'),
   )
   tempDirs.push(worktreesRoot)
   const rootProject = join(worktreesRoot, 'main')
@@ -742,11 +742,11 @@ test('loadSameRepoMessageLogsProgressive preserves branch metadata across worktr
 
 test('loadSameRepoMessageLogsProgressive preserves branch metadata from the lite head window', async () => {
   const configDir = await mkdtemp(
-    join(tmpdir(), 'openclaude-session-storage-config-'),
+    join(tmpdir(), 'nyxclaude-session-storage-config-'),
   )
   tempDirs.push(configDir)
   const worktreesRoot = await mkdtemp(
-    join(tmpdir(), 'openclaude-session-storage-worktrees-'),
+    join(tmpdir(), 'nyxclaude-session-storage-worktrees-'),
   )
   tempDirs.push(worktreesRoot)
   const rootProject = join(worktreesRoot, 'main')
@@ -812,11 +812,11 @@ test('loadSameRepoMessageLogsProgressive preserves branch metadata from the lite
 
 test('loadSameRepoMessageLogsProgressive ignores branch metadata outside lite read windows', async () => {
   const configDir = await mkdtemp(
-    join(tmpdir(), 'openclaude-session-storage-config-'),
+    join(tmpdir(), 'nyxclaude-session-storage-config-'),
   )
   tempDirs.push(configDir)
   const worktreesRoot = await mkdtemp(
-    join(tmpdir(), 'openclaude-session-storage-worktrees-'),
+    join(tmpdir(), 'nyxclaude-session-storage-worktrees-'),
   )
   tempDirs.push(worktreesRoot)
   const rootProject = join(worktreesRoot, 'main')
@@ -881,7 +881,7 @@ test('loadSameRepoMessageLogsProgressive ignores branch metadata outside lite re
 })
 
 test('convertToLogOption throws for empty transcript', async () => {
-  const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+  const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-session-storage-'))
   tempDirs.push(dir)
   const filePath = join(dir, 'session.json')
   await writeFile(filePath, '[]')

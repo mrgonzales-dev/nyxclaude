@@ -7,7 +7,7 @@ import {
 } from './globalPackageManager.js'
 
 describe('getGlobalInstallArgs', () => {
-  const spec = '@gitlawb/openclaude@latest'
+  const spec = 'nyxclaude@latest'
   const cases: Array<[GlobalPackageManager, string[]]> = [
     ['npm', ['install', '-g', spec]],
     ['pnpm', ['add', '-g', spec]],
@@ -21,10 +21,10 @@ describe('getGlobalInstallArgs', () => {
   }
 
   test('passes an explicit version spec through unchanged', () => {
-    expect(getGlobalInstallArgs('npm', '@gitlawb/openclaude@1.2.3')).toEqual([
+    expect(getGlobalInstallArgs('npm', 'nyxclaude@1.2.3')).toEqual([
       'install',
       '-g',
-      '@gitlawb/openclaude@1.2.3',
+      'nyxclaude@1.2.3',
     ])
   })
 })
@@ -46,7 +46,7 @@ describe('selectOwningPackageManager', () => {
   test('matches the package manager whose root contains the binary', () => {
     expect(
       selectOwningPackageManager(
-        '/home/u/.local/share/pnpm/global/5/node_modules/@gitlawb/openclaude/cli.js',
+        '/home/u/.local/share/pnpm/global/5/node_modules/nyxclaude/cli.js',
         [
           { pm: 'npm', root: '/usr/local/lib/node_modules' },
           {
@@ -62,7 +62,7 @@ describe('selectOwningPackageManager', () => {
     // npm's root is a parent of bun's here; bun must win because its root is
     // the more specific match.
     expect(
-      selectOwningPackageManager('/opt/pm/node_modules/bun/global/openclaude', [
+      selectOwningPackageManager('/opt/pm/node_modules/bun/global/nyxclaude', [
         { pm: 'npm', root: '/opt/pm/node_modules' },
         { pm: 'bun', root: '/opt/pm/node_modules/bun/global' },
       ]),
@@ -80,7 +80,7 @@ describe('selectOwningPackageManager', () => {
   test('does not match a sibling directory sharing a prefix', () => {
     // "/a/node_modules-other" must not be considered under "/a/node_modules".
     expect(
-      selectOwningPackageManager('/a/node_modules-other/openclaude/cli.js', [
+      selectOwningPackageManager('/a/node_modules-other/nyxclaude/cli.js', [
         { pm: 'npm', root: '/a/node_modules' },
       ]),
     ).toBeNull()
@@ -88,7 +88,7 @@ describe('selectOwningPackageManager', () => {
 
   test('ignores candidates with an empty root', () => {
     expect(
-      selectOwningPackageManager('/usr/lib/node_modules/openclaude', [
+      selectOwningPackageManager('/usr/lib/node_modules/nyxclaude', [
         { pm: 'yarn', root: '' },
         { pm: 'npm', root: '/usr/lib/node_modules' },
       ]),

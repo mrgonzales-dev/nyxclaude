@@ -36,7 +36,7 @@ describe('auto-memory write permissions', () => {
     originalMemoryPathOverride = process.env.CLAUDE_COWORK_MEMORY_PATH_OVERRIDE
     delete process.env.CLAUDE_COWORK_MEMORY_PATH_OVERRIDE
     getAutoMemPath.cache.clear?.()
-    projectDir = await mkdtemp(join(tmpdir(), 'openclaude-memory-perms-'))
+    projectDir = await mkdtemp(join(tmpdir(), 'nyxclaude-memory-perms-'))
     setProjectRoot(projectDir)
   })
 
@@ -67,7 +67,7 @@ describe('auto-memory write permissions', () => {
   })
 
   test('requires approval for overridden auto-memory writes', async () => {
-    const overrideDir = await mkdtemp(join(tmpdir(), 'openclaude-memory-'))
+    const overrideDir = await mkdtemp(join(tmpdir(), 'nyxclaude-memory-'))
     process.env.CLAUDE_COWORK_MEMORY_PATH_OVERRIDE = overrideDir
     getAutoMemPath.cache.clear?.()
 
@@ -108,13 +108,13 @@ function permissionContext(mode: ToolPermissionContext['mode']) {
   } satisfies ToolPermissionContext
 }
 
-describe('OpenClaude commit message temp file permissions', () => {
+describe('Nyxclaude commit message temp file permissions', () => {
   let originalCwd: string
   let projectDir: string
 
   beforeEach(async () => {
     originalCwd = getOriginalCwd()
-    projectDir = await mkdtemp(join(tmpdir(), 'openclaude-perms-'))
+    projectDir = await mkdtemp(join(tmpdir(), 'nyxclaude-perms-'))
     await mkdir(join(projectDir, '.git'))
     setOriginalCwd(projectDir)
   })
@@ -125,52 +125,52 @@ describe('OpenClaude commit message temp file permissions', () => {
     await rm(projectDir, { recursive: true, force: true })
   })
 
-  test('allows the project-local OPENCLAUDE_COMMIT_MSG file without a safety prompt', () => {
+  test('allows the project-local NYXCLAUDE_COMMIT_MSG file without a safety prompt', () => {
     const result = checkWritePermissionForTool(
       writeTool,
-      { file_path: join(projectDir, '.git', 'OPENCLAUDE_COMMIT_MSG') },
+      { file_path: join(projectDir, '.git', 'NYXCLAUDE_COMMIT_MSG') },
       permissionContext('bypassPermissions'),
     )
 
     expect(result.behavior).toBe('allow')
     expect(result.decisionReason).toMatchObject({
       type: 'other',
-      reason: 'OpenClaude commit message file is allowed for writing',
+      reason: 'Nyxclaude commit message file is allowed for writing',
     })
   })
 
-  test('allows the project-local OPENCLAUDE_COMMIT_MSG file in fullAccess mode', () => {
+  test('allows the project-local NYXCLAUDE_COMMIT_MSG file in fullAccess mode', () => {
     const result = checkWritePermissionForTool(
       writeTool,
-      { file_path: join(projectDir, '.git', 'OPENCLAUDE_COMMIT_MSG') },
+      { file_path: join(projectDir, '.git', 'NYXCLAUDE_COMMIT_MSG') },
       permissionContext('fullAccess'),
     )
 
     expect(result.behavior).toBe('allow')
     expect(result.decisionReason).toMatchObject({
       type: 'other',
-      reason: 'OpenClaude commit message file is allowed for writing',
+      reason: 'Nyxclaude commit message file is allowed for writing',
     })
   })
 
   test('preserves case-insensitive matching for the commit message exception', () => {
     const result = checkWritePermissionForTool(
       writeTool,
-      { file_path: join(projectDir, '.git', 'openclaude_commit_msg') },
+      { file_path: join(projectDir, '.git', 'nyxclaude_commit_msg') },
       permissionContext('bypassPermissions'),
     )
 
     expect(result.behavior).toBe('allow')
     expect(result.decisionReason).toMatchObject({
       type: 'other',
-      reason: 'OpenClaude commit message file is allowed for writing',
+      reason: 'Nyxclaude commit message file is allowed for writing',
     })
   })
 
   test('still prompts for the commit message file in default mode', () => {
     const result = checkWritePermissionForTool(
       writeTool,
-      { file_path: join(projectDir, '.git', 'OPENCLAUDE_COMMIT_MSG') },
+      { file_path: join(projectDir, '.git', 'NYXCLAUDE_COMMIT_MSG') },
       permissionContext('default'),
     )
 
@@ -193,7 +193,7 @@ describe('OpenClaude commit message temp file permissions', () => {
     const otherDir = join(projectDir, 'other')
     const result = checkWritePermissionForTool(
       writeTool,
-      { file_path: join(otherDir, '.git', 'OPENCLAUDE_COMMIT_MSG') },
+      { file_path: join(otherDir, '.git', 'NYXCLAUDE_COMMIT_MSG') },
       permissionContext('bypassPermissions'),
     )
 
@@ -207,9 +207,9 @@ describe('OpenClaude commit message temp file permissions', () => {
     '.profile',
     '.mcp.json',
     '.claude.json',
-    '.openclaude.json',
+    '.nyxclaude.json',
   ])('permits dangerous-file-list edit for %s in permissive safety mode', fileName => {
-    process.env.OPENCLAUDE_SAFETY_LEVEL = 'permissive'
+    process.env.NYXCLAUDE_SAFETY_LEVEL = 'permissive'
     resetSafetyLevelCache()
 
     const result = checkWritePermissionForTool(
@@ -227,7 +227,7 @@ describe('OpenClaude commit message temp file permissions', () => {
   })
 
   test('still prompts for dangerous directories in permissive safety mode', () => {
-    process.env.OPENCLAUDE_SAFETY_LEVEL = 'permissive'
+    process.env.NYXCLAUDE_SAFETY_LEVEL = 'permissive'
     resetSafetyLevelCache()
 
     const result = checkWritePermissionForTool(
@@ -250,13 +250,13 @@ describe('nested Git worktree write permissions', () => {
   test('allows relative writes in acceptEdits mode when the session uses a nested worktree', async () => {
     const originalCwd = getOriginalCwd()
     const originalCwdState = getCwdState()
-    const repository = await mkdtemp(join(tmpdir(), 'openclaude-worktree-perms-'))
+    const repository = await mkdtemp(join(tmpdir(), 'nyxclaude-worktree-perms-'))
     const worktree = join(repository, 'a', 'b', 'worktrees', 'feature-branch')
 
     try {
       execFileSync('git', ['init', repository])
       execFileSync('git', ['-C', repository, 'config', 'user.email', 'test@example.com'])
-      execFileSync('git', ['-C', repository, 'config', 'user.name', 'OpenClaude Test'])
+      execFileSync('git', ['-C', repository, 'config', 'user.name', 'Nyxclaude Test'])
       await writeFile(join(repository, 'seed.txt'), 'seed\n')
       execFileSync('git', ['-C', repository, 'add', 'seed.txt'])
       execFileSync('git', ['-C', repository, 'commit', '-m', 'seed'])

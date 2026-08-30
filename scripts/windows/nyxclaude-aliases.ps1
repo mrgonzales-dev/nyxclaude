@@ -1,6 +1,6 @@
 Set-StrictMode -Version Latest
 
-function Test-OpenClaudeCommand {
+function Test-NyxclaudeCommand {
   [CmdletBinding()]
   param(
     [Parameter(Mandatory = $true)]
@@ -10,7 +10,7 @@ function Test-OpenClaudeCommand {
   return [bool](Get-Command -Name $Name -ErrorAction SilentlyContinue)
 }
 
-function Assert-OpenClaudeCommand {
+function Assert-NyxclaudeCommand {
   [CmdletBinding()]
   param(
     [Parameter(Mandatory = $true)]
@@ -19,34 +19,34 @@ function Assert-OpenClaudeCommand {
     [string]$InstallHint
   )
 
-  if (-not (Test-OpenClaudeCommand -Name $Name)) {
+  if (-not (Test-NyxclaudeCommand -Name $Name)) {
     throw "Required command '$Name' was not found. $InstallHint"
   }
 }
 
-function Invoke-OpenClaude {
+function Invoke-Nyxclaude {
   [CmdletBinding()]
   param(
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$OpenClaudeArgs
+    [string[]]$NyxclaudeArgs
   )
 
-  Assert-OpenClaudeCommand -Name "openclaude" -InstallHint "Install with: npm install -g @gitlawb/openclaude"
+  Assert-NyxclaudeCommand -Name "nyxclaude" -InstallHint "Install with: npm install -g nyxclaude"
 
-  & openclaude @OpenClaudeArgs
+  & nyxclaude @NyxclaudeArgs
 
   if ($LASTEXITCODE -ne 0) {
-    throw "openclaude failed with exit code $LASTEXITCODE."
+    throw "nyxclaude failed with exit code $LASTEXITCODE."
   }
 }
 
-function Invoke-OpenClaudeWithEnvironment {
+function Invoke-NyxclaudeWithEnvironment {
   [CmdletBinding()]
   param(
     [Parameter(Mandatory = $true)]
     [hashtable]$Environment,
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$OpenClaudeArgs
+    [string[]]$NyxclaudeArgs
   )
 
   $previousValues = @{}
@@ -57,7 +57,7 @@ function Invoke-OpenClaudeWithEnvironment {
   }
 
   try {
-    Invoke-OpenClaude @OpenClaudeArgs
+    Invoke-Nyxclaude @NyxclaudeArgs
   }
   finally {
     foreach ($name in $Environment.Keys) {
@@ -71,16 +71,16 @@ function Invoke-OpenClaudeWithEnvironment {
   }
 }
 
-function Get-OpenClaudeQuickHelp {
+function Get-NyxclaudeQuickHelp {
   [CmdletBinding()]
   param()
 
   @(
-    "OpenClaude quick commands:",
-    "  oc [args...]              -> launch OpenClaude using the installed CLI",
-    "  oc-local [args...]        -> launch OpenClaude with local/Ollama OpenAI-compatible environment hints for this invocation only",
-    "  oc-fast [args...]         -> launch OpenClaude with low-latency local defaults for this invocation only",
-    "  oc-provider               -> open the provider manager in OpenClaude",
+    "Nyxclaude quick commands:",
+    "  oc [args...]              -> launch Nyxclaude using the installed CLI",
+    "  oc-local [args...]        -> launch Nyxclaude with local/Ollama OpenAI-compatible environment hints for this invocation only",
+    "  oc-fast [args...]         -> launch Nyxclaude with low-latency local defaults for this invocation only",
+    "  oc-provider               -> open the provider manager in Nyxclaude",
     "  oc-check                  -> show Ollama install/listening/model state",
     "  oc-init                   -> pull/check the local model, then launch local/Ollama mode",
     "  oc-help                   -> show this help"
@@ -91,10 +91,10 @@ function oc {
   [CmdletBinding()]
   param(
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$OpenClaudeArgs
+    [string[]]$NyxclaudeArgs
   )
 
-  Invoke-OpenClaude @OpenClaudeArgs
+  Invoke-Nyxclaude @NyxclaudeArgs
 }
 
 function oc-local {
@@ -102,16 +102,16 @@ function oc-local {
   param(
     [string]$Model = "llama3.1:8b",
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$OpenClaudeArgs
+    [string[]]$NyxclaudeArgs
   )
 
-  Invoke-OpenClaudeWithEnvironment `
+  Invoke-NyxclaudeWithEnvironment `
     -Environment @{
       CLAUDE_CODE_USE_OPENAI = "1"
       OPENAI_BASE_URL        = "http://localhost:11434/v1"
       OPENAI_MODEL           = $Model
     } `
-    @OpenClaudeArgs
+    @NyxclaudeArgs
 }
 
 function oc-fast {
@@ -119,24 +119,24 @@ function oc-fast {
   param(
     [string]$Model = "llama3.1:8b",
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$OpenClaudeArgs
+    [string[]]$NyxclaudeArgs
   )
 
-  Invoke-OpenClaudeWithEnvironment `
+  Invoke-NyxclaudeWithEnvironment `
     -Environment @{
       CLAUDE_CODE_USE_OPENAI = "1"
       OPENAI_BASE_URL        = "http://localhost:11434/v1"
       OPENAI_MODEL           = $Model
-      OPENCLAUDE_FAST_MODE   = "1"
+      NYXCLAUDE_FAST_MODE   = "1"
     } `
-    @OpenClaudeArgs
+    @NyxclaudeArgs
 }
 
 function oc-provider {
   [CmdletBinding()]
   param()
 
-  Invoke-OpenClaude "/provider"
+  Invoke-Nyxclaude "/provider"
 }
 
 function oc-check {
@@ -145,7 +145,7 @@ function oc-check {
     [string]$Model = "llama3.1:8b"
   )
 
-  Assert-OpenClaudeCommand -Name "ollama" -InstallHint "Install Ollama from https://ollama.com/download/windows."
+  Assert-NyxclaudeCommand -Name "ollama" -InstallHint "Install Ollama from https://ollama.com/download/windows."
 
   $version = & ollama --version 2>$null
   $modelNames = (& ollama list 2>$null | Select-Object -Skip 1 | ForEach-Object {
@@ -181,7 +181,7 @@ function oc-init {
     [switch]$SkipModelPull
   )
 
-  Assert-OpenClaudeCommand -Name "ollama" -InstallHint "Install Ollama from https://ollama.com/download/windows."
+  Assert-NyxclaudeCommand -Name "ollama" -InstallHint "Install Ollama from https://ollama.com/download/windows."
 
   if (-not $SkipModelPull) {
     & ollama pull $Model
@@ -202,5 +202,5 @@ function oc-help {
   [CmdletBinding()]
   param()
 
-  Get-OpenClaudeQuickHelp
+  Get-NyxclaudeQuickHelp
 }

@@ -233,13 +233,6 @@ function getMcpToolTimeoutMs(): number {
   )
 }
 
-import { isClaudeInChromeMCPServer } from '../../utils/claudeInChrome/common.js'
-
-// Lazy: toolRendering.tsx pulls React/ink; only needed when Claude-in-Chrome MCP server is connected
-/* eslint-disable @typescript-eslint/no-require-imports */
-const claudeInChromeToolRendering =
-  (): typeof import('../../utils/claudeInChrome/toolRendering.js') =>
-    require('../../utils/claudeInChrome/toolRendering.js')
 // Lazy: wrapper.tsx → hostAdapter.ts → executor.ts pulls both native modules
 // (@ant/computer-use-input + @ant/computer-use-swift). Runtime-gated by
 // GrowthBook tengu_malort_pedway (see gates.ts).
@@ -961,14 +954,6 @@ export const connectToServer = memoize(
           transportOptions,
         )
         logMCPDebug(name, `claude.ai proxy transport created successfully`)
-      } else if (
-        (serverRef.type === 'stdio' || !serverRef.type) &&
-        isClaudeInChromeMCPServer(name)
-      ) {
-        // NYXCLAUDE: Chrome integration removed — this branch is unreachable
-        // since isClaudeInChromeMCPServer always returns false for real servers,
-        // but keep the guard to satisfy the type checker.
-        throw new Error('Chrome MCP server is not available (integration removed)')
       } else if (
         feature('CHICAGO_MCP') &&
         (serverRef.type === 'stdio' || !serverRef.type) &&
@@ -2140,12 +2125,6 @@ export const fetchToolsForClient = memoizeWithLRU(
               const displayName = tool.annotations?.title || tool.name
               return `${client.name} - ${displayName} (MCP)`
             },
-            ...(isClaudeInChromeMCPServer(client.name) &&
-              (client.config.type === 'stdio' || !client.config.type)
-              ? claudeInChromeToolRendering().getClaudeInChromeMCPToolOverrides(
-                tool.name,
-              )
-              : {}),
             ...(feature('CHICAGO_MCP') &&
               (client.config.type === 'stdio' || !client.config.type) &&
               isComputerUseMCPServer!(client.name)

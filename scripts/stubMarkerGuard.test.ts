@@ -3,17 +3,17 @@ import { expect, test } from 'bun:test'
 import { canonicalStub, collectBundleStubs } from './stubMarkerGuard.js'
 
 test('canonicalStub keys on the src-relative path across separators', () => {
-  expect(canonicalStub('/home/runner/work/openclaude/openclaude/src/commands/dream/dream.ts')).toBe(
+  expect(canonicalStub('/home/runner/work/nyxclaude/nyxclaude/src/commands/dream/dream.ts')).toBe(
     'src/commands/dream/dream',
   )
   // Windows separators normalize to the same key.
-  expect(canonicalStub('C:\\repo\\openclaude\\src\\commands\\dream\\dream.ts')).toBe(
+  expect(canonicalStub('C:\\repo\\nyxclaude\\src\\commands\\dream\\dream.ts')).toBe(
     'src/commands/dream/dream',
   )
 })
 
 test('collectBundleStubs parses the JSON string-literal marker (minified builds)', () => {
-  const bundle = `;(globalThis.__openclaudeStubMarkers ??= []).push("missing-module-stub:/build/src/utils/foo.js");`
+  const bundle = `;(globalThis.__nyxclaudeStubMarkers ??= []).push("missing-module-stub:/build/src/utils/foo.js");`
   const stubbed = collectBundleStubs(bundle)
   expect([...stubbed.keys()]).toEqual(['src/utils/foo'])
 })
@@ -30,8 +30,8 @@ test('collectBundleStubs parses Bun module-boundary comments (unminified builds)
 // module slip past the tripwire on Windows build hosts.
 test('collectBundleStubs keeps Windows paths intact in the string-literal marker', () => {
   // JSON.stringify doubles the backslashes, matching what ships in the bundle.
-  const marker = JSON.stringify('missing-module-stub:C:\\repo\\openclaude\\src\\commands\\dream\\dream.js')
-  const bundle = `;(globalThis.__openclaudeStubMarkers ??= []).push(${marker});`
+  const marker = JSON.stringify('missing-module-stub:C:\\repo\\nyxclaude\\src\\commands\\dream\\dream.js')
+  const bundle = `;(globalThis.__nyxclaudeStubMarkers ??= []).push(${marker});`
 
   const stubbed = collectBundleStubs(bundle)
 
@@ -46,9 +46,9 @@ test('collectBundleStubs keeps Windows paths intact in the string-literal marker
 // terminator is the closing quote, not the first space.
 test('collectBundleStubs keeps spaced Windows paths intact in the string-literal marker', () => {
   const marker = JSON.stringify(
-    'missing-module-stub:C:\\Users\\Jane Doe\\openclaude\\src\\commands\\dream\\dream.js',
+    'missing-module-stub:C:\\Users\\Jane Doe\\nyxclaude\\src\\commands\\dream\\dream.js',
   )
-  const bundle = `;(globalThis.__openclaudeStubMarkers ??= []).push(${marker});`
+  const bundle = `;(globalThis.__nyxclaudeStubMarkers ??= []).push(${marker});`
 
   const stubbed = collectBundleStubs(bundle)
 
@@ -57,7 +57,7 @@ test('collectBundleStubs keeps spaced Windows paths intact in the string-literal
 })
 
 test('collectBundleStubs keeps spaced paths intact in the comment marker', () => {
-  const bundle = `// missing-module-stub:/home/jane doe/openclaude/src/utils/foo.js\nvar foo = {};`
+  const bundle = `// missing-module-stub:/home/jane doe/nyxclaude/src/utils/foo.js\nvar foo = {};`
 
   const stubbed = collectBundleStubs(bundle)
 
@@ -68,9 +68,9 @@ test('collectBundleStubs keeps spaced paths intact in the comment marker', () =>
 // to the stable src/... key in the minified string-literal marker.
 test('collectBundleStubs handles paths containing spaces', () => {
   const marker = JSON.stringify(
-    'missing-module-stub:/Users/John Doe/projects/openclaude/src/utils/foo.js',
+    'missing-module-stub:/Users/John Doe/projects/nyxclaude/src/utils/foo.js',
   )
-  const bundle = `;(globalThis.__openclaudeStubMarkers ??= []).push(${marker});`
+  const bundle = `;(globalThis.__nyxclaudeStubMarkers ??= []).push(${marker});`
 
   expect([...collectBundleStubs(bundle).keys()]).toEqual(['src/utils/foo'])
 })

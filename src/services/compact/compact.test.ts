@@ -84,7 +84,7 @@ const _realTokensModule = await import(
 )
 const compactTestTaskOutputPath = join(
   tmpdir(),
-  `openclaude-compact-test-${process.pid}-${randomUUID()}`,
+  `nyxclaude-compact-test-${process.pid}-${randomUUID()}`,
 )
 
 const COMPACT_STUB_MODULES = [

@@ -18,7 +18,7 @@ describe('cleanupOldSessionFiles', () => {
   test('removes old replay sidecars while preserving non-session files', async () => {
     const projectsDir = join(
       tmpdir(),
-      `openclaude-cleanup-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      `nyxclaude-cleanup-${Date.now()}-${Math.random().toString(16).slice(2)}`,
       'projects',
     )
     tempDirs.push(projectsDir)

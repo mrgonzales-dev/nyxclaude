@@ -182,7 +182,7 @@ function testContext(initialState: AppState = getDefaultAppState()) {
 }
 
 async function createTempProject(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-restore-'))
+  const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-session-restore-'))
   tempDirs.push(dir)
   return dir
 }

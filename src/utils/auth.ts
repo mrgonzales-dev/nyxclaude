@@ -22,13 +22,13 @@ import {
   getMockSubscriptionType,
   shouldUseMockSubscription,
 } from '../services/mockRateLimits.js'
-import {
-  isOAuthTokenExpired,
-  refreshOAuthToken,
-  shouldUseClaudeAIAuth,
-} from '../services/oauth/client.js'
-import { getOauthProfileFromOauthToken } from '../services/oauth/getOauthProfile.js'
-import type { OAuthTokens, SubscriptionType } from '../services/oauth/types.js'
+// NYXCLAUDE: OAuth removed — API key only. Stubs below replace the OAuth service.
+type OAuthTokens = { accessToken: string; refreshToken: string; expiresAt: number }
+type SubscriptionType = string
+const isOAuthTokenExpired = (_tokens: OAuthTokens): boolean => true
+const refreshOAuthToken = async (_tokens: OAuthTokens): Promise<OAuthTokens | null> => null
+const shouldUseClaudeAIAuth = (): boolean => false
+const getOauthProfileFromOauthToken = (_tokens: OAuthTokens): null => null
 import {
   getApiKeyFromFileDescriptor,
   getOAuthTokenFromFileDescriptor,

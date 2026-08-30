@@ -7,7 +7,7 @@ import { readFileInRange } from './readFileInRange.js'
 const createdDirs: string[] = []
 
 function writeTemp(name: string, contents: string): string {
-  const dir = mkdtempSync(join(tmpdir(), 'openclaude-readrange-'))
+  const dir = mkdtempSync(join(tmpdir(), 'nyxclaude-readrange-'))
   createdDirs.push(dir)
   const path = join(dir, name)
   writeFileSync(path, contents)

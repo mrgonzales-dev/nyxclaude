@@ -58,7 +58,7 @@ beforeAll(() => {
   const source = readFileSync(new URL('./pdf.ts', import.meta.url), 'utf8')
   const pdfgenSource = extractPdfgenSource(source)
 
-  pdfgenPath = join(tmpdir(), `openclaude-pdfgen-${randomUUID()}.ts`)
+  pdfgenPath = join(tmpdir(), `nyxclaude-pdfgen-${randomUUID()}.ts`)
   writeFileSync(pdfgenPath, pdfgenSource)
   pdfgenUrl = pathToFileURL(pdfgenPath).href
 })
@@ -289,8 +289,8 @@ test('table rows flush before rendering below the bottom margin', async () => {
 
 test('importing pdfgen as a library does not run the CLI writer', async () => {
   const testId = randomUUID()
-  const specPath = join(tmpdir(), `openclaude-pdf-spec-${testId}.json`)
-  const outPath = join(tmpdir(), `openclaude-pdf-output-${testId}.pdf`)
+  const specPath = join(tmpdir(), `nyxclaude-pdf-spec-${testId}.json`)
+  const outPath = join(tmpdir(), `nyxclaude-pdf-output-${testId}.pdf`)
   const originalArgv = process.argv
 
   writeFileSync(

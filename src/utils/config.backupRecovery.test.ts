@@ -8,7 +8,7 @@ import {
 } from './fsOperations.js'
 
 // These cases drive the #1807 recovery path through the injected filesystem
-// without touching the real ~/.openclaude.json. They cover three layers:
+// without touching the real ~/.nyxclaude.json. They cover three layers:
 //   - recoverConfigFromBackup (the backup-selection helper) directly,
 //   - the production getConfig recovery branch via _getConfigForTesting (getConfig
 //     is module-private but runs its real body under NODE_ENV=test), and
@@ -19,8 +19,8 @@ import {
 // mock.module('./config.js') from another file in the same process can never
 // turn these assertions into no-ops (the deferredWrite.test.ts trap).
 
-const FILE = '/virtual/.openclaude.json'
-const BASE = '.openclaude.json'
+const FILE = '/virtual/.nyxclaude.json'
+const BASE = '.nyxclaude.json'
 const BACKUP_NAME = `${BASE}.backup.20260630120000`
 
 function enoent(): NodeJS.ErrnoException {
@@ -184,18 +184,18 @@ describe('recoverConfigFromBackup', () => {
     })
   })
 
-  test('recovers the global config from a legacy .claude.json backup when every .openclaude backup is corrupt (#1807)', async () => {
+  test('recovers the global config from a legacy .claude.json backup when every .nyxclaude backup is corrupt (#1807)', async () => {
     // The exact #1807 scenario: repeated corrupt writes poisoned every
-    // `.openclaude.json.backup.*` snapshot, and the only clean source left is a
+    // `.nyxclaude.json.backup.*` snapshot, and the only clean source left is a
     // pre-rename `.claude.json.backup.*` file in the same backup dir. Recovery
     // for the global config must fall back to the legacy basename, newest-valid
     // first, instead of stopping at the poisoned current-basename snapshots.
     const { recoverConfigFromBackup } = await freshConfig()
-    // Newest overall is a corrupt .openclaude backup; the healthy snapshot is an
+    // Newest overall is a corrupt .nyxclaude backup; the healthy snapshot is an
     // older legacy .claude backup. Timestamp ordering must interleave the two
     // basenames so the corrupt-newer one is tried (and skipped) before the
     // healthy-older legacy one is used.
-    const CORRUPT_CURRENT = '.openclaude.json.backup.20260630130000'
+    const CORRUPT_CURRENT = '.nyxclaude.json.backup.20260630130000'
     const HEALTHY_LEGACY = '.claude.json.backup.20260630120000'
     installFs({
       readdirStringSync: (dir: string) =>

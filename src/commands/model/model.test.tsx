@@ -74,11 +74,11 @@ async function expectModelCommandDoesNotWaitForRefresh(
   const result = await Promise.race([
     commandPromise,
     new Promise(resolve =>
-      setTimeout(() => resolve(Symbol.for('openclaude.test.timeout')), 1_000),
+      setTimeout(() => resolve(Symbol.for('nyxclaude.test.timeout')), 1_000),
     ),
   ])
 
-  expect(result).not.toBe(Symbol.for('openclaude.test.timeout'))
+  expect(result).not.toBe(Symbol.for('nyxclaude.test.timeout'))
   return result
 }
 

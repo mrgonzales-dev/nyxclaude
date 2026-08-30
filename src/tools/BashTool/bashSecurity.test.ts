@@ -20,14 +20,14 @@ async function withProjectSettings(
   fn: () => void,
 ): Promise<void> {
   const originalCwd = getOriginalCwd()
-  const projectDir = await mkdtemp(join(tmpdir(), 'openclaude-bash-security-'))
+  const projectDir = await mkdtemp(join(tmpdir(), 'nyxclaude-bash-security-'))
 
   try {
     setOriginalCwd(projectDir)
     setAllowedSettingSources([...SETTING_SOURCES])
-    await mkdir(join(projectDir, '.openclaude'), { recursive: true })
+    await mkdir(join(projectDir, '.nyxclaude'), { recursive: true })
     await writeFile(
-      join(projectDir, '.openclaude', 'settings.local.json'),
+      join(projectDir, '.nyxclaude', 'settings.local.json'),
       JSON.stringify(settings),
     )
     resetSettingsCache()
@@ -126,7 +126,7 @@ describe('git commit governance policy (#1326)', () => {
       { git: { forbiddenCommitMessagePatterns: ['Co-Authored-By:'] } },
       () => {
         const result = bashCommandIsSafe_DEPRECATED(
-          'git commit -m "fix: policy\n\nCo-Authored-By: OpenClaude <openclaude@gitlawb.com>"',
+          'git commit -m "fix: policy\n\nCo-Authored-By: Nyxclaude <nyxclaude@gitlawb.com>"',
         )
 
         expectAskMessage(result, 'Co-Authored-By:')
@@ -139,7 +139,7 @@ describe('git commit governance policy (#1326)', () => {
       { git: { addAICoAuthor: false } },
       () => {
         const result = bashCommandIsSafe_DEPRECATED(
-          "git commit -m \"$(cat <<'EOF'\nfix: policy\n\nGenerated with OpenClaude\nEOF\n)\"",
+          "git commit -m \"$(cat <<'EOF'\nfix: policy\n\nGenerated with Nyxclaude\nEOF\n)\"",
         )
 
         expectAskMessage(result, 'AI attribution')
@@ -152,7 +152,7 @@ describe('git commit governance policy (#1326)', () => {
       { git: { forbiddenCommitMessagePatterns: ['Generated with'] } },
       () => {
         const result = bashCommandIsSafe_DEPRECATED(
-          'git -C ./repo -c user.name=bot commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'git -C ./repo -c user.name=bot commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
 
         expectAskMessage(result, 'Generated with')
@@ -165,7 +165,7 @@ describe('git commit governance policy (#1326)', () => {
       { git: { forbiddenCommitMessagePatterns: ['Generated with'] } },
       () => {
         const result = bashCommandIsSafe_DEPRECATED(
-          'GIT_AUTHOR_NAME=bot git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'GIT_AUTHOR_NAME=bot git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
 
         expectAskMessage(result, 'Generated with')
@@ -178,22 +178,22 @@ describe('git commit governance policy (#1326)', () => {
       { git: { forbiddenCommitMessagePatterns: ['Generated with'] } },
       () => {
         const doubleQuoted = bashCommandIsSafe_DEPRECATED(
-          '"git" commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          '"git" commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
         const singleQuoted = bashCommandIsSafe_DEPRECATED(
-          "'git' commit -m \"fix: policy\n\nGenerated with OpenClaude\"",
+          "'git' commit -m \"fix: policy\n\nGenerated with Nyxclaude\"",
         )
         const gitExe = bashCommandIsSafe_DEPRECATED(
-          'git.exe commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'git.exe commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
         const commandWrapped = bashCommandIsSafe_DEPRECATED(
-          'command git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'command git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
         const commandPathWrapped = bashCommandIsSafe_DEPRECATED(
-          'command -p git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'command -p git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
         const commandEndOfOptionsWrapped = bashCommandIsSafe_DEPRECATED(
-          'command -- git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'command -- git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
 
         expect(doubleQuoted.behavior).toBe('ask')
@@ -211,25 +211,25 @@ describe('git commit governance policy (#1326)', () => {
       { git: { forbiddenCommitMessagePatterns: ['Generated with'] } },
       () => {
         const envWrapped = bashCommandIsSafe_DEPRECATED(
-          'env git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'env git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
         const envAssignmentWrapped = bashCommandIsSafe_DEPRECATED(
-          'env GIT_AUTHOR_NAME=bot git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'env GIT_AUTHOR_NAME=bot git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
         const envOptionWrapped = bashCommandIsSafe_DEPRECATED(
-          'env -i -u GIT_CONFIG_GLOBAL git commit -m "fix: policy\n\nGenerated with OpenClaude"',
+          'env -i -u GIT_CONFIG_GLOBAL git commit -m "fix: policy\n\nGenerated with Nyxclaude"',
         )
         const envSplitStringWrapped = bashCommandIsSafe_DEPRECATED(
-          'env -S \'git commit -m "fix: policy\n\nGenerated with OpenClaude"\'',
+          'env -S \'git commit -m "fix: policy\n\nGenerated with Nyxclaude"\'',
         )
         const envInlineSplitStringWrapped = bashCommandIsSafe_DEPRECATED(
-          'env --split-string="git commit -m \\"fix: policy\n\nGenerated with OpenClaude\\""',
+          'env --split-string="git commit -m \\"fix: policy\n\nGenerated with Nyxclaude\\""',
         )
         const envSplitStringAssignmentWrapped = bashCommandIsSafe_DEPRECATED(
-          'env -S \'GIT_AUTHOR_NAME=bot git commit -m "fix: policy\n\nGenerated with OpenClaude"\'',
+          'env -S \'GIT_AUTHOR_NAME=bot git commit -m "fix: policy\n\nGenerated with Nyxclaude"\'',
         )
         const envSplitStringGlobalOptionWrapped = bashCommandIsSafe_DEPRECATED(
-          'env -S \'git -c user.name=bot commit -m "fix: policy\n\nGenerated with OpenClaude"\'',
+          'env -S \'git -c user.name=bot commit -m "fix: policy\n\nGenerated with Nyxclaude"\'',
         )
 
         expect(envWrapped.behavior).toBe('ask')
@@ -248,10 +248,10 @@ describe('git commit governance policy (#1326)', () => {
       { git: { forbiddenCommitMessagePatterns: ['Generated'] } },
       () => {
         const spaced = bashCommandIsSafe_DEPRECATED(
-          'git commit --message "fix: policy\n\nGenerated with OpenClaude"',
+          'git commit --message "fix: policy\n\nGenerated with Nyxclaude"',
         )
         const equals = bashCommandIsSafe_DEPRECATED(
-          'git commit --message="fix: policy\n\nGenerated with OpenClaude"',
+          'git commit --message="fix: policy\n\nGenerated with Nyxclaude"',
         )
         const unquoted = bashCommandIsSafe_DEPRECATED(
           'git commit --message=Generated',
@@ -269,7 +269,7 @@ describe('git commit governance policy (#1326)', () => {
       { git: { forbiddenCommitMessagePatterns: ['Generated with'] } },
       () => {
         const result = bashCommandIsSafe_DEPRECATED(
-          'git commit -F .git/OPENCLAUDE_COMMIT_MSG',
+          'git commit -F .git/NYXCLAUDE_COMMIT_MSG',
         )
 
         expectAskMessage(result, 'loaded from a file')
@@ -308,16 +308,16 @@ describe('git commit governance policy (#1326)', () => {
       () => {
         const envVar = bashCommandIsSafe_DEPRECATED('git commit -m "$MSG"')
         const commandSubstitution = bashCommandIsSafe_DEPRECATED(
-          'git commit --message="$(cat .git/OPENCLAUDE_COMMIT_MSG)"',
+          'git commit --message="$(cat .git/NYXCLAUDE_COMMIT_MSG)"',
         )
         const backtick = bashCommandIsSafe_DEPRECATED(
-          'git commit -m "`cat .git/OPENCLAUDE_COMMIT_MSG`"',
+          'git commit -m "`cat .git/NYXCLAUDE_COMMIT_MSG`"',
         )
         const unquoted = bashCommandIsSafe_DEPRECATED(
           'git commit -m fix$VAR',
         )
         const unquotedCommandSubstitution = bashCommandIsSafe_DEPRECATED(
-          'git commit -m $(cat .git/OPENCLAUDE_COMMIT_MSG)',
+          'git commit -m $(cat .git/NYXCLAUDE_COMMIT_MSG)',
         )
 
         expectAskMessage(envVar, 'cannot be checked')
@@ -337,7 +337,7 @@ describe('git commit governance policy (#1326)', () => {
           'git commit -m $(cat <<EOF\n$MSG\nEOF\n)',
         )
         const literalHeredocWithForbiddenText = bashCommandIsSafe_DEPRECATED(
-          "git commit -m $(cat <<'EOF'\nGenerated with OpenClaude\nEOF\n)",
+          "git commit -m $(cat <<'EOF'\nGenerated with Nyxclaude\nEOF\n)",
         )
 
         expectAskMessage(unquotedHeredoc, 'cannot be checked')
@@ -351,7 +351,7 @@ describe('git commit governance policy (#1326)', () => {
       { git: { addGeneratedWithFooter: false } },
       () => {
         const result = bashCommandIsSafe_DEPRECATED(
-          'git commit -m "fix: policy\n\nCo-Authored-By: OpenClaude <openclaude@gitlawb.com>"',
+          'git commit -m "fix: policy\n\nCo-Authored-By: Nyxclaude <nyxclaude@gitlawb.com>"',
         )
 
         expect(result.behavior).toBe('passthrough')

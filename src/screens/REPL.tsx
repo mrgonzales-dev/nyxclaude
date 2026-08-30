@@ -228,7 +228,6 @@ import { useInstallMessages } from 'src/hooks/notifs/useInstallMessages.js';
 import { useAwaySummary } from 'src/hooks/useAwaySummary.js';
 import { useChromeExtensionNotification } from 'src/hooks/useChromeExtensionNotification.js';
 import { useOfficialMarketplaceNotification } from 'src/hooks/useOfficialMarketplaceNotification.js';
-import { usePromptsFromClaudeInChrome } from 'src/hooks/usePromptsFromClaudeInChrome.js';
 import { getTipToShowOnSpinner, recordShownTip } from 'src/services/tips/tipScheduler.js';
 import type { Theme } from 'src/utils/theme.js';
 import { resolveCriticalInputDialog } from './replFocusedInputDialog.js';
@@ -889,10 +888,6 @@ export function REPL({
   // happen after explicit user consent to trust the current working directory.
   // Deferring startup checks is handled below (after promptTypingSuppressionActive
   // is declared) to avoid temporal dead zone issues.
-
-  // Allow Claude in Chrome MCP to send prompts through MCP notifications
-  // and sync permission mode changes to the Chrome extension
-  usePromptsFromClaudeInChrome(isRemoteSession ? EMPTY_MCP_CLIENTS : mcpClients, toolPermissionContext.mode);
 
   // Initialize swarm features: teammate hooks and context
   // Handles both fresh spawns and resumed teammate sessions

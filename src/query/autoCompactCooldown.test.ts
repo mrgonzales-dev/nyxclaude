@@ -39,9 +39,9 @@ const SAVED_ENV = {
     process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE,
   DISABLE_AUTO_COMPACT: process.env.DISABLE_AUTO_COMPACT,
   DISABLE_COMPACT: process.env.DISABLE_COMPACT,
-  OPENCLAUDE_MAX_ACTIVE_MESSAGES: process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES,
-  OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP:
-    process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP,
+  NYXCLAUDE_MAX_ACTIVE_MESSAGES: process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES,
+  NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP:
+    process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP,
 }
 
 let savedGlobalConfig:
@@ -56,7 +56,7 @@ let tempDir: string | undefined
 
 beforeEach(async () => {
   await acquireSharedMutationLock('query/autoCompactCooldown.test.ts')
-  tempDir = mkdtempSync(join(tmpdir(), 'openclaude-autocompact-test-'))
+  tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-autocompact-test-'))
   process.env.CLAUDE_CONFIG_DIR = tempDir
   const globalConfig = getGlobalConfig()
   savedGlobalConfig = {
@@ -73,8 +73,8 @@ beforeEach(async () => {
   process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
   delete process.env.DISABLE_AUTO_COMPACT
   delete process.env.DISABLE_COMPACT
-  delete process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES
-  delete process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP
+  delete process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES
+  delete process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP
 })
 
 afterEach(() => {
@@ -378,7 +378,7 @@ test('unset message threshold forces compaction at the 200-message default', asy
 })
 
 test('invalid legacy message threshold keeps the 200-message default', async () => {
-  process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES = 'not-a-number'
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES = 'not-a-number'
 
   const { terminal, callModel, seenTracking } =
     await runMessageCountHardCapQuery(manySmallMessages(201))
@@ -432,7 +432,7 @@ test('disabled auto-compact preserves an explicit message threshold', async () =
 
 test('disabled auto-compact preserves a legacy message threshold', async () => {
   process.env.DISABLE_AUTO_COMPACT = '1'
-  process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES = '100'
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES = '100'
 
   const { terminal, callModel, seenTracking } =
     await runMessageCountHardCapQuery(manySmallMessages(101))
@@ -448,7 +448,7 @@ test('explicit off preserves a legacy message threshold', async () => {
     maxMessagesCompactionThreshold: 'off',
   }))
   process.env.DISABLE_AUTO_COMPACT = '1'
-  process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES = '100'
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES = '100'
 
   const { terminal, callModel, seenTracking } =
     await runMessageCountHardCapQuery(manySmallMessages(101))
@@ -519,7 +519,7 @@ test('long-session smoke keeps repeated over-cap turns bounded before provider c
 })
 
 test('invalid active-message hard cap override keeps default safety cap', async () => {
-  process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '100O'
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '100O'
 
   const { terminal, callModel, seenTracking } =
     await runMessageCountHardCapQuery(manySmallMessages(1001))
@@ -537,7 +537,7 @@ test('explicit zero active-message hard cap override disables safety cap', async
     ...current,
     maxMessagesCompactionThreshold: 'off',
   }))
-  process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '0'
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '0'
 
   const { terminal, callModel, seenTracking } =
     await runMessageCountHardCapQuery(manySmallMessages(1001))

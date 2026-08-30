@@ -41,10 +41,10 @@ export const vi = {
   'commands.insights.description':
     'Tạo báo cáo phân tích các phiên Nyxclaude',
   'commands.install-github-app.description':
-    'Thiết lập Claude GitHub Actions cho kho lưu trữ',
+    'Thiết lập GitHub Actions cho kho lưu trữ',
   'commands.knowledge.description': 'Quản lý Knowledge Graph',
-  'commands.login.description': 'Đăng nhập bằng tài khoản Anthropic',
-  'commands.logout.description': 'Đăng xuất khỏi tài khoản Anthropic',
+  'commands.login.description': 'Đăng nhập bằng tài khoản API provider',
+  'commands.logout.description': 'Đăng xuất khỏi tài khoản API provider',
   'commands.lsp.description':
     'Kiểm tra và thiết lập LSP code intelligence',
   'commands.mcp.description': 'Quản lý máy chủ MCP',

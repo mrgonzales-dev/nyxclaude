@@ -131,7 +131,7 @@ describe("diagnostic redaction", () => {
         "MISTRAL_API_KEY=mistralOpaqueToken123456789",
         "mistral api key abcdefghijklmnopqrstuvwxyz",
       ],
-      path: `${home}/private/openclaude/src/file.ts`,
+      path: `${home}/private/nyxclaude/src/file.ts`,
     }) as { messages: string[]; path: string };
     const serialized = JSON.stringify(redacted);
 
@@ -143,7 +143,7 @@ describe("diagnostic redaction", () => {
       "MISTRAL_API_KEY=[REDACTED]",
       "mistral api key [redacted]",
     ]);
-    expect(redacted.path).toBe("~/private/openclaude/src/file.ts");
+    expect(redacted.path).toBe("~/private/nyxclaude/src/file.ts");
     expect(serialized).not.toContain("sk-openai-secret-token");
     expect(serialized).not.toContain("AIzaSyDUMMY-secret-token");
     expect(serialized).not.toContain("abcdefghijklmnop");
@@ -170,12 +170,12 @@ describe("diagnostic redaction", () => {
 
     expect(
       redactHomePath(
-        "debug path C:\\Users\\Alice\\AppData\\Roaming\\openclaude",
+        "debug path C:\\Users\\Alice\\AppData\\Roaming\\nyxclaude",
         home,
       ),
-    ).toBe("debug path ~\\AppData\\Roaming\\openclaude");
-    expect(redactHomePath("C:\\Users\\AliceOther\\openclaude", home)).toBe(
-      "C:\\Users\\AliceOther\\openclaude",
+    ).toBe("debug path ~\\AppData\\Roaming\\nyxclaude");
+    expect(redactHomePath("C:\\Users\\AliceOther\\nyxclaude", home)).toBe(
+      "C:\\Users\\AliceOther\\nyxclaude",
     );
   });
 

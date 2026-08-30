@@ -4,7 +4,7 @@ import type * as ConfigModule from './config.js'
 // In NODE_ENV=test saveGlobalConfigDeferred delegates synchronously to
 // saveGlobalConfig (the in-memory test config), so these assertions exercise
 // the public contract — apply-in-order and a safe flush — without touching the
-// real ~/.openclaude.json or lockfiles. The actual queue/debounce/write-through/
+// real ~/.nyxclaude.json or lockfiles. The actual queue/debounce/write-through/
 // batch-drain branch (skipped here by the NODE_ENV bypass) is covered against
 // injected storage/scheduler in deferredConfigWrites.test.ts.
 //

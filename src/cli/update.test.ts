@@ -7,19 +7,19 @@ import {
 
 describe('getGlobalUpdateFailureHint', () => {
   test('points npm-only builds at npm instead of the native installer', () => {
-    withMockMacro({ PACKAGE_URL: '@gitlawb/openclaude' }, () => {
+    withMockMacro({ PACKAGE_URL: 'nyxclaude' }, () => {
       expect(getGlobalUpdateFailureHint(false)).toContain(
-        'npm install -g @gitlawb/openclaude@latest',
+        'npm install -g nyxclaude@latest',
       )
       expect(getGlobalUpdateFailureHint(false)).not.toContain(
-        'openclaude install',
+        'nyxclaude install',
       )
     })
   })
 
   test('preserves native installer guidance for native-capable builds', () => {
     expect(getGlobalUpdateFailureHint(true)).toBe(
-      'Or consider using native installation with: openclaude install\n',
+      'Or consider using native installation with: nyxclaude install\n',
     )
   })
 })
@@ -27,7 +27,7 @@ describe('getGlobalUpdateFailureHint', () => {
 describe('writePackageManagerUpdateGuidance', () => {
   test.each([
     ['@anthropic-ai/claude-code', true],
-    ['@gitlawb/openclaude', false],
+    ['nyxclaude', false],
     ['@example/custom-cli', false],
   ] as const)(
     'uses the runtime package identity for %s',
@@ -46,7 +46,7 @@ describe('writePackageManagerUpdateGuidance', () => {
       })
 
       expect(output).toContain(
-        'OpenClaude is managed by Homebrew. Use Homebrew to update OpenClaude.',
+        'Nyxclaude is managed by Homebrew. Use Homebrew to update Nyxclaude.',
       )
       expect(output).toContain('Update available: 1.0.0 → 2.0.0')
       if (expectsUpstreamCommand) {

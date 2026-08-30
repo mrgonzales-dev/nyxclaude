@@ -14,11 +14,11 @@ function moduleNotFound(message: string): Error {
 describe('importOptionalRuntimeModule', () => {
   test('throws an actionable error when the optional package is missing', async () => {
     const promise = importOptionalRuntimeModule(
-      '@openclaude/does-not-exist-xyz',
+      '@nyxclaude/does-not-exist-xyz',
       'Test Feature',
     )
     await expect(promise).rejects.toThrow(
-      /Test Feature requires the "@openclaude\/does-not-exist-xyz" package, which is not installed\. Install it with `npm install @openclaude\/does-not-exist-xyz`/,
+      /Test Feature requires the "@nyxclaude\/does-not-exist-xyz" package, which is not installed\. Install it with `npm install @nyxclaude\/does-not-exist-xyz`/,
     )
   })
 
@@ -90,7 +90,7 @@ describe('isMissingSpecifierError', () => {
 
 describe('importRuntimeModule', () => {
   test('rejects with the raw error for a missing module (no friendly wrapping)', async () => {
-    const promise = importRuntimeModule('@openclaude/does-not-exist-xyz')
+    const promise = importRuntimeModule('@nyxclaude/does-not-exist-xyz')
     // Raw error wording differs by runtime (Node: "Cannot find package",
     // Bun: "Cannot find module") — the point is it is NOT the friendly message.
     await expect(promise).rejects.toThrow(/Cannot find (module|package)/)

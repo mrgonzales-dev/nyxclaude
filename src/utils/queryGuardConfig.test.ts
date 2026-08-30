@@ -12,7 +12,7 @@ describe('query guard config', () => {
     expect(getQueryGuardOptionsFromEnv({}, warn)).toEqual({})
     expect(
       getQueryGuardOptionsFromEnv(
-        { OPENCLAUDE_QUERY_HARD_MAX_MS: '   ' },
+        { NYXCLAUDE_QUERY_HARD_MAX_MS: '   ' },
         warn,
       ),
     ).toEqual({})
@@ -24,20 +24,20 @@ describe('query guard config', () => {
 
     expect(
       getQueryGuardOptionsFromEnv(
-        { OPENCLAUDE_QUERY_HARD_MAX_MS: '3600000' },
+        { NYXCLAUDE_QUERY_HARD_MAX_MS: '3600000' },
         warn,
       ),
     ).toEqual({ hardMaxQueryMs: 3_600_000 })
     expect(
       getQueryGuardOptionsFromEnv(
-        { OPENCLAUDE_QUERY_HARD_MAX_MS: String(DEFAULT_QUERY_HARD_MAX_MS) },
+        { NYXCLAUDE_QUERY_HARD_MAX_MS: String(DEFAULT_QUERY_HARD_MAX_MS) },
         warn,
       ),
     ).toEqual({ hardMaxQueryMs: DEFAULT_QUERY_HARD_MAX_MS })
     expect(
       getQueryGuardOptionsFromEnv(
         {
-          OPENCLAUDE_QUERY_HARD_MAX_MS: String(
+          NYXCLAUDE_QUERY_HARD_MAX_MS: String(
             MAX_CONFIGURABLE_QUERY_HARD_MAX_MS,
           ),
         },
@@ -63,14 +63,14 @@ describe('query guard config', () => {
 
       expect(
         getQueryGuardOptionsFromEnv(
-          { OPENCLAUDE_QUERY_HARD_MAX_MS: value },
+          { NYXCLAUDE_QUERY_HARD_MAX_MS: value },
           warn,
         ),
       ).toEqual({})
 
       expect(warn).toHaveBeenCalledTimes(1)
       expect(warn.mock.calls[0]?.[0]).toContain(
-        'OPENCLAUDE_QUERY_HARD_MAX_MS',
+        'NYXCLAUDE_QUERY_HARD_MAX_MS',
       )
       expect(warn.mock.calls[0]?.[0]).toContain(value)
       expect(warn.mock.calls[0]?.[1]).toEqual({ level: 'warn' })

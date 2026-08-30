@@ -146,7 +146,7 @@ describe('Windows clipboard image handling', () => {
 
   test('getImageFromClipboard saves a raw Windows bitmap when ContainsImage reports False', async () => {
     setPlatform('win32')
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-image-paste-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-image-paste-'))
     tempDirs.push(tempDir)
     process.env.CLAUDE_CODE_TMPDIR = tempDir
     const screenshotPath = join(tempDir, 'claude_cli_latest_screenshot.png')

@@ -1,18 +1,16 @@
 # nyxclaude
 
-A terminal AI coding agent harness. Forked from [openclaude](https://github.com/Gitlawb/openclaude) (which itself derives from Anthropic's Claude Code CLI), rebranded and stripped of Anthropic-specific auth and telemetry.
-
-nyxclaude uses `/provider` to configure any OpenAI-compatible LLM endpoint — local or cloud. No provider is hardcoded. On first run with no provider configured, the CLI shows "No provider · Run /provider" and blocks message submission until one is added. What remains is a React/Ink TUI coding agent with bash, file tools, grep, skills, slash commands, and streaming output.
+A terminal AI coding agent harness. Uses `/provider` to configure any OpenAI-compatible LLM endpoint — local or cloud. No provider is hardcoded. On first run with no provider configured, the CLI shows "No provider · Run /provider" and blocks message submission until one is added.
 
 ## Status
 
-Personal/local harness. Not published to npm. Working tree state as of this README:
+Personal/local harness. Not published to npm.
 
 - **Build:** green (`bun run smoke`)
-- **Typecheck:** broken — 145 pre-existing `tsc` errors inherited from upstream drift
-- **Tests:** red — 416 failing tests out of ~14.6k, clustered in areas touched by the rebrand
+- **Typecheck:** run `bun run typecheck`
+- **Tests:** run `bun test`
 - **CI:** none configured
-- **License:** none yet (`package.json` declares `SEE LICENSE FILE`)
+- **License:** see `package.json`
 
 See `AGENTS.md` for the local agent workflow rules.
 
@@ -70,15 +68,6 @@ Settings files (all gitignored):
 - `.nyxclaude/skills/` — project skills
 - `~/.nyxclaude/skills/` — user skills
 
-## What's Different From Upstream
-
-- **No hardcoded provider.** Provider config is managed by `/provider` and saved to `.nyxclaude-profile.json`. No Anthropic fallback — the CLI blocks message submission and shows "No provider · Run /provider" until configured.
-- **No telemetry, no auto-updater.** Set via `.nyxclaude/settings.local.json` env block, not source.
-- **MCP disabled by default.** Server connections are off; the MCP entrypoint still exists for standalone use.
-- **Chrome integration removed.** `claudeInChrome` skills and hooks are stubbed to no-ops.
-- **fff (Fast File Finder) integration.** In-process content and path search via a native FFI library, with ripgrep fallback.
-- **Branding.** Product name, wordmark, and startup banner all read `nyxclaude`.
-
 ## Scripts
 
 | Script | Purpose |
@@ -86,7 +75,7 @@ Settings files (all gitignored):
 | `bun run build` | Bundle `dist/cli.mjs` + `dist/sdk.mjs` |
 | `bun run dev` | Build and launch from source |
 | `bun run smoke` | Build + `--version` check |
-| `bun run typecheck` | `tsc --noEmit` (currently 145 errors) |
+| `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | Unit suite (Bun runner) |
 | `bun run deadcode` | `knip` unused files/deps scan |
 | `bun run check` | smoke + deadcode + full tests |
@@ -106,13 +95,4 @@ src/            core CLI/runtime (TypeScript + React/Ink)
 scripts/        build, externals, verification, doctor
 vendor/         node-domexception shim
 dist/           build output (gitignored)
-openclaude/     upstream snapshot (gitignored, reference only)
 ```
-
-## Origin
-
-Forked from `@gitlawb/openclaude` v0.26.0. The upstream snapshot is kept in `openclaude/` (gitignored) for diff reference during the rebrand. ~633 files differ from that snapshot.
-
-## Disclaimer
-
-This is an independent fork. It is not affiliated with, endorsed by, or supported by Anthropic or the openclaude maintainers. "Claude Code" is an Anthropic product; this project does not use Anthropic's API.

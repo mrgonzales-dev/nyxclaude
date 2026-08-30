@@ -20,7 +20,7 @@ const ROUTE = 'nvidia-nim'
 const originalEnv = {
   ANTHROPIC_CUSTOM_HEADERS: process.env.ANTHROPIC_CUSTOM_HEADERS,
   CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
-  OPENCLAUDE_CONFIG_DIR: process.env.OPENCLAUDE_CONFIG_DIR,
+  NYXCLAUDE_CONFIG_DIR: process.env.NYXCLAUDE_CONFIG_DIR,
   CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
   CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
   CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
@@ -81,9 +81,9 @@ describe('nvidia-nim discovery cache key parity', () => {
   beforeEach(async () => {
     await acquireSharedMutationLock('nvidiaNimModels.test.ts')
     mock.restore()
-    tempDir = mkdtempSync(join(tmpdir(), 'openclaude-nvidia-nim-cache-test-'))
+    tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-nvidia-nim-cache-test-'))
     process.env.CLAUDE_CONFIG_DIR = tempDir
-    process.env.OPENCLAUDE_CONFIG_DIR = tempDir
+    process.env.NYXCLAUDE_CONFIG_DIR = tempDir
     delete process.env.ANTHROPIC_CUSTOM_HEADERS
   })
 

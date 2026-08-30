@@ -84,7 +84,7 @@ async function withTempFile<T>(
   name: string,
   run: (path: string) => Promise<T>,
 ): Promise<T> {
-  const dir = await mkdtemp(join(tmpdir(), 'openclaude-bg-test-'))
+  const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-bg-test-'))
   try {
     return await run(join(dir, name))
   } finally {
@@ -457,11 +457,11 @@ describe('background session CLI parsing', () => {
     const config = buildBackgroundChildProcessConfig({
       execPath: '/usr/bin/node',
       execArgv: ['--max-old-space-size=8192', '--expose-gc'],
-      entrypoint: '/repo/bin/openclaude',
+      entrypoint: '/repo/bin/nyxclaude',
       childArgs: ['--print', 'fix failing tests'],
       processEnv: {
-        OPENCLAUDE_HEAP_RELAUNCHED: '1',
-        OPENCLAUDE_NODE_MAX_OLD_SPACE_SIZE_MB: '8192',
+        NYXCLAUDE_HEAP_RELAUNCHED: '1',
+        NYXCLAUDE_NODE_MAX_OLD_SPACE_SIZE_MB: '8192',
       },
       sessionName: 'tests',
       stdoutLogPath: '/tmp/bg.out.log',
@@ -471,12 +471,12 @@ describe('background session CLI parsing', () => {
     expect(config.args).toEqual([
       '--max-old-space-size=8192',
       '--expose-gc',
-      '/repo/bin/openclaude',
+      '/repo/bin/nyxclaude',
       '--print',
       'fix failing tests',
     ])
-    expect(config.env.OPENCLAUDE_HEAP_RELAUNCHED).toBeUndefined()
-    expect(config.env.OPENCLAUDE_NODE_MAX_OLD_SPACE_SIZE_MB).toBe('8192')
+    expect(config.env.NYXCLAUDE_HEAP_RELAUNCHED).toBeUndefined()
+    expect(config.env.NYXCLAUDE_NODE_MAX_OLD_SPACE_SIZE_MB).toBe('8192')
     expect(config.env.CLAUDE_CODE_SESSION_KIND).toBe('bg')
     expect(config.env.CLAUDE_CODE_SESSION_LOG).toBe('/tmp/bg.out.log')
     expect(config.env.CLAUDE_CODE_SESSION_NAME).toBe('tests')
@@ -514,7 +514,7 @@ describe('background session process termination safety', () => {
     startedAt: '2026-07-10T08:00:00.000Z',
     updatedAt: '2026-07-10T08:00:00.000Z',
     sessionId: 'conversation-safety',
-    command: ['node', 'openclaude', '--session-id', 'conversation-safety'],
+    command: ['node', 'nyxclaude', '--session-id', 'conversation-safety'],
     stdoutLogPath: '/tmp/stdout.log',
     stderrLogPath: '/tmp/stderr.log',
   }
@@ -539,7 +539,7 @@ describe('background session process termination safety', () => {
       isProcessAlive: () => ++aliveChecks <= 2,
       getProcessCommand: pid => {
         calls.push(`verify:${pid}`)
-        return 'node openclaude --session-id conversation-safety'
+        return 'node nyxclaude --session-id conversation-safety'
       },
       killTree: async (pid, signal) => {
         calls.push(`signal:${pid}:${signal}`)
@@ -736,7 +736,7 @@ describe('background session process termination safety', () => {
         },
         getProcessCommand: () => {
           calls.push('command')
-          return 'node openclaude --session-id conversation-safety'
+          return 'node nyxclaude --session-id conversation-safety'
         },
         killTree: async (_pid, signal) => {
           calls.push(`signal:${signal}`)

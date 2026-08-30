@@ -8,8 +8,8 @@ import {
 } from './maxActiveMessages.js'
 
 const SAVED_ENV = {
-  OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP:
-    process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP,
+  NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP:
+    process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP,
 }
 
 afterEach(() => {
@@ -23,14 +23,14 @@ afterEach(() => {
 })
 
 test('invalid hard cap override falls back to the default safety cap', () => {
-  process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '100O'
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '100O'
 
   expect(getMaxActiveMessagesHardCap()).toBe(1000)
   expect(isAboveMaxActiveMessagesLimit(1001)).toBe(true)
 })
 
 test('explicit zero hard cap disables only the hard cap', () => {
-  process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '0'
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '0'
 
   expect(getMaxActiveMessagesHardCap()).toBe(0)
   expect(isAboveMaxActiveMessagesLimit(1001)).toBe(false)
@@ -40,7 +40,7 @@ test('explicit zero hard cap disables only the hard cap', () => {
 })
 
 test('configured and hard cap combine by choosing the tighter positive limit', () => {
-  process.env.OPENCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '500'
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '500'
 
   expect(resolveMaxActiveMessagesLimit('1000', undefined)).toBe(500)
   expect(resolveMaxActiveMessagesLimit('100', undefined)).toBe(100)

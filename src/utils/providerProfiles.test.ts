@@ -19,7 +19,7 @@ const RESTORED_KEYS = [
   'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
   'CLAUDE_CODE_PROVIDER_ROUTE_ID',
   'CLAUDE_CONFIG_DIR',
-  'OPENCLAUDE_CONFIG_DIR',
+  'NYXCLAUDE_CONFIG_DIR',
   'CLAUDE_CODE_USE_OPENAI',
   'CLAUDE_CODE_USE_GEMINI',
   'CLAUDE_CODE_USE_MISTRAL',
@@ -110,9 +110,9 @@ beforeEach(async () => {
   for (const key of RESTORED_KEYS) {
     delete process.env[key]
   }
-  testConfigDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+  testConfigDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
   process.env.CLAUDE_CONFIG_DIR = testConfigDir
-  process.env.OPENCLAUDE_CONFIG_DIR = testConfigDir
+  process.env.NYXCLAUDE_CONFIG_DIR = testConfigDir
 })
 
 afterEach(() => {
@@ -494,8 +494,8 @@ describe('applyProviderProfileToProcessEnv', () => {
   })
 
   test('github-enterprise profile persists and relaunches with Enterprise env', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -520,7 +520,7 @@ describe('applyProviderProfileToProcessEnv', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('github_enterprise_persisted')
@@ -889,8 +889,8 @@ describe('applyProviderProfileToProcessEnv', () => {
   })
 
   test('cloudflare profile on a non-Workers api.cloudflare.com path does not persist CLOUDFLARE_API_TOKEN', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -911,7 +911,7 @@ describe('applyProviderProfileToProcessEnv', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('cloudflare_non_workers')
@@ -2630,7 +2630,7 @@ describe('getProviderPresetDefaults', () => {
 
 describe('setActiveProviderProfile', () => {
   test('sets OPENAI_MODEL env var when switching to an openai-type provider', async () => {
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.env.CLAUDE_CONFIG_DIR = configDir
 
     try {
@@ -2673,8 +2673,8 @@ describe('setActiveProviderProfile', () => {
   // leaving a stale startup file that hit the missing-cred warning on
   // every non-interactive launch after logout.
   test('persists xAI OAuth profile with marker so logout cleanup can clear it', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -2699,7 +2699,7 @@ describe('setActiveProviderProfile', () => {
       }))
 
       const result = setActiveProviderProfile('xai_oauth_prof', { configDir })
-      const profilePath = join(configDir, '.openclaude-profile.json')
+      const profilePath = join(configDir, '.nyxclaude-profile.json')
       const persisted = JSON.parse(readFileSync(profilePath, 'utf8'))
 
       expect(result?.id).toBe('xai_oauth_prof')
@@ -2724,8 +2724,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists no-key openai-compatible profiles for restart fallback', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
     process.env.OPENAI_API_KEY = 'sk-shell-should-not-persist'
@@ -2751,11 +2751,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('ollama_prof')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
         OPENAI_BASE_URL: 'http://localhost:11434/v1',
@@ -2769,8 +2769,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists primary model for keyed openai-compatible multi-model profiles', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -2796,11 +2796,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('deepseek_prof')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
         OPENAI_BASE_URL: 'https://api.deepseek.com/v1',
@@ -2815,8 +2815,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists descriptor-backed direct vendors using a legacy-compatible openai startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -2841,11 +2841,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('deepseek_vendor_prof')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
         OPENAI_BASE_URL: 'https://api.deepseek.com/v1',
@@ -2860,8 +2860,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists the Atlas key for generic openai profiles targeting Atlas Cloud', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -2885,7 +2885,7 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('generic_atlas_prof')
@@ -2901,8 +2901,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists Venice profiles using a legacy-compatible openai startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -2923,11 +2923,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('venice_prof')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
         OPENAI_BASE_URL: 'https://api.venice.ai/api/v1',
@@ -2944,10 +2944,10 @@ describe('setActiveProviderProfile', () => {
 
   test('persists Fireworks AI profiles using a legacy-compatible openai startup profile', async () => {
     const tempDir = mkdtempSync(
-      join(tmpdir(), 'openclaude-provider-'),
+      join(tmpdir(), 'nyxclaude-provider-'),
     )
     const configDir = mkdtempSync(
-      join(tmpdir(), 'openclaude-provider-config-'),
+      join(tmpdir(), 'nyxclaude-provider-config-'),
     )
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
@@ -2970,14 +2970,14 @@ describe('setActiveProviderProfile', () => {
       })
       const persisted = JSON.parse(
         readFileSync(
-          join(configDir, '.openclaude-profile.json'),
+          join(configDir, '.nyxclaude-profile.json'),
           'utf8',
         ),
       )
 
       expect(result?.id).toBe('fireworks_prof')
       expect(
-        existsSync(join(tempDir, '.openclaude-profile.json')),
+        existsSync(join(tempDir, '.nyxclaude-profile.json')),
       ).toBe(false)
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
@@ -2994,8 +2994,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists ClinePass profiles using a legacy-compatible openai startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3016,11 +3016,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('clinepass_prof')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
         OPENAI_BASE_URL: 'https://api.cline.bot/api/v1',
@@ -3036,8 +3036,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists ClinePass profiles with custom base URL using the same dedicated credential', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3062,11 +3062,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('clinepass_custom')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
         OPENAI_BASE_URL: 'https://custom.cline.bot/v1',
@@ -3082,8 +3082,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists Cloudflare profiles with CLOUDFLARE_API_TOKEN in the strict startup env', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3101,7 +3101,7 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('cloudflare_prof')
@@ -3124,8 +3124,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists Xiaomi MiMo profiles using a legacy-compatible openai startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3147,11 +3147,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('mimo_prof')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
         OPENAI_BASE_URL: 'https://api.xiaomimimo.com/v1',
@@ -3167,8 +3167,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists AI/ML API profiles using a legacy-compatible openai startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3193,11 +3193,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('aimlapi_prof')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
         AIMLAPI_API_KEY: 'aimlapi-test-key',
@@ -3225,8 +3225,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('custom (proxy) AI/ML API profiles preserve AIMLAPI startup identity', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3251,7 +3251,7 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('aimlapi_proxy_prof')
@@ -3283,8 +3283,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('keyless custom (proxy) AI/ML API profiles keep route identity but withhold the ambient key', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3308,7 +3308,7 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(persisted.profile).toBe('openai')
@@ -3340,8 +3340,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists bedrock profiles using a dedicated startup profile kind', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3365,11 +3365,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('bedrock_prof')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('bedrock')
       expect(persisted.env).toEqual({
         ANTHROPIC_MODEL: 'claude-sonnet-4-6',
@@ -3383,8 +3383,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists anthropic profiles using a dedicated anthropic startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3409,11 +3409,11 @@ describe('setActiveProviderProfile', () => {
         configDir,
       })
       const persisted = JSON.parse(
-        readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'),
+        readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'),
       )
 
       expect(result?.id).toBe('anthro_persisted_prof')
-      expect(existsSync(join(tempDir, '.openclaude-profile.json'))).toBe(false)
+      expect(existsSync(join(tempDir, '.nyxclaude-profile.json'))).toBe(false)
       expect(persisted.profile).toBe('anthropic')
       expect(persisted.env).toEqual({
         ANTHROPIC_BASE_URL: 'https://api.anthropic.com',
@@ -3428,8 +3428,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists custom Anthropic-compatible profiles with Bearer token auth', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -3446,7 +3446,7 @@ describe('setActiveProviderProfile', () => {
       saveMockGlobalConfig(current => ({ ...current, providerProfiles: [profile] }))
 
       const result = setActiveProviderProfile('custom_anthropic_prof', { configDir })
-      const persisted = JSON.parse(readFileSync(join(configDir, '.openclaude-profile.json'), 'utf8'))
+      const persisted = JSON.parse(readFileSync(join(configDir, '.nyxclaude-profile.json'), 'utf8'))
 
       expect(result?.id).toBe('custom_anthropic_prof')
       expect(process.env.ANTHROPIC_BASE_URL).toBe('https://anthropic-proxy.example')
@@ -3691,7 +3691,7 @@ describe('deleteProviderProfile', () => {
     }))
 
     setActiveProviderProfile(profile.id, { configDir: testConfigDir ?? undefined })
-    const profilePath = join(testConfigDir!, '.openclaude-profile.json')
+    const profilePath = join(testConfigDir!, '.nyxclaude-profile.json')
     expect(existsSync(profilePath)).toBe(true)
 
     deleteProviderProfile(profile.id)
@@ -3724,7 +3724,7 @@ describe('deleteProviderProfile', () => {
     })
 
     const persisted = JSON.parse(
-      readFileSync(join(testConfigDir!, '.openclaude-profile.json'), 'utf8'),
+      readFileSync(join(testConfigDir!, '.nyxclaude-profile.json'), 'utf8'),
     )
     expect(persisted.env.ANTHROPIC_BASE_URL).toBe('https://new-proxy.example')
     expect(persisted.env.ANTHROPIC_MODEL).toBe('new-proxy-model')
@@ -3759,7 +3759,7 @@ describe('deleteProviderProfile', () => {
     deleteProviderProfile(activeProfile.id)
 
     const persisted = JSON.parse(
-      readFileSync(join(testConfigDir!, '.openclaude-profile.json'), 'utf8'),
+      readFileSync(join(testConfigDir!, '.nyxclaude-profile.json'), 'utf8'),
     )
     expect(persisted.profile).toBe('openai')
     expect(persisted.env.OPENAI_BASE_URL).toBe('https://replacement.example/v1')

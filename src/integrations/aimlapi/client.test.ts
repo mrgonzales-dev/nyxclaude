@@ -29,7 +29,7 @@ function payReceipt(overrides: Record<string, unknown> = {}): Record<string, unk
       id: 'sess_1',
       sessionToken: 'session',
       partnerId: 'part_1',
-      partnerName: 'OpenClaude',
+      partnerName: 'Nyxclaude',
       userId: 1,
       amountUsdMinor: 2500,
       status: 'pending_payment',
@@ -72,7 +72,7 @@ test('passwordless onboarding methods use the current backend contracts', async 
     token: 'new-bearer',
     exp: 2,
   })
-  expect(await client.createKey('bearer', 'OpenClaude CLI')).toEqual({
+  expect(await client.createKey('bearer', 'Nyxclaude CLI')).toEqual({
     key: 'key_test',
     id: 'id_test',
   })
@@ -83,7 +83,7 @@ test('passwordless onboarding methods use the current backend contracts', async 
     ['POST', 'https://auth.example.test/v1/auth/sign-in/code', { email: 'user@example.com' }],
     ['POST', 'https://auth.example.test/v1/auth/sign-in/code/verify', { email: 'user@example.com', code: '123456' }],
     ['POST', 'https://auth.example.test/v1/auth/account/passwordless', { email: 'new@example.com' }],
-    ['POST', 'https://app.example.test/v1/keys', { name: 'OpenClaude CLI' }],
+    ['POST', 'https://app.example.test/v1/keys', { name: 'Nyxclaude CLI' }],
     ['GET', 'https://api.example.test/v1/billing/balance', undefined],
   ])
 })
@@ -628,12 +628,12 @@ test('typed methods reject wrong-typed success fields without a raw TypeError', 
   )
 
   globalThis.fetch = mock(async () => jsonResponse({ key: 1 })) as unknown as typeof fetch
-  await expect(client.createKey('bearer', 'OpenClaude CLI')).rejects.toThrow(
+  await expect(client.createKey('bearer', 'Nyxclaude CLI')).rejects.toThrow(
     'did not return an API key',
   )
   // Key without its required id is an incomplete receipt and must be rejected.
   globalThis.fetch = mock(async () => jsonResponse({ key: 'k_only' })) as unknown as typeof fetch
-  await expect(client.createKey('bearer', 'OpenClaude CLI')).rejects.toThrow(
+  await expect(client.createKey('bearer', 'Nyxclaude CLI')).rejects.toThrow(
     'did not return an API key',
   )
 

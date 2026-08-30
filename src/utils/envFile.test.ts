@@ -23,7 +23,7 @@ const TEST_ENV_KEYS = [
   'OPENAI_AZURE_STYLE',
   'OPENAI_BASE_URL',
   'OPENAI_MODEL',
-  'OPENCLAUDE_OLLAMA_NUM_CTX',
+  'NYXCLAUDE_OLLAMA_NUM_CTX',
   'WEB_AUTH_HEADER',
   'WEB_AUTH_SCHEME',
   'WEB_BODY_TEMPLATE',
@@ -49,7 +49,7 @@ const originalEnv = new Map<string, string | undefined>()
 let tempDir: string
 
 beforeEach(() => {
-  tempDir = mkdtempSync(join(tmpdir(), 'openclaude-env-file-test-'))
+  tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-env-file-test-'))
   for (const key of TEST_ENV_KEYS) {
     originalEnv.set(key, process.env[key])
     delete process.env[key]
@@ -299,13 +299,13 @@ describe('loadEnvFile', () => {
   })
 
   it('loads documented Ollama request context window values', () => {
-    const filePath = writeTempEnvFile('OPENCLAUDE_OLLAMA_NUM_CTX=32768')
+    const filePath = writeTempEnvFile('NYXCLAUDE_OLLAMA_NUM_CTX=32768')
 
     const loaded = loadEnvFile(filePath)
 
-    expect(process.env.OPENCLAUDE_OLLAMA_NUM_CTX).toBe('32768')
+    expect(process.env.NYXCLAUDE_OLLAMA_NUM_CTX).toBe('32768')
     expect(loaded).toEqual({
-      OPENCLAUDE_OLLAMA_NUM_CTX: '32768',
+      NYXCLAUDE_OLLAMA_NUM_CTX: '32768',
     })
   })
 

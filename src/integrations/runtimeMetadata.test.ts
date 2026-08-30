@@ -23,7 +23,7 @@ async function withTempConfigDir<T>(fn: () => Promise<T>): Promise<T> {
   await acquireSharedMutationLock('integrations/runtimeMetadata.test.ts')
   let tempDir: string | null = null
   try {
-    tempDir = mkdtempSync(join(tmpdir(), 'openclaude-runtime-metadata-test-'))
+    tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-runtime-metadata-test-'))
     process.env.CLAUDE_CONFIG_DIR = tempDir
     return await fn()
   } finally {
@@ -226,7 +226,7 @@ describe('AIMLAPI runtime attribution', () => {
       expect(canonical?.['X-AIMLAPI-Partner-ID']).toBe(
         'part_62yQoGYDq4Yqnrj2R1iGrDNJ',
       )
-      expect(canonical?.['HTTP-Referer']).toBe('OpenClaude')
+      expect(canonical?.['HTTP-Referer']).toBe('Nyxclaude')
 
       // A missing base URL falls back to the route default, which is canonical.
       expect(getRouteDiscoveryHeaders('aimlapi')?.['X-AIMLAPI-Partner-ID']).toBe(

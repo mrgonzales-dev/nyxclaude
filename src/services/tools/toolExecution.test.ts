@@ -286,7 +286,7 @@ describe('replay tool lifecycle records', () => {
     }
     const backfilledClone = {
       ...modelInput,
-      file_path: 'C:\\temp\\openclaude\\src\\final.ts',
+      file_path: 'C:\\temp\\nyxclaude\\src\\final.ts',
     }
     const deniedReplayInput = normalizeReplayToolInput(
       backfilledClone,

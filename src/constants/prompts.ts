@@ -116,11 +116,6 @@ function getHooksSection(): string {
   return `Users may configure 'hooks', shell commands that execute in response to events like tool calls, in settings. Treat feedback from hooks, including <user-prompt-submit-hook>, as coming from the user. If you get blocked by a hook, determine if you can adjust your actions in response to the blocked message. If not, ask the user to check their hooks configuration.`
 }
 
-function getSystemRemindersSection(): string {
-  return `- Tool results and user messages may include <system-reminder> tags. <system-reminder> tags contain useful information and reminders. They are automatically added by the system, and bear no direct relation to the specific tool results or user messages in which they appear.
-- The conversation has unlimited context through automatic summarization.`
-}
-
 function getLanguageSection(
   languagePreference: string | undefined,
 ): string | null {
@@ -434,7 +429,6 @@ export async function getSystemPrompt(
       `\nYou are an autonomous agent. Use the available tools to do useful work.
 
 ${CYBER_RISK_INSTRUCTION}`,
-      getSystemRemindersSection(),
       await loadMemoryPrompt(),
       envInfo,
       getLanguageSection(settings.language),
@@ -610,7 +604,7 @@ export async function computeSimpleEnvInfo(
   modelId: string,
   additionalWorkingDirectories?: string[],
 ): Promise<string> {
-  const [isGit, unameSR] = await Promise.all([getIsGit(), getUnameSR()])
+  const unameSR = await getUnameSR()
 
   const marketingName = getMarketingNameForModel(modelId)
   const modelDescription: string | null = marketingName
@@ -625,7 +619,6 @@ export async function computeSimpleEnvInfo(
     isWorktree
       ? `This is a git worktree — an isolated copy of the repository. Run all commands from this directory. Do NOT \`cd\` to the original repository root.`
       : null,
-    [`Is a git repository: ${isGit}`],
     additionalWorkingDirectories && additionalWorkingDirectories.length > 0
       ? `Additional working directories:`
       : null,

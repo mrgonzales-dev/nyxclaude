@@ -143,8 +143,8 @@ function formatLimitInfo(
   appliedOffset: number | undefined,
 ): string {
   const parts: string[] = []
-  if (appliedLimit !== undefined) parts.push(`limit: ${appliedLimit}`)
-  if (appliedOffset) parts.push(`offset: ${appliedOffset}`)
+  if (appliedLimit !== undefined) parts.push(`limit ${appliedLimit}`)
+  if (appliedOffset) parts.push(`offset ${appliedOffset}`)
   return parts.join(', ')
 }
 
@@ -275,7 +275,7 @@ export const GrepTool = buildTool({
       const limitInfo = formatLimitInfo(appliedLimit, appliedOffset)
       const resultContent = content || 'No matches found'
       const finalContent = limitInfo
-        ? `${resultContent}\n\n[Showing results with pagination = ${limitInfo}]`
+        ? `${resultContent}\n\n[${limitInfo}]`
         : resultContent
       return {
         tool_use_id: toolUseID,
@@ -289,7 +289,7 @@ export const GrepTool = buildTool({
       const rawContent = content || 'No matches found'
       const matches = numMatches ?? 0
       const files = numFiles ?? 0
-      const summary = `\n\nFound ${matches} total ${matches === 1 ? 'occurrence' : 'occurrences'} across ${files} ${files === 1 ? 'file' : 'files'}.${limitInfo ? ` with pagination = ${limitInfo}` : ''}`
+      const summary = `\n\n${matches} ${matches === 1 ? 'match' : 'matches'}, ${files} ${files === 1 ? 'file' : 'files'}${limitInfo ? ` [${limitInfo}]` : ''}`
       return {
         tool_use_id: toolUseID,
         type: 'tool_result',
@@ -307,7 +307,7 @@ export const GrepTool = buildTool({
       }
     }
     // head_limit has already been applied in call() method, so just show all filenames
-    const result = `Found ${numFiles} ${plural(numFiles, 'file')}${limitInfo ? ` ${limitInfo}` : ''}\n${filenames.join('\n')}`
+    const result = `${numFiles} ${plural(numFiles, 'file')}:${limitInfo ? ` [${limitInfo}]` : ''}\n${filenames.join('\n')}`
     return {
       tool_use_id: toolUseID,
       type: 'tool_result',

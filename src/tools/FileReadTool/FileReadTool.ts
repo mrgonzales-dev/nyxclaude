@@ -18,6 +18,7 @@ import {
 } from '../../services/analytics/metadata.js'
 import {
   countTokensWithAPI,
+  roughTokenCountEstimation,
   roughTokenCountEstimationForFileType,
 } from '../../services/tokenEstimation.js'
 import {
@@ -842,6 +843,13 @@ async function validateContentTokens(
   const tokenEstimate = roughTokenCountEstimationForFileType(content, ext)
   if (!tokenEstimate || tokenEstimate <= effectiveMaxTokens / 4) return
 
+  // Use a local fast estimate to avoid a blocking API round-trip on the vast
+  // majority of file reads. Only fall back to the accurate (but slow)
+  // countTokensWithAPI when the local estimate is near or over the limit.
+  const localEstimate = roughTokenCountEstimation(content)
+  if (localEstimate < effectiveMaxTokens * 0.8) return
+
+  // Near or over the limit: fall back to the accurate API count.
   const tokenCount = await countTokensWithAPI(content)
   const effectiveCount = tokenCount ?? tokenEstimate
 

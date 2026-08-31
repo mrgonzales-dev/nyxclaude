@@ -86,6 +86,15 @@ export function isSessionActivityTrackingActive(): boolean {
 }
 
 /**
+ * Returns true if there is currently active session work (API call or tool
+ * execution in progress). Used by idle-backoff heuristics to distinguish
+ * "user is idle but agent is working" from "everything is idle".
+ */
+export function isSessionActivityActive(): boolean {
+  return refcount > 0
+}
+
+/**
  * Increment the activity refcount. When it transitions from 0→1 and a callback
  * is registered, start a periodic heartbeat timer.
  */

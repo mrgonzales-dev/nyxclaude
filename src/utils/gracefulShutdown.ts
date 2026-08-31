@@ -40,6 +40,7 @@ import { createCombinedAbortSignal } from './combinedAbortSignal.js'
 import { logForDebugging } from './debug.js'
 import { logForDiagnosticsNoPII } from './diagLogs.js'
 import { isEnvTruthy } from './envUtils.js'
+import { computeIdleBackoffDelay } from './idleBackoff.js'
 import { getCurrentSessionTitle, sessionIdExists } from './sessionStorage.js'
 import { sleep } from './sleep.js'
 import { profileReport } from './startupProfiler.js'
@@ -283,21 +284,33 @@ export const setupGracefulShutdown = memoize(() => {
     // Detect orphaned process when terminal closes without delivering SIGHUP.
     // macOS revokes TTY file descriptors instead of signaling, leaving the
     // process alive but unable to read/write. Periodically check stdin validity.
+    // Uses a self-rescheduling timer with idle backoff: when the user/agent has
+    // been idle, the check runs less frequently (2× after 30s, 5× after 5min)
+    // since a stale TTY matters less when nobody is interacting.
     if (process.stdin.isTTY) {
-      orphanCheckInterval = setInterval(() => {
-        // Skip during scroll drain — even a cheap check consumes an event
-        // loop tick that scroll frames need. 30s interval → missing one is fine.
-        if (getIsScrollDraining()) return
-        // process.stdout.writable becomes false when the TTY is revoked
-        if (!process.stdout.writable || !process.stdin.readable) {
-          clearInterval(orphanCheckInterval)
-          logForDiagnosticsNoPII('info', 'shutdown_signal', {
-            signal: 'orphan_detected',
-          })
-          void gracefulShutdown(129)
-        }
-      }, 30_000) // Check every 30 seconds
-      orphanCheckInterval.unref() // Don't keep process alive just for this check
+      const ORPHAN_CHECK_BASE_MS = 30_000
+      function scheduleOrphanCheck(): void {
+        orphanCheckInterval = setTimeout(() => {
+          // Skip during scroll drain — even a cheap check consumes an event
+          // loop tick that scroll frames need. 30s interval → missing one is fine.
+          if (getIsScrollDraining()) {
+            scheduleOrphanCheck()
+            return
+          }
+          // process.stdout.writable becomes false when the TTY is revoked
+          if (!process.stdout.writable || !process.stdin.readable) {
+            orphanCheckInterval = undefined
+            logForDiagnosticsNoPII('info', 'shutdown_signal', {
+              signal: 'orphan_detected',
+            })
+            void gracefulShutdown(129)
+            return
+          }
+          scheduleOrphanCheck()
+        }, computeIdleBackoffDelay(ORPHAN_CHECK_BASE_MS))
+        orphanCheckInterval.unref() // Don't keep process alive just for this check
+      }
+      scheduleOrphanCheck()
     }
   }
 
@@ -365,7 +378,7 @@ export function gracefulShutdownSync(
 
 let shutdownInProgress = false
 let failsafeTimer: ReturnType<typeof setTimeout> | undefined
-let orphanCheckInterval: ReturnType<typeof setInterval> | undefined
+let orphanCheckInterval: ReturnType<typeof setTimeout> | undefined
 let pendingShutdown: Promise<void> | undefined
 
 /** Check if graceful shutdown is in progress */

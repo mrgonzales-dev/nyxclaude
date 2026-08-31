@@ -6,6 +6,7 @@
  */
 
 import { logForDebugging } from './debug.js'
+import { computeIdleBackoffDelay } from './idleBackoff.js'
 
 export type MemoryPressureLevel = 'normal' | 'elevated' | 'critical'
 
@@ -39,7 +40,7 @@ const DEFAULT_CONFIG: MemoryPressureConfig = {
 
 let currentLevel: MemoryPressureLevel = 'normal'
 let pressureListeners: Array<(level: MemoryPressureLevel) => void> = []
-let monitorInterval: ReturnType<typeof setInterval> | null = null
+let monitorInterval: ReturnType<typeof setTimeout> | null = null
 let compactionRequested = false
 let lastCompactionRequestMs = 0
 
@@ -113,52 +114,72 @@ export function startMemoryPressureMonitor(
     `[MemoryPressure] Monitor started: elevated=${resolved.elevatedThresholdMB}MB, critical=${resolved.criticalThresholdMB}MB, interval=${resolved.checkIntervalMs}ms`,
   )
 
-  monitorInterval = setInterval(() => {
-    const rss = process.memoryUsage().rss / 1024 / 1024
-    const previousLevel = currentLevel
+  // Self-rescheduling timer with idle backoff. When memory level is normal
+  // and the user/agent has been idle, the check interval is stretched to
+  // reduce unnecessary wakeups. Under elevated/critical pressure the timer
+  // always runs at the base interval so pressure is caught promptly.
+  function scheduleNext(): void {
+    // Only backoff when pressure is normal — under pressure we need prompt
+    // detection.
+    const delay =
+      currentLevel === 'normal'
+        ? computeIdleBackoffDelay(resolved.checkIntervalMs)
+        : resolved.checkIntervalMs
 
-    if (rss >= resolved.criticalThresholdMB) {
-      currentLevel = 'critical'
-    } else if (rss >= resolved.elevatedThresholdMB) {
-      currentLevel = 'elevated'
-    } else {
-      currentLevel = 'normal'
-    }
+    monitorInterval = setTimeout(() => {
+      const rss = process.memoryUsage().rss / 1024 / 1024
+      const previousLevel = currentLevel
 
-    if (currentLevel !== previousLevel) {
-      logForDebugging(
-        `[MemoryPressure] Level changed: ${previousLevel} -> ${currentLevel} (RSS: ${rss.toFixed(0)}MB)`,
-      )
-      if (currentLevel === 'critical') {
-        logForDebugging('[MemoryPressure] Critical — pruning registered caches')
-        pruneRegisteredCaches()
+      if (rss >= resolved.criticalThresholdMB) {
+        currentLevel = 'critical'
+      } else if (rss >= resolved.elevatedThresholdMB) {
+        currentLevel = 'elevated'
+      } else {
+        currentLevel = 'normal'
       }
-      for (const listener of pressureListeners) {
-        try {
-          listener(currentLevel)
-        } catch {
-          // Don't let listener errors crash the monitor
+
+      if (currentLevel !== previousLevel) {
+        logForDebugging(
+          `[MemoryPressure] Level changed: ${previousLevel} -> ${currentLevel} (RSS: ${rss.toFixed(0)}MB)`,
+        )
+        if (currentLevel === 'critical') {
+          logForDebugging('[MemoryPressure] Critical — pruning registered caches')
+          pruneRegisteredCaches()
+        }
+        for (const listener of pressureListeners) {
+          try {
+            listener(currentLevel)
+          } catch {
+            // Don't let listener errors crash the monitor
+          }
         }
       }
-    }
 
-    // Keep requesting compaction while pressure stays elevated/critical, but
-    // throttle to minCompactionRequestIntervalMs. Without this floor the flag
-    // re-arms every checkIntervalMs (30s) and consumeCompactionRequest()
-    // drains it every turn, forcing a compact before every turn. Compacting
-    // frees little RSS (old message objects stay on the JS heap), so the
-    // thrash never self-corrects — the floor breaks the cycle.
-    if (currentLevel !== 'normal') {
-      const now = Date.now()
-      if (now - lastCompactionRequestMs >= resolved.minCompactionRequestIntervalMs) {
-        compactionRequested = true
-        lastCompactionRequestMs = now
+      // Keep requesting compaction while pressure stays elevated/critical, but
+      // throttle to minCompactionRequestIntervalMs. Without this floor the flag
+      // re-arms every checkIntervalMs (30s) and consumeCompactionRequest()
+      // drains it every turn, forcing a compact before every turn. Compacting
+      // frees little RSS (old message objects stay on the JS heap), so the
+      // thrash never self-corrects — the floor breaks the cycle.
+      if (currentLevel !== 'normal') {
+        const now = Date.now()
+        if (now - lastCompactionRequestMs >= resolved.minCompactionRequestIntervalMs) {
+          compactionRequested = true
+          lastCompactionRequestMs = now
+        }
       }
-    }
-  }, resolved.checkIntervalMs)
 
-  // Don't keep process alive just for monitoring
-  ;(monitorInterval as ReturnType<typeof setInterval> & { unref?: () => void }).unref?.()
+      // Re-arm unless stop was called during the callback.
+      if (monitorInterval !== null) {
+        scheduleNext()
+      }
+    }, delay)
+
+    // Don't keep process alive just for monitoring
+    monitorInterval.unref?.()
+  }
+
+  scheduleNext()
 }
 
 /**
@@ -175,7 +196,7 @@ export function consumeCompactionRequest(): boolean {
 
 export function stopMemoryPressureMonitor(): void {
   if (monitorInterval) {
-    clearInterval(monitorInterval)
+    clearTimeout(monitorInterval)
     monitorInterval = null
   }
   currentLevel = 'normal'

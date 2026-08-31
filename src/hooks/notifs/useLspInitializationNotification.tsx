@@ -1,6 +1,6 @@
 import { c as _c } from "react-compiler-runtime";
 import * as React from 'react';
-import { useInterval } from 'usehooks-ts';
+import { useIdleBackoffInterval } from '../useIdleBackoffInterval.js';
 import { getIsRemoteMode, getIsScrollDraining } from '../../bootstrap/state.js';
 import { useNotifications } from '../../context/notifications.js';
 import { Text } from '../../ink.js';
@@ -109,7 +109,7 @@ export function useLspInitializationNotification() {
     t2 = $[5];
   }
   const poll = t2;
-  useInterval(poll, shouldPoll ? LSP_POLL_INTERVAL_MS : null);
+  useIdleBackoffInterval(poll, shouldPoll ? LSP_POLL_INTERVAL_MS : null);
   let t3;
   let t4;
   if ($[6] !== poll || $[7] !== shouldPoll) {

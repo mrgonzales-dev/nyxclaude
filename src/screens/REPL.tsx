@@ -109,7 +109,7 @@ const getCoordinatorUserContext: (mcpClients: ReadonlyArray<{
 } = feature('COORDINATOR_MODE') ? require('../coordinator/coordinatorMode.js').getCoordinatorUserContext : () => ({});
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 import useCanUseTool from '../hooks/useCanUseTool.js';
-import type { ToolPermissionContext, Tool } from '../Tool.js';
+import type { ToolPermissionContext, Tool, Tools } from '../Tool.js';
 import { applyPermissionUpdate, persistPermissionUpdate } from '../utils/permissions/PermissionUpdate.js';
 import { buildPermissionUpdates } from '../components/permissions/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js';
 import { applyPermissionUpdatesToLiveContext, stripDangerousPermissionsForAutoMode } from '../utils/permissions/permissionSetup.js';
@@ -611,6 +611,18 @@ export type Props = {
   maxTurns?: number;
 };
 export type Screen = 'prompt' | 'transcript';
+
+// Module-level cache for the assembled tool pool. computeTools() calls
+// assembleToolPool() + mergeAndFilterTools() on every getToolUseContext()
+// invocation, but the inputs (permission context mode, MCP tool set, agent
+// definition, combined initial tools) rarely change between turns. The cache
+// key captures all inputs that affect the output so stale tools are never
+// returned.
+let cachedToolPool: {
+  key: string;
+  tools: Tools;
+} | null = null;
+
 export function REPL({
   commands: initialCommands,
   debug,
@@ -2582,10 +2594,23 @@ export function REPL({
     // for mid-query tool list updates.
     const computeTools = () => {
       const state = store.getState();
+      // Build a cache key from all inputs that affect the output: permission
+      // context mode, MCP tool names (sorted, joined), initial tool names
+      // (sorted, joined), and the agent definition type. These rarely change
+      // between turns, so the cache avoids redundant assembleToolPool() +
+      // mergeAndFilterTools() + resolveAgentTools() work on every
+      // getToolUseContext() call.
+      const mcpToolNames = state.mcp.tools.map(t => t.name).sort().join(',');
+      const initialToolNames = combinedInitialTools.map(t => t.name).sort().join(',');
+      const cacheKey = `${state.toolPermissionContext.mode}|${mcpToolNames}|${initialToolNames}|${mainThreadAgentDefinition?.agentType ?? ''}`;
+      if (cachedToolPool && cachedToolPool.key === cacheKey) {
+        return cachedToolPool.tools;
+      }
       const assembled = assembleToolPool(state.toolPermissionContext, state.mcp.tools);
       const merged = mergeAndFilterTools(combinedInitialTools, assembled, state.toolPermissionContext.mode);
-      if (!mainThreadAgentDefinition) return merged;
-      return resolveAgentTools(mainThreadAgentDefinition, merged, false, true).resolvedTools;
+      const tools = !mainThreadAgentDefinition ? merged : resolveAgentTools(mainThreadAgentDefinition, merged, false, true).resolvedTools;
+      cachedToolPool = { key: cacheKey, tools };
+      return tools;
     };
     const queryActivity = queryGeneration === undefined ? undefined : {
       registerActivity: (reason: string) => {

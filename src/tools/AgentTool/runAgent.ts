@@ -202,13 +202,17 @@ export async function* runAgent({
   const agentId = override?.agentId ? override.agentId : createAgentId()
 
   // Handle message forking for context sharing
+  // A forked agent inherits the parent's conversation context (and MCP state);
+  // a fresh subagent starts with an isolated, empty MCP context so that parent
+  // server instructions and resource lists don't leak into the subagent.
+  const isForkPath = forkContextMessages !== undefined
   const contextMessages: Message[] = forkContextMessages
     ? filterIncompleteToolCalls(forkContextMessages)
     : []
   const initialMessages: Message[] = [...contextMessages, ...promptMessages]
 
   const agentReadFileState =
-    forkContextMessages !== undefined
+    isForkPath
       ? cloneFileStateCache(toolUseContext.readFileState)
       : createFileStateCacheWithSizeLimit(READ_FILE_STATE_CACHE_SIZE)
 
@@ -341,8 +345,8 @@ export async function* runAgent({
     thinkingConfig: useExactTools
       ? toolUseContext.options.thinkingConfig
       : { type: 'disabled' as const },
-    mcpClients: toolUseContext.options.mcpClients,
-    mcpResources: toolUseContext.options.mcpResources,
+    mcpClients: isForkPath ? toolUseContext.options.mcpClients : [],
+    mcpResources: isForkPath ? toolUseContext.options.mcpResources : {},
     agentDefinitions: toolUseContext.options.agentDefinitions,
     ...(useExactTools && { querySource }),
   }

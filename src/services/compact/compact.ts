@@ -126,6 +126,10 @@ import {
   getPartialCompactPrompt,
 } from './prompt.js'
 import { getEffectiveContextWindowSize } from './autoCompact.js'
+import type {
+  ConnectedMCPServer,
+  MCPServerConnection,
+} from '../mcp/types.js'
 
 export const POST_COMPACT_MAX_FILES_TO_RESTORE = 5
 export const POST_COMPACT_TOKEN_BUDGET = 50_000
@@ -240,6 +244,11 @@ const PTL_RETRY_MARKER = '[earlier conversation truncated for compaction retry]'
 // wasting a full-context API call on a summary request that will PTL.
 const PROACTIVE_TRUNCATION_RATIO = 0.9
 
+// Cache the last post-compaction delta signature to skip re-emitting identical
+// delta attachments. The model still has the previous post-compact attachments
+// in the kept tail from the prior compaction.
+let lastPostCompactDeltaSignature: string | null = null
+
 /**
  * Drops the oldest API-round groups from messages until tokenGap is covered.
  * Falls back to dropping 20% of groups when the gap is unparseable (some
@@ -301,6 +310,34 @@ export function truncateHeadForPTLRetry(
     ]
   }
   return sliced
+}
+
+/**
+ * Compute a signature for the post-compaction delta attachments (deferred
+ * tools, agent listing, MCP instructions). If the signature matches the
+ * last compaction's, the delta attachments are skipped — the model still
+ * has them from the previous post-compact set.
+ */
+function computePostCompactDeltaSignature(
+  tools: Tool[],
+  model: string,
+  mcpClients: MCPServerConnection[],
+  agentDefinitions: { activeAgents: { agentType: string }[] },
+): string {
+  const toolNames = tools
+    .map(t => t.name)
+    .sort()
+    .join(',')
+  const mcpNames = mcpClients
+    .filter((c): c is ConnectedMCPServer => c.type === 'connected')
+    .map(c => `${c.name}:${c.instructions?.length ?? 0}`)
+    .sort()
+    .join(',')
+  const agentTypes = agentDefinitions.activeAgents
+    .map(a => a.agentType)
+    .sort()
+    .join(',')
+  return `${model}|${toolNames}|${mcpNames}|${agentTypes}`
 }
 
 export const ERROR_MESSAGE_PROMPT_TOO_LONG =
@@ -638,24 +675,42 @@ export async function compactConversation(
     // state so the model has tool/instruction context on the first
     // post-compact turn. Empty message history → diff against nothing →
     // announces the full set.
-    for (const att of getDeferredToolsDeltaAttachment(
+    //
+    // Cache: if the same set of tools, agents, and MCP servers was announced
+    // in the previous compaction, skip re-emitting. The model still has the
+    // previous post-compact attachments in the kept tail from the prior
+    // compaction — re-emitting identical content is pure token waste.
+    const postCompactDeltaSignature = computePostCompactDeltaSignature(
       context.options.tools,
       context.options.mainLoopModel,
-      [],
-      { callSite: 'compact_full' },
-    )) {
-      postCompactFileAttachments.push(createAttachmentMessage(att))
-    }
-    for (const att of getAgentListingDeltaAttachment(context, [])) {
-      postCompactFileAttachments.push(createAttachmentMessage(att))
-    }
-    for (const att of getMcpInstructionsDeltaAttachment(
       context.options.mcpClients,
-      context.options.tools,
-      context.options.mainLoopModel,
-      [],
-    )) {
-      postCompactFileAttachments.push(createAttachmentMessage(att))
+      context.options.agentDefinitions,
+    )
+    if (postCompactDeltaSignature === lastPostCompactDeltaSignature) {
+      logEvent('tengu_compact_delta_cache_hit', {
+        signature: postCompactDeltaSignature,
+      })
+    } else {
+      lastPostCompactDeltaSignature = postCompactDeltaSignature
+      for (const att of getDeferredToolsDeltaAttachment(
+        context.options.tools,
+        context.options.mainLoopModel,
+        [],
+        { callSite: 'compact_full' },
+      )) {
+        postCompactFileAttachments.push(createAttachmentMessage(att))
+      }
+      for (const att of getAgentListingDeltaAttachment(context, [])) {
+        postCompactFileAttachments.push(createAttachmentMessage(att))
+      }
+      for (const att of getMcpInstructionsDeltaAttachment(
+        context.options.mcpClients,
+        context.options.tools,
+        context.options.mainLoopModel,
+        [],
+      )) {
+        postCompactFileAttachments.push(createAttachmentMessage(att))
+      }
     }
 
     context.onCompactProgress?.({

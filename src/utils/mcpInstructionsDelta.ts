@@ -44,6 +44,20 @@ export function isMcpInstructionsDeltaEnabled(): boolean {
 }
 
 /**
+ * Incremental cache for the announced-MCP-instructions set.
+ *
+ * `getMcpInstructionsDelta` used to re-scan the entire `messages` array
+ * every turn to rebuild the `announced` set, which is O(n^2) as the
+ * transcript grows. Instead we keep the set here and only process the
+ * messages appended since the last call, resuming at
+ * `cachedAnnouncedMessageCount`. The cache is invalidated (full rescan)
+ * when the transcript shrinks — e.g. after compaction or an edit —
+ * detected via `messages.length < cachedAnnouncedMessageCount`.
+ */
+let cachedAnnouncedSet: Set<string> | null = null
+let cachedAnnouncedMessageCount = 0
+
+/**
  * Diff the current set of connected MCP servers that have instructions
  * (server-authored via InitializeResult, or client-side synthesized)
  * against what's already been announced in this conversation. Null if
@@ -57,10 +71,22 @@ export function getMcpInstructionsDelta(
   messages: Message[],
   clientSideInstructions: ClientSideInstruction[],
 ): McpInstructionsDelta | null {
-  const announced = new Set<string>()
+  // Build the announced set incrementally from the module-level cache,
+  // scanning only messages we haven't processed yet instead of the whole
+  // transcript every turn (O(n^2) → O(n) amortized). Reset to a full scan
+  // when the transcript shrinks (e.g. after compaction or an edit).
+  if (
+    cachedAnnouncedSet === null ||
+    messages.length < cachedAnnouncedMessageCount
+  ) {
+    cachedAnnouncedSet = new Set<string>()
+    cachedAnnouncedMessageCount = 0
+  }
+  const announced = cachedAnnouncedSet
   let attachmentCount = 0
   let midCount = 0
-  for (const msg of messages) {
+  for (let i = cachedAnnouncedMessageCount; i < messages.length; i++) {
+    const msg = messages[i]
     if (msg.type !== 'attachment') continue
     attachmentCount++
     if (msg.attachment.type !== 'mcp_instructions_delta') continue
@@ -68,6 +94,7 @@ export function getMcpInstructionsDelta(
     for (const n of msg.attachment.addedNames) announced.add(n)
     for (const n of msg.attachment.removedNames) announced.delete(n)
   }
+  cachedAnnouncedMessageCount = messages.length
 
   const connected = mcpClients.filter(
     (c): c is ConnectedMCPServer => c.type === 'connected',

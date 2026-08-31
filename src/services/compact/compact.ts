@@ -125,6 +125,7 @@ import {
   getCompactUserSummaryMessage,
   getPartialCompactPrompt,
 } from './prompt.js'
+import { getEffectiveContextWindowSize } from './autoCompact.js'
 
 export const POST_COMPACT_MAX_FILES_TO_RESTORE = 5
 export const POST_COMPACT_TOKEN_BUDGET = 50_000
@@ -234,6 +235,10 @@ export const ERROR_MESSAGE_NOT_ENOUGH_MESSAGES =
   'Not enough messages to compact.'
 const MAX_PTL_RETRIES = 3
 const PTL_RETRY_MARKER = '[earlier conversation truncated for compaction retry]'
+// Proactively truncate before the first summary attempt when the pre-compaction
+// token count exceeds this fraction of the effective context window. This avoids
+// wasting a full-context API call on a summary request that will PTL.
+const PROACTIVE_TRUNCATION_RATIO = 0.9
 
 /**
  * Drops the oldest API-round groups from messages until tokenGap is covered.
@@ -477,6 +482,45 @@ export async function compactConversation(
     let summaryResponse: AssistantMessage
     let summary: string | null
     let ptlAttempts = 0
+
+    // Proactive truncation: if the pre-compaction token count exceeds 90% of
+    // the effective context window, the summary request (messages + compact
+    // prompt) will likely PTL. Truncate oldest groups before the first attempt
+    // to avoid wasting a full-context API call.
+    const effectiveContextWindow = getEffectiveContextWindowSize(
+      context.options.mainLoopModel,
+    )
+    const proactiveTruncationThreshold = Math.floor(
+      effectiveContextWindow * PROACTIVE_TRUNCATION_RATIO,
+    )
+    if (preCompactTokenCount > proactiveTruncationThreshold) {
+      const proactivelyTruncated = truncateHeadForPTLRetry(
+        messagesToSummarize,
+        // Synthetic PTL response with a token gap estimate — the gap is
+        // the amount we need to cut to get under the context window.
+        {
+          type: 'assistant',
+          message: {
+            content: `${PROMPT_TOO_LONG_ERROR_MESSAGE} Request has ${preCompactTokenCount} tokens, limit is ${effectiveContextWindow}`,
+            role: 'assistant',
+          },
+        } as unknown as AssistantMessage,
+      )
+      if (proactivelyTruncated && proactivelyTruncated.length < messagesToSummarize.length) {
+        logEvent('tengu_compact_ptl_retry', {
+          attempt: 0,
+          droppedMessages: messagesToSummarize.length - proactivelyTruncated.length,
+          remainingMessages: proactivelyTruncated.length,
+          proactive: true,
+        })
+        messagesToSummarize = proactivelyTruncated
+        retryCacheSafeParams = {
+          ...retryCacheSafeParams,
+          forkContextMessages: proactivelyTruncated,
+        }
+      }
+    }
+
     for (;;) {
       summaryResponse = await streamCompactSummary({
         messages: messagesToSummarize,

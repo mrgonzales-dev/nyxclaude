@@ -210,7 +210,7 @@ export function normalizeMaxMessagesCompactionThreshold(
 ): MaxMessagesCompactionThreshold {
   return isValidMaxMessagesCompactionThreshold(value)
     ? (value as MaxMessagesCompactionThreshold)
-    : '200'
+    : '1000'
 }
 
 export type OutputStyle = string
@@ -712,8 +712,12 @@ function createDefaultGlobalConfig(): GlobalConfig {
     knowledgeGraphEnabled: true,
     // Omitted by default so callers can distinguish "unset" from an explicit
     // persisted "off"; normalizeMaxMessagesCompactionThreshold resolves an
-    // unset value to the effective default of '200' (message-count compaction
-    // enabled at 200 messages) to bound per-turn latency growth (issue #1949).
+    // unset value to the effective default of '1000' (message-count compaction
+    // enabled at 1000 messages) to bound per-turn latency growth (issue #1949).
+    // Raised from 200 to 1000: the 200 default forced full summary compaction
+    // far too aggressively on tool-heavy sessions (each tool call generates
+    // multiple messages), destroying context granularity long before the token
+    // budget was near its limit.
   }
   return config
 }

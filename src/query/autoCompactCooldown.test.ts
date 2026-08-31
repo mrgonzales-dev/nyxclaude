@@ -368,20 +368,20 @@ test('default active-message hard cap forces compaction', async () => {
   expect(seenTracking[0]?.forceReason).toBe('message-count')
 })
 
-test('unset message threshold forces compaction at the 200-message default', async () => {
+test('unset message threshold forces compaction at the 1000-message default', async () => {
   const { terminal, callModel, seenTracking } =
-    await runMessageCountHardCapQuery(manySmallMessages(201))
+    await runMessageCountHardCapQuery(manySmallMessages(1001))
 
   expect(terminal.reason).toBe('max_turns')
   expect(callModel).toHaveBeenCalledTimes(1)
   expect(seenTracking[0]?.forceReason).toBe('message-count')
 })
 
-test('invalid legacy message threshold keeps the 200-message default', async () => {
+test('invalid legacy message threshold keeps the 1000-message default', async () => {
   process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES = 'not-a-number'
 
   const { terminal, callModel, seenTracking } =
-    await runMessageCountHardCapQuery(manySmallMessages(201))
+    await runMessageCountHardCapQuery(manySmallMessages(1001))
 
   expect(terminal.reason).toBe('max_turns')
   expect(callModel).toHaveBeenCalledTimes(1)
@@ -390,9 +390,13 @@ test('invalid legacy message threshold keeps the 200-message default', async () 
 
 test('disabled auto-compact leaves the default message threshold inactive', async () => {
   process.env.DISABLE_AUTO_COMPACT = '1'
+  // Disable the hard-cap backstop so 1001 messages only exercise the default
+  // threshold path — otherwise the hard cap (1000) would force compaction
+  // regardless of the disabled auto-compact setting.
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '0'
 
   const { terminal, callModel, seenTracking } =
-    await runMessageCountHardCapQuery(manySmallMessages(201))
+    await runMessageCountHardCapQuery(manySmallMessages(1001))
 
   expect(terminal.reason).toBe('max_turns')
   expect(callModel).toHaveBeenCalledTimes(1)
@@ -406,9 +410,10 @@ test('disabled auto-compact ignores an invalid persisted message threshold', asy
       'not-a-threshold' as MaxMessagesCompactionThreshold,
   }))
   process.env.DISABLE_AUTO_COMPACT = '1'
+  process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES_HARD_CAP = '0'
 
   const { terminal, callModel, seenTracking } =
-    await runMessageCountHardCapQuery(manySmallMessages(201))
+    await runMessageCountHardCapQuery(manySmallMessages(1001))
 
   expect(terminal.reason).toBe('max_turns')
   expect(callModel).toHaveBeenCalledTimes(1)
@@ -530,7 +535,7 @@ test('invalid active-message hard cap override keeps default safety cap', async 
 })
 
 test('explicit zero active-message hard cap override disables safety cap', async () => {
-  // Isolate the hard-cap override: with the 200-message-count default active,
+  // Isolate the hard-cap override: with the 1000-message-count default active,
   // a 1001-message history would otherwise force message-count compaction, so
   // disable message-count compaction explicitly to test only the hard cap.
   saveGlobalConfig(current => ({

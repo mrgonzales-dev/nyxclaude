@@ -909,7 +909,7 @@ async function* queryLoop(
     const canForceCompact =
       querySource !== 'compact' && querySource !== 'session_memory'
     // An unset UI setting keeps the legacy environment override. Without that
-    // override, enforce the new effective 200-message default.
+    // override, enforce the new effective 1000-message default.
     const hasValidLegacyActiveMessageLimit =
       parseMaxActiveMessagesLimit(process.env.NYXCLAUDE_MAX_ACTIVE_MESSAGES) > 0
     const maxMessagesLimitSetting =

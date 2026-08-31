@@ -14,6 +14,16 @@ export interface MemoryPressureConfig {
   criticalThresholdMB: number
   checkIntervalMs: number
   perSessionBudgetMB: number
+  /**
+   * Minimum interval between memory-pressure compaction requests. While RSS
+   * stays elevated, the monitor would otherwise re-arm `compactionRequested`
+   * every `checkIntervalMs` (30s), and `consumeCompactionRequest()` drains it
+   * every turn — forcing a compact before every turn. Compacting frees little
+   * RSS (old message objects stay on the JS heap), so the thrash never
+   * self-corrects. This floor limits memory-pressure forced compaction to at
+   * most once per interval, matching the failure cooldown in autoCompact.ts.
+   */
+  minCompactionRequestIntervalMs: number
 }
 
 const DEFAULT_CONFIG: MemoryPressureConfig = {
@@ -24,12 +34,14 @@ const DEFAULT_CONFIG: MemoryPressureConfig = {
     process.env.NYXCLAUDE_MAX_MEMORY_MB ?? '1536',
     10,
   ),
+  minCompactionRequestIntervalMs: 5 * 60 * 1000,
 }
 
 let currentLevel: MemoryPressureLevel = 'normal'
 let pressureListeners: Array<(level: MemoryPressureLevel) => void> = []
 let monitorInterval: ReturnType<typeof setInterval> | null = null
 let compactionRequested = false
+let lastCompactionRequestMs = 0
 
 // Registry of caches that can be pruned under critical memory pressure.
 // Caches register themselves at init; the monitor prunes them all when
@@ -92,6 +104,11 @@ export function startMemoryPressureMonitor(
     )
   }
 
+  // Reset the request throttle so a fresh monitor arms immediately on the
+  // first elevated detection (a previous session's timestamp must not
+  // suppress the initial request).
+  lastCompactionRequestMs = 0
+
   logForDebugging(
     `[MemoryPressure] Monitor started: elevated=${resolved.elevatedThresholdMB}MB, critical=${resolved.criticalThresholdMB}MB, interval=${resolved.checkIntervalMs}ms`,
   )
@@ -125,12 +142,18 @@ export function startMemoryPressureMonitor(
       }
     }
 
-    // Keep requesting compaction while pressure stays elevated/critical.
-    // The previous level-change-only gate meant one compact/prune cycle then
-    // silence even if RSS remained high.  consumeCompactionRequest() is
-    // one-shot so the existing autocompact cooldown prevents retry storms.
+    // Keep requesting compaction while pressure stays elevated/critical, but
+    // throttle to minCompactionRequestIntervalMs. Without this floor the flag
+    // re-arms every checkIntervalMs (30s) and consumeCompactionRequest()
+    // drains it every turn, forcing a compact before every turn. Compacting
+    // frees little RSS (old message objects stay on the JS heap), so the
+    // thrash never self-corrects — the floor breaks the cycle.
     if (currentLevel !== 'normal') {
-      compactionRequested = true
+      const now = Date.now()
+      if (now - lastCompactionRequestMs >= resolved.minCompactionRequestIntervalMs) {
+        compactionRequested = true
+        lastCompactionRequestMs = now
+      }
     }
   }, resolved.checkIntervalMs)
 
@@ -157,4 +180,6 @@ export function stopMemoryPressureMonitor(): void {
   }
   currentLevel = 'normal'
   pressureListeners = []
+  compactionRequested = false
+  lastCompactionRequestMs = 0
 }

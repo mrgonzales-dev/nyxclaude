@@ -682,7 +682,7 @@ describe('system-check memory guard diagnostics', () => {
     expect(results).toContainEqual({
       ok: true,
       label: 'Auto-compact guard',
-      detail: `Enabled; message-count threshold 200; hard cap ${DEFAULT_MAX_ACTIVE_MESSAGES_HARD_CAP}.`,
+      detail: `Enabled; message-count threshold 1000; hard cap ${DEFAULT_MAX_ACTIVE_MESSAGES_HARD_CAP}.`,
     })
     expect(results).toContainEqual({
       ok: true,

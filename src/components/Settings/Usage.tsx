@@ -1,7 +1,8 @@
 import { c as _c } from "react-compiler-runtime";
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { extraUsage as extraUsageCommand } from 'src/commands/extra-usage/index.js';
+// ponytail: extra-usage command removed — stubbed
+const extraUsageCommand = { isEnabled: (): boolean => false }
 import {
   getUsageDescriptor,
   resolveActiveUsageId,

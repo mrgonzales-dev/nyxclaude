@@ -19,7 +19,6 @@ import diff from './commands/diff/index.js'
 import diagnostics from './commands/diagnostics/index.js'
 import ctx_viz from './commands/ctx_viz/index.js'
 import doctor from './commands/doctor/index.js'
-import onboardGithub from './commands/onboard-github/index.js'
 import knowledge from './commands/knowledge/index.js'
 import repomap from './commands/repomap/index.js'
 import help from './commands/help/index.js'
@@ -30,11 +29,9 @@ import keybindings from './commands/keybindings/index.js'
 import lsp from './commands/lsp/index.js'
 // NYXCLAUDE: Anthropic-specific GitHub App installer removed
 // import installGitHubApp from './commands/install-github-app/index.js'
-import installSlackApp from './commands/install-slack-app/index.js'
 import cacheProbe from './commands/cache-probe/index.js'
 import cacheStats from './commands/cacheStats/index.js'
 import mcp from './commands/mcp/index.js'
-import mobile from './commands/mobile/index.js'
 import pr_comments from './commands/pr_comments/index.js'
 import releaseNotes from './commands/release-notes/index.js'
 import rename from './commands/rename/index.js'
@@ -63,64 +60,18 @@ import { feature } from 'bun:bundle'
 const isBuddyEnabled = (): boolean => false
 // Dead code elimination: conditional imports
 /* eslint-disable @typescript-eslint/no-require-imports */
-const proactive =
-  feature('PROACTIVE') || feature('KAIROS')
-    ? require('./commands/proactive.js').default
-    : null
-const briefCommand =
-  feature('KAIROS') || feature('KAIROS_BRIEF')
-    ? require('./commands/brief.js').default
-    : null
 const assistantCommand = feature('KAIROS')
   ? require('./commands/assistant/index.js').default
-  : null
-const bridge = feature('BRIDGE_MODE')
-  ? require('./commands/bridge/index.js').default
-  : null
-const remoteControlServerCommand =
-  feature('DAEMON') && feature('BRIDGE_MODE')
-    ? require('./commands/remoteControlServer/index.js').default
-    : null
-// NYXCLAUDE: Voice mode removed (requires Anthropic auth)
-// const voiceCommand = feature('VOICE_MODE')
-//   ? require('./commands/voice/index.js').default
-//   : null
-const voiceCommand = null
-const workflowsCmd = feature('WORKFLOW_SCRIPTS')
-  ? (
-      require('./commands/workflows/index.js') as typeof import('./commands/workflows/index.js')
-    ).default
-  : null
-const webCmd = feature('CCR_REMOTE_SETUP')
-  ? (
-      require('./commands/remote-setup/index.js') as typeof import('./commands/remote-setup/index.js')
-    ).default
-  : null
-const clearSkillIndexCache = feature('EXPERIMENTAL_SKILL_SEARCH')
-  ? (
-      require('./services/skillSearch/localSearch.js') as typeof import('./services/skillSearch/localSearch.js')
-    ).clearSkillIndexCache
-  : null
-const subscribePr = feature('KAIROS_GITHUB_WEBHOOKS')
-  ? require('./commands/subscribe-pr.js').default
   : null
 const ultraplan = feature('ULTRAPLAN')
   ? require('./commands/ultraplan.js').default
   : null
-const torch = feature('TORCH') ? require('./commands/torch.js').default : null
-const peersCmd = feature('UDS_INBOX')
-  ? (
-      require('./commands/peers/index.js') as typeof import('./commands/peers/index.js')
-    ).default
-  : null
-const buddy = null
 /* eslint-enable @typescript-eslint/no-require-imports */
 import thinkback from './commands/thinkback/index.js'
 import thinkbackPlay from './commands/thinkback-play/index.js'
 import permissions from './commands/permissions/index.js'
 import plan from './commands/plan/index.js'
 import fast from './commands/fast/index.js'
-import passes from './commands/passes/index.js'
 import provider from './commands/provider/index.js'
 import hooks from './commands/hooks/index.js'
 import files from './commands/files/index.js'
@@ -130,16 +81,13 @@ import autoFix from './commands/auto-fix.js'
 import reloadPlugins from './commands/reload-plugins/index.js'
 import rewind from './commands/rewind/index.js'
 import heapDump from './commands/heapdump/index.js'
-import bridgeKick from './commands/bridge-kick.js'
 import version from './commands/version.js'
 import update from './commands/update/index.js'
 import wiki from './commands/wiki/index.js'
 import sandboxToggle from './commands/sandbox-toggle/index.js'
 // NYXCLAUDE: Chrome integration removed
 // import chrome from './commands/chrome/index.js'
-import stickers from './commands/stickers/index.js'
 import advisor from './commands/advisor.js'
-import smartroute from './commands/smartroute/index.js'
 import { logError } from './utils/log.js'
 import { toError } from './utils/errors.js'
 import { logForDebugging } from './utils/debug.js'
@@ -167,31 +115,9 @@ import exportCommand from './commands/export/index.js'
 import model from './commands/model/index.js'
 import tag from './commands/tag/index.js'
 import outputStyle from './commands/output-style/index.js'
-import remoteEnv from './commands/remote-env/index.js'
-import upgrade from './commands/upgrade/index.js'
-import {
-  extraUsage,
-  extraUsageNonInteractive,
-} from './commands/extra-usage/index.js'
-import rateLimitOptions from './commands/rate-limit-options/index.js'
 import statusline from './commands/statusline.js'
 import effort from './commands/effort/index.js'
 import stats from './commands/stats/index.js'
-// insights.ts is 113KB (3200 lines, includes diffLines/html rendering). Lazy
-// shim defers the heavy module until /insights is actually invoked.
-const usageReport: Command = {
-  type: 'prompt',
-  name: 'insights',
-  description: 'Generate a report analyzing your Nyxclaude sessions',
-  contentLength: 0,
-  progressMessage: 'analyzing your sessions',
-  source: 'builtin',
-  async getPromptForCommand(args, context) {
-    const real = (await import('./commands/insights.js')).default
-    if (real.type !== 'prompt') throw new Error('unreachable')
-    return real.getPromptForCommand(args, context)
-  },
-}
 import { getSettingSourceName } from './utils/settings/constants.js'
 import {
   type Command,
@@ -217,10 +143,8 @@ export const INTERNAL_ONLY_COMMANDS = [
   commit,
   commitPushPr,
   initVerifiers,
-  bridgeKick,
   version,
   ...(ultraplan ? [ultraplan] : []),
-  ...(subscribePr ? [subscribePr] : []),
 ].filter(Boolean)
 
 // Declared as a function so that we don't run this until getCommands is called,
@@ -228,7 +152,6 @@ export const INTERNAL_ONLY_COMMANDS = [
 const COMMANDS = memoize((): Command[] => [
   addDir,
   advisor,
-  smartroute,
   agents,
   autoFix,
   branch,
@@ -238,8 +161,6 @@ const COMMANDS = memoize((): Command[] => [
   btw,
   cacheProbe,
   cacheStats,
-  // NYXCLAUDE: Chrome integration removed
-  // chrome,
   clear,
   clearContextWindow,
   color,
@@ -267,15 +188,9 @@ const COMMANDS = memoize((): Command[] => [
   keybindings,
   knowledge,
   lsp,
-  // NYXCLAUDE: Anthropic-specific GitHub App installer removed
-  // installGitHubApp,
-  installSlackApp,
   mcp,
-  mobile,
   model,
-  onboardGithub,
   outputStyle,
-  remoteEnv,
   provider,
   pr_comments,
   releaseNotes,
@@ -292,7 +207,6 @@ const COMMANDS = memoize((): Command[] => [
   stats,
   status,
   statusline,
-  stickers,
   tag,
   theme,
   logo,
@@ -304,21 +218,9 @@ const COMMANDS = memoize((): Command[] => [
   securityReview,
   terminalSetup,
   update,
-  upgrade,
-  extraUsage,
-  extraUsageNonInteractive,
-  rateLimitOptions,
   usage,
-  usageReport,
   wiki,
-  ...(webCmd ? [webCmd] : []),
-  ...(buddy ? [buddy] : []),
-  ...(proactive ? [proactive] : []),
-  ...(briefCommand ? [briefCommand] : []),
   ...(assistantCommand ? [assistantCommand] : []),
-  ...(bridge ? [bridge] : []),
-  ...(remoteControlServerCommand ? [remoteControlServerCommand] : []),
-  ...(voiceCommand ? [voiceCommand] : []),
   thinkback,
   thinkbackPlay,
   permissions,
@@ -326,12 +228,7 @@ const COMMANDS = memoize((): Command[] => [
   hooks,
   exportCommand,
   sandboxToggle,
-  ...(!isUsing3PServices() ? [].filter(Boolean) : []),
-  passes,
-  ...(peersCmd ? [peersCmd] : []),
   tasks,
-  ...(workflowsCmd ? [workflowsCmd] : []),
-  ...(torch ? [torch] : []),
   ...(process.env.USER_TYPE === 'ant' && !process.env.IS_DEMO
     ? INTERNAL_ONLY_COMMANDS
     : []),
@@ -527,7 +424,7 @@ export function clearCommandMemoizationCaches(): void {
   // built ON TOP of getSkillToolCommands/getCommands. Clearing only the inner
   // caches is a no-op for the outer — lodash memoize returns the cached result
   // without ever reaching the cleared inners. Must clear it explicitly.
-  clearSkillIndexCache?.()
+  // ponytail: EXPERIMENTAL_SKILL_SEARCH removed — clearSkillIndexCache is gone
 }
 
 export function clearCommandsCache(): void {
@@ -633,8 +530,6 @@ export const REMOTE_SAFE_COMMANDS: Set<Command> = new Set([
   plan, // Plan mode toggle
   keybindings, // Keybinding management
   statusline, // Status line toggle
-  stickers, // Stickers
-  mobile, // Mobile QR code
 ])
 
 /**

@@ -480,40 +480,6 @@ export async function autoCompactIfNeeded(
 
   const contextWindow = getContextWindowForModel(model, getSdkBetas())
 
-  const partitioned = partitionContext(messages, {
-    contextWindow,
-    recentCount: 5,
-  })
-  const availableSpace = partitioned.canFitInWindow
-    ? contextWindow - partitioned.totalTokens
-    : Math.floor(contextWindow * 0.1)
-
-  if (!partitioned.canFitInWindow && availableSpace > 1000) {
-    // Preserve system messages
-    const systemMessages = messages.filter(m => m.message?.role === 'system')
-    const nonSystemMessages = messages.filter(m => m.message?.role !== 'system')
-    
-    // Config may be hand-edited; normalizeCompactTailTurns is the single
-    // rule (shared with the /config UI) — a stray `0.5` must not floor to a
-    // zero-message tail, and invalid values fall back to the default.
-    const pruned = pruneByRelevance(nonSystemMessages, {
-      targetTokens: availableSpace,
-      preserveRecent: normalizeCompactTailTurns(getGlobalConfig().compactTailTurns),
-      preserveTools: true,
-      preserveErrors: true,
-    })
-    
-    // Combine preserved system + pruned
-    const finalMessages = [...systemMessages, ...pruned]
-    
-    if (finalMessages.length > 0 && finalMessages.length < messages.length) {
-      logForDebugging(
-        `partition+prune: ${messages.length} -> ${finalMessages.length} messages`,
-      )
-      messages = finalMessages
-    }
-  }
-
   const recompactionInfo: RecompactionInfo = {
     isRecompactionInChain: effectiveTracking?.compacted === true,
     turnsSincePreviousCompact: effectiveTracking?.turnCounter ?? -1,
@@ -522,7 +488,8 @@ export async function autoCompactIfNeeded(
     querySource,
   }
 
-  // EXPERIMENT: Try session memory compaction first
+  // Try session memory compaction first — if it succeeds, the expensive
+  // partitionContext + pruneByRelevance pass is skipped entirely.
   const sessionMemoryResult = await trySessionMemoryCompaction(
     messages,
     toolUseContext.agentId,
@@ -545,6 +512,41 @@ export async function autoCompactIfNeeded(
       wasCompacted: true,
       compactionResult: sessionMemoryResult,
       consecutiveFailures: 0,
+    }
+  }
+
+  // Session-memory compaction failed — fall back to partition + prune.
+  const partitioned = partitionContext(messages, {
+    contextWindow,
+    recentCount: 5,
+  })
+  const availableSpace = partitioned.canFitInWindow
+    ? contextWindow - partitioned.totalTokens
+    : Math.floor(contextWindow * 0.1)
+
+  if (!partitioned.canFitInWindow && availableSpace > 1000) {
+    // Preserve system messages
+    const systemMessages = messages.filter(m => m.message?.role === 'system')
+    const nonSystemMessages = messages.filter(m => m.message?.role !== 'system')
+
+    // Config may be hand-edited; normalizeCompactTailTurns is the single
+    // rule (shared with the /config UI) — a stray `0.5` must not floor to a
+    // zero-message tail, and invalid values fall back to the default.
+    const pruned = pruneByRelevance(nonSystemMessages, {
+      targetTokens: availableSpace,
+      preserveRecent: normalizeCompactTailTurns(getGlobalConfig().compactTailTurns),
+      preserveTools: true,
+      preserveErrors: true,
+    })
+
+    // Combine preserved system + pruned
+    const finalMessages = [...systemMessages, ...pruned]
+
+    if (finalMessages.length > 0 && finalMessages.length < messages.length) {
+      logForDebugging(
+        `partition+prune: ${messages.length} -> ${finalMessages.length} messages`,
+      )
+      messages = finalMessages
     }
   }
 

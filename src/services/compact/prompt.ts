@@ -130,16 +130,7 @@ Here's an example of how your output should be structured:
 
 Please provide your summary based on the conversation so far, following this structure and ensuring precision and thoroughness in your response. 
 
-There may be additional summarization instructions provided in the included context. If so, remember to follow these instructions when creating the above summary. Examples of instructions include:
-<example>
-## Compact Instructions
-When summarizing the conversation focus on typescript code changes and also remember the mistakes you made and how you fixed them.
-</example>
-
-<example>
-# Summary instructions
-When you are using compact - please focus on test output and code changes. Include file reads verbatim.
-</example>
+There may be additional summarization instructions provided in the included context. If so, remember to follow these instructions when creating the above summary.
 `
 
 const PARTIAL_COMPACT_PROMPT = `Your task is to create a detailed summary of the RECENT portion of the conversation — the messages that follow earlier retained context. The earlier messages are being kept intact and do NOT need to be summarized. Focus your summary on what was discussed, learned, and accomplished in the recent messages only.
@@ -290,12 +281,29 @@ export function getPartialCompactPrompt(
   return prompt
 }
 
+// Module-level cache for the default (no-custom-instructions) compact prompt.
+// The prompt is a ~3,000-token static wall of XML examples that never changes
+// between compaction calls, so we build it once and reuse the string.
+let cachedCompactPrompt: string | null = null
+
 export function getCompactPrompt(customInstructions?: string): string {
+  // Fast path: return the cached default prompt when no custom instructions
+  // are provided. Custom instructions still build fresh (not cached).
+  if (
+    customInstructions === undefined ||
+    customInstructions.trim() === ''
+  ) {
+    if (cachedCompactPrompt === null) {
+      let prompt = NO_TOOLS_PREAMBLE + BASE_COMPACT_PROMPT
+      prompt += NO_TOOLS_TRAILER
+      cachedCompactPrompt = prompt
+    }
+    return cachedCompactPrompt
+  }
+
   let prompt = NO_TOOLS_PREAMBLE + BASE_COMPACT_PROMPT
 
-  if (customInstructions && customInstructions.trim() !== '') {
-    prompt += `\n\nAdditional Instructions:\n${customInstructions}`
-  }
+  prompt += `\n\nAdditional Instructions:\n${customInstructions}`
 
   prompt += NO_TOOLS_TRAILER
 

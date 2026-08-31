@@ -33,7 +33,6 @@ import { getClaudeConfigHomeDir, isEnvTruthy } from '../../utils/envUtils.js'
 import { getErrnoCode, isENOENT } from '../../utils/errors.js'
 import {
   addLineNumbers,
-  FILE_NOT_FOUND_CWD_NOTE,
   findSimilarFile,
   getFileModificationTimeAsync,
   suggestPathUnderCwd,
@@ -765,7 +764,7 @@ export const FileReadTool = buildTool({
 
         const similarFilename = findSimilarFile(fullFilePath)
         const cwdSuggestion = await suggestPathUnderCwd(fullFilePath)
-        let message = `File does not exist. ${FILE_NOT_FOUND_CWD_NOTE} ${getCwd()}.`
+        let message = `File not found: ${fullFilePath} (cwd: ${getCwd()}).`
         if (cwdSuggestion) {
           message += ` Did you mean ${cwdSuggestion}?`
         } else if (similarFilename) {
@@ -827,8 +826,8 @@ export const FileReadTool = buildTool({
           // Determine the appropriate warning message
           content =
             data.file.totalLines === 0
-              ? '<system-reminder>Warning: the file exists but the contents are empty.</system-reminder>'
-              : `<system-reminder>Warning: the file exists but is shorter than the provided offset (${data.file.startLine}). The file has ${data.file.totalLines} lines.</system-reminder>`
+              ? '<system-reminder>Empty file.</system-reminder>'
+              : `<system-reminder>Offset exceeds line count (${data.file.totalLines}).</system-reminder>`
         }
 
         // Cap oversized text results (~100k chars ≈ 25k tokens). Without

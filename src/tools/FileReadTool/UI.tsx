@@ -5,7 +5,7 @@ import { FallbackToolUseErrorMessage } from '../../components/FallbackToolUseErr
 import { FilePathLink } from '../../components/FilePathLink.js';
 import { MessageResponse } from '../../components/MessageResponse.js';
 import { Text } from '../../ink.js';
-import { FILE_NOT_FOUND_CWD_NOTE, getDisplayPath } from '../../utils/file.js';
+import { getDisplayPath } from '../../utils/file.js';
 import { formatFileSize } from '../../utils/format.js';
 import { getPlansDirectory } from '../../utils/plans.js';
 import { getTaskOutputDir } from '../../utils/task/diskOutput.js';
@@ -149,7 +149,7 @@ export function renderToolUseErrorMessage(result: ToolResultBlockParam['content'
   if (!verbose && typeof result === 'string') {
     // FileReadTool throws from call() so errors lack <tool_use_error> wrapping —
     // check the raw string directly for the cwd note marker.
-    if (result.includes(FILE_NOT_FOUND_CWD_NOTE)) {
+    if (result.startsWith('File not found:')) {
       return <MessageResponse>
           <Text color="error">File not found</Text>
         </MessageResponse>;

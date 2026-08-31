@@ -3289,12 +3289,12 @@ function createToolResultMessage<Output>(
         ? result.content
         : jsonStringify(result.content)
     return createUserMessage({
-      content: `Result of calling the ${tool.name} tool:\n${contentStr}`,
+      content: `${tool.name}:\n${contentStr}`,
       isMeta: true,
     })
   } catch {
     return createUserMessage({
-      content: `Result of calling the ${tool.name} tool: Error`,
+      content: `${tool.name}: Error`,
       isMeta: true,
     })
   }

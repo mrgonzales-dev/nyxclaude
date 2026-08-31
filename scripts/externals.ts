@@ -100,7 +100,6 @@ export const INTENTIONALLY_BUNDLED: string[] = [
   'turndown',
   'xss',
   // Data utilities
-  'ajv',
   'auto-bind',
   'diff',
   'fflate',

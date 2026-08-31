@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nyxclaude — Project File Organization</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --orange: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --text: #c9d1d9;
+    --dim: #8b949e;
+    --mono: 'SF Mono','Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    padding: 24px;
+    line-height: 1.5;
+  }
+  h1 {
+    font-size: 1.4rem;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .subtitle { color: var(--dim); font-size: 0.85rem; margin-bottom: 24px; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    font-size: 0.78rem;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot-core { background: var(--accent); }
+  .dot-entry { background: var(--green); }
+  .dot-ui { background: var(--purple); }
+  .dot-svc { background: var(--orange); }
+  .dot-infra { background: var(--red); }
+
+  /* Layout */
+  .root-tree {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .col-title {
+    font-size: 0.8rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+
+  /* Top-level tree */
+  .tree { font-size: 0.82rem; }
+  .tree-node {
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    cursor: default;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .tree-node:hover { background: var(--card); }
+  .tree-node .name { font-weight: 600; }
+  .tree-node .desc { color: var(--dim); font-size: 0.75rem; }
+  .tree-dir .name { color: var(--accent); }
+  .tree-file .name { color: var(--text); }
+  .tree-entry .name { color: var(--green); }
+
+  /* src grid */
+  .src-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    transition: border-color .15s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card .head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .card .head .icon { font-size: 0.9rem; }
+  .card .head .name { font-weight: 700; }
+  .card.core { border-left: 3px solid var(--accent); }
+  .card.entry { border-left: 3px solid var(--green); }
+  .card.ui { border-left: 3px solid var(--purple); }
+  .card.svc { border-left: 3px solid var(--orange); }
+  .card.infra { border-left: 3px solid var(--red); }
+  .card .desc { color: var(--dim); font-size: 0.74rem; line-height: 1.4; }
+
+  /* Top-level src files section */
+  .files-section {
+    margin-top: 24px;
+  }
+  .files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 8px;
+  }
+  .file-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.76rem;
+  }
+  .file-card .fname { color: var(--accent); font-weight: 600; }
+  .file-card .fdesc { color: var(--dim); font-size: 0.72rem; }
+
+  /* Flow diagram */
+  .flow-section {
+    margin-top: 32px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+  }
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.78rem;
+  }
+  .flow-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 14px;
+    text-align: center;
+  }
+  .flow-box.entry { border-color: var(--green); color: var(--green); }
+  .flow-box.core { border-color: var(--accent); color: var(--accent); }
+  .flow-box.svc { border-color: var(--orange); color: var(--orange); }
+  .flow-box.ui { border-color: var(--purple); color: var(--purple); }
+  .flow-arrow { color: var(--dim); font-size: 1.1rem; }
+</style>
+</head>
+<body>
+
+<h1>Nyxclaude — Project File Organization</h1>
+<p class="subtitle">AI coding agent harness · CLI + SDK · TypeScript / React (Ink)</p>
+
+<div class="legend">
+  <div class="legend-item"><span class="dot dot-core"></span> Core engine</div>
+  <div class="legend-item"><span class="dot dot-entry"></span> Entry point</div>
+  <div class="legend-item"><span class="dot dot-ui"></span> UI / Terminal</div>
+  <div class="legend-item"><span class="dot dot-svc"></span> Service / API</div>
+  <div class="legend-item"><span class="dot dot-infra"></span> Infra / Build</div>
+</div>
+
+<!-- Startup flow -->
+<div class="flow-section">
+  <div class="col-title">Startup Flow (main harness)</div>
+  <div class="flow">
+    <div class="flow-box entry">bin/nyxclaude</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box entry">src/main.tsx</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box core">entrypoints/init</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box core">QueryEngine.ts</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box svc">services/api</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box ui">replLauncher → components/App</div>
+  </div>
+</div>
+
+<div class="root-tree" style="margin-top:24px">
+
+  <!-- LEFT: top-level tree -->
+  <div>
+    <div class="col-title">Top-level</div>
+    <div class="tree">
+      <div class="tree-node tree-dir"><span class="name">bin/</span><span class="desc">CLI launcher script</span></div>
+      <div class="tree-node tree-dir"><span class="name">dist/</span><span class="desc">Build output (cli.mjs, sdk.mjs)</span></div>
+      <div class="tree-node tree-dir"><span class="name">scripts/</span><span class="desc">Build, provider launch, tests, checks</span></div>
+      <div class="tree-node tree-dir"><span class="name">src/</span><span class="desc">All source code (see right →)</span></div>
+      <div class="tree-node tree-dir"><span class="name">work/</span><span class="desc">Working / temp directory</span></div>
+      <div class="tree-node tree-dir"><span class="name">node_modules/</span><span class="desc">Dependencies</span></div>
+      <div class="tree-node tree-file"><span class="name">package.json</span><span class="desc">Manifest, scripts, deps</span></div>
+      <div class="tree-node tree-file"><span class="name">tsconfig.json</span><span class="desc">TypeScript config</span></div>
+      <div class="tree-node tree-file"><span class="name">AGENTS.md</span><span class="desc">Agent instructions</span></div>
+      <div class="tree-node tree-file"><span class="name">README.md</span><span class="desc">Project docs</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: src subdirectories grid -->
+  <div>
+    <div class="col-title">src/ — Subdirectories</div>
+    <div class="src-grid">
+
+      <div class="card entry">
+        <div class="head"><span class="icon">🚀</span><span class="name">entrypoints/</span></div>
+        <div class="desc">Top-level entry points: cli.tsx, mcp.ts, SDK export, init flow, sandbox types</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">⚙️</span><span class="name">query/</span></div>
+        <div class="desc">Query engine logic: step limits, auto-compact cooldown, goal continuation, stop hooks</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🔧</span><span class="name">tools/</span></div>
+        <div class="desc">Tool implementations: AgentTool, BashTool, FileEditTool, GlobTool, GrepTool, WebFetch, TaskCreate, etc.</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">📋</span><span class="name">commands/</span></div>
+        <div class="desc">All slash-command implementations (add-dir, commit, compact, config, goal, issue, etc.)</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🧠</span><span class="name">coordinator/</span></div>
+        <div class="desc">Multi-agent coordination: coordinator mode and worker-agent orchestration</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">📝</span><span class="name">tasks/</span></div>
+        <div class="desc">Task implementations: local agent, shell, remote agent, workflow, monitor-mcp, teammate</div>
+      </div>
+
+      <div class="card svc">
+        <div class="head"><span class="icon">🌐</span><span class="name">services/</span></div>
+        <div class="desc">Core services: analytics, API client, autoFix, compact, context-collapse, summaries, limits, MCP, policy</div>
+      </div>
+
+      <div class="card svc">
+        <div class="head"><span class="icon">🔌</span><span class="name">integrations/</span></div>
+        <div class="desc">Third-party integrations: aimlapi, anthropic proxies, gateways, discovery service, MCP registry</div>
+      </div>
+
+      <div class="card ui">
+        <div class="head"><span class="icon">🖥️</span><span class="name">components/</span></div>
+        <div class="desc">React/Ink UI components: App, dialogs, inputs, agent progress lines, design-system</div>
+      </div>
+
+      <div class="card ui">
+        <div class="head"><span class="icon">🎨</span><span class="name">ink/</span></div>
+        <div class="desc">Vendored custom Ink terminal-UI framework: rendering, DOM, events, focus, cursor</div>
+      </div>
+
+      <div class="card ui">
+        <div class="head"><span class="icon">📱</span><span class="name">screens/</span></div>
+        <div class="desc">Top-level screens: Doctor diagnostics, REPL input dialog, model selection</div>
+      </div>
+
+      <div class="card ui">
+        <div class="head"><span class="icon">⌨️</span><span class="name">keybindings/</span></div>
+        <div class="desc">Keybinding system: default bindings, parser, resolver, schema, user-config loading</div>
+      </div>
+
+      <div class="card ui">
+        <div class="head"><span class="icon">✏️</span><span class="name">vim/</span></div>
+        <div class="desc">Vim-mode editing primitives: motions, operators, text objects, transitions</div>
+      </div>
+
+      <div class="card ui">
+        <div class="head"><span class="icon">🪝</span><span class="name">hooks/</span></div>
+        <div class="desc">React hooks: file suggestions, notifications, tool permissions, arrow-key history, cancel, blink</div>
+      </div>
+
+      <div class="card ui">
+        <div class="head"><span class="icon">🗂️</span><span class="name">context/</span></div>
+        <div class="desc">React context providers: mailbox, modal, notifications, overlay, stats, voice, repoMap</div>
+      </div>
+
+      <div class="card ui">
+        <div class="head"><span class="icon">💬</span><span class="name">i18n/</span></div>
+        <div class="desc">Internationalization: locale loading, command descriptions, language packs</div>
+      </div>
+
+      <div class="card svc">
+        <div class="head"><span class="icon">📡</span><span class="name">remote/</span></div>
+        <div class="desc">Remote session management: permission bridge, SDK message adapter, WebSocket sessions</div>
+      </div>
+
+      <div class="card svc">
+        <div class="head"><span class="icon">🖥️</span><span class="name">server/</span></div>
+        <div class="desc">Server backend: direct-connect sessions, headless connect, lockfile, banner, session manager</div>
+      </div>
+
+      <div class="card svc">
+        <div class="head"><span class="icon">🔒</span><span class="name">ssh/</span></div>
+        <div class="desc">SSH session creation and management</div>
+      </div>
+
+      <div class="card svc">
+        <div class="head"><span class="icon">🔄</span><span class="name">upstreamproxy/</span></div>
+        <div class="desc">Upstream proxy relay for forwarding requests</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">🏗️</span><span class="name">bootstrap/</span></div>
+        <div class="desc">Early startup state: session ID, project root, channels — shared across the app</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">📦</span><span class="name">cli/</span></div>
+        <div class="desc">Non-interactive/headless CLI plumbing: background registry, heartbeat, exit handling</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">🦀</span><span class="name">daemon/</span></div>
+        <div class="desc">Background daemon entrypoint and worker registry</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">🏃</span><span class="name">environment-runner/</span></div>
+        <div class="desc">Standalone runner entrypoint for executing environments</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">🤖</span><span class="name">self-hosted-runner/</span></div>
+        <div class="desc">Self-hosted runner entrypoint</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">⛓️</span><span class="name">grpc/</span></div>
+        <div class="desc">gRPC server implementation</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">📜</span><span class="name">proto/</span></div>
+        <div class="desc">Protobuf definition (nyxclaude.proto)</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">🔀</span><span class="name">migrations/</span></div>
+        <div class="desc">Settings/config migrations between versions</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">🗃️</span><span class="name">state/</span></div>
+        <div class="desc">Global app state store, selectors, plugin-commands store, change handling</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">📐</span><span class="name">types/</span></div>
+        <div class="desc">Shared TypeScript type definitions: command, message, hooks, ids, logs, permissions, plugin</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">📋</span><span class="name">schemas/</span></div>
+        <div class="desc">Shared schema definitions (hooks)</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🧩</span><span class="name">plugins/</span></div>
+        <div class="desc">Built-in and bundled plugin system</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🎯</span><span class="name">skills/</span></div>
+        <div class="desc">Skill loading: bundled skills, directory loading, MCP skill builders</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">📊</span><span class="name">outputStyles/</span></div>
+        <div class="desc">Loading of custom output style directories</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🔔</span><span class="name">proactive/</span></div>
+        <div class="desc">Proactive behavior module</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">💼</span><span class="name">jobs/</span></div>
+        <div class="desc">Background job classification</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🦮</span><span class="name">assistant/</span></div>
+        <div class="desc">Assistant session discovery, history serialization, session chooser UI</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🐾</span><span class="name">buddy/</span></div>
+        <div class="desc">Pixel-art companion feature: sprites, effects, notifications, shot-clock hook</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🎤</span><span class="name">voice/</span></div>
+        <div class="desc">Voice-mode enablement flag</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🏷️</span><span class="name">constants/</span></div>
+        <div class="desc">Static constants: API limits, brand, error IDs, figures, messages, file paths</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">🛠️</span><span class="name">utils/</span></div>
+        <div class="desc">General utilities: abort, advisor, ANSI, git, cwd, settings, auth, model providers, fast mode, etc.</div>
+      </div>
+
+      <div class="card core">
+        <div class="head"><span class="icon">⚛️</span><span class="name">native-ts/</span></div>
+        <div class="desc">Native TS reimplementations of native deps (color-diff, file-index, yoga-layout)</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">🧪</span><span class="name">test/</span></div>
+        <div class="desc">Test fixtures, mock helpers, safety-level test helpers, shared mutation lock</div>
+      </div>
+
+      <div class="card infra">
+        <div class="head"><span class="icon">🔬</span><span class="name">__tests__/</span></div>
+        <div class="desc">Cross-cutting integration tests: bugfixes, doctor warnings, process title, security hardening</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Top-level src files -->
+<div class="files-section">
+  <div class="col-title">src/ — Top-level Files (used by main harness)</div>
+  <div class="files-grid">
+    <div class="file-card"><span class="fname">main.tsx</span> — <span class="fdesc">Primary CLI entrypoint; Commander setup, startup profiling, launches REPL</span></div>
+    <div class="file-card"><span class="fname">QueryEngine.ts</span> — <span class="fdesc">Core conversation engine: message handling, auto-compact, tool-use, SDK emission</span></div>
+    <div class="file-card"><span class="fname">query.ts</span> — <span class="fdesc">Query orchestration helpers: SDK message types, permission modes, usage accumulation</span></div>
+    <div class="file-card"><span class="fname">Tool.ts</span> — <span class="fdesc">Core Tool interface, input schema types, permission context</span></div>
+    <div class="file-card"><span class="fname">tools.ts</span> — <span class="fdesc">Aggregates and exports all Tool implementations, applies deny rules</span></div>
+    <div class="file-card"><span class="fname">Task.ts</span> — <span class="fdesc">Task interface and TaskType / TaskStatus enums</span></div>
+    <div class="file-card"><span class="fname">tasks.ts</span> — <span class="fdesc">Aggregates all available Task implementations</span></div>
+    <div class="file-card"><span class="fname">commands.ts</span> — <span class="fdesc">Central registry importing and exporting all slash-command implementations</span></div>
+    <div class="file-card"><span class="fname">context.ts</span> — <span class="fdesc">Builds system context (CLAUDE.md, git branch, repo map) injected into prompts</span></div>
+    <div class="file-card"><span class="fname">replLauncher.tsx</span> — <span class="fdesc">Launches REPL by mounting App + REPL into the Ink root</span></div>
+    <div class="file-card"><span class="fname">ink.ts</span> — <span class="fdesc">Thin wrapper around custom Ink renderer, injects ThemeProvider</span></div>
+    <div class="file-card"><span class="fname">setup.ts</span> — <span class="fdesc">First-run setup: trust dialog, API key normalization, MCP approvals, GrowthBook init</span></div>
+    <div class="file-card"><span class="fname">cost-tracker.ts</span> — <span class="fdesc">Tracks API usage/costs per model, cache metrics, routing summaries</span></div>
+    <div class="file-card"><span class="fname">costHook.ts</span> — <span class="fdesc">React hook that prints total cost and saves session costs on exit</span></div>
+    <div class="file-card"><span class="fname">history.ts</span> — <span class="fdesc">Persists and reads conversation history entries and pasted content</span></div>
+    <div class="file-card"><span class="fname">dialogLaunchers.tsx</span> — <span class="fdesc">Dynamic import launchers for one-off dialog components</span></div>
+    <div class="file-card"><span class="fname">interactiveHelpers.tsx</span> — <span class="fdesc">Shared helpers: renderAndRun, showSetupDialog, keybinding setup, stats wiring</span></div>
+    <div class="file-card"><span class="fname">projectOnboardingState.ts</span> — <span class="fdesc">Tracks and persists whether project onboarding is complete</span></div>
+    <div class="file-card"><span class="fname">projectOnboardingSteps.ts</span> — <span class="fdesc">Defines onboarding steps and completion checks</span></div>
+  </div>
+</div>
+
+</body>
+</html>

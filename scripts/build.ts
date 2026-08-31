@@ -99,9 +99,9 @@ const featureFlags: Record<string, boolean> = {
   REPO_MAP: false,                // Auto-injected codebase intelligence repo-map; users opt in with REPO_MAP=1 (the runtime gate in src/context.ts honors the env var even when this flag is false)
 
   // ── Enabled: upstream defaults ──────────────────────────────────────
-  COORDINATOR_MODE: true,             // Multi-agent coordinator with worker delegation
+  COORDINATOR_MODE: false,            // NYXCLAUDE: Multi-agent coordinator removed
   BUILTIN_EXPLORE_PLAN_AGENTS: true,  // Built-in Explore/Plan specialized subagents
-  BUDDY: true,                        // Buddy mode for paired programming
+  BUDDY: false,                       // NYXCLAUDE: Buddy mode removed
   MONITOR_TOOL: true,                 // MCP server monitoring/streaming tool
   TEAMMEM: false,                     // NYXCLAUDE: Team memory removed
   MESSAGE_ACTIONS: true,              // Message action buttons in the UI

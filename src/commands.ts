@@ -72,7 +72,6 @@ import terminalSetup from './commands/terminalSetup/index.js'
 import usage from './commands/usage/index.js'
 import theme from './commands/theme/index.js'
 import logo from './commands/logo/index.js'
-import vim from './commands/vim/index.js'
 import { feature } from 'bun:bundle'
 import { isBuddyEnabled } from './buddy/feature.js'
 // Dead code elimination: conditional imports
@@ -127,11 +126,7 @@ const peersCmd = feature('UDS_INBOX')
       require('./commands/peers/index.js') as typeof import('./commands/peers/index.js')
     ).default
   : null
-const buddy = isBuddyEnabled()
-  ? (
-      require('./commands/buddy/index.js') as typeof import('./commands/buddy/index.js')
-    ).default
-  : null
+const buddy = null
 /* eslint-enable @typescript-eslint/no-require-imports */
 import thinkback from './commands/thinkback/index.js'
 import thinkbackPlay from './commands/thinkback-play/index.js'
@@ -360,7 +355,6 @@ const COMMANDS = memoize((): Command[] => [
   rateLimitOptions,
   usage,
   usageReport,
-  vim,
   wiki,
   ...(webCmd ? [webCmd] : []),
   ...(buddy ? [buddy] : []),
@@ -674,7 +668,6 @@ export const REMOTE_SAFE_COMMANDS: Set<Command> = new Set([
   theme, // Change terminal theme
   logo, // Change startup logo color scheme
   color, // Change agent color
-  vim, // Toggle vim mode
   cost, // Show session cost (local cost tracking)
   ctx_viz, // Context window usage
   usage, // Show usage info

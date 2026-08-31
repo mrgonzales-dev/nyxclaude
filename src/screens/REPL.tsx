@@ -64,12 +64,7 @@ import { PromptDialog } from '../components/hooks/PromptDialog.js';
 import type { PromptRequest, PromptResponse } from '../types/hooks.js';
 import PromptInput from '../components/PromptInput/PromptInput.js';
 import { PromptInputQueuedCommands } from '../components/PromptInput/PromptInputQueuedCommands.js';
-import { useRemoteSession } from '../hooks/useRemoteSession.js';
-import { useDirectConnect } from '../hooks/useDirectConnect.js';
-import type { DirectConnectConfig } from '../server/directConnectManager.js';
-import { useSSHSession } from '../hooks/useSSHSession.js';
 import { useAssistantHistory } from '../hooks/useAssistantHistory.js';
-import type { SSHSession } from '../ssh/createSSHSession.js';
 import { SpinnerWithVerb, BriefIdleStatus, type SpinnerMode } from '../components/Spinner.js';
 import { CompletionFlash } from '../components/Spinner/CompletionFlash.js';
 import { getSystemPrompt } from '../constants/prompts.js';
@@ -273,7 +268,6 @@ import { CompanionActionFX } from '../buddy/CompanionActionFX.js';
 import { isBuddyEnabled } from '../buddy/feature.js';
 import { fireCompanionObserver } from '../buddy/observer.js';
 // Session manager removed - using AppState now
-import type { RemoteSessionConfig } from '../remote/RemoteSessionManager.js';
 import { REMOTE_SAFE_COMMANDS } from '../commands.js';
 import type { RemoteMessageContent } from '../utils/teleport/api.js';
 import { FullscreenLayout, useUnseenDivider, computeUnseenDivider } from '../components/FullscreenLayout.js';
@@ -606,12 +600,6 @@ export type Props = {
   hasExplicitModelOverride?: boolean;
   // When true, disables all slash commands
   disableSlashCommands?: boolean;
-  // Remote session config for --remote mode (uses CCR as execution engine)
-  remoteSessionConfig?: RemoteSessionConfig;
-  // Direct connect config for `claude connect` mode (connects to a claude server)
-  directConnectConfig?: DirectConnectConfig;
-  // SSH session for `claude ssh` mode (local REPL, remote tools over ssh)
-  sshSession?: SSHSession;
   // Thinking configuration to use when thinking is enabled
   thinkingConfig: ThinkingConfig;
   // Model to fallback to when primary model returns overloaded errors (529)
@@ -643,15 +631,12 @@ export function REPL({
   baseMainLoopModel = null,
   hasExplicitModelOverride = false,
   disableSlashCommands = false,
-  remoteSessionConfig,
-  directConnectConfig,
-  sshSession,
   thinkingConfig,
   fallbackModel,
   maxTurns: maxTurnsProp
 }: Props): React.ReactNode {
   const maxTurns = resolveReplMaxTurns(maxTurnsProp)
-  const isRemoteSession = !!remoteSessionConfig;
+  const isRemoteSession = false;
 
   // Env-var gates hoisted to mount-time — isEnvTruthy does toLowerCase+trim+
   // includes, and these were on the render path (hot during PageUp spam).
@@ -1490,41 +1475,8 @@ export function REPL({
   const hasInterruptibleToolInProgressRef = useRef(false);
   const queryLifecycleTrackerRef = useRef(new QueryLifecycleOperationTracker());
 
-  // Remote session hook - manages WebSocket connection and message handling for --remote mode
-  const remoteSession = useRemoteSession({
-    config: remoteSessionConfig,
-    setMessages,
-    setIsLoading: setIsExternalLoading,
-    onInit: handleRemoteInit,
-    setToolUseConfirmQueue,
-    tools: combinedInitialTools,
-    setStreamingToolUses,
-    setStreamMode,
-    setInProgressToolUseIDs
-  });
-
-  // Direct connect hook - manages WebSocket to a claude server for `claude connect` mode
-  const directConnect = useDirectConnect({
-    config: directConnectConfig,
-    setMessages,
-    setIsLoading: setIsExternalLoading,
-    setToolUseConfirmQueue,
-    tools: combinedInitialTools
-  });
-
-  // SSH session hook - manages ssh child process for `claude ssh` mode.
-  // Same callback shape as useDirectConnect; only the transport under the
-  // hood differs (ChildProcess stdin/stdout vs WebSocket).
-  const sshRemote = useSSHSession({
-    session: sshSession,
-    setMessages,
-    setIsLoading: setIsExternalLoading,
-    setToolUseConfirmQueue,
-    tools: combinedInitialTools
-  });
-
-  // Use whichever remote mode is active
-  const activeRemote = sshRemote.isRemoteMode ? sshRemote : directConnect.isRemoteMode ? directConnect : remoteSession;
+  // Remote/direct-connect/SSH session hooks removed — terminal-only harness
+  const activeRemote = { isRemoteMode: false, sendMessage: async () => {}, cancelRequest: () => {} } as any;
   const [pastedContents, setPastedContents] = useState<Record<number, PastedContent>>({});
   const [submitCount, setSubmitCount] = useState(0);
 

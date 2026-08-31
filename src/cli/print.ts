@@ -18,7 +18,7 @@ import { createStreamlinedTransformer } from 'src/utils/streamlinedTransform.js'
 import { installStreamJsonStdoutGuard } from 'src/utils/streamJsonStdoutGuard.js'
 import type { ToolPermissionContext } from 'src/Tool.js'
 import type { ThinkingConfig } from 'src/utils/thinking.js'
-import { assembleToolPool, filterToolsByDenyRules } from 'src/tools.js'
+import { assembleToolPool } from 'src/tools.js'
 import uniqBy from 'lodash-es/uniqBy.js'
 import { uniq } from 'src/utils/array.js'
 import { mergeAndFilterTools } from 'src/utils/toolPool.js'
@@ -895,12 +895,14 @@ export async function runHeadless(
     return
   }
 
-  // Filter out MCP tools that are in the deny list
-  const allowedMcpTools = filterToolsByDenyRules(
-    appState.mcp.tools,
+  // Use assembleToolPool to match REPL behavior — MCP tools are not
+  // merged directly into the tool pool. This prevents headless --print
+  // mode from flooding the model with all MCP tool descriptions (up to
+  // 2048 chars each x dozens of servers) every turn.
+  let filteredTools = assembleToolPool(
     appState.toolPermissionContext,
+    appState.mcp.tools,
   )
-  let filteredTools = [...tools, ...allowedMcpTools]
 
   // When using SDK URL, always use stdio permission prompting to delegate to the SDK
   const effectivePermissionPromptToolName = options.sdkUrl

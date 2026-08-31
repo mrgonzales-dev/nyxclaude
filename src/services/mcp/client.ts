@@ -1840,7 +1840,10 @@ export const fetchToolsForClient = memoizeWithLRU(
                 : undefined,
             alwaysLoad: tool._meta?.['anthropic/alwaysLoad'] === true,
             async description() {
-              return tool.description ?? ''
+              const desc = tool.description ?? ''
+              return desc.length > MAX_MCP_DESCRIPTION_LENGTH
+                ? desc.slice(0, MAX_MCP_DESCRIPTION_LENGTH) + '… [truncated]'
+                : desc
             },
             async prompt() {
               const desc = tool.description ?? ''

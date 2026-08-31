@@ -689,7 +689,28 @@ export function isDeferredToolsDeltaEnabled(): boolean {
  * is still in the base pool — is NOT reported as removed. It's now
  * loaded directly, so telling the model "no longer available" would be
  * wrong.
+ *
+ * Uses an incremental cache: only scans new messages since the last call,
+ * rather than re-scanning the entire transcript every turn. Cache resets
+ * on shrink (e.g., after compaction).
  */
+
+// Incremental cache for the announced set — avoids O(n) full-transcript
+// scan every turn. Same pattern as mcpInstructionsDelta.ts.
+let cachedDtdAnnouncedSet: Set<string> | null = null
+let cachedDtdMessageCount = 0
+let cachedDtdAttachmentCount = 0
+let cachedDtdDtdCount = 0
+let cachedDtdAttachmentTypesSeen: Set<string> = new Set()
+
+export function resetDeferredToolsDeltaCacheForTesting(): void {
+  cachedDtdAnnouncedSet = null
+  cachedDtdMessageCount = 0
+  cachedDtdAttachmentCount = 0
+  cachedDtdDtdCount = 0
+  cachedDtdAttachmentTypesSeen = new Set()
+}
+
 export function getDeferredToolsDelta(
   tools: Tools,
   messages: Message[],
@@ -699,7 +720,28 @@ export function getDeferredToolsDelta(
   let attachmentCount = 0
   let dtdCount = 0
   const attachmentTypesSeen = new Set<string>()
-  for (const msg of messages) {
+
+  // Incremental scan: resume from cached position if possible.
+  const startIndex =
+    cachedDtdAnnouncedSet !== null && messages.length >= cachedDtdMessageCount
+      ? cachedDtdMessageCount
+      : 0
+
+  if (startIndex === 0) {
+    // Full scan (first call, or messages shrank)
+    cachedDtdAttachmentCount = 0
+    cachedDtdDtdCount = 0
+    cachedDtdAttachmentTypesSeen = new Set()
+  } else {
+    // Resume: copy cached state
+    for (const n of cachedDtdAnnouncedSet!) announced.add(n)
+    attachmentCount = cachedDtdAttachmentCount
+    dtdCount = cachedDtdDtdCount
+    for (const t of cachedDtdAttachmentTypesSeen) attachmentTypesSeen.add(t)
+  }
+
+  for (let i = startIndex; i < messages.length; i++) {
+    const msg = messages[i]
     if (msg.type !== 'attachment') continue
     attachmentCount++
     attachmentTypesSeen.add(msg.attachment.type)
@@ -708,6 +750,13 @@ export function getDeferredToolsDelta(
     for (const n of msg.attachment.addedNames) announced.add(n)
     for (const n of msg.attachment.removedNames) announced.delete(n)
   }
+
+  // Update cache
+  cachedDtdAnnouncedSet = new Set(announced)
+  cachedDtdMessageCount = messages.length
+  cachedDtdAttachmentCount = attachmentCount
+  cachedDtdDtdCount = dtdCount
+  cachedDtdAttachmentTypesSeen = new Set(attachmentTypesSeen)
 
   const deferred: Tool[] = tools.filter(isDeferredTool)
   const deferredNames = new Set(deferred.map(t => t.name))

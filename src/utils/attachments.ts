@@ -1601,7 +1601,13 @@ export function getDeferredToolsDeltaAttachment(
  *
  * Exported for compact.ts — re-announces the full set after compaction eats
  * prior deltas.
+ *
+ * Uses an incremental cache for the announced set — same pattern as
+ * mcpInstructionsDelta.ts and toolSearch.ts getDeferredToolsDelta.
  */
+let cachedAgentListingAnnouncedSet: Set<string> | null = null
+let cachedAgentListingMessageCount = 0
+
 export function getAgentListingDeltaAttachment(
   toolUseContext: ToolUseContext,
   messages: Message[] | undefined,
@@ -1636,13 +1642,30 @@ export function getAgentListingDeltaAttachment(
   }
 
   // Reconstruct announced set from prior deltas in the transcript.
+  // Uses an incremental cache to avoid O(n) full-transcript scan every turn.
   const announced = new Set<string>()
-  for (const msg of messages ?? []) {
+  const msgs = messages ?? []
+  const startIndex =
+    cachedAgentListingAnnouncedSet !== null &&
+    msgs.length >= cachedAgentListingMessageCount
+      ? cachedAgentListingMessageCount
+      : 0
+
+  if (startIndex > 0 && cachedAgentListingAnnouncedSet) {
+    for (const t of cachedAgentListingAnnouncedSet) announced.add(t)
+  }
+
+  for (let i = startIndex; i < msgs.length; i++) {
+    const msg = msgs[i]
     if (msg.type !== 'attachment') continue
     if (msg.attachment.type !== 'agent_listing_delta') continue
     for (const t of msg.attachment.addedTypes) announced.add(t)
     for (const t of msg.attachment.removedTypes) announced.delete(t)
   }
+
+  // Update cache
+  cachedAgentListingAnnouncedSet = new Set(announced)
+  cachedAgentListingMessageCount = msgs.length
 
   const currentTypes = new Set(filtered.map(a => a.agentType))
   const added = filtered.filter(a => !announced.has(a.agentType))

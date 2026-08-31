@@ -1,6 +1,5 @@
 import { randomUUID } from 'crypto'
 import { useCallback, useEffect, useRef } from 'react'
-import { useInterval } from 'usehooks-ts'
 import type { ToolUseConfirm } from '../components/permissions/PermissionRequest.js'
 import { TEAMMATE_MESSAGE_TAG } from '../constants/xml.js'
 import { useTerminalNotification } from '../ink/useTerminalNotification.js'
@@ -108,7 +107,15 @@ function getAgentNameToPoll(appState: AppState): string | undefined {
   return undefined
 }
 
-const INBOX_POLL_INTERVAL_MS = 1000
+// Tiered idle backoff for the inbox poller.
+// Active:   poll every 1s  (recent teammate activity)
+// Idle:     poll every 5s  (no activity for 30s)
+// Deep idle: poll every 30s (no activity for 5min)
+const INBOX_POLL_ACTIVE_INTERVAL_MS = 1000
+const INBOX_POLL_IDLE_INTERVAL_MS = 5000
+const INBOX_POLL_DEEP_IDLE_INTERVAL_MS = 30_000
+const INBOX_POLL_IDLE_THRESHOLD_MS = 30_000 // 30s without activity → idle
+const INBOX_POLL_DEEP_IDLE_THRESHOLD_MS = 300_000 // 5min without activity → deep idle
 
 type Props = {
   enabled: boolean
@@ -140,6 +147,25 @@ export function useInboxPoller({
   const inboxMessageCount = useAppState(s => s.inbox.messages.length)
   const terminal = useTerminalNotification()
 
+  // Idle backoff tracking.
+  // lastActivityRef: timestamp of the last teammate activity (unread message).
+  // currentIntervalRef: the currently-scheduled polling interval, so we only
+  //   tear down and recreate the timer when the tier actually changes.
+  const lastActivityRef = useRef(Date.now())
+  const currentIntervalRef = useRef(INBOX_POLL_ACTIVE_INTERVAL_MS)
+
+  // Compute the desired polling interval based on time since last activity.
+  const computePollInterval = useCallback((): number => {
+    const elapsed = Date.now() - lastActivityRef.current
+    if (elapsed >= INBOX_POLL_DEEP_IDLE_THRESHOLD_MS) {
+      return INBOX_POLL_DEEP_IDLE_INTERVAL_MS
+    }
+    if (elapsed >= INBOX_POLL_IDLE_THRESHOLD_MS) {
+      return INBOX_POLL_IDLE_INTERVAL_MS
+    }
+    return INBOX_POLL_ACTIVE_INTERVAL_MS
+  }, [])
+
   const poll = useCallback(async () => {
     if (!enabled) return
 
@@ -154,6 +180,11 @@ export function useInboxPoller({
     )
 
     if (unread.length === 0) return
+
+    // Any unread message counts as teammate activity (message received,
+    // teammate join/leave, permission request, etc.) — reset the idle
+    // backoff timer so we return to the active polling interval.
+    lastActivityRef.current = Date.now()
 
     logForDebugging(`[InboxPoller] Found ${unread.length} unread message(s)`)
 
@@ -983,9 +1014,38 @@ export function useInboxPoller({
     store,
   ])
 
-  // Poll if running as a teammate or as a team lead
+  // Poll if running as a teammate or as a team lead.
+  // We manage the timer directly with setInterval/clearInterval (rather than
+  // useInterval) so the delay can be adjusted dynamically as the idle backoff
+  // tier changes, without requiring a re-render. The interval is only torn
+  // down and recreated when the computed tier differs from the current one.
   const shouldPoll = enabled && !!getAgentNameToPoll(store.getState())
-  useInterval(() => void poll(), shouldPoll ? INBOX_POLL_INTERVAL_MS : null)
+  useEffect(() => {
+    if (!shouldPoll) return
+
+    let timer: ReturnType<typeof setInterval> | undefined
+
+    const tick = (): void => {
+      // Re-evaluate the backoff tier on every tick. If it changed, reschedule
+      // the timer with the new interval before polling.
+      const desired = computePollInterval()
+      if (desired !== currentIntervalRef.current) {
+        currentIntervalRef.current = desired
+        if (timer) clearInterval(timer)
+        timer = setInterval(tick, desired)
+      }
+      void poll()
+    }
+
+    // Always start at the active interval when (re)entering polling.
+    currentIntervalRef.current = INBOX_POLL_ACTIVE_INTERVAL_MS
+    lastActivityRef.current = Date.now()
+    timer = setInterval(tick, currentIntervalRef.current)
+
+    return () => {
+      if (timer) clearInterval(timer)
+    }
+  }, [shouldPoll, poll, computePollInterval])
 
   // Initial poll on mount (only once)
   const hasDoneInitialPollRef = useRef(false)

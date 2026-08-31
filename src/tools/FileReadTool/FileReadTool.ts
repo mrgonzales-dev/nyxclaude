@@ -260,6 +260,37 @@ export class MaxFileReadTokenExceededError extends Error {
 const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp'])
 
 /**
+ * Maximum character length of a text Read tool_result sent to the model.
+ * Text results return file content prefixed with line numbers; without a cap
+ * a single Read of a large file can emit hundreds of thousands of tokens.
+ * ~100k chars ≈ 25k tokens. On overflow the content is truncated (head kept)
+ * and a marker directs the model to use offset/limit for the remainder.
+ * Follows the same head-keep + marker style as SKILL_TRUNCATION_MARKER
+ * (compact.ts). maxResultSizeChars stays Infinity so Read is excluded from
+ * the result-budget persistence path (persisting a file the model reads back
+ * with Read is circular); this char cap is the truncation bound instead.
+ */
+const MAX_TEXT_RESULT_CHARS = 100_000
+
+/**
+ * Build the truncation marker appended when a text Read result exceeds
+ * MAX_TEXT_RESULT_CHARS. Reports total lines and chars so the model knows
+ * what it's missing, and points it at offset/limit to read the rest.
+ */
+function fileReadTruncationMarker(
+  totalLines: number,
+  totalChars: number,
+  shownChars: number,
+): string {
+  return (
+    '\n\n[... file content truncated; ' +
+    `File is ${formatCount(totalLines)} lines / ${formatCount(totalChars)} chars. ` +
+    `Showing first ${formatCount(shownChars)} chars. ` +
+    'Use offset/limit to read more.]'
+  )
+}
+
+/**
  * Detects if a file path is a session-related file for analytics logging.
  * Only matches files within the Nyxclaude config directory (e.g., ~/.nyxclaude).
  * Returns the type of session file or null if not a session file.
@@ -409,8 +440,11 @@ export type Output = z.infer<OutputSchema>
 export const FileReadTool = buildTool({
   name: FILE_READ_TOOL_NAME,
   searchHint: 'read files, images, PDFs, notebooks',
-  // Output is bounded by maxTokens (validateContentTokens). Persisting to a
-  // file the model reads back with Read is circular — never persist.
+  // Output is bounded by maxTokens (validateContentTokens) and a
+  // MAX_TEXT_RESULT_CHARS cap in the text result mapper. Persisting to a
+  // file the model reads back with Read is circular — never persist, so
+  // maxResultSizeChars stays Infinity (keeps Read out of the result-budget
+  // persistence path; the char cap handles truncation in the mapper).
   maxResultSizeChars: Infinity,
   strict: true,
   async description() {
@@ -795,6 +829,23 @@ export const FileReadTool = buildTool({
             data.file.totalLines === 0
               ? '<system-reminder>Warning: the file exists but the contents are empty.</system-reminder>'
               : `<system-reminder>Warning: the file exists but is shorter than the provided offset (${data.file.startLine}). The file has ${data.file.totalLines} lines.</system-reminder>`
+        }
+
+        // Cap oversized text results (~100k chars ≈ 25k tokens). Without
+        // this a single Read of a large file emits the entire file with
+        // line numbers. Keep the head and append a marker directing the
+        // model to offset/limit, matching the SKILL_TRUNCATION_MARKER
+        // style in compact.ts. Only the non-empty content path can exceed
+        // the cap; the warning messages above are always small.
+        if (content.length > MAX_TEXT_RESULT_CHARS) {
+          const totalChars = content.length
+          content =
+            content.slice(0, MAX_TEXT_RESULT_CHARS) +
+            fileReadTruncationMarker(
+              data.file.totalLines,
+              totalChars,
+              MAX_TEXT_RESULT_CHARS,
+            )
         }
 
         return {

@@ -44,7 +44,6 @@ import { MAX_AMOUNT_USD_MINOR, MIN_AMOUNT_USD_MINOR } from './integrations/aimla
 import { prefetchOllamaModels } from './utils/model/ollamaModels.js';
 import { type DownloadResult, downloadSessionFiles, type FilesApiConfig, parseFileSpecs } from './services/api/filesApi.js';
 import { prefetchPassesEligibility } from './services/api/referral.js';
-import { prefetchOfficialMcpUrls } from './services/mcp/officialRegistry.js';
 import type { McpSdkServerConfig, McpServerConfig, ScopedMcpServerConfig } from './services/mcp/types.js';
 import { isPolicyAllowed, loadPolicyLimits, refreshPolicyLimits, waitForPolicyLimitsToLoad } from './services/policyLimits/index.js';
 import { loadRemoteManagedSettings, refreshRemoteManagedSettings } from './services/remoteManagedSettings/index.js';
@@ -424,7 +423,9 @@ export function startDeferredPrefetches(): void {
 
   // Analytics and feature flag initialization
   void initializeAnalyticsGates();
-  void prefetchOfficialMcpUrls();
+  // Official MCP registry URLs are lazy-loaded on first isOfficialMcpUrl()
+  // lookup (with a 24h TTL refresh) instead of eagerly at process start.
+  // void prefetchOfficialMcpUrls();
   void refreshModelCapabilities();
 
   // File change detectors deferred from init() to unblock first render
@@ -845,8 +846,14 @@ async function run(): Promise<CommanderCommand> {
   // Use preAction hook to run initialization only when executing a command,
   // not when displaying help. This avoids the need for env variable signaling.
   program.hook('preAction', async thisCommand => {
-    await Promise.all([ensureMdmSettingsLoaded(), ensureKeychainPrefetchCompleted()]);
-    await init();
+    // Run init() in parallel with MDM settings + keychain prefetch — they're
+    // independent. init() does config loading, env vars, network setup, and
+    // fire-and-forget async work; none of it depends on MDM or keychain.
+    await Promise.all([
+      init(),
+      ensureMdmSettingsLoaded(),
+      ensureKeychainPrefetchCompleted(),
+    ]);
     profileCheckpoint('preAction_after_init');
 
     // process.title on Windows sets the console title directly; on POSIX,
@@ -861,11 +868,13 @@ async function run(): Promise<CommanderCommand> {
     // a sink attaches. setup() attaches sinks for the default command, but
     // subcommands (doctor, mcp, plugin, auth) never call setup() and would
     // silently drop events on process.exit(). Both inits are idempotent.
-    const {
-      initSinks
-    } = await import('./utils/sinks.js');
-    initSinks();
-    profileCheckpoint('preAction_after_sinks');
+    //
+    // Deferred via void import so it doesn't block first render. Events
+    // queue until the sink attaches.
+    void import('./utils/sinks.js').then(({ initSinks }) => {
+      initSinks();
+      profileCheckpoint('preAction_after_sinks');
+    });
 
     // gh-33508: --plugin-dir is a top-level program option. The default
     // action reads it from its own options destructure, but subcommands
@@ -880,8 +889,12 @@ async function run(): Promise<CommanderCommand> {
       setInlinePlugins(pluginDir);
       clearPluginCache('preAction: --plugin-dir inline plugins');
     }
-    runMigrations();
-    profileCheckpoint('preAction_after_migrations');
+    // Defer migrations until after first render — they don't block the REPL
+    // and can run in the background.
+    void Promise.resolve().then(() => {
+      runMigrations();
+      profileCheckpoint('preAction_after_migrations');
+    });
 
     // Load remote managed settings for enterprise customers (non-blocking)
     // Fails open - if fetch fails, continues without remote settings
@@ -897,6 +910,18 @@ async function run(): Promise<CommanderCommand> {
       void import('./services/settingsSync/index.js').then(m => m.uploadUserSettingsInBackground());
     }
     profileCheckpoint('preAction_after_settings_sync');
+
+    // Prefetch user context (AGENTS.md directory walk) and system context
+    // (repo map + git status) in the background. Both are memoized, so
+    // calling them here caches the result for the first user input.
+    // Only prefetch for interactive sessions — --print mode has its own
+    // context loading path.
+    if (!getIsNonInteractiveSession()) {
+      void import('./context.js').then(({ getUserContext, getSystemContext }) => {
+        void getUserContext();
+        void getSystemContext();
+      });
+    }
   });
   program.name('nyxclaude').description(`Nyxclaude - starts an interactive session by default, use -p/--print for non-interactive output`).argument('[prompt]', 'Your prompt', String)
   // Subcommands inherit helpOption via commander's copyInheritedSettings —

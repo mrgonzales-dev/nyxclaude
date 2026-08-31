@@ -135,10 +135,7 @@ export const INTENTIONALLY_BUNDLED: string[] = [
   '@modelcontextprotocol/sdk',
   // Schema validation
   'zod',
-    // gRPC (bundled into CLI, not external)
-  '@grpc/grpc-js',
-  '@grpc/proto-loader',
-  // Language server protocol
+    // Language server protocol
   'vscode-languageserver-protocol',
   // File watching
   'chokidar',

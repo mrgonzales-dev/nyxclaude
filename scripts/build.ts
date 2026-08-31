@@ -83,12 +83,7 @@ const productionReactPlugin = {
 // selectively enabled here when their full source exists in the mirror.
 const featureFlags: Record<string, boolean> = {
   // ── Disabled: require Anthropic infrastructure or missing source ─────
-  VOICE_MODE: false,              // Push-to-talk STT via claude.ai OAuth endpoint
-  PROACTIVE: false,               // Autonomous agent mode (missing proactive/ module)
   KAIROS: false,                  // Persistent assistant/session mode (cloud backend)
-  BRIDGE_MODE: false,             // Remote desktop bridge via CCR infrastructure
-  DAEMON: false,                  // Background daemon process (stubbed in open build)
-  AGENT_TRIGGERS: false,          // Scheduled remote agent triggers
   ABLATION_BASELINE: false,       // A/B testing harness for eval experiments
   CONTEXT_COLLAPSE: true,        // Context collapsing optimization
   COMMIT_ATTRIBUTION: false,      // Co-Authored-By metadata in git commits
@@ -217,24 +212,8 @@ result = await Bun.build({
       setup(build) {
         const internalFeatureStubModules = new Map([
           [
-            '../daemon/workerRegistry.js',
-            'export async function runDaemonWorker() { throw new Error("Daemon worker is unavailable in the open build."); }',
-          ],
-          [
-            '../daemon/main.js',
-            'export async function daemonMain() { throw new Error("Daemon mode is unavailable in the open build."); }',
-          ],
-          [
             '../cli/handlers/templateJobs.js',
             'export async function templatesMain() { throw new Error("Template jobs are unavailable in the open build."); }',
-          ],
-          [
-            '../environment-runner/main.js',
-            'export async function environmentRunnerMain() { throw new Error("Environment runner is unavailable in the open build."); }',
-          ],
-          [
-            '../self-hosted-runner/main.js',
-            'export async function selfHostedRunnerMain() { throw new Error("Self-hosted runner is unavailable in the open build."); }',
           ],
         ] as const)
 
@@ -244,7 +223,7 @@ result = await Bun.build({
         // before the JS plugin phase runs.
 
         build.onResolve(
-          { filter: /^\.\.\/(daemon\/workerRegistry|daemon\/main|cli\/handlers\/templateJobs|environment-runner\/main|self-hosted-runner\/main)\.js$/ },
+          { filter: /^\.\.\/cli\/handlers\/templateJobs\.js$/ },
           args => {
             if (!internalFeatureStubModules.has(args.path)) return null
             return {

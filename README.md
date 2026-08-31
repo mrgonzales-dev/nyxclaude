@@ -1,21 +1,12 @@
 <div align="center">
 
-```
-███╗   ██╗██╗   ██╗██╗  ██╗
-████╗  ██║╚██╗ ██╔╝╚██╗██╔╝
-██╔██╗ ██║ ╚████╔╝  ╚███╔╝
-██║╚██╗██║  ╚██╔╝   ██╔██╗
-██║ ╚████║   ██║   ██╔╝ ██╗
-╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝
-```
+<h1>nyxclaude</h1>
 
-### nyxclaude
+<p><strong>An opinionated terminal AI coding agent harness.</strong></p>
 
-An opinionated terminal AI coding agent harness.
+<p>Bring any OpenAI-compatible LLM endpoint — local or cloud. No provider is hardcoded.</p>
 
-Bring any OpenAI-compatible LLM endpoint — local or cloud. No provider is hardcoded.
-
-Based on [openclaude](https://github.com/anthropics/claude-code).
+<p><sub>Based on <a href="https://github.com/anthropics/claude-code">openclaude</a>.</sub></p>
 
 </div>
 

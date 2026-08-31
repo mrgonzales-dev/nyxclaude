@@ -1,6 +1,6 @@
 import figures from 'figures'
 import memoize from 'lodash-es/memoize.js'
-import { getOutputStyleDirStyles } from '../outputStyles/loadOutputStylesDir.js'
+// ponytail: outputStyles dir removed — custom dir styles always empty
 import type { OutputStyle } from '../utils/config.js'
 import { getCwd } from '../utils/cwd.js'
 import { logForDebugging } from '../utils/debug.js'
@@ -137,7 +137,7 @@ ${EXPLANATORY_FEATURE_PROMPT}`,
 export const getAllOutputStyles = memoize(async function getAllOutputStyles(
   cwd: string,
 ): Promise<{ [styleName: string]: OutputStyleConfig | null }> {
-  const customStyles = await getOutputStyleDirStyles(cwd)
+  const customStyles: OutputStyleConfig[] = [] // ponytail: outputStyles dir removed
   const pluginStyles = await loadPluginOutputStyles()
 
   // Start with built-in modes

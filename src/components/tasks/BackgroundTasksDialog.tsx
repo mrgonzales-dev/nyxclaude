@@ -2,7 +2,7 @@ import { c as _c } from "react-compiler-runtime";
 import { feature } from 'bun:bundle';
 import figures from 'figures';
 import React, { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
-import { isCoordinatorMode } from 'src/coordinator/coordinatorMode.js';
+// ponytail: coordinator mode removed — always false
 import { useEffectEventCompat } from 'src/hooks/useEffectEventCompat.js';
 import { useTerminalSize } from 'src/hooks/useTerminalSize.js';
 import { useAppState, useSetAppState } from 'src/state/AppState.js';
@@ -562,7 +562,7 @@ function Item(t0) {
   const maxActivityWidth = Math.max(30, columns - 26);
   let t1;
   if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
-    t1 = isCoordinatorMode();
+    t1 = false;
     $[0] = t1;
   } else {
     t1 = $[0];

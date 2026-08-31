@@ -22,7 +22,8 @@ import {
 } from 'src/services/analytics/index.js'
 import { sanitizeToolNameForAnalytics } from 'src/services/analytics/metadata.js'
 import type { AgentId } from 'src/types/ids.js'
-import { companionIntroText } from '../buddy/prompt.js'
+// ponytail: buddy system removed — companionIntroText always returns ''
+const companionIntroText = (): string => ''
 import { NO_CONTENT_MESSAGE } from '../constants/messages.js'
 import {
   OUTPUT_STYLE_CONFIG,

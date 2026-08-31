@@ -172,20 +172,6 @@ import { type ChannelEntry, getInitialMainLoopModel, getIsNonInteractiveSession,
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const autoModeStateModule = feature('TRANSCRIPT_CLASSIFIER') ? require('./utils/permissions/autoModeState.js') as typeof import('./utils/permissions/autoModeState.js') : null;
-
-// TeleportRepoMismatchDialog, TeleportResumeWrapper dynamically imported at call sites
-import {
-  migrateAutoUpdatesToSettings,
-  migrateBypassPermissionsAcceptedToSettings,
-  migrateEnableAllProjectMcpServersToSettings,
-  migrateLegacyOpusToCurrent,
-  migrateOpusToOpus1m,
-  migrateReplBridgeEnabledToRemoteControlAtStartup,
-  migrateSonnet1mToSonnet45,
-  migrateSonnet45ToSonnet46,
-  resetAutoModeOptInForDefaultOffer,
-  resetProToOpusDefault,
-} from './migrations/index.js';
 /* eslint-enable @typescript-eslint/no-require-imports */
 // teleportWithProgress dynamically imported at call site
 import { initializeLspServerManager } from './services/lsp/manager.js';
@@ -324,29 +310,9 @@ async function logStartupTelemetry(): Promise<void> {
   });
 }
 
-// @[MODEL LAUNCH]: Consider any migrations you may need for model strings. See migrateSonnet1mToSonnet45.ts for an example.
-// Bump this when adding a new sync migration so existing users re-run the set.
-const CURRENT_MIGRATION_VERSION = 11;
+// ponytail: migrations removed — all were no-ops in the terminal-only harness.
+// The changelog migration is still real (reads release notes config).
 function runMigrations(): void {
-  if (getGlobalConfig().migrationVersion !== CURRENT_MIGRATION_VERSION) {
-    migrateAutoUpdatesToSettings();
-    migrateBypassPermissionsAcceptedToSettings();
-    migrateEnableAllProjectMcpServersToSettings();
-    resetProToOpusDefault();
-    migrateSonnet1mToSonnet45();
-    migrateLegacyOpusToCurrent();
-    migrateSonnet45ToSonnet46();
-    migrateOpusToOpus1m();
-    migrateReplBridgeEnabledToRemoteControlAtStartup();
-    if (feature('TRANSCRIPT_CLASSIFIER')) {
-      resetAutoModeOptInForDefaultOffer();
-    }
-    saveGlobalConfig(prev => prev.migrationVersion === CURRENT_MIGRATION_VERSION ? prev : {
-      ...prev,
-      migrationVersion: CURRENT_MIGRATION_VERSION
-    });
-  }
-  // Async migration - fire and forget since it's non-blocking
   migrateChangelogFromConfig().catch(error => {
     logError(
       new Error(

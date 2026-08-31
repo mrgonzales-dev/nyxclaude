@@ -73,7 +73,8 @@ import usage from './commands/usage/index.js'
 import theme from './commands/theme/index.js'
 import logo from './commands/logo/index.js'
 import { feature } from 'bun:bundle'
-import { isBuddyEnabled } from './buddy/feature.js'
+// ponytail: buddy system removed — isBuddyEnabled always false
+const isBuddyEnabled = (): boolean => false
 // Dead code elimination: conditional imports
 /* eslint-disable @typescript-eslint/no-require-imports */
 const proactive =

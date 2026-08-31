@@ -2,14 +2,12 @@
 import addDir from './commands/add-dir/index.js'
 import btw from './commands/btw/index.js'
 import goal from './commands/goal/index.js'
-import feedback from './commands/feedback/index.js'
 import clear from './commands/clear/index.js'
 import clearContextWindow from './commands/clear-context-window/index.js'
 import color from './commands/color/index.js'
 import commit from './commands/commit.js'
 import commitMessage from './commands/commit-message/index.js'
 import copy from './commands/copy/index.js'
-import desktop from './commands/desktop/index.js'
 import commitPushPr from './commands/commit-push-pr.js'
 import compact from './commands/compact/index.js'
 import config from './commands/config/index.js'
@@ -169,7 +167,6 @@ const COMMANDS = memoize((): Command[] => [
   config,
   continueCommand,
   copy,
-  desktop,
   context,
   contextNonInteractive,
   cost,
@@ -210,7 +207,6 @@ const COMMANDS = memoize((): Command[] => [
   tag,
   theme,
   logo,
-  feedback,
   goal,
   review,
   ultrareview,
@@ -525,7 +521,6 @@ export const REMOTE_SAFE_COMMANDS: Set<Command> = new Set([
   usage, // Show usage info
   copy, // Copy last message
   btw, // Quick note
-  feedback, // Send feedback
   goal, // Manage session goal continuation
   plan, // Plan mode toggle
   keybindings, // Keybinding management

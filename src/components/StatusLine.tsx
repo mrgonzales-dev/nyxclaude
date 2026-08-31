@@ -112,13 +112,13 @@ export function buildStatusLineCommandInput(permissionMode: PermissionMode, exce
   const sessionName = getCurrentSessionTitle(sessionId);
   const rawUtil = getRawUtilization();
   const rateLimits: StatusLineCommandInput['rate_limits'] = {
-    ...(rawUtil.five_hour && {
+    ...(rawUtil?.five_hour && {
       five_hour: {
         used_percentage: rawUtil.five_hour.utilization * 100,
         resets_at: rawUtil.five_hour.resets_at
       }
     }),
-    ...(rawUtil.seven_day && {
+    ...(rawUtil?.seven_day && {
       seven_day: {
         used_percentage: rawUtil.seven_day.utilization * 100,
         resets_at: rawUtil.seven_day.resets_at

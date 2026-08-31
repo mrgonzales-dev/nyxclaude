@@ -19,6 +19,8 @@ export type RawUtilization = {
   outputTokensLimit: number
   requestCountUsed: number
   requestCountLimit: number
+  five_hour?: { utilization: number; resets_at?: string }
+  seven_day?: { utilization: number; resets_at?: string }
 }
 
 export let currentLimits: ClaudeAILimits = {

@@ -163,6 +163,7 @@ export function fitSegments(segments: StatusSegment[], maxWidth: number): Status
 /** Worst (most-used) of the 5h/7d rate-limit windows, or null without data. */
 export function getWorstRateLimit(): BuiltinStatusData['rateLimit'] {
   const raw = getRawUtilization();
+  if (!raw) return null;
   const candidates: { label: string; usedPercent: number }[] = [];
   if (raw.five_hour) candidates.push({ label: '5h', usedPercent: raw.five_hour.utilization * 100 });
   if (raw.seven_day) candidates.push({ label: '7d', usedPercent: raw.seven_day.utilization * 100 });

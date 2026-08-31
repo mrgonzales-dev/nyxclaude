@@ -131,6 +131,42 @@ export function resetMicrocompactState(): void {
     cachedMCModule.resetCachedMCState(cachedMCState)
   }
   pendingCacheEdits = null
+  // Invalidate the result cache: cached-MC state was reset, so a previously
+  // cached MicrocompactResult (which may carry stale pendingCacheEdits) is
+  // no longer valid.
+  cachedMicrocompact = null
+}
+
+// --- Result cache for microcompactMessages ---
+// microcompactMessages re-scans all messages and, on time-based triggers,
+// re-maps the whole array every turn. On the query hot path the conversation
+// frequently hasn't changed between consecutive calls (retries, re-queries),
+// so we cache the result keyed on message count + a hash of the last few
+// messages — which is where new tool results appear. A cache hit skips the
+// O(n) scan and array allocation entirely.
+let cachedMicrocompact: {
+  messageCount: number
+  lastMessageHash: string
+  result: MicrocompactResult
+} | null = null
+
+// Number of trailing messages to hash for the cache key. New tool results
+// always land at the end of the conversation, so a small tail is sufficient
+// to detect relevant changes while keeping the hash cheap.
+const MICROCOMPACT_CACHE_TAIL = 3
+
+/**
+ * Compute a cheap hash of the last `count` messages. Uses jsonStringify
+ * (already imported) to serialize the tail, then a djb2-style integer hash.
+ */
+function hashLastMessages(messages: Message[], count: number): string {
+  const tail = messages.slice(-count)
+  const str = jsonStringify(tail)
+  let hash = 5381
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0
+  }
+  return (hash >>> 0).toString(16)
 }
 
 // Helper to calculate tool result tokens
@@ -262,6 +298,22 @@ export async function microcompactMessages(
   // Clear suppression flag at start of new microcompact attempt
   clearCompactWarningSuppression()
 
+  // Result cache: if the conversation tail hasn't changed since the last call,
+  // reuse the previous result instead of re-scanning all messages and
+  // re-mapping the array. The key is message count + a hash of the last few
+  // messages (where new tool results appear). This avoids repeated O(n) passes
+  // and new array allocations on the query hot path (retries, re-queries).
+  const lastMessageHash = hashLastMessages(messages, MICROCOMPACT_CACHE_TAIL)
+  if (
+    cachedMicrocompact &&
+    cachedMicrocompact.messageCount === messages.length &&
+    cachedMicrocompact.lastMessageHash === lastMessageHash
+  ) {
+    return cachedMicrocompact.result
+  }
+
+  let result: MicrocompactResult
+
   // Time-based trigger runs first and short-circuits. If the gap since the
   // last assistant message exceeds the threshold, the server cache has expired
   // and the full prefix will be rewritten regardless — so content-clear old
@@ -270,14 +322,12 @@ export async function microcompactMessages(
   // warm cache, and we just established it's cold.
   const timeBasedResult = maybeTimeBasedMicrocompact(messages, querySource)
   if (timeBasedResult) {
-    return timeBasedResult
-  }
-
-  // Only run cached MC for the main thread to prevent forked agents
-  // (session_memory, prompt_suggestion, etc.) from registering their
-  // tool_results in the global cachedMCState, which would cause the main
-  // thread to try deleting tools that don't exist in its own conversation.
-  if (feature('CACHED_MICROCOMPACT')) {
+    result = timeBasedResult
+  } else if (feature('CACHED_MICROCOMPACT')) {
+    // Only run cached MC for the main thread to prevent forked agents
+    // (session_memory, prompt_suggestion, etc.) from registering their
+    // tool_results in the global cachedMCState, which would cause the main
+    // thread to try deleting tools that don't exist in its own conversation.
     const mod = await getCachedMCModule()
     const model = toolUseContext?.options.mainLoopModel ?? getMainLoopModel()
     if (
@@ -285,15 +335,25 @@ export async function microcompactMessages(
       mod.isModelSupportedForCacheEditing(model) &&
       isMainThreadSource(querySource)
     ) {
-      return await cachedMicrocompactPath(messages, querySource)
+      result = await cachedMicrocompactPath(messages, querySource)
+    } else {
+      // Legacy microcompact path removed — tengu_cache_plum_violet is always true.
+      // For contexts where cached microcompact is not available (external builds,
+      // non-ant users, unsupported models, sub-agents), no compaction happens here;
+      // autocompact handles context pressure instead.
+      result = { messages }
     }
+  } else {
+    result = { messages }
   }
 
-  // Legacy microcompact path removed — tengu_cache_plum_violet is always true.
-  // For contexts where cached microcompact is not available (external builds,
-  // non-ant users, unsupported models, sub-agents), no compaction happens here;
-  // autocompact handles context pressure instead.
-  return { messages }
+  // Cache the computed result for subsequent calls with the same conversation tail.
+  cachedMicrocompact = {
+    messageCount: messages.length,
+    lastMessageHash,
+    result,
+  }
+  return result
 }
 
 /**

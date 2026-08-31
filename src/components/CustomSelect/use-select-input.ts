@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useRegisterOverlay } from '../../context/overlayContext.js'
 import type { InputEvent } from '../../ink/events/input-event.js'
 import { useInput } from '../../ink.js'
+import { useOptionalKeybindingContext } from '../../keybindings/KeybindingContext.js'
 import { useKeybindings } from '../../keybindings/useKeybinding.js'
 import {
   normalizeFullWidthDigits,
@@ -81,6 +82,21 @@ export type UseSelectProps<T> = {
    * Returns true if image selection was entered (images exist), false otherwise.
    */
   onEnterImageSelection?: () => boolean
+
+  /**
+   * Callback for raw search input. Receives the raw key sequence so the
+   * caller can implement incremental search. Only called when the focused
+   * option is not an input type.
+   */
+  onSearchInput?: (input: string) => void
+
+  /**
+   * Callback when backspace/delete is pressed while search is active.
+   * Lets the caller remove the last character from the search query.
+   * Only called when onSearchInput is also set and the focused option
+   * is not an input type.
+   */
+  onSearchBackspace?: () => void
 }
 
 export const useSelectInput = <T>({
@@ -95,10 +111,17 @@ export const useSelectInput = <T>({
   inputValues,
   imagesSelected = false,
   onEnterImageSelection,
+  onSearchInput,
+  onSearchBackspace,
 }: UseSelectProps<T>) => {
   // Automatically register as an overlay when onCancel is provided.
   // This ensures CancelRequestHandler won't intercept Escape when the select is active.
   useRegisterOverlay('select', !!state.onCancel)
+
+  // In production, the select:cancel keybinding handles Escape. In tests
+  // (or any context without KeybindingProvider), we fall back to a raw
+  // useInput handler so Escape still works.
+  const keybindingContext = useOptionalKeybindingContext()
 
   // Determine if the focused option is an input type
   const isInInput = useMemo(() => {
@@ -181,6 +204,16 @@ export const useSelectInput = <T>({
       // Handle Tab key for input mode toggling
       if (key.tab && onInputModeToggle && state.focusedValue !== undefined) {
         onInputModeToggle(state.focusedValue)
+        return
+      }
+
+      // Escape: fallback for when the keybinding context is not available
+      // (e.g. in tests without KeybindingSetup). In production, the
+      // select:cancel keybinding handles Escape and stops propagation before
+      // this handler runs.
+      if (keybindingContext === null && key.escape && state.onCancel) {
+        state.onCancel()
+        event.stopImmediatePropagation()
         return
       }
 
@@ -279,6 +312,30 @@ export const useSelectInput = <T>({
             state.onChange?.(selectedOption.value)
             return
           }
+        }
+
+        // Backspace/delete removes the last character from the search query.
+        // Must be checked before the printable character handler because
+        // \x7f (DEL, code 127) passes the `input >= ' '` printable check.
+        if (onSearchInput && onSearchBackspace && (key.backspace || key.delete)) {
+          onSearchBackspace()
+          return
+        }
+
+        // Forward printable characters to the caller's search handler.
+        // This runs after numeric selection so digits still select by index,
+        // but only when disableSelection is not 'numeric'. When disableSelection
+        // is 'numeric' (e.g. a picker that already hides indexes), typed letters
+        // and digits can still start or continue searching.
+        if (
+          onSearchInput &&
+          input.length === 1 &&
+          input >= ' ' &&
+          input !== '\x7f' &&
+          (disableSelection === 'numeric' || !/^[0-9]$/.test(input))
+        ) {
+          onSearchInput(input)
+          return
         }
       }
     },

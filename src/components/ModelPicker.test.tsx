@@ -218,6 +218,7 @@ function makeStdio(): {
   }
   stdout: PassThrough
   getOutput: () => string
+  getLastFrame: () => string
 } {
   let output = ''
   const stdout = new PassThrough()
@@ -235,7 +236,13 @@ function makeStdio(): {
   stdout.on('data', chunk => {
     output += chunk.toString()
   })
-  return { stdin, stdout, getOutput: () => output }
+  // ink renders full-screen frames separated by \n. The last frame is the
+  // current state. Split on the repeated "Select model" header to isolate it.
+  const getLastFrame = () => {
+    const frames = output.split('Select model\n')
+    return frames.length > 1 ? 'Select model\n' + frames[frames.length - 1] : output
+  }
+  return { stdin, stdout, getOutput: () => output, getLastFrame }
 }
 
 const CROSS_PROFILE_OPTIONS = [
@@ -329,6 +336,143 @@ test('shows cross-profile switch options when allowProfileSwitch is set', async 
     const rendered = stripAnsi(getOutput())
     expect(rendered).toContain('Active Model')
     expect(rendered).toContain('Switch to Work')
+  } finally {
+    instance.unmount()
+    stdin.end()
+    stdout.end()
+  }
+})
+
+const SEARCH_OPTIONS = [
+  { value: 'claude-opus-4-6', label: 'Opus 4.6', description: 'Most capable' },
+  { value: 'claude-sonnet-4-5', label: 'Sonnet 4.5', description: 'Balanced' },
+  { value: 'claude-haiku-4-2', label: 'Haiku 4.2', description: 'Fast' },
+  { value: 'gpt-5', label: 'GPT-5', description: 'OpenAI model' },
+  { value: 'gemini-2-5-pro', label: 'Gemini 2.5 Pro', description: 'Google model' },
+]
+
+async function typeText(stdin: PassThrough, text: string): Promise<void> {
+  for (const char of text) {
+    stdin.write(char)
+    await Bun.sleep(10)
+  }
+}
+
+test('search filters the model list by typed query', async () => {
+  const { ModelPicker } = await import(
+    `./ModelPicker.js?search-filter-${Date.now()}`
+  )
+  const { stdin, stdout, getLastFrame } = makeStdio()
+
+  const instance = await render(
+    <AppStateProvider initialState={getDefaultAppState()}>
+      <ModelPicker
+        initial="claude-opus-4-6"
+        onSelect={() => {}}
+        optionsOverride={SEARCH_OPTIONS}
+      />
+    </AppStateProvider>,
+    {
+      stdin: stdin as unknown as NodeJS.ReadStream,
+      stdout: stdout as unknown as NodeJS.WriteStream,
+      exitOnCtrlC: false,
+    },
+  )
+
+  try {
+    await waitForCondition(() => stripAnsi(getLastFrame()).includes('Opus 4.6'))
+    // Type "haiku" to filter
+    await typeText(stdin, 'haiku')
+    await waitForCondition(() => stripAnsi(getLastFrame()).includes('Search: haiku'))
+    const rendered = stripAnsi(getLastFrame())
+    expect(rendered).toContain('Haiku 4.2')
+    expect(rendered).not.toContain('Opus 4.6')
+    expect(rendered).not.toContain('Sonnet 4.5')
+  } finally {
+    instance.unmount()
+    stdin.end()
+    stdout.end()
+  }
+})
+
+test('backspace removes last character from search query', async () => {
+  const { ModelPicker } = await import(
+    `./ModelPicker.js?search-backspace-${Date.now()}`
+  )
+  const { stdin, stdout, getLastFrame } = makeStdio()
+
+  const instance = await render(
+    <AppStateProvider initialState={getDefaultAppState()}>
+      <ModelPicker
+        initial="claude-opus-4-6"
+        onSelect={() => {}}
+        optionsOverride={SEARCH_OPTIONS}
+      />
+    </AppStateProvider>,
+    {
+      stdin: stdin as unknown as NodeJS.ReadStream,
+      stdout: stdout as unknown as NodeJS.WriteStream,
+      exitOnCtrlC: false,
+    },
+  )
+
+  try {
+    await waitForCondition(() => stripAnsi(getLastFrame()).includes('Opus 4.6'))
+    // Type "opu" then backspace to get "op"
+    await typeText(stdin, 'opu')
+    await waitForCondition(() => stripAnsi(getLastFrame()).includes('Search: opu'))
+    // Send backspace (DEL char \x7f in raw mode, or \b for BS)
+    stdin.write('\x7f')
+    await Bun.sleep(50)
+    await waitForCondition(() => stripAnsi(getLastFrame()).includes('Search: op'))
+    const rendered = stripAnsi(getLastFrame())
+    expect(rendered).toContain('Search: op')
+    expect(rendered).not.toContain('Search: opu')
+  } finally {
+    instance.unmount()
+    stdin.end()
+    stdout.end()
+  }
+})
+
+test('escape clears search when active, does not cancel picker', async () => {
+  const { ModelPicker } = await import(
+    `./ModelPicker.js?search-escape-${Date.now()}`
+  )
+  const { stdin, stdout, getLastFrame } = makeStdio()
+  let cancelled = false
+
+  const instance = await render(
+    <AppStateProvider initialState={getDefaultAppState()}>
+      <ModelPicker
+        initial="claude-opus-4-6"
+        onSelect={() => {}}
+        onCancel={() => { cancelled = true }}
+        optionsOverride={SEARCH_OPTIONS}
+      />
+    </AppStateProvider>,
+    {
+      stdin: stdin as unknown as NodeJS.ReadStream,
+      stdout: stdout as unknown as NodeJS.WriteStream,
+      exitOnCtrlC: false,
+    },
+  )
+
+  try {
+    await waitForCondition(() => stripAnsi(getLastFrame()).includes('Opus 4.6'))
+    // Type a search query
+    await typeText(stdin, 'haiku')
+    await waitForCondition(() => stripAnsi(getLastFrame()).includes('Search: haiku'))
+    // Press Escape — should clear search, not cancel
+    stdin.write('\x1b')
+    await Bun.sleep(300) // ink has a 50ms flush timer for lone Escape, plus render time
+    const rendered = stripAnsi(getLastFrame())
+    // Search should be cleared
+    expect(rendered).not.toContain('Search: haiku')
+    // Picker should NOT have been cancelled
+    expect(cancelled).toBe(false)
+    // All options should be visible again
+    expect(rendered).toContain('Opus 4.6')
   } finally {
     instance.unmount()
     stdin.end()

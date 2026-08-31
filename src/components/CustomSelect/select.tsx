@@ -195,6 +195,18 @@ export type SelectProps<T> = {
    * Callback to remove a pasted image by its ID.
    */
   readonly onRemoveImage?: (id: number) => void;
+
+  /**
+   * Callback for raw search input. Receives the literal key sequence so the
+   * caller can implement incremental search. Only called when the focused
+   * option is not an input type.
+   */
+  readonly onSearchInput?: (input: string) => void;
+
+  /**
+   * Callback when backspace/delete is pressed while search is active.
+   */
+  readonly onSearchBackspace?: () => void;
 };
 export function Select(t0) {
   const $ = _c(73);
@@ -219,7 +231,9 @@ export function Select(t0) {
     onOpenEditor,
     onImagePaste,
     pastedContents,
-    onRemoveImage
+    onRemoveImage,
+    onSearchInput,
+    onSearchBackspace
   } = t0;
   const isDisabled = t1 === undefined ? false : t1;
   const hideIndexes = t2 === undefined ? false : t2;
@@ -325,7 +339,7 @@ export function Select(t0) {
     t13 = $[16];
   }
   let t14;
-  if ($[17] !== imagesSelected || $[18] !== inputValues || $[19] !== isDisabled || $[20] !== onDownFromLastItem || $[21] !== onInputModeToggle || $[22] !== onUpFromFirstItem || $[23] !== options || $[24] !== state || $[25] !== t12 || $[26] !== t13) {
+  if ($[17] !== imagesSelected || $[18] !== inputValues || $[19] !== isDisabled || $[20] !== onDownFromLastItem || $[21] !== onInputModeToggle || $[22] !== onUpFromFirstItem || $[23] !== options || $[24] !== state || $[25] !== t12 || $[26] !== t13 || $[73] !== onSearchInput || $[74] !== onSearchBackspace) {
     t14 = {
       isDisabled,
       disableSelection: t12,
@@ -337,7 +351,9 @@ export function Select(t0) {
       onInputModeToggle,
       inputValues,
       imagesSelected,
-      onEnterImageSelection: t13
+      onEnterImageSelection: t13,
+      onSearchInput,
+      onSearchBackspace
     };
     $[17] = imagesSelected;
     $[18] = inputValues;
@@ -350,6 +366,8 @@ export function Select(t0) {
     $[25] = t12;
     $[26] = t13;
     $[27] = t14;
+    $[73] = onSearchInput;
+    $[74] = onSearchBackspace;
   } else {
     t14 = $[27];
   }

@@ -1,23 +1,12 @@
-import { useEffect, useState } from 'react'
-import {
-  type ClaudeAILimits,
-  currentLimits,
-  statusListeners,
-} from './claudeAiLimits.js'
+// ponytail: Claude AI limits hook removed — returns empty limits.
+import type { ClaudeAILimits } from './claudeAiLimits.js'
 
 export function useClaudeAiLimits(): ClaudeAILimits {
-  const [limits, setLimits] = useState<ClaudeAILimits>({ ...currentLimits })
-
-  useEffect(() => {
-    const listener = (newLimits: ClaudeAILimits) => {
-      setLimits({ ...newLimits })
-    }
-    statusListeners.add(listener)
-
-    return () => {
-      statusListeners.delete(listener)
-    }
-  }, [])
-
-  return limits
+  return {
+    utilization: null,
+    rateLimitType: null,
+    overageEnabled: false,
+    overageDisabledReason: null,
+    rawUtilization: null,
+  }
 }

@@ -505,8 +505,37 @@ ${CYBER_RISK_INSTRUCTION}`,
   const resolvedDynamicSections =
     await resolveSystemPromptSections(dynamicSections)
 
+  // Memoize the static prefix — these sections depend only on
+  // outputStyleConfig and enabledTools, which rarely change between turns.
+  const staticPrefix = getStaticSystemPromptPrefix(outputStyleConfig, enabledTools)
+
   return [
     // --- Static content (cacheable) ---
+    ...staticPrefix,
+    // === BOUNDARY MARKER - DO NOT MOVE OR REMOVE ===
+    ...(shouldUseGlobalCacheScope() ? [SYSTEM_PROMPT_DYNAMIC_BOUNDARY] : []),
+    // --- Dynamic content (registry-managed) ---
+    ...resolvedDynamicSections,
+  ].filter(s => s !== null)
+}
+
+// Cache for the static system prompt prefix. Keyed on outputStyleConfig
+// identity and the sorted set of enabled tool names.
+let cachedStaticPrefix: {
+  key: string
+  prefix: string[]
+} | null = null
+
+function getStaticSystemPromptPrefix(
+  outputStyleConfig: OutputStyleConfig | null,
+  enabledTools: Set<string>,
+): string[] {
+  const key = `${outputStyleConfig?.name ?? 'default'}|${[...enabledTools].sort().join(',')}`
+  if (cachedStaticPrefix && cachedStaticPrefix.key === key) {
+    return cachedStaticPrefix.prefix
+  }
+
+  const prefix = [
     getSimpleIntroSection(outputStyleConfig),
     getSimpleSystemSection(),
     outputStyleConfig === null ||
@@ -517,11 +546,10 @@ ${CYBER_RISK_INSTRUCTION}`,
     getUsingYourToolsSection(enabledTools),
     getSimpleToneAndStyleSection(),
     getOutputEfficiencySection(),
-    // === BOUNDARY MARKER - DO NOT MOVE OR REMOVE ===
-    ...(shouldUseGlobalCacheScope() ? [SYSTEM_PROMPT_DYNAMIC_BOUNDARY] : []),
-    // --- Dynamic content (registry-managed) ---
-    ...resolvedDynamicSections,
-  ].filter(s => s !== null)
+  ].filter(s => s !== null) as string[]
+
+  cachedStaticPrefix = { key, prefix }
+  return prefix
 }
 
 function getMcpInstructions(mcpClients: MCPServerConnection[]): string | null {

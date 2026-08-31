@@ -690,6 +690,14 @@ async function* queryLoop(
     state.toolUseContext,
   )
 
+  // Build the base system prompt with system context once outside the loop.
+  // systemPrompt and systemContext are immutable params (never reassigned
+  // during the loop). Only the arc suffix changes per iteration, so we
+  // rebuild only that part inside the loop.
+  const baseSystemPromptWithContext = asSystemPrompt(
+    appendSystemContext(asSystemPrompt(systemPrompt), systemContext),
+  )
+
   // eslint-disable-next-line no-constant-condition
   while (true) {
     // Destructure state at the top of each iteration. toolUseContext alone
@@ -718,19 +726,23 @@ async function* queryLoop(
           ? maxOutputTokensOverride
           : Math.min(maxOutputTokensOverride, providerMaxOutputTokensCap)
 
-    // Skill discovery prefetch — per-iteration (uses findWritePivot guard
-    // that returns early on non-write iterations). Discovery runs while the
-    // model streams and tools execute; awaited post-tools alongside the
-    // memory prefetch consume. Replaces the blocking assistant_turn path
-    // that ran inside getAttachmentMessages (97% of those calls found
-    // nothing in prod). Turn-0 user-input discovery still blocks in
-    // userInputAttachments — that's the one signal where there's no prior
+    // Skill discovery prefetch — fires only on the first iteration of a
+    // user turn (transition === undefined). Skills don't change mid-loop, so
+    // continuation/tool-result passes would just re-discover the same set.
+    // Discovery runs while the model streams and tools execute; awaited
+    // post-tools alongside the memory prefetch consume. Replaces the blocking
+    // assistant_turn path that ran inside getAttachmentMessages (97% of those
+    // calls found nothing in prod). Turn-0 user-input discovery still blocks
+    // in userInputAttachments — that's the one signal where there's no prior
     // work to hide under.
-    const pendingSkillPrefetch = skillPrefetch?.startSkillDiscoveryPrefetch(
-      null,
-      messages,
-      toolUseContext,
-    )
+    const pendingSkillPrefetch =
+      state.transition === undefined
+        ? skillPrefetch?.startSkillDiscoveryPrefetch(
+            null,
+            messages,
+            toolUseContext,
+          )
+        : undefined
 
     yield { type: 'stream_request_start' }
 
@@ -880,7 +892,9 @@ async function* queryLoop(
 
     // arcSummary must be a separate array element; concatenating it into a
     // template string makes [...systemPrompt] spread chars, shredding the prompt.
-    let promptWithArc: readonly string[] = systemPrompt
+    // The base system prompt (systemPrompt + systemContext) is already built
+    // once outside the loop. Only the arc suffix changes per iteration.
+    let fullSystemPrompt = baseSystemPromptWithContext
     if (feature('CONVERSATION_ARC')) {
       if (getGlobalConfig().knowledgeGraphEnabled) {
         const lastMessage = messagesForQuery[messagesForQuery.length - 1]
@@ -892,14 +906,15 @@ async function* queryLoop(
         const { getArcSummary } = await import('./utils/conversationArc.js')
         const arcSummary = await getArcSummary(userQueryText)
         if (arcSummary) {
-          promptWithArc = [...systemPrompt, arcSummary]
+          fullSystemPrompt = asSystemPrompt(
+            appendSystemContext(
+              asSystemPrompt([...systemPrompt, arcSummary]),
+              systemContext,
+            ),
+          )
         }
       }
     }
-
-    const fullSystemPrompt = asSystemPrompt(
-      appendSystemContext(asSystemPrompt(promptWithArc), systemContext),
-    )
 
     // Force compaction if memory pressure detected or message count exceeded.
     // Sets forceReason on tracking so autoCompactIfNeeded bypasses the

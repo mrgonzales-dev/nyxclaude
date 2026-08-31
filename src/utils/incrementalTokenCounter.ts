@@ -24,22 +24,43 @@ export interface CounterStats {
 }
 
 /**
- * Get a hash of full conversation history for cache validation.
- * Hashes ALL messages with full content to prevent collisions.
+ * Hash a single message's token-relevant content.
+ * Returns a 32-byte Buffer (SHA-256 digest).
  */
-function getMessageHash(messages: readonly Message[]): string {
-  if (messages.length === 0) return 'empty'
+function hashSingleMessage(message: Message): Buffer {
+  const input = JSON.stringify({
+    type: message.type,
+    content: message.message?.content ?? null,
+    attachment: message.attachment ?? null,
+  })
+  return createHash('sha256').update(input).digest()
+}
 
-  const tokenRelevantInput = messages.map(m => ({
-    type: m.type,
-    content: m.message?.content ?? null,
-    attachment: m.attachment ?? null,
-  }))
+/**
+ * XOR two 32-byte hash buffers.
+ * This is the combining function for the rolling hash:
+ *   newHash = oldHash XOR hash(newMessage)
+ * XOR is fast and, combined with a message counter, produces a
+ * unique cache key per distinct message sequence.
+ */
+function xorHash(a: Buffer, b: Buffer): Buffer {
+  const out = Buffer.alloc(32)
+  for (let i = 0; i < 32; i++) {
+    out[i] = a[i] ^ b[i]
+  }
+  return out
+}
 
-  return createHash('sha256')
-    .update(JSON.stringify(tokenRelevantInput))
-    .digest('hex')
-    .slice(0, 16)
+/**
+ * Compute a rolling hash from scratch by XOR-ing individual message hashes.
+ * Used on cache miss / full recompute — the incremental path avoids this.
+ */
+function computeRollingHash(messages: readonly Message[]): Buffer {
+  let hash: Buffer = Buffer.alloc(32) // all-zeros = identity for XOR
+  for (const msg of messages) {
+    hash = xorHash(hash, hashSingleMessage(msg))
+  }
+  return hash
 }
 
 /**
@@ -48,8 +69,12 @@ function getMessageHash(messages: readonly Message[]): string {
 export class IncrementalTokenCounter {
   private lastMessageCount = 0
   private lastTokenCount = 0
-  private lastFullHash = ''
-  private lastPrefixHash = ''
+  /** Rolling XOR hash of all messages seen so far — the cache key. */
+  private lastRollingHash: Buffer = Buffer.alloc(32)
+  /** Reference to the last messages array for O(1) same-array fast path. */
+  private lastMessagesRef: readonly Message[] | null = null
+  /** Shallow copy of message refs for prefix verification on append. */
+  private lastMessageRefs: readonly Message[] = []
   private config: Required<IncrementalCounterConfig>
   private stats = {
     hits: 0,
@@ -67,7 +92,7 @@ export class IncrementalTokenCounter {
 
   /**
    * Get token count using cache when possible.
-   * O(1) for cached, O(n) for new messages.
+   * O(1) for same-array calls, O(new messages) for appends, O(n) for cache miss.
    */
   getCount(messages: readonly Message[]): number {
     if (messages.length === 0) {
@@ -75,45 +100,75 @@ export class IncrementalTokenCounter {
       return 0
     }
 
-    const hash = getMessageHash(messages)
-
-    // Cache hit only if both count AND content match
-    if (messages.length === this.lastMessageCount && hash === this.lastFullHash) {
+    // O(1) fast path: same array reference — nothing could have changed
+    if (messages === this.lastMessagesRef && this.lastMessageCount > 0) {
       this.stats.hits++
       this.stats.totalTokens += this.lastTokenCount
       return this.lastTokenCount
     }
 
-    // Cache miss - calculate
+    // Same message count — verify content via rolling hash (cache key)
+    if (messages.length === this.lastMessageCount && this.lastMessageCount > 0) {
+      const currentHash = computeRollingHash(messages)
+      if (currentHash.equals(this.lastRollingHash)) {
+        // Cache hit: content unchanged (different array, same content)
+        this.stats.hits++
+        this.stats.totalTokens += this.lastTokenCount
+        this.lastMessagesRef = messages
+        return this.lastTokenCount
+      }
+      // Hash mismatch — fall through to full recompute
+    }
+
     this.stats.misses++
 
-    const isIncrementalSafe =
-      messages.length > this.lastMessageCount &&
+    // Incremental path: messages appended and auto-invalidate enabled.
+    // Verify prefix via reference equality (cheap O(n) pointer compares, no
+    // hashing), then hash ONLY the new messages and XOR-combine.
+    if (
       this.config.autoInvalidate &&
-      this.lastMessageCount > 0 &&
-      this.lastFullHash.length > 0
+      messages.length > this.lastMessageCount &&
+      this.lastMessageCount > 0
+    ) {
+      let prefixUnchanged = true
+      for (let i = 0; i < this.lastMessageCount; i++) {
+        if (messages[i] !== this.lastMessageRefs[i]) {
+          prefixUnchanged = false
+          break
+        }
+      }
 
-    if (isIncrementalSafe) {
-      const currentPrefixHash = getMessageHash(messages.slice(0, this.lastMessageCount))
+      if (prefixUnchanged) {
+        // Hash only new messages and combine with existing rolling hash:
+        //   newHash = oldHash XOR hash(newMessage)
+        let newHash = this.lastRollingHash
+        for (let i = this.lastMessageCount; i < messages.length; i++) {
+          newHash = xorHash(newHash, hashSingleMessage(messages[i]))
+        }
+        this.lastRollingHash = newHash
 
-      if (currentPrefixHash === this.lastPrefixHash) {
         const newMessages = messages.slice(this.lastMessageCount)
         const estimated = Math.round(
           roughTokenCountEstimationForMessages(newMessages) * this.config.estimationMultiplier
         )
         this.lastTokenCount += estimated
-      } else {
-        this.lastTokenCount = roughTokenCountEstimationForMessages(messages)
+        this.lastMessageCount = messages.length
+        this.lastMessagesRef = messages
+        this.lastMessageRefs = messages.slice()
+        this.stats.totalTokens += this.lastTokenCount
+        return this.lastTokenCount
       }
-    } else {
-      this.lastTokenCount = roughTokenCountEstimationForMessages(messages)
+      // Prefix mutated — fall through to full recompute
     }
 
+    // Full recompute (cache miss / hash mismatch / count decreased / prefix mutated)
+    this.lastRollingHash = computeRollingHash(messages)
+    this.lastTokenCount = roughTokenCountEstimationForMessages(messages)
     this.lastMessageCount = messages.length
-    this.lastFullHash = hash
-    this.lastPrefixHash = getMessageHash(messages.slice(0, messages.length))
+    this.lastMessagesRef = messages
+    this.lastMessageRefs = messages.slice()
     this.stats.totalTokens += this.lastTokenCount
-    
+
     return this.lastTokenCount
   }
 
@@ -123,8 +178,9 @@ export class IncrementalTokenCounter {
    */
   invalidate(messages: readonly Message[]): number {
     this.lastMessageCount = messages.length
-    this.lastFullHash = getMessageHash(messages)
-    this.lastPrefixHash = messages.length > 0 ? getMessageHash(messages) : ''
+    this.lastRollingHash = messages.length > 0 ? computeRollingHash(messages) : Buffer.alloc(32)
+    this.lastMessagesRef = messages.length > 0 ? messages : null
+    this.lastMessageRefs = messages.slice()
 
     if (messages.length === 0) {
       this.lastTokenCount = 0
@@ -190,6 +246,9 @@ export class IncrementalTokenCounter {
   reset(): void {
     this.lastMessageCount = 0
     this.lastTokenCount = 0
+    this.lastRollingHash = Buffer.alloc(32)
+    this.lastMessagesRef = null
+    this.lastMessageRefs = []
     this.stats = { hits: 0, misses: 0, totalTokens: 0 }
   }
 

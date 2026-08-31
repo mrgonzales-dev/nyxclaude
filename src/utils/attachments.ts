@@ -1287,16 +1287,14 @@ async function getPlanModeAttachments(
     setHasExitedPlanMode(false) // Clear flag - one-time guidance
   }
 
-  // Determine if this should be a full or sparse reminder
-  // Full reminder on 1st, 6th, 11th... (every Nth attachment)
+  // Determine if this should be a full or sparse reminder.
+  // Full reminder only on the very first injection; all subsequent
+  // reminders are sparse (short one-liner) to avoid re-injecting the
+  // full ~3,000-char workflow guide every N turns.
   const attachmentCount =
     countPlanModeAttachmentsSinceLastExit(messages ?? []) + 1
   const reminderType: 'full' | 'sparse' =
-    attachmentCount %
-      PLAN_MODE_ATTACHMENT_CONFIG.FULL_REMINDER_EVERY_N_ATTACHMENTS ===
-    1
-      ? 'full'
-      : 'sparse'
+    attachmentCount === 1 ? 'full' : 'sparse'
 
   // Always add the main plan_mode attachment
   attachments.push({

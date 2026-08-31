@@ -48,7 +48,7 @@ test('sparse plan mode instructions return a meta user reminder', () => {
   expect(message?.type).toBe('user')
   expect(message?.isMeta).toBe(true)
   expect(String(message?.message.content)).toContain('<system-reminder>')
-  expect(String(message?.message.content)).toContain('/tmp/plan.md')
+  expect(String(message?.message.content)).toContain('Plan mode: read-only')
 })
 
 test('full plan mode instructions return the complete workflow reminder', () => {
@@ -88,5 +88,5 @@ test('auto mode instructions return sparse and full reminders', () => {
   ).toContain('Auto mode still active')
   expect(
     String(getAutoModeInstructions({ reminderType: 'full' })[0]?.message.content),
-  ).toContain('Auto Mode Active')
+  ).toContain('dangerous permissions stripped')
 })

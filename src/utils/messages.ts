@@ -2625,9 +2625,9 @@ Read the team config to discover your teammates' names. Check the task list peri
         .map((todo, index) => `${index + 1}. [${todo.status}] ${todo.content}`)
         .join('\n')
 
-      let message = `The TodoWrite tool hasn't been used recently. If you're working on tasks that would benefit from tracking progress, consider using the TodoWrite tool to track progress. Also consider cleaning up the todo list if has become stale and no longer matches what you are working on. Only use it if it's relevant to the current work. This is just a gentle reminder - ignore if not applicable. Make sure that you NEVER mention this reminder to the user\n`
+      let message = `TodoWrite available. Current todos:\n`
       if (todoItems.length > 0) {
-        message += `\n\nHere are the existing contents of your todo list:\n\n[${todoItems}]`
+        message += `\n${todoItems}`
       }
 
       return wrapMessagesInSystemReminder([
@@ -2857,24 +2857,26 @@ You have exited auto mode. The user may now want to interact more directly. You 
       // Transform each content item using the MCP transform function
       const transformedBlocks: ContentBlockParam[] = []
 
-      // Handle the resource contents - only process text content
+      // Handle the resource contents - only process text content.
+      // A single header is emitted before the first text item and a single
+      // footer after the last, instead of per-item headers/footers.
+      let addedHeader = false
+      let addedText = false
       for (const item of content.contents) {
         if (item && typeof item === 'object') {
           if ('text' in item && typeof item.text === 'string') {
-            transformedBlocks.push(
-              {
+            if (!addedHeader) {
+              transformedBlocks.push({
                 type: 'text',
                 text: 'Full contents of resource:',
-              },
-              {
-                type: 'text',
-                text: item.text,
-              },
-              {
-                type: 'text',
-                text: 'Do NOT read this resource again unless you think it may have changed, since you already have the full contents.',
-              },
-            )
+              })
+              addedHeader = true
+            }
+            transformedBlocks.push({
+              type: 'text',
+              text: item.text,
+            })
+            addedText = true
           } else if ('blob' in item) {
             // Skip binary content including images
             const mimeType =
@@ -2887,6 +2889,12 @@ You have exited auto mode. The user may now want to interact more directly. You 
             })
           }
         }
+      }
+      if (addedText) {
+        transformedBlocks.push({
+          type: 'text',
+          text: 'Do NOT read this resource again unless you think it may have changed, since you already have the full contents.',
+        })
       }
 
       // If we have any content blocks, return them as a message
@@ -3108,7 +3116,7 @@ You have exited auto mode. The user may now want to interact more directly. You 
       return wrapMessagesInSystemReminder([
         createUserMessage({
           content:
-            'Auto-compact is enabled. When the context window is nearly full, older messages will be automatically summarized so you can continue working seamlessly. There is no need to stop or rush \u2014 you have unlimited context through automatic compaction.',
+            'Auto-compact is on; old messages will be summarized when needed.',
           isMeta: true,
         }),
       ])

@@ -1471,12 +1471,11 @@ describe('getProviderProfiles', () => {
 })
 
 describe('clearActiveProviderProfile', () => {
-  test('returns undefined active profile while preserving saved profiles (#1426)', async () => {
+  test('clears active id to undefined while preserving saved profiles', async () => {
     const {
       getActiveProviderProfile,
       clearActiveProviderProfile,
       getProviderProfiles,
-      ANTHROPIC_DEFAULT_PROFILE_ID,
     } = await importFreshProviderProfileModules()
 
     saveMockGlobalConfig(current => ({
@@ -1492,11 +1491,10 @@ describe('clearActiveProviderProfile', () => {
     const hadActive = clearActiveProviderProfile()
 
     expect(hadActive).toBe(true)
-    expect(mockConfigState.activeProviderProfileId).toBe(
-      ANTHROPIC_DEFAULT_PROFILE_ID,
-    )
-    // Falls back to Anthropic, NOT to profiles[0].
-    expect(getActiveProviderProfile()).toBeUndefined()
+    // No sentinel — active id is simply undefined.
+    expect(mockConfigState.activeProviderProfileId).toBeUndefined()
+    // With no active id, falls back to profiles[0] (the saved profile).
+    expect(getActiveProviderProfile()?.id).toBe('saved_deepseek')
     // Saved profiles remain for later re-selection.
     expect(getProviderProfiles()).toHaveLength(1)
   })
@@ -1526,42 +1524,17 @@ describe('clearActiveProviderProfile', () => {
     expect(
       process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
     ).toBeUndefined()
-    // The managed provider env itself must be gone too, otherwise the switch
-    // back to Anthropic would not take effect for the current session.
+    // The managed provider env itself must be gone too.
     expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
     expect(process.env.OPENAI_API_KEY).toBeUndefined()
   })
 })
 
-describe('Anthropic sentinel survives profile management (#1426)', () => {
-  test('addProviderProfile with makeActive:false keeps the Anthropic sentinel active', async () => {
-    const {
-      addProviderProfile,
-      getActiveProviderProfile,
-      ANTHROPIC_DEFAULT_PROFILE_ID,
-    } = await importFreshProviderProfileModules()
-
-    saveMockGlobalConfig(current => ({
-      ...current,
-      providerProfiles: [buildProfile({ id: 'saved_one', name: 'Saved One' })],
-      activeProviderProfileId: ANTHROPIC_DEFAULT_PROFILE_ID,
-    }))
-
-    addProviderProfile(
-      {
-        provider: 'openai',
-        name: 'Saved Two',
-        baseUrl: 'https://api.openai.com/v1',
-        model: 'gpt-4o',
-      },
-      { makeActive: false },
-    )
-
-    expect(mockConfigState.activeProviderProfileId).toBe(
-      ANTHROPIC_DEFAULT_PROFILE_ID,
-    )
-    expect(getActiveProviderProfile()).toBeUndefined()
+describe('no Anthropic sentinel — profile management without sentinel', () => {
+  test('ANTHROPIC_DEFAULT_PROFILE_ID is not exported', async () => {
+    const mod = await importFreshProviderProfileModules()
+    expect((mod as Record<string, unknown>).ANTHROPIC_DEFAULT_PROFILE_ID).toBeUndefined()
   })
 
   test('addProviderProfile with makeActive:false keeps the implicit first profile active when no active id is set', async () => {
@@ -1597,7 +1570,7 @@ describe('Anthropic sentinel survives profile management (#1426)', () => {
     // activeProviderProfileId points at a profile that no longer exists.
     // getActiveProviderProfile resolves a stale id to the first profile, so
     // adding another with makeActive:false must keep that first profile active
-    // rather than promoting the new one (#1426).
+    // rather than promoting the new one.
     saveMockGlobalConfig(current => ({
       ...current,
       providerProfiles: [buildProfile({ id: 'saved_one', name: 'Saved One' })],
@@ -1617,17 +1590,17 @@ describe('Anthropic sentinel survives profile management (#1426)', () => {
     expect(getActiveProviderProfile()?.id).toBe('saved_one')
   })
 
-  test('updateProviderProfile of a non-active profile keeps the Anthropic sentinel active', async () => {
+  test('updateProviderProfile of a non-active profile keeps the first profile as active fallback', async () => {
     const {
       updateProviderProfile,
       getActiveProviderProfile,
-      ANTHROPIC_DEFAULT_PROFILE_ID,
     } = await importFreshProviderProfileModules()
 
+    // No sentinel — active id is undefined. First profile is the implicit active.
     saveMockGlobalConfig(current => ({
       ...current,
       providerProfiles: [buildProfile({ id: 'saved_one', name: 'Saved One' })],
-      activeProviderProfileId: ANTHROPIC_DEFAULT_PROFILE_ID,
+      activeProviderProfileId: undefined,
     }))
 
     updateProviderProfile('saved_one', {
@@ -1637,36 +1610,36 @@ describe('Anthropic sentinel survives profile management (#1426)', () => {
       model: 'gpt-4o',
     })
 
-    expect(mockConfigState.activeProviderProfileId).toBe(
-      ANTHROPIC_DEFAULT_PROFILE_ID,
-    )
-    expect(getActiveProviderProfile()).toBeUndefined()
+    // Still resolves to the first (and only) profile.
+    expect(getActiveProviderProfile()?.id).toBe('saved_one')
   })
 
-  test('deleteProviderProfile of an inactive profile keeps the Anthropic sentinel active', async () => {
+  test('deleteProviderProfile of an inactive profile falls back to first remaining profile', async () => {
     const {
       deleteProviderProfile,
       getActiveProviderProfile,
       getProviderProfiles,
-      ANTHROPIC_DEFAULT_PROFILE_ID,
     } = await importFreshProviderProfileModules()
 
+    // No sentinel — active id is undefined. getActiveProviderProfile()
+    // implicitly resolves to profiles[0] ('saved_one'). Deleting
+    // 'saved_one' means the implicit active was deleted, so the code
+    // promotes the next remaining profile to active.
     saveMockGlobalConfig(current => ({
       ...current,
       providerProfiles: [
         buildProfile({ id: 'saved_one', name: 'Saved One' }),
         buildProfile({ id: 'saved_two', name: 'Saved Two' }),
       ],
-      activeProviderProfileId: ANTHROPIC_DEFAULT_PROFILE_ID,
+      activeProviderProfileId: undefined,
     }))
 
     const result = deleteProviderProfile('saved_one')
 
     expect(result.removed).toBe(true)
-    expect(mockConfigState.activeProviderProfileId).toBe(
-      ANTHROPIC_DEFAULT_PROFILE_ID,
-    )
-    expect(getActiveProviderProfile()).toBeUndefined()
+    // Active id is promoted to the next remaining profile.
+    expect(mockConfigState.activeProviderProfileId).toBe('saved_two')
+    expect(getActiveProviderProfile()?.id).toBe('saved_two')
     expect(getProviderProfiles()).toHaveLength(1)
   })
 })
@@ -2210,26 +2183,13 @@ describe('applyActiveProviderProfileFromConfig', () => {
     expect(process.env.OPENAI_MODEL).toBe('codexplan[1m]')
   })
 
-  test('cold start on the Anthropic sentinel stays on built-in Anthropic and does not fall back to the OpenGateway default (#1429)', async () => {
-    // Regression: after clearActiveProviderProfile() records the Anthropic
-    // sentinel and deletes the startup profile mirror, a restart must keep the
-    // user on built-in Anthropic. Previously applyActiveProviderProfileFromConfig()
-    // returned without marking provider env as handled (the sentinel resolves to
-    // no profile), so buildStartupEnvFromProfile() saw the missing mirror as a
-    // fresh install and synthesized the default Gitlawb OpenGateway env —
-    // silently moving the user back onto a third-party provider.
-    const { applyActiveProviderProfileFromConfig, ANTHROPIC_DEFAULT_PROFILE_ID } =
+  test('cold start with no active id applies the first saved profile', async () => {
+    // Without a sentinel, activeProviderProfileId: undefined means
+    // getActiveProviderProfile() falls back to profiles[0].
+    // applyActiveProviderProfileFromConfig() should apply that profile's env.
+    const { applyActiveProviderProfileFromConfig } =
       await importFreshProviderProfileModules()
-    const { buildStartupEnvFromProfile, DEFAULT_STARTUP_PROVIDER_ENV_VAR } =
-      await import(`./providerProfile.js?ts=${Date.now()}-${Math.random()}`)
 
-    // Cold start with a fully isolated env. applyActiveProviderProfileFromConfig
-    // and buildStartupEnvFromProfile treat ANY CLAUDE_CODE_USE_* flag (OpenAI,
-    // GitHub, Gemini, Mistral, Bedrock, Vertex, Foundry) as an explicit provider
-    // selection, so an inherited flag would route this case down a different
-    // path and hide the sentinel regression. Snapshot every provider key, clear
-    // them all, and restore in finally so the test neither leaks nor depends on
-    // ambient env.
     const providerEnvKeys = [
       'CLAUDE_CODE_USE_OPENAI',
       'CLAUDE_CODE_USE_GITHUB',
@@ -2240,6 +2200,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
       'CLAUDE_CODE_USE_FOUNDRY',
       'OPENAI_BASE_URL',
       'OPENAI_MODEL',
+      'OPENAI_API_KEY',
       'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
       'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
     ]
@@ -2259,27 +2220,12 @@ describe('applyActiveProviderProfileFromConfig', () => {
             model: 'gpt-4o',
           }),
         ],
-        activeProviderProfileId: ANTHROPIC_DEFAULT_PROFILE_ID,
+        activeProviderProfileId: undefined,
       } as any)
 
-      // Built-in Anthropic resolves to no profile, but env is now marked handled
-      // and carries no third-party provider selection.
-      expect(applied).toBeUndefined()
-      expect(String(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED)).toBe('1')
-      expect(process.env.OPENAI_BASE_URL).toBeUndefined()
-      expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
-
-      // The deleted profile mirror (persisted: null) must NOT be treated as a
-      // fresh install, so no OpenGateway default is synthesized.
-      const startupEnv = await buildStartupEnvFromProfile({
-        persisted: null,
-        processEnv: process.env,
-      })
-      expect(startupEnv[DEFAULT_STARTUP_PROVIDER_ENV_VAR]).not.toBe(
-        'gitlawb-opengateway',
-      )
-      expect(startupEnv.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
-      expect(startupEnv.OPENAI_BASE_URL).toBeUndefined()
+      // First profile is applied — env is set for that provider.
+      expect(applied).toBeDefined()
+      expect(applied?.id).toBe('saved_openai')
     } finally {
       for (const [key, value] of providerEnvSnapshot) {
         if (value === undefined) {

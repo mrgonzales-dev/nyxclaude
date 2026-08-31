@@ -60,9 +60,7 @@ import { openAIShimSupportsApiFormatForModel } from '../integrations/runtimeMeta
 import { probeRouteReadiness } from '../integrations/discoveryService.js'
 import {
   addProviderProfile,
-  ANTHROPIC_DEFAULT_PROFILE_ID,
   applyActiveProviderProfileFromConfig,
-  clearActiveProviderProfile,
   deleteProviderProfile,
   getActiveProviderProfile,
   getProviderPresetDefaults,
@@ -235,7 +233,6 @@ const FORM_STEPS: Array<{
 
 const GITHUB_PROVIDER_ID = '__github_models__'
 const GITHUB_PROVIDER_LABEL = 'GitHub Models'
-const ANTHROPIC_PROVIDER_LABEL = 'Built-in (Anthropic API)'
 const GITHUB_PROVIDER_DEFAULT_MODEL = 'github:copilot'
 const GITHUB_PROVIDER_DEFAULT_BASE_URL = 'https://models.github.ai/inference'
 const CODEX_OAUTH_PROVIDER_NAME = 'Codex OAuth'
@@ -926,12 +923,8 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
   // array reference, causing Select to re-render and feel sluggish.
   const hasProfiles = profiles.length > 0
   const hasSelectableProviders = hasProfiles || githubProviderAvailable
-  // A non-Anthropic provider (a saved profile or GitHub Models) is currently
-  // active. The switch-back-to-Anthropic recovery option must stay reachable
-  // in that case even when no profiles are saved and GitHub credentials have
-  // gone away (cleared storage / removed env token); otherwise the user is
-  // stranded on an unusable provider with no way back. Scoped to the activate
-  // path only — edit/delete still require an actual profile.
+  // A saved profile or GitHub Models is currently active. Scoped to the
+  // activate path only — edit/delete still require an actual profile.
   const isNonAnthropicProviderActive = isGithubActive || activeProfileId != null
   const canSwitchActiveProvider =
     hasSelectableProviders || isNonAnthropicProviderActive
@@ -1339,50 +1332,6 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
           activeProviderName: GITHUB_PROVIDER_LABEL,
           activeProviderModel: GITHUB_PROVIDER_DEFAULT_MODEL,
           message: `Provider switched to ${GITHUB_PROVIDER_LABEL} (${GITHUB_PROVIDER_DEFAULT_MODEL})`,
-        })
-        returnToMenu()
-        return
-      }
-
-      if (profileId === ANTHROPIC_DEFAULT_PROFILE_ID) {
-        providerLabel = ANTHROPIC_PROVIDER_LABEL
-        // Switch back to built-in Anthropic: clears the managed provider env so
-        // it takes effect this session, records the Anthropic sentinel so
-        // startup no longer replays a third-party profile, and keeps saved
-        // profiles for later re-selection (#1426).
-        clearActiveProviderProfile()
-        // clearActiveProviderProfile clears the managed provider flags (e.g.
-        // CLAUDE_CODE_USE_GITHUB) but not a GitHub Models token hydrated into the
-        // session from secure storage. Drop that hydrated token + marker so the
-        // built-in Anthropic session does not keep a GitHub credential around,
-        // mirroring the GitHub delete path; a user-supplied token is preserved.
-        clearHydratedGithubModelsTokenFromEnv(readGithubModelsToken())
-        // Clear any startup provider override persisted in user settings
-        // (CLAUDE_CODE_USE_OPENAI, OPENAI_BASE_URL, provider API keys, ...) so a
-        // restart does not replay the third-party provider. The saved-profile
-        // and GitHub activation paths perform the same cleanup; surface any
-        // failure as a warning the same way the saved-profile path does.
-        const settingsOverrideError = clearStartupProviderOverrideFromUserSettings()
-        const anthropicModel = getPrimaryModel(getDefaultMainLoopModelSetting())
-        setAppState(prev => ({
-          ...prev,
-          mainLoopModel: anthropicModel,
-          mainLoopModelForSession: null,
-        }))
-        refreshProfiles()
-        setStatusMessage(
-          settingsOverrideError
-            ? `Active provider: ${ANTHROPIC_PROVIDER_LABEL}. Warning: could not clear startup provider override (${settingsOverrideError}).`
-            : `Active provider: ${ANTHROPIC_PROVIDER_LABEL}`,
-        )
-        setIsActivating(false)
-        onDone({
-          action: 'activated',
-          activeProviderName: ANTHROPIC_PROVIDER_LABEL,
-          activeProviderModel: anthropicModel,
-          message: settingsOverrideError
-            ? `Provider switched to ${ANTHROPIC_PROVIDER_LABEL} (${anthropicModel}). Warning: could not clear startup provider override (${settingsOverrideError}).`
-            : `Provider switched to ${ANTHROPIC_PROVIDER_LABEL} (${anthropicModel})`,
         })
         returnToMenu()
         return
@@ -2918,10 +2867,9 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
     title: string,
     emptyMessage: string,
     onSelect: (profileId: string) => void,
-    options?: { includeGithub?: boolean; includeAnthropic?: boolean },
+    options?: { includeGithub?: boolean },
   ): React.ReactNode {
     const includeGithub = options?.includeGithub ?? false
-    const includeAnthropic = options?.includeAnthropic ?? false
     const selectOptions = profiles.map(profile => ({
       value: profile.id,
       label:
@@ -2938,18 +2886,6 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
           ? `${GITHUB_PROVIDER_LABEL} (active)`
           : GITHUB_PROVIDER_LABEL,
         description: `github-models · ${GITHUB_PROVIDER_DEFAULT_BASE_URL} · ${getGithubProviderModel()}`,
-      })
-    }
-
-    // Offer a way back to built-in Anthropic only when a third-party provider
-    // (saved profile or GitHub Models) is currently active — otherwise the user
-    // is already on Anthropic and the option is a no-op (#1426).
-    if (includeAnthropic && (activeProfileId || isGithubActive)) {
-      selectOptions.push({
-        value: ANTHROPIC_DEFAULT_PROFILE_ID,
-        label: 'Use Built-in (Anthropic API)',
-        description:
-          'Switch back to Nyxclaude now without a restart — saved profiles are kept',
       })
     }
 
@@ -3209,7 +3145,7 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
         profileId => {
           void activateSelectedProvider(profileId)
         },
-        { includeGithub: true, includeAnthropic: true },
+        { includeGithub: true },
       )
       break
     case 'select-edit':

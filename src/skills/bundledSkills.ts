@@ -4,7 +4,9 @@ import { mkdir, open } from 'fs/promises'
 import { dirname, isAbsolute, join, normalize, sep as pathSep } from 'path'
 import type { ToolUseContext } from '../Tool.js'
 import type { Command } from '../types/command.js'
-import { localize, type LocalizationKey } from '../i18n/index.js'
+// ponytail: i18n removed — localize returns key as-is, English-only
+type LocalizationKey = string
+const localize = (key: string | undefined, _values?: Record<string, string | number>): string => key ?? ''
 import { logForDebugging } from '../utils/debug.js'
 import { getBundledSkillsRoot } from '../utils/permissions/filesystem.js'
 import type { HooksSettings } from '../utils/settings/types.js'

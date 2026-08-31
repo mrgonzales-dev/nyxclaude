@@ -1,11 +1,7 @@
 // biome-ignore-all assist/source/organizeImports: internal-only import markers must not be reordered
 import addDir from './commands/add-dir/index.js'
-import autofixPr from './commands/autofix-pr/index.js'
-import backfillSessions from './commands/backfill-sessions/index.js'
 import btw from './commands/btw/index.js'
-import goodClaude from './commands/good-claude/index.js'
 import goal from './commands/goal/index.js'
-import issue from './commands/issue/index.js'
 import feedback from './commands/feedback/index.js'
 import clear from './commands/clear/index.js'
 import clearContextWindow from './commands/clear-context-window/index.js'
@@ -35,12 +31,10 @@ import lsp from './commands/lsp/index.js'
 // NYXCLAUDE: Anthropic-specific GitHub App installer removed
 // import installGitHubApp from './commands/install-github-app/index.js'
 import installSlackApp from './commands/install-slack-app/index.js'
-import breakCache from './commands/break-cache/index.js'
 import cacheProbe from './commands/cache-probe/index.js'
 import cacheStats from './commands/cacheStats/index.js'
 import mcp from './commands/mcp/index.js'
 import mobile from './commands/mobile/index.js'
-import onboarding from './commands/onboarding/index.js'
 import pr_comments from './commands/pr_comments/index.js'
 import releaseNotes from './commands/release-notes/index.js'
 import rename from './commands/rename/index.js'
@@ -53,17 +47,9 @@ import resume, { continueCommand } from './commands/resume/index.js'
 import review, { ultrareview } from './commands/review.js'
 import session from './commands/session/index.js'
 import setContextWindow from './commands/set-context-window/index.js'
-import share from './commands/share/index.js'
 import skills from './commands/skills/index.js'
 import status from './commands/status/index.js'
 import tasks from './commands/tasks/index.js'
-import teleport from './commands/teleport/index.js'
-/* eslint-disable @typescript-eslint/no-require-imports */
-const agentsPlatform =
-  process.env.USER_TYPE === 'ant'
-    ? require('./commands/agents-platform/index.js').default
-    : null
-/* eslint-enable @typescript-eslint/no-require-imports */
 import securityReview from './commands/security-review.js'
 import bughunter from './commands/bughunter/index.js'
 import bughunterSecurity from './commands/bughunter-security/index.js'
@@ -141,22 +127,13 @@ import files from './commands/files/index.js'
 import branch from './commands/branch/index.js'
 import agents from './commands/agents/index.js'
 import autoFix from './commands/auto-fix.js'
-import plugin from './commands/plugin/index.js'
 import reloadPlugins from './commands/reload-plugins/index.js'
 import rewind from './commands/rewind/index.js'
 import heapDump from './commands/heapdump/index.js'
-import mockLimits from './commands/mock-limits/index.js'
 import bridgeKick from './commands/bridge-kick.js'
 import version from './commands/version.js'
 import update from './commands/update/index.js'
 import wiki from './commands/wiki/index.js'
-import summary from './commands/summary/index.js'
-import {
-  resetLimits,
-  resetLimitsNonInteractive,
-} from './commands/reset-limits/index.js'
-import antTrace from './commands/ant-trace/index.js'
-import perfIssue from './commands/perf-issue/index.js'
 import sandboxToggle from './commands/sandbox-toggle/index.js'
 // NYXCLAUDE: Chrome integration removed
 // import chrome from './commands/chrome/index.js'
@@ -172,10 +149,9 @@ import {
   getDynamicSkills,
 } from './skills/loadSkillsDir.js'
 import { getBundledSkills } from './skills/bundledSkills.js'
-import {
-  getNyxclaudeCommandDescriptionKey,
-  localize,
-} from './i18n/index.js'
+// ponytail: i18n removed — localize returns key as-is, English-only
+const localize = (key: string | undefined, _values?: Record<string, string | number>): string => key ?? ''
+const getNyxclaudeCommandDescriptionKey = (_commandName: string): string | undefined => undefined
 import { getBuiltinPluginSkillCommands } from './plugins/builtinPlugins.js'
 import {
   getPluginCommands,
@@ -186,7 +162,6 @@ import {
 import memoize from 'lodash-es/memoize.js'
 import { isUsing3PServices, isClaudeAISubscriber } from './utils/auth.js'
 import { isFirstPartyAnthropicBaseUrl } from './utils/model/providers.js'
-import env from './commands/env/index.js'
 import exit from './commands/exit/index.js'
 import exportCommand from './commands/export/index.js'
 import model from './commands/model/index.js'
@@ -217,8 +192,6 @@ const usageReport: Command = {
     return real.getPromptForCommand(args, context)
   },
 }
-import oauthRefresh from './commands/oauth-refresh/index.js'
-import debugToolCall from './commands/debug-tool-call/index.js'
 import { getSettingSourceName } from './utils/settings/constants.js'
 import {
   type Command,
@@ -241,31 +214,13 @@ export { getCommandName, isCommandEnabled } from './types/command.js'
 
 // Commands that get eliminated from the external build
 export const INTERNAL_ONLY_COMMANDS = [
-  backfillSessions,
-  breakCache,
   commit,
   commitPushPr,
-  goodClaude,
-  issue,
   initVerifiers,
-  mockLimits,
   bridgeKick,
   version,
   ...(ultraplan ? [ultraplan] : []),
   ...(subscribePr ? [subscribePr] : []),
-  resetLimits,
-  resetLimitsNonInteractive,
-  onboarding,
-  share,
-  summary,
-  teleport,
-  antTrace,
-  perfIssue,
-  env,
-  oauthRefresh,
-  debugToolCall,
-  agentsPlatform,
-  autofixPr,
 ].filter(Boolean)
 
 // Declared as a function so that we don't run this until getCommands is called,
@@ -321,7 +276,6 @@ const COMMANDS = memoize((): Command[] => [
   onboardGithub,
   outputStyle,
   remoteEnv,
-  plugin,
   provider,
   pr_comments,
   releaseNotes,
@@ -701,7 +655,6 @@ export const BRIDGE_SAFE_COMMANDS: Set<Command> = new Set(
     clear, // Wipe transcript
     cost, // Show session cost
     ctx_viz, // Context window usage
-    summary, // Summarize conversation
     releaseNotes, // Show changelog
     files, // List tracked files
     goal, // Manage session goal continuation

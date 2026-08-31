@@ -14,7 +14,8 @@
  */
 
 import type { Command } from '../commands.js'
-import { localize } from '../i18n/index.js'
+// ponytail: i18n removed — localize returns key as-is, English-only
+const localize = (key: string | undefined, _values?: Record<string, string | number>): string => key ?? ''
 import type { BundledSkillDefinition } from '../skills/bundledSkills.js'
 import type { BuiltinPluginDefinition, LoadedPlugin } from '../types/plugin.js'
 import { getSettings_DEPRECATED } from '../utils/settings/settings.js'

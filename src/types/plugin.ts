@@ -1,7 +1,8 @@
 import type { LspServerConfig } from '../services/lsp/types.js'
 import type { McpServerConfig } from '../services/mcp/types.js'
 import type { BundledSkillDefinition } from '../skills/bundledSkills.js'
-import type { LocalizationKey } from '../i18n/types.js'
+// ponytail: i18n removed — LocalizationKey is just string
+type LocalizationKey = string
 import type {
   CommandMetadata,
   PluginAuthor,

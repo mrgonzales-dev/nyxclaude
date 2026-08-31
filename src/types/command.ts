@@ -13,7 +13,8 @@ import type { ThemeName } from '../utils/theme.js'
 import type { LogOption } from './logs.js'
 import type { Message } from './message.js'
 import type { PluginManifest } from './plugin.js'
-import type { LocalizationKey } from '../i18n/types.js'
+// ponytail: i18n removed — LocalizationKey is just string
+type LocalizationKey = string
 
 export type LocalCommandResult =
   | {

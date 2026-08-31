@@ -1008,7 +1008,16 @@ if (result?.success) {
   // known item to revisit, not a blessing that the stub is safe.
   // Entries are repo-relative paths from `src/` onward, without extension — the
   // same shape canonicalStub() produces, so the allowlist reads as the key.
-  const ACCEPTABLE_RUNTIME_STUBS = new Set<string>([])
+  const ACCEPTABLE_RUNTIME_STUBS = new Set<string>([
+    // ponytail: assistant/ and remote/ dirs removed — these stubs sit on
+    // paths only reachable when feature('KAIROS') is true, which is false
+    // in the terminal-only harness. useAssistantHistory is called inside a
+    // feature('KAIROS') ternary (REPL.tsx ~L1372), and sessionHistory is
+    // imported only by useAssistantHistory. sdkMessageAdapter is imported
+    // only by useAssistantHistory. Both are dead-code-eliminated.
+    'src/assistant/sessionHistory',
+    'src/remote/sdkMessageAdapter',
+  ])
 
   // Stub markers are not byte-stable across build hosts: the per-importer
   // scanner records each stub as the resolved absolute source path, which

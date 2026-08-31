@@ -20,6 +20,17 @@ type RegistryResponse = {
 // done by getLoggingSafeMcpBaseUrl so direct Set.has() lookup works.
 let officialUrls: Set<string> | undefined = undefined
 
+// Timestamp (ms since epoch) of the last successful registry fetch. 0 means
+// "never fetched" so the first call to isOfficialMcpUrl triggers a lazy load.
+let officialUrlsFetchedAt = 0
+
+// Guards against overlapping fire-and-forget fetches so concurrent callers
+// don't all kick off redundant network requests.
+let officialUrlsFetchInFlight = false
+
+// Refresh the registry at most once per 24h.
+const OFFICIAL_URLS_TTL_MS = 24 * 60 * 60 * 1000
+
 function normalizeUrl(url: string): string | undefined {
   try {
     const u = new URL(url)
@@ -42,8 +53,15 @@ export async function prefetchOfficialMcpUrls(): Promise<void> {
   // The official first-party MCP registry is only relevant for first-party mode.
   if (getAPIProvider() !== 'firstParty' || !isFirstPartyAnthropicBaseUrl()) {
     officialUrls = undefined
+    officialUrlsFetchedAt = 0
     return
   }
+
+  // Avoid stacking redundant concurrent fetches.
+  if (officialUrlsFetchInFlight) {
+    return
+  }
+  officialUrlsFetchInFlight = true
 
   try {
     const response = await axios.get<RegistryResponse>(
@@ -61,26 +79,47 @@ export async function prefetchOfficialMcpUrls(): Promise<void> {
       }
     }
     officialUrls = urls
+    officialUrlsFetchedAt = Date.now()
     logForDebugging(`[mcp-registry] Loaded ${urls.size} official MCP URLs`)
   } catch (error) {
     logForDebugging(`Failed to fetch MCP registry: ${errorMessage(error)}`, {
       level: 'error',
     })
+  } finally {
+    officialUrlsFetchInFlight = false
   }
 }
 
 /**
  * Returns true iff the given (already-normalized via getLoggingSafeMcpBaseUrl)
  * URL is in the official MCP registry. Undefined registry → false (fail-closed).
+ *
+ * The registry is lazy-loaded on first use (instead of eagerly at process
+ * start) and refreshed at most once per 24h. The first lookup before the
+ * fire-and-forget fetch completes returns false (fail-closed); subsequent
+ * lookups once populated consult the cached set.
  */
 export function isOfficialMcpUrl(normalizedUrl: string): boolean {
-  return (
-    getAPIProvider() === 'firstParty' &&
-    isFirstPartyAnthropicBaseUrl() &&
-    (officialUrls?.has(normalizedUrl) ?? false)
-  )
+  if (
+    getAPIProvider() !== 'firstParty' ||
+    !isFirstPartyAnthropicBaseUrl()
+  ) {
+    return false
+  }
+
+  // Lazy-load on first use, and re-fetch if the cache is older than 24h.
+  if (
+    officialUrls === undefined ||
+    Date.now() - officialUrlsFetchedAt > OFFICIAL_URLS_TTL_MS
+  ) {
+    void prefetchOfficialMcpUrls()
+  }
+
+  return officialUrls?.has(normalizedUrl) ?? false
 }
 
 export function resetOfficialMcpUrlsForTesting(): void {
   officialUrls = undefined
+  officialUrlsFetchedAt = 0
+  officialUrlsFetchInFlight = false
 }

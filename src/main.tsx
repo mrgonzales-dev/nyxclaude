@@ -2296,19 +2296,23 @@ async function run(): Promise<CommanderCommand> {
     profileCheckpoint('action_mcp_configs_loaded');
 
     // Prefetch MCP resources after trust dialog (this is where execution happens).
-    // Interactive mode only: print mode defers connects until headlessStore exists
-    // and pushes per-server (below), so ToolSearch's pending-client handling works
-    // and one slow server doesn't block the batch.
-    const localMcpPromise = isNonInteractiveSession ? Promise.resolve({
+    // Print mode only: interactive REPL discards mcpTools — assembleToolPool
+    // (tools.ts:124) returns only builtin tools — so eager prefetch is wasted
+    // work. Interactive sessions lazy-connect on first explicit tool use via
+    // useManageMCPConnections. Print mode warms the memoized connectToServer
+    // cache here (fire-and-forget; the result is discarded since
+    // mcpClients/mcpTools/mcpCommands below stay [] — connectMcpBatch does the
+    // per-server push into headlessStore and hits the warmed cache).
+    const localMcpPromise = isNonInteractiveSession ? prefetchAllMcpResources(regularMcpConfigs) : Promise.resolve({
       clients: [],
       tools: [],
       commands: []
-    }) : prefetchAllMcpResources(regularMcpConfigs);
-    const claudeaiMcpPromise = isNonInteractiveSession ? Promise.resolve({
+    });
+    const claudeaiMcpPromise = isNonInteractiveSession ? claudeaiConfigPromise.then(configs => Object.keys(configs).length > 0 ? prefetchAllMcpResources(configs) : {
       clients: [],
       tools: [],
       commands: []
-    }) : claudeaiConfigPromise.then(configs => Object.keys(configs).length > 0 ? prefetchAllMcpResources(configs) : {
+    }) : Promise.resolve({
       clients: [],
       tools: [],
       commands: []

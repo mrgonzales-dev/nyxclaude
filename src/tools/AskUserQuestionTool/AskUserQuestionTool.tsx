@@ -13,22 +13,22 @@ import { buildTool, type ToolDef } from '../../Tool.js';
 import { lazySchema } from '../../utils/lazySchema.js';
 import { ASK_USER_QUESTION_TOOL_CHIP_WIDTH, ASK_USER_QUESTION_TOOL_NAME, ASK_USER_QUESTION_TOOL_PROMPT, DESCRIPTION, PREVIEW_FEATURE_PROMPT } from './prompt.js';
 const questionOptionSchema = lazySchema(() => z.object({
-  label: z.string().describe('The display text for this option that the user will see and select. Should be concise (1-5 words) and clearly describe the choice.'),
-  description: z.string().describe('Explanation of what this option means or what will happen if chosen. Useful for providing context about trade-offs or implications.'),
-  preview: z.string().optional().describe('Optional preview content rendered when this option is focused. Use for mockups, code snippets, or visual comparisons that help users compare options. See the tool description for the expected content format.')
+  label: z.string().describe('Display text for this option (1-5 words, clearly describes the choice).'),
+  description: z.string().describe('Explanation of what this option means or implies if chosen.'),
+  preview: z.string().optional().describe('Optional preview content (mockups, code snippets) shown when this option is focused.')
 }));
 const questionSchema = lazySchema(() => z.object({
-  question: z.string().describe('The complete question to ask the user. Should be clear, specific, and end with a question mark. Example: "Which library should we use for date formatting?" If multiSelect is true, phrase it accordingly, e.g. "Which features do you want to enable?"'),
-  header: z.string().describe(`Very short label displayed as a chip/tag (max ${ASK_USER_QUESTION_TOOL_CHIP_WIDTH} chars). Examples: "Auth method", "Library", "Approach".`),
-  options: z.array(questionOptionSchema()).min(2).max(4).describe(`The available choices for this question. Must have 2-4 options. Each option should be a distinct, mutually exclusive choice (unless multiSelect is enabled). There should be no 'Other' option, that will be provided automatically.`),
-  multiSelect: z.boolean().default(false).describe('Set to true to allow the user to select multiple options instead of just one. Use when choices are not mutually exclusive.')
+  question: z.string().describe('The complete question to ask the user, clear and specific, ending with a question mark.'),
+  header: z.string().describe(`Short label displayed as a chip (max ${ASK_USER_QUESTION_TOOL_CHIP_WIDTH} chars), e.g. "Auth method".`),
+  options: z.array(questionOptionSchema()).min(2).max(4).describe(`2-4 distinct, mutually exclusive choices (no 'Other' option; added automatically).`),
+  multiSelect: z.boolean().default(false).describe('Allow selecting multiple options when choices are not mutually exclusive.')
 }));
 const annotationsSchema = lazySchema(() => {
   const annotationSchema = z.object({
-    preview: z.string().optional().describe('The preview content of the selected option, if the question used previews.'),
+    preview: z.string().optional().describe('Preview content of the selected option, if previews were used.'),
     notes: z.string().optional().describe('Free-text notes the user added to their selection.')
   });
-  return z.record(z.string(), annotationSchema).optional().describe('Optional per-question annotations from the user (e.g., notes on preview selections). Keyed by question text.');
+  return z.record(z.string(), annotationSchema).optional().describe('Optional per-question annotations keyed by question text.');
 });
 const UNIQUENESS_REFINE = {
   check: (data: {

@@ -146,9 +146,7 @@ function getSimpleSandboxSection(): string {
   return [
     '',
     '## Command sandbox',
-    'By default, your command will be run in a sandbox. This sandbox controls which directories and network hosts commands may access or modify without an explicit override.',
-    '',
-    'The sandbox has the following restrictions:',
+    'Commands run in a sandbox restricting filesystem and network access. Restrictions:',
     restrictionsLines.join('\n'),
     '',
     ...prependBullets(items),

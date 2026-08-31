@@ -933,9 +933,6 @@ export const WebSearchTool = buildTool({
       }
     })
 
-    formattedOutput +=
-      '\nREMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.'
-
     return {
       tool_use_id: toolUseID,
       type: 'tool_result',

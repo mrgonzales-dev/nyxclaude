@@ -265,15 +265,7 @@ ${DESCRIPTION}`
               ? 'Temporary Redirect'
               : 'Found'
 
-      const message = `REDIRECT DETECTED: The URL redirects to a different host.
-
-Original URL: ${response.originalUrl}
-Redirect URL: ${response.redirectUrl}
-Status: ${response.statusCode} ${statusText}
-
-To complete your request, I need to fetch content from the redirected URL. Please use WebFetch again with these parameters:
-- url: "${response.redirectUrl}"
-- prompt: "${prompt}"`
+      const message = `REDIRECT DETECTED: ${response.originalUrl} → ${response.redirectUrl} (${response.statusCode} ${statusText}). Re-run WebFetch with url: "${response.redirectUrl}", prompt: "${prompt}".`
 
       const output: Output = {
         bytes: Buffer.byteLength(message),

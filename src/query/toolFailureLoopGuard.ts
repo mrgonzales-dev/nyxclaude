@@ -31,6 +31,7 @@ type ToolFailureLoopGuardAdvisory = {
   threshold: number
   toolName: string
   errorCategory: string
+  path?: string
 }
 
 export type ToolFailureLoopGuardDecision =
@@ -170,8 +171,18 @@ export function updateToolFailureLoopGuard(params: {
     }
   }
 
+  // Path-intrinsic failure categories: the path itself is inaccessible,
+  // not just the tool input. Tool-input failures (FileWriteError,
+  // InputValidationError, NoSuchTool) are already caught by the signature
+  // and category counters above, so the path counter only needs to catch
+  // path-level problems.
+  const PATH_INTRINSIC_CATEGORIES = new Set(['NotFound', 'PermissionError'])
+
   for (const failure of failures) {
     if (!failure.path || successfulMutationPaths.has(failure.path)) {
+      continue
+    }
+    if (!PATH_INTRINSIC_CATEGORIES.has(failure.errorCategory)) {
       continue
     }
 
@@ -188,6 +199,19 @@ export function updateToolFailureLoopGuard(params: {
           path: failure.path,
         }),
       }
+    }
+
+    if (threshold > 1 && pathCount === threshold - 1) {
+      advisories.push({
+        threshold,
+        toolName: failure.toolName,
+        errorCategory: failure.errorCategory,
+        path: failure.path,
+        message: createPathAdvisoryMessage({
+          threshold,
+          path: failure.path,
+        }),
+      })
     }
   }
 
@@ -494,6 +518,21 @@ function createAdvisoryMessage({
     '',
     `\`${getAdvisoryToolName(toolName)}\` failed ${threshold - 1}/${threshold} times with \`${getAdvisoryErrorCategory(errorCategory)}\`. ` +
       'One more matching failure will stop the query. Try a different tool, or verify the path, permissions, and tool inputs before retrying.',
+  ].join('\n')
+}
+
+function createPathAdvisoryMessage({
+  threshold,
+  path,
+}: {
+  threshold: number
+  path: string
+}): string {
+  return [
+    'Warning: repeated path failures are close to stopping this query.',
+    '',
+    `The path \`${getTripPath(path)}\` failed ${threshold - 1}/${threshold} times. ` +
+      'One more failure at this path will stop the query. Verify the path exists and is accessible before retrying.',
   ].join('\n')
 }
 

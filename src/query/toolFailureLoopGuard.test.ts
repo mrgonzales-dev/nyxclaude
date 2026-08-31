@@ -332,15 +332,15 @@ test('trip messages do not echo unsafe tool names, error categories, or paths', 
 
   const pathState = createToolFailureLoopGuardState()
   update(pathState, [toolUse('c', 'Edit', { file_path: unsafePath })], [
-    toolResult('c', 'Error writing file: failed to replace text'),
+    toolResult('c', 'EACCES permission denied'),
   ])
   update(pathState, [toolUse('d', 'Edit', { file_path: unsafePath })], [
-    toolResult('d', 'InputValidationError: invalid request'),
+    toolResult('d', 'ENOENT: no such file or directory'),
   ])
   const pathTrip = update(
     pathState,
     [toolUse('e', 'Edit', { file_path: unsafePath })],
-    [toolResult('e', 'No such tool available: Edit')],
+    [toolResult('e', 'EPERM permission denied')],
   )
   if (!pathTrip.tripped) {
     throw new Error('Expected unsafe path failures to trip the guard')
@@ -641,15 +641,15 @@ test('same failing file_path across repeated failures trips the guard', () => {
   const state = createToolFailureLoopGuardState()
 
   update(state, [toolUse('a', 'Write', { file_path: 'src//foo.ts/' })], [
-    toolResult('a', 'Error writing file: EACCES'),
+    toolResult('a', 'EACCES permission denied'),
   ])
   update(state, [toolUse('b', 'Edit', { path: 'src/foo.ts' })], [
-    toolResult('b', 'InputValidationError: old_string not found'),
+    toolResult('b', 'ENOENT: no such file or directory'),
   ])
   const decision = update(
     state,
     [toolUse('c', 'NotebookEdit', { notebook_path: 'src\\foo.ts' })],
-    [toolResult('c', 'No such tool available: NotebookEdit')],
+    [toolResult('c', 'EPERM permission denied')],
   )
 
   if (!decision.tripped) {
@@ -681,13 +681,13 @@ test('successful reads do not reset repeated write failures for the same path', 
   const state = createToolFailureLoopGuardState()
 
   update(state, [toolUse('a', 'Edit', { file_path: 'E:\\project\\nui.lua' })], [
-    toolResult('a', 'Error writing file: failed to replace text'),
+    toolResult('a', 'EACCES permission denied'),
   ])
   update(state, [toolUse('b', 'Read', { file_path: 'E:/project/nui.lua' })], [
     toolResult('b', 'file contents', false),
   ])
   update(state, [toolUse('c', 'Write', { file_path: 'E:/project/nui.lua' })], [
-    toolResult('c', 'Invalid tool parameters: malformed fallback script'),
+    toolResult('c', 'ENOENT: no such file or directory'),
   ])
   update(state, [toolUse('d', 'Read', { file_path: 'E:/project/nui.lua' })], [
     toolResult('d', 'file contents', false),
@@ -695,7 +695,7 @@ test('successful reads do not reset repeated write failures for the same path', 
   const decision = update(state, [
     toolUse('e', 'Edit', { file_path: 'E:/project/nui.lua' }),
   ], [
-    toolResult('e', 'Error writing file: failed to replace text'),
+    toolResult('e', 'EPERM permission denied'),
   ])
 
   if (!decision.tripped) {
@@ -714,7 +714,7 @@ test('unrelated successes in the same batch do not hide repeated path failures',
       toolUse('read-a', 'Read', { file_path: 'src/other.ts' }),
     ],
     [
-      toolResult('a', 'Error writing file: failed to replace text'),
+      toolResult('a', 'EACCES permission denied'),
       toolResult('read-a', 'file contents', false),
     ],
   )
@@ -725,7 +725,7 @@ test('unrelated successes in the same batch do not hide repeated path failures',
       toolUse('read-b', 'Read', { file_path: 'src/other.ts' }),
     ],
     [
-      toolResult('b', 'Invalid tool parameters: malformed fallback script'),
+      toolResult('b', 'ENOENT: no such file or directory'),
       toolResult('read-b', 'file contents', false),
     ],
   )
@@ -736,7 +736,7 @@ test('unrelated successes in the same batch do not hide repeated path failures',
       toolUse('read-c', 'Read', { file_path: 'src/other.ts' }),
     ],
     [
-      toolResult('c', 'No such tool available: NotebookEdit'),
+      toolResult('c', 'EPERM permission denied'),
       toolResult('read-c', 'file contents', false),
     ],
   )
@@ -1244,4 +1244,162 @@ test('query loop forwards a compacted advisory only once', async () => {
   expect(autocompactCalls).toBeGreaterThanOrEqual(3)
   expect(modelRequests).toHaveLength(3)
   expect(advisoryCount).toBe(1)
+})
+
+// --- Phase 1.1: path-counter false trips ---
+
+test('3x Edit + FileWriteError on same path does NOT trip path counter', () => {
+  const state = createToolFailureLoopGuardState()
+
+  update(state, [toolUse('a', 'Edit', { file_path: 'src/foo.ts' })], [
+    toolResult('a', 'Error writing file: failed to replace text'),
+  ])
+  update(state, [toolUse('b', 'Edit', { file_path: 'src/foo.ts' })], [
+    toolResult('b', 'Error writing file: failed to replace text'),
+  ])
+  // Third failure on same path with FileWriteError — should NOT trip via path
+  // (may trip via persistent signature, but not via path counter)
+  const decision = update(state, [
+    toolUse('c', 'Edit', { file_path: 'src/foo.ts' }),
+  ], [
+    toolResult('c', 'Error writing file: failed to replace text'),
+  ])
+
+  // It WILL trip via persistent signature (Edit+FileWriteError x3), but NOT via path
+  if (decision.tripped) {
+    expect(decision.kind).not.toBe('path')
+  }
+})
+
+test('3x Read + NotFound on same path DOES trip path counter', () => {
+  const state = createToolFailureLoopGuardState()
+
+  // Use different tools so persistent signature (per tool+category) doesn't trip first
+  update(state, [toolUse('a', 'Read', { file_path: 'src/missing.ts' })], [
+    toolResult('a', 'ENOENT: no such file or directory'),
+  ])
+  update(state, [toolUse('b', 'Write', { file_path: 'src/missing.ts' })], [
+    toolResult('b', 'ENOENT: no such file or directory'),
+  ])
+  const decision = update(state, [
+    toolUse('c', 'Edit', { file_path: 'src/missing.ts' }),
+  ], [
+    toolResult('c', 'ENOENT: no such file or directory'),
+  ])
+
+  if (!decision.tripped) {
+    throw new Error('Expected repeated NotFound path failures to trip')
+  }
+  expect(decision.kind).toBe('path')
+  if (decision.kind === 'path') {
+    expect(decision.path).toBe('src/missing.ts')
+  }
+})
+
+test('3x Write + PermissionError on same path DOES trip path counter', () => {
+  const state = createToolFailureLoopGuardState()
+
+  // Use different tools so persistent signature doesn't trip first
+  update(state, [toolUse('a', 'Write', { file_path: '/tmp/blocked.txt' })], [
+    toolResult('a', 'EACCES permission denied'),
+  ])
+  update(state, [toolUse('b', 'Edit', { file_path: '/tmp/blocked.txt' })], [
+    toolResult('b', 'EPERM permission denied'),
+  ])
+  const decision = update(state, [
+    toolUse('c', 'NotebookEdit', { notebook_path: '/tmp/blocked.txt' }),
+  ], [
+    toolResult('c', 'EACCES permission denied'),
+  ])
+
+  if (!decision.tripped) {
+    throw new Error('Expected repeated PermissionError path failures to trip')
+  }
+  expect(decision.kind).toBe('path')
+})
+
+test('2x NotFound on a path emits advisory, 3rd trips', () => {
+  const state = createToolFailureLoopGuardState()
+
+  // Use different tools so persistent signature doesn't trip first
+  update(state, [toolUse('a', 'Read', { file_path: 'src/gone.ts' })], [
+    toolResult('a', 'ENOENT: no such file or directory'),
+  ])
+  const advisoryDecision = update(state, [
+    toolUse('b', 'Write', { file_path: 'src/gone.ts' }),
+  ], [
+    toolResult('b', 'ENOENT: no such file or directory'),
+  ])
+
+  // Should not trip yet, but should have a path advisory
+  expect(advisoryDecision.tripped).toBe(false)
+  if (!advisoryDecision.advisories) {
+    throw new Error('Expected path advisory at threshold-1')
+  }
+  expect(advisoryDecision.advisories.length).toBeGreaterThanOrEqual(1)
+  const pathAdvisory = advisoryDecision.advisories.find(a => 'path' in a && a.path)
+  if (!pathAdvisory) {
+    throw new Error('Expected a path-specific advisory')
+  }
+
+  const tripDecision = update(state, [
+    toolUse('c', 'Edit', { file_path: 'src/gone.ts' }),
+  ], [
+    toolResult('c', 'ENOENT: no such file or directory'),
+  ])
+
+  if (!tripDecision.tripped) {
+    throw new Error('Expected third NotFound to trip')
+  }
+  expect(tripDecision.kind).toBe('path')
+})
+
+test('InputValidationError on same path does NOT trip path counter', () => {
+  const state = createToolFailureLoopGuardState()
+
+  update(state, [toolUse('a', 'Edit', { file_path: 'src/input.ts' })], [
+    toolResult('a', 'InputValidationError: old_string not found'),
+  ])
+  update(state, [toolUse('b', 'Edit', { file_path: 'src/input.ts' })], [
+    toolResult('b', 'InputValidationError: old_string not found'),
+  ])
+  const decision = update(state, [
+    toolUse('c', 'Edit', { file_path: 'src/input.ts' }),
+  ], [
+    toolResult('c', 'InputValidationError: old_string not found'),
+  ])
+
+  // Will trip via persistent signature, but NOT via path
+  if (decision.tripped) {
+    expect(decision.kind).not.toBe('path')
+  }
+})
+
+test('3x different tools + FileWriteError on same path does NOT trip path counter', () => {
+  const state = createToolFailureLoopGuardState()
+
+  // Use different tools so persistent signature (per tool+category) doesn't trip
+  update(state, [toolUse('a', 'Edit', { file_path: 'src/big.ts' })], [
+    toolResult('a', 'Error writing file: failed to replace text'),
+  ])
+  update(state, [toolUse('b', 'Write', { file_path: 'src/big.ts' })], [
+    toolResult('b', 'Error writing file: failed to replace text'),
+  ])
+  const decision = update(state, [
+    toolUse('c', 'NotebookEdit', { notebook_path: 'src/big.ts' }),
+  ], [
+    toolResult('c', 'Error writing file: failed to replace text'),
+  ])
+
+  // FileWriteError is a tool-input failure, not a path-intrinsic failure.
+  // Path counter should NOT trip. Persistent signature won't trip either
+  // (3 different tools). Category counter won't trip because there's no
+  // success in the batch, but the category is the same (FileWriteError x3)
+  // — actually that WILL trip via category counter. Let me check...
+  // The category counter runs in the no-success section (lines 201-238).
+  // 3x FileWriteError with no success → categoryCount reaches 3 → trips.
+  // So this will trip via category, not via path. That's correct behavior.
+  if (decision.tripped) {
+    expect(decision.kind).not.toBe('path')
+  }
 })

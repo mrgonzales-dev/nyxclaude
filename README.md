@@ -6,7 +6,7 @@
 
 <p>Bring any OpenAI-compatible LLM endpoint — local or cloud. No provider is hardcoded.</p>
 
-<p><sub>Based on <a href="https://github.com/anthropics/claude-code">openclaude</a>.</sub></p>
+<p><sub>Based on openclaude.</sub></p>
 
 </div>
 

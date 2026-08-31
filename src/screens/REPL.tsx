@@ -1005,8 +1005,9 @@ export function REPL({
   // remote sessions (useRemoteSession / useDirectConnect) and foregrounded
   // background tasks (useSessionBackgrounding). These don't route through
   // onQuery / queryGuard, so they need their own spinner-visibility state.
-  // Initialize true if remote mode with initial prompt (CCR processing it).
-  const [isExternalLoading, setIsExternalLoadingRaw] = React.useState(remoteSessionConfig?.hasInitialPrompt ?? false);
+  // Remote sessions removed — terminal-only harness. Initial-prompt flag
+  // was only meaningful for remote mode; hardcode false here.
+  const [isExternalLoading, setIsExternalLoadingRaw] = React.useState(false);
 
   // Derived: any loading source active. Read-only — no setter. Local query
   // loading is driven by queryGuard (reserve/tryStart/end/cancelReservation),
@@ -1371,7 +1372,7 @@ export function REPL({
   } = feature('KAIROS') ?
       // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
       useAssistantHistory({
-        config: remoteSessionConfig,
+        config: undefined,
         setMessages,
         scrollRef,
         onPrepend: shiftDivider
@@ -1475,8 +1476,9 @@ export function REPL({
   const hasInterruptibleToolInProgressRef = useRef(false);
   const queryLifecycleTrackerRef = useRef(new QueryLifecycleOperationTracker());
 
-  // Remote/direct-connect/SSH session hooks removed — terminal-only harness
-  const activeRemote = { isRemoteMode: false, sendMessage: async () => {}, cancelRequest: () => {} } as any;
+  // Remote/direct-connect/SSH session hooks removed — terminal-only harness.
+  // Memoized so onSubmit's dep array stays stable (see L3846-3852).
+  const activeRemote = useMemo(() => ({ isRemoteMode: false, sendMessage: async () => {}, cancelRequest: () => {} }) as any, []);
   const [pastedContents, setPastedContents] = useState<Record<number, PastedContent>>({});
   const [submitCount, setSubmitCount] = useState(0);
 
@@ -3850,7 +3852,7 @@ export function REPL({
     // messages array in downstream closures (PromptInput).
     // Heap analysis showed ~9 REPL scopes and ~15 messages array versions
     // accumulating after #20174/#20175, all traced to this dep.
-    mainLoopModel, pastedContents, ideSelection, setUserInputOnProcessing, setAbortController, addNotification, onQuery, stashedPrompt, setStashedPrompt, setAppState, onBeforeQuery, canUseTool, remoteSession, setMessages, awaitPendingHooks, repinScroll, takeInterruptionCorrectionReminder, restoreInterruptionCorrectionReminder]);
+    mainLoopModel, pastedContents, ideSelection, setUserInputOnProcessing, setAbortController, addNotification, onQuery, stashedPrompt, setStashedPrompt, setAppState, onBeforeQuery, canUseTool, activeRemote, setMessages, awaitPendingHooks, repinScroll, takeInterruptionCorrectionReminder, restoreInterruptionCorrectionReminder]);
 
   // Callback for when user submits input while viewing a teammate's transcript
   const onAgentSubmit = useCallback(async (input: string, task: InProcessTeammateTaskState | LocalAgentTaskState, helpers: PromptInputHelpers) => {

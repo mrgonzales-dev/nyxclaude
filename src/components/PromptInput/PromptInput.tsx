@@ -312,14 +312,8 @@ function PromptInput({
   const viewingAgentTaskId = useAppState(s => s.viewingAgentTaskId);
   const viewSelectionMode = useAppState(s => s.viewSelectionMode);
   const showSpinnerTree = useAppState(s => s.expandedView) === 'teammates';
-  const {
-    companion: _companion,
-    companionMuted
-  } = isBuddyEnabled() ? getGlobalConfig() : {
-    companion: undefined,
-    companionMuted: undefined
-  };
-  const companionFooterVisible = !!_companion && !companionMuted;
+  // ponytail: buddy system removed — companion always disabled
+  const companionFooterVisible = false;
   // Brief mode: BriefSpinner/BriefIdleStatus own the 2-row footprint above
   // the input. Dropping marginTop here lets the spinner sit flush against
   // the input bar. viewingAgentTaskId mirrors the gate on both (Spinner.tsx,
@@ -532,7 +526,8 @@ function PromptInput({
   const ultraplanTriggers = useMemo(() => feature('ULTRAPLAN') && !ultraplanSessionUrl && !ultraplanLaunching ? findUltraplanTriggerPositions(displayedValue) : [], [displayedValue, ultraplanSessionUrl, ultraplanLaunching]);
   const ultrareviewTriggers = useMemo(() => isUltrareviewEnabled() ? findUltrareviewTriggerPositions(displayedValue) : [], [displayedValue]);
   const btwTriggers = useMemo(() => findBtwTriggerPositions(displayedValue), [displayedValue]);
-  const buddyTriggers = useMemo(() => findBuddyTriggerPositions(displayedValue), [displayedValue]);
+  // ponytail: buddy system removed — no trigger positions
+  const buddyTriggers: Array<{ start: number; end: number }> = [];
   const slashCommandTriggers = useMemo(() => {
     const positions = findSlashCommandPositions(displayedValue);
     // Only highlight valid commands
@@ -1844,10 +1839,8 @@ function PromptInput({
       }
       switch (footerItemSelected) {
         case 'companion':
-          if (isBuddyEnabled()) {
-            selectFooterItem(null);
-            void onSubmit('/buddy');
-          }
+          // ponytail: buddy system removed — companion footer item is dead
+          selectFooterItem(null);
           break;
         case 'tasks':
           if (isTeammateMode) {
@@ -2011,14 +2004,13 @@ function PromptInput({
   const showFastIcon = isFastModeEnabled() ? isFastMode && (isFastModeAvailable() || fastModeCooldown) : false;
   const showFastIconHint = useShowFastIconHint(showFastIcon ?? false);
 
-  useBuddyNotification();
-  const companionSpeaking = isBuddyEnabled() ?
-  useAppState(s => s.companionReaction !== undefined) : false;
+  // ponytail: buddy system removed — no companion notification, no reserved columns
+  const companionSpeaking = false;
   const {
     columns,
     rows
   } = useTerminalSize();
-  const textInputColumns = columns - 3 - companionReservedColumns(columns, companionSpeaking);
+  const textInputColumns = columns - 3;
 
   // POC: click-to-position-cursor. Mouse tracking is only enabled inside
   // <AlternateScreen>, so this is dormant in the normal main-screen REPL.

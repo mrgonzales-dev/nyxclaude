@@ -114,10 +114,10 @@ export type ProjectConfig = {
 
   hasCompletedProjectOnboarding?: boolean
   projectOnboardingSeenCount: number
-  hasClaudeMdExternalIncludesApproved?: boolean
-  hasClaudeMdExternalIncludesApprovedForUser?: boolean
-  hasClaudeMdExternalIncludesWarningShown?: boolean
-  hasClaudeMdExternalIncludesWarningShownForUser?: boolean
+  hasAgentsMdExternalIncludesApproved?: boolean
+  hasAgentsMdExternalIncludesApprovedForUser?: boolean
+  hasAgentsMdExternalIncludesWarningShown?: boolean
+  hasAgentsMdExternalIncludesWarningShownForUser?: boolean
   // MCP server approval fields - migrated to settings but kept for backward compatibility
   enabledMcpjsonServers?: string[]
   disabledMcpjsonServers?: string[]
@@ -147,10 +147,10 @@ const DEFAULT_PROJECT_CONFIG: ProjectConfig = {
   disabledMcpjsonServers: [],
   hasTrustDialogAccepted: false,
   projectOnboardingSeenCount: 0,
-  hasClaudeMdExternalIncludesApproved: false,
-  hasClaudeMdExternalIncludesApprovedForUser: false,
-  hasClaudeMdExternalIncludesWarningShown: false,
-  hasClaudeMdExternalIncludesWarningShownForUser: false,
+  hasAgentsMdExternalIncludesApproved: false,
+  hasAgentsMdExternalIncludesApprovedForUser: false,
+  hasAgentsMdExternalIncludesWarningShown: false,
+  hasAgentsMdExternalIncludesWarningShownForUser: false,
 }
 
 export type InstallMethod = 'local' | 'native' | 'global' | 'unknown'
@@ -1981,6 +1981,26 @@ export function getCurrentProjectConfig(): ProjectConfig {
   if (typeof projectConfig.allowedTools === 'string') {
     projectConfig.allowedTools =
       (safeParseJSON(projectConfig.allowedTools) as string[]) ?? []
+  }
+
+  // Backward compat: migrate hasClaudeMd* keys to hasAgentsMd*
+  const legacy = projectConfig as ProjectConfig & {
+    hasClaudeMdExternalIncludesApproved?: boolean
+    hasClaudeMdExternalIncludesApprovedForUser?: boolean
+    hasClaudeMdExternalIncludesWarningShown?: boolean
+    hasClaudeMdExternalIncludesWarningShownForUser?: boolean
+  }
+  if (legacy.hasClaudeMdExternalIncludesApproved !== undefined && projectConfig.hasAgentsMdExternalIncludesApproved === undefined) {
+    projectConfig.hasAgentsMdExternalIncludesApproved = legacy.hasClaudeMdExternalIncludesApproved
+  }
+  if (legacy.hasClaudeMdExternalIncludesApprovedForUser !== undefined && projectConfig.hasAgentsMdExternalIncludesApprovedForUser === undefined) {
+    projectConfig.hasAgentsMdExternalIncludesApprovedForUser = legacy.hasClaudeMdExternalIncludesApprovedForUser
+  }
+  if (legacy.hasClaudeMdExternalIncludesWarningShown !== undefined && projectConfig.hasAgentsMdExternalIncludesWarningShown === undefined) {
+    projectConfig.hasAgentsMdExternalIncludesWarningShown = legacy.hasClaudeMdExternalIncludesWarningShown
+  }
+  if (legacy.hasClaudeMdExternalIncludesWarningShownForUser !== undefined && projectConfig.hasAgentsMdExternalIncludesWarningShownForUser === undefined) {
+    projectConfig.hasAgentsMdExternalIncludesWarningShownForUser = legacy.hasClaudeMdExternalIncludesWarningShownForUser
   }
 
   return projectConfig

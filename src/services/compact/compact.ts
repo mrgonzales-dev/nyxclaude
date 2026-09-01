@@ -1900,7 +1900,7 @@ function shouldExcludeFromPostCompactRestore(
   }
 
   // Exclude all types of claude.md files
-  // TODO: Refactor to use isMemoryFilePath() from claudemd.ts for consistency
+  // TODO: Refactor to use isMemoryFilePath() from agentsmd.ts for consistency
   // and to also match child directory memory files (.nyxclaude/rules/*.md, etc.)
   try {
     const normalizedMemoryPaths = new Set(

@@ -17,7 +17,7 @@ import { handleMcpjsonServerApprovals } from './services/mcpServerApproval.js';
 import { AppStateProvider } from './state/AppState.js';
 import { onChangeAppState } from './state/onChangeAppState.js';
 import { normalizeApiKeyForConfig } from './utils/authPortable.js';
-import { getExternalClaudeMdIncludes, getMemoryFiles, shouldShowClaudeMdExternalIncludesWarning } from './utils/claudemd.js';
+import { getExternalAgentsMdIncludes, getMemoryFiles, shouldShowAgentsMdExternalIncludesWarning } from './utils/agentsmd.js';
 import { checkHasTrustDialogAccepted, getCustomApiKeyStatus, getGlobalConfig, saveGlobalConfig } from './utils/config.js';
 import { getRequiredSetupScreens } from './utils/setupScreenGates.js';
 import { updateDeepLinkTerminalPreference } from './utils/deepLink/terminalPreference.js';
@@ -186,16 +186,16 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
     }
 
     // Check for claude.md includes that need approval
-    const warningScope = await shouldShowClaudeMdExternalIncludesWarning()
+    const warningScope = await shouldShowAgentsMdExternalIncludesWarning()
     if (warningScope !== 'None') {
       const files = await getMemoryFiles(true);
       const externalIncludes = warningScope === 'User'
-        ? getExternalClaudeMdIncludes(files, ['User'])
-        : getExternalClaudeMdIncludes(files, ['Project', 'Local']);
+        ? getExternalAgentsMdIncludes(files, ['User'])
+        : getExternalAgentsMdIncludes(files, ['Project', 'Local']);
       const {
-        ClaudeMdExternalIncludesDialog
-      } = await import('./components/ClaudeMdExternalIncludesDialog.js');
-      await showSetupDialog(root, done => <ClaudeMdExternalIncludesDialog onDone={done} isStandaloneDialog externalIncludes={externalIncludes} scope={warningScope} />);
+        AgentsMdExternalIncludesDialog
+      } = await import('./components/AgentsMdExternalIncludesDialog.js');
+      await showSetupDialog(root, done => <AgentsMdExternalIncludesDialog onDone={done} isStandaloneDialog externalIncludes={externalIncludes} scope={warningScope} />);
     }
   }
 

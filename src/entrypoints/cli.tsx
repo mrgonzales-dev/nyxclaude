@@ -423,10 +423,10 @@ export async function main(
   // configuration is broken, so users can inspect/fix skills from scripts.
   const skillsCliArgs = getSkillsCliArgs(args)
   if (skillsCliArgs) {
-    const { setAdditionalDirectoriesForClaudeMd } = await import(
+    const { setAdditionalDirectoriesForAgentsMd } = await import(
       '../bootstrap/state.js'
     )
-    setAdditionalDirectoriesForClaudeMd(skillsCliArgs.additionalDirectories)
+    setAdditionalDirectoriesForAgentsMd(skillsCliArgs.additionalDirectories)
     const { runSkillsCli } = await import('../cli/handlers/skillsCli.js')
     process.argv = [process.argv[0]!, process.argv[1]!, ...skillsCliArgs.args]
     await runSkillsCli(skillsCliArgs.args)

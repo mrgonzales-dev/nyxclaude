@@ -57,7 +57,7 @@ type AgentDefinition = {
   baseDir?: string
   background?: boolean
   initialPrompt?: string
-  omitClaudeMd?: boolean
+  omitAgentsMd?: boolean
 }
 function isBuiltInAgent(_agent: unknown): boolean {
   return false

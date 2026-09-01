@@ -1,6 +1,6 @@
 import chokidar, { type FSWatcher } from 'chokidar'
 import * as platformPath from 'path'
-import { getAdditionalDirectoriesForClaudeMd } from '../../bootstrap/state.js'
+import { getAdditionalDirectoriesForAgentsMd } from '../../bootstrap/state.js'
 import {
   clearCommandMemoizationCaches,
   clearCommandsCache,
@@ -93,7 +93,7 @@ const defaultDependencies = {
   clearCommandsCache,
   executeConfigChangeHooks,
   getFsImplementation,
-  getAdditionalDirectoriesForClaudeMd,
+  getAdditionalDirectoriesForAgentsMd,
   getSkillsPath,
   hasBlockingResult,
   onDynamicSkillsLoaded,
@@ -237,7 +237,7 @@ async function getWatchablePaths(): Promise<string[]> {
   }
 
   // Additional directories (--add-dir) skills
-  for (const dir of dependencies.getAdditionalDirectoriesForClaudeMd()) {
+  for (const dir of dependencies.getAdditionalDirectoriesForAgentsMd()) {
     for (const configDirName of PROJECT_CONFIG_DIR_NAMES) {
       await pushIfExists(platformPath.join(dir, configDirName, 'skills'))
     }

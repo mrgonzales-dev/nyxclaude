@@ -60,7 +60,7 @@ type MdmRuntimeState = {
 
 function getMdmRuntimeState(): MdmRuntimeState {
   const globalStore = globalThis as Record<string, unknown>
-  const key = '__nyxclaudeMdmRuntimeState'
+  const key = '__nyxagentsMdmRuntimeState'
   const existing = globalStore[key]
   if (existing && typeof existing === 'object') {
     return existing as MdmRuntimeState

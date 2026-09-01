@@ -340,7 +340,7 @@ export const FileWriteTool = buildTool({
     if (
       fullFilePath.endsWith(`${sep}AGENTS.md`)
     ) {
-      logEvent('tengu_write_claudemd', {})
+      logEvent('tengu_write_agentsmd', {})
     }
 
     let gitDiff: ToolUseDiff | undefined

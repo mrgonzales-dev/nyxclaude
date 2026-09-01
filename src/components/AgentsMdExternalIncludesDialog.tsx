@@ -3,7 +3,7 @@ import { join } from 'path';
 import React from 'react';
 import { logEvent } from 'src/services/analytics/index.js';
 import { Box, Link, Text } from '../ink.js';
-import type { ExternalClaudeMdInclude } from '../utils/claudemd.js';
+import type { ExternalAgentsMdInclude } from '../utils/agentsmd.js';
 import { saveCurrentProjectConfig } from '../utils/config.js';
 import { getClaudeConfigHomeDir } from '../utils/envUtils.js';
 import { getDisplayPath } from '../utils/file.js';
@@ -12,34 +12,34 @@ import { Dialog } from './design-system/Dialog.js';
 type Props = {
   onDone(): void;
   isStandaloneDialog?: boolean;
-  externalIncludes?: ExternalClaudeMdInclude[];
+  externalIncludes?: ExternalAgentsMdInclude[];
   scope?: 'User' | 'Project';
 };
 function acceptProject(current: any) {
-  return { ...current, hasClaudeMdExternalIncludesApproved: true, hasClaudeMdExternalIncludesWarningShown: true };
+  return { ...current, hasAgentsMdExternalIncludesApproved: true, hasAgentsMdExternalIncludesWarningShown: true };
 }
 function acceptUser(current: any) {
-  return { ...current, hasClaudeMdExternalIncludesApprovedForUser: true, hasClaudeMdExternalIncludesWarningShownForUser: true };
+  return { ...current, hasAgentsMdExternalIncludesApprovedForUser: true, hasAgentsMdExternalIncludesWarningShownForUser: true };
 }
 function declineProject(current: any) {
-  return { ...current, hasClaudeMdExternalIncludesApproved: false, hasClaudeMdExternalIncludesWarningShown: true };
+  return { ...current, hasAgentsMdExternalIncludesApproved: false, hasAgentsMdExternalIncludesWarningShown: true };
 }
 function declineUser(current: any) {
-  return { ...current, hasClaudeMdExternalIncludesApprovedForUser: false, hasClaudeMdExternalIncludesWarningShownForUser: true };
+  return { ...current, hasAgentsMdExternalIncludesApprovedForUser: false, hasAgentsMdExternalIncludesWarningShownForUser: true };
 }
-function getUserClaudeMdDisplayPath(): string {
+function getUserAgentsMdDisplayPath(): string {
   return getDisplayPath(join(getClaudeConfigHomeDir(), 'AGENTS.md'));
 }
-export function ClaudeMdExternalIncludesDialog(t0: Props) {
+export function AgentsMdExternalIncludesDialog(t0: Props) {
   const $ = _c(18);
   const { onDone, isStandaloneDialog, externalIncludes, scope } = t0;
   React.useEffect(_temp, []);
   const handleSelection = React.useCallback((value: 'yes' | 'no') => {
     if (value === "no") {
-      logEvent("tengu_claude_md_external_includes_dialog_declined", {});
+      logEvent("tengu_agents_md_external_includes_dialog_declined", {});
       saveCurrentProjectConfig(scope === 'User' ? declineUser : declineProject);
     } else {
-      logEvent("tengu_claude_md_external_includes_dialog_accepted", {});
+      logEvent("tengu_agents_md_external_includes_dialog_accepted", {});
       saveCurrentProjectConfig(scope === 'User' ? acceptUser : acceptProject);
     }
     onDone();
@@ -49,7 +49,7 @@ export function ClaudeMdExternalIncludesDialog(t0: Props) {
     ? "Allow user AGENTS.md file imports?"
     : "Allow external AGENTS.md file imports?";
   const description = scope === 'User'
-    ? <Text>Your user AGENTS.md ({getUserClaudeMdDisplayPath()}) imports files outside the current working directory.</Text>
+    ? <Text>Your user AGENTS.md ({getUserAgentsMdDisplayPath()}) imports files outside the current working directory.</Text>
     : <Text>This project's AGENTS.md imports files outside the current working directory. Never allow this for third-party repositories.</Text>;
   return (
     <Dialog title={title} color="warning" onCancel={handleEscape} hideBorder={!isStandaloneDialog} hideInputGuide={!isStandaloneDialog}>
@@ -71,5 +71,5 @@ export function ClaudeMdExternalIncludesDialog(t0: Props) {
   );
 }
 function _temp() {
-  logEvent("tengu_claude_md_includes_dialog_shown", {});
+  logEvent("tengu_agents_md_includes_dialog_shown", {});
 }

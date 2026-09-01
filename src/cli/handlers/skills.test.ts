@@ -22,7 +22,7 @@ import {
   enableUserAndProjectSettingSources,
   restoreSettingState,
 } from '../../test/settingSourceState.js'
-import { setAdditionalDirectoriesForClaudeMd } from '../../bootstrap/state.js'
+import { setAdditionalDirectoriesForAgentsMd } from '../../bootstrap/state.js'
 import { clearCommandsCache } from '../../commands.js'
 import type { Command } from '../../types/command.js'
 import {
@@ -875,7 +875,7 @@ test.serial('does not remove skills from --add-dir directories', async () => {
         VALID_SKILL.replace('sample-skill', targetName),
         'utf8',
       )
-      setAdditionalDirectoriesForClaudeMd([addDir])
+      setAdditionalDirectoriesForAgentsMd([addDir])
 
       clearCommandsCache()
       try {
@@ -883,7 +883,7 @@ test.serial('does not remove skills from --add-dir directories', async () => {
         await skillsRemoveHandler(targetName, { projectDir: cwd })
         assert.equal(process.exitCode, 1)
       } finally {
-        setAdditionalDirectoriesForClaudeMd([])
+        setAdditionalDirectoriesForAgentsMd([])
         restoreSettingState(originalSettingsState)
         clearCommandsCache()
       }

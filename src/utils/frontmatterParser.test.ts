@@ -3,7 +3,7 @@ import { splitPathInFrontmatter } from './frontmatterParser.ts'
 
 // splitPathInFrontmatter is the public entry that flatMaps each comma-separated
 // part through the (private) expandBraces helper, so it exercises the brace
-// expansion that loadSkillsDir.ts and claudemd.ts depend on for path-scoped
+// expansion that loadSkillsDir.ts and agentsmd.ts depend on for path-scoped
 // activation. These cover the regression where the old `[^}]+` regex stopped at
 // the first '}' and corrupted nested groups (leaving stray '}' in globs).
 

@@ -1,4 +1,4 @@
-import { setAdditionalDirectoriesForClaudeMd } from '../../bootstrap/state.js'
+import { setAdditionalDirectoriesForAgentsMd } from '../../bootstrap/state.js'
 
 type SkillsCliOptions = {
   additionalDirectories: string[]
@@ -207,7 +207,7 @@ export async function runSkillsCli(args: string[]): Promise<void> {
     process.exit(0)
   }
   if (options.additionalDirectories.length > 0) {
-    setAdditionalDirectoriesForClaudeMd(options.additionalDirectories)
+    setAdditionalDirectoriesForAgentsMd(options.additionalDirectories)
   }
 
   const {

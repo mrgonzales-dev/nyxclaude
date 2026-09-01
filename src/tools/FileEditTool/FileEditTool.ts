@@ -528,7 +528,7 @@ export const FileEditTool = buildTool({
     if (
       absoluteFilePath.endsWith(`${sep}AGENTS.md`)
     ) {
-      logEvent('tengu_write_claudemd', {})
+      logEvent('tengu_write_agentsmd', {})
     }
     countLinesChanged(patch)
 

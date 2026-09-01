@@ -82,6 +82,6 @@ export const PLAN_AGENT: BuiltInAgentDefinition = {
   tools: EXPLORE_AGENT.tools,
   baseDir: 'built-in',
   model: 'inherit',
-  omitClaudeMd: true,
+  omitAgentsMd: true,
   getSystemPrompt: () => getPlanV2SystemPrompt(),
 }

@@ -5,7 +5,7 @@ import { mkdir, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
 import { z } from 'zod/v4'
 import {
-  getCachedClaudeMdContent,
+  getCachedAgentsMdContent,
   getLastClassifierRequests,
   getSessionId,
   setLastClassifierRequests,
@@ -570,16 +570,16 @@ export function buildTranscriptForClassifier(
  * stable cache prefix across classifier calls.
  *
  * Reads from bootstrap/state.ts cache (populated by context.ts) instead of
- * importing claudemd.ts directly — claudemd → permissions/filesystem →
+ * importing agentsmd.ts directly — agentsmd → permissions/filesystem →
  * permissions → yoloClassifier is a cycle. context.ts already gates on
- * CLAUDE_CODE_DISABLE_CLAUDE_MDS and normalizes '' to null before caching.
+ * CLAUDE_CODE_DISABLE_AGENTS_MDS and normalizes '' to null before caching.
  * If the cache is unpopulated (tests, or an entrypoint that never calls
  * getUserContext), the classifier proceeds without AGENTS.md — same as
  * pre-PR behavior.
  */
-function buildClaudeMdMessage(): Anthropic.MessageParam | null {
-  const claudeMd = getCachedClaudeMdContent()
-  if (claudeMd === null) return null
+function buildAgentsMdMessage(): Anthropic.MessageParam | null {
+  const agentsMd = getCachedAgentsMdContent()
+  if (agentsMd === null) return null
   return {
     role: 'user',
     content: [
@@ -589,7 +589,7 @@ function buildClaudeMdMessage(): Anthropic.MessageParam | null {
           `The following is the user's AGENTS.md configuration. These are ` +
           `instructions the user provided to the agent and should be treated ` +
           `as part of the user's intent when evaluating actions.\n\n` +
-          `<user_claude_md>\n${claudeMd}\n</user_claude_md>`,
+          `<user_agents_md>\n${agentsMd}\n</user_agents_md>`,
         cache_control: getCacheControl({ querySource: 'auto_mode' }),
       },
     ],
@@ -1156,9 +1156,9 @@ export async function classifyYoloAction(
     tools,
     transcriptBudget,
   )
-  const claudeMdMessage = buildClaudeMdMessage()
-  const prefixMessages: Anthropic.MessageParam[] = claudeMdMessage
-    ? [claudeMdMessage]
+  const agentsMdMessage = buildAgentsMdMessage()
+  const prefixMessages: Anthropic.MessageParam[] = agentsMdMessage
+    ? [agentsMdMessage]
     : []
 
   const toolCallsLength =

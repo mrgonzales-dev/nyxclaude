@@ -1232,7 +1232,7 @@ export const SettingsSchema = lazySchema(() =>
             'Typically set in managed settings by enterprise administrators ' +
             'to pre-configure SSH connections for team members.',
         ),
-      claudeMdExcludes: z
+      agentsMdExcludes: z
         .array(z.string())
         .optional()
         .describe(

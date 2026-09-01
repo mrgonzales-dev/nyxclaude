@@ -28,7 +28,7 @@ export function getSteps(): Step[] {
       isEnabled: isWorkspaceDirEmpty,
     },
     {
-      key: 'claudemd',
+      key: 'agentsmd',
       text: 'Set up repo instructions (/init creates or updates AGENTS.md)',
       isComplete: hasRepoInstructions,
       isCompletable: true,

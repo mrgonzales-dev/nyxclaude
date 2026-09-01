@@ -24,13 +24,13 @@ import { useAppState, useSetAppState, useAppStateStore } from '../../state/AppSt
 import { ModelPicker } from '../ModelPicker.js';
 import { modelDisplayString, isOpus1mMergeEnabled } from '../../utils/model/model.js';
 import { isBilledAsExtraUsage } from '../../utils/extraUsage.js';
-import { ClaudeMdExternalIncludesDialog } from '../ClaudeMdExternalIncludesDialog.js';
+import { AgentsMdExternalIncludesDialog } from '../AgentsMdExternalIncludesDialog.js';
 import { ChannelDowngradeDialog, type ChannelDowngradeChoice } from '../ChannelDowngradeDialog.js';
 import { Dialog } from '../design-system/Dialog.js';
 import { Select } from '../CustomSelect/index.js';
 import { OutputStylePicker } from '../OutputStylePicker.js';
 import { LanguagePicker } from '../LanguagePicker.js';
-import { getExternalClaudeMdIncludes, getMemoryFiles, hasExternalClaudeMdIncludes, type MemoryFileInfo } from 'src/utils/claudemd.js';
+import { getExternalAgentsMdIncludes, getMemoryFiles, hasExternalAgentsMdIncludes, type MemoryFileInfo } from 'src/utils/agentsmd.js';
 import { KeyboardShortcutHint } from '../design-system/KeyboardShortcutHint.js';
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js';
 import { Byline } from '../design-system/Byline.js';
@@ -204,10 +204,10 @@ export function Config({
   const memoryFiles = React.use(getMemoryFiles(true)) as MemoryFileInfo[];
   function getPendingExternalIncludesScope(): 'User' | 'Project' | null {
     const cfg = getCurrentProjectConfig();
-    // Project/Local first (mirrors startup priority in shouldShowClaudeMdExternalIncludesWarning)
-    if (!cfg.hasClaudeMdExternalIncludesApproved && !cfg.hasClaudeMdExternalIncludesWarningShown && hasExternalClaudeMdIncludes(memoryFiles, ['Project', 'Local'])) return 'Project';
+    // Project/Local first (mirrors startup priority in shouldShowAgentsMdExternalIncludesWarning)
+    if (!cfg.hasAgentsMdExternalIncludesApproved && !cfg.hasAgentsMdExternalIncludesWarningShown && hasExternalAgentsMdIncludes(memoryFiles, ['Project', 'Local'])) return 'Project';
     // User second
-    if (!cfg.hasClaudeMdExternalIncludesApprovedForUser && !cfg.hasClaudeMdExternalIncludesWarningShownForUser && hasExternalClaudeMdIncludes(memoryFiles, ['User'])) return 'User';
+    if (!cfg.hasAgentsMdExternalIncludesApprovedForUser && !cfg.hasAgentsMdExternalIncludesWarningShownForUser && hasExternalAgentsMdIncludes(memoryFiles, ['User'])) return 'User';
     return null;
   }
   const pendingScope = getPendingExternalIncludesScope();
@@ -1086,7 +1086,7 @@ export function Config({
     label: pendingScope === 'User' ? 'User AGENTS.md external includes' : 'External AGENTS.md includes',
     value: (() => {
       const cfg = getCurrentProjectConfig();
-      return cfg[pendingScope === 'User' ? 'hasClaudeMdExternalIncludesApprovedForUser' : 'hasClaudeMdExternalIncludesApproved'] ? 'true' : 'false';
+      return cfg[pendingScope === 'User' ? 'hasAgentsMdExternalIncludesApprovedForUser' : 'hasAgentsMdExternalIncludesApproved'] ? 'true' : 'false';
     })(),
     type: 'managedEnum' as const,
     onChange() {
@@ -1650,10 +1650,10 @@ export function Config({
             </Byline>
           </Text>
         </> : showSubmenu === 'ExternalIncludes' && pendingScope ? <>
-          <ClaudeMdExternalIncludesDialog onDone={() => {
+          <AgentsMdExternalIncludesDialog onDone={() => {
         setShowSubmenu(null);
         setTabsHidden(false);
-      }} externalIncludes={getExternalClaudeMdIncludes(memoryFiles, pendingScope === 'User' ? ['User'] : ['Project', 'Local'])} scope={pendingScope} />
+      }} externalIncludes={getExternalAgentsMdIncludes(memoryFiles, pendingScope === 'User' ? ['User'] : ['Project', 'Local'])} scope={pendingScope} />
           <Text dimColor>
             <Byline>
               <KeyboardShortcutHint shortcut="Enter" action="confirm" />

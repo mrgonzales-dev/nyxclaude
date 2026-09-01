@@ -5,7 +5,7 @@ import {
 } from '../services/api/providerConfig.js'
 import type { Tool, ToolPermissionContext } from '../Tool.js'
 import type { AgentDefinitionsResult } from '../tools/AgentTool/loadAgentsDir.js'
-import type { MemoryFileInfo } from './claudemd.js'
+import type { MemoryFileInfo } from './agentsmd.js'
 import {
   checkContextWarnings,
   type ContextWarning,
@@ -23,7 +23,7 @@ import {
 type ContributorId =
   | 'mcp_tools'
   | 'agent_descriptions'
-  | 'claudemd_files'
+  | 'agentsmd_files'
   | 'ollama_context_length'
 
 export type LocalModelContextContributor = {
@@ -56,7 +56,7 @@ function summarizeContextWarning(
         details: warning.details,
         summary: `Agent descriptions: ~${formatTokens(warning.currentValue)} tokens`,
       }
-    case 'claudemd_files':
+    case 'agentsmd_files':
       return {
         id: warning.type,
         message: warning.message,
@@ -117,7 +117,7 @@ export function buildLocalModelContextLoad(
   const contributors = [
     warnings?.mcpWarning,
     warnings?.agentWarning,
-    warnings?.claudeMdWarning,
+    warnings?.agentsMdWarning,
   ]
     .filter((warning): warning is ContextWarning => warning != null)
     .map(summarizeContextWarning)

@@ -76,7 +76,7 @@ export type BaseAgentDefinition = {
   criticalSystemReminder_EXPERIMENTAL?: string
   background?: boolean
   initialPrompt?: string
-  omitClaudeMd?: boolean
+  omitAgentsMd?: boolean
 }
 
 // Built-in agents - dynamic prompts only, no static systemPrompt field

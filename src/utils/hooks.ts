@@ -4574,7 +4574,7 @@ export function hasInstructionsLoadedHook(): boolean {
  * for observability/audit only and does not support blocking.
  *
  * Dispatch sites:
- * - Eager load at session start (getMemoryFiles in claudemd.ts)
+ * - Eager load at session start (getMemoryFiles in agentsmd.ts)
  * - Eager reload after compaction (getMemoryFiles cache cleared by
  *   runPostCompactCleanup; next call reports load_reason: 'compact')
  * - Lazy load when Nyxclaude touches a file that triggers nested AGENTS.md or

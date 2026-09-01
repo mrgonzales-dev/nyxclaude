@@ -7,7 +7,7 @@ import {
   getMemoryFiles,
   MAX_MEMORY_CHARACTER_COUNT,
   type MemoryFileInfo,
-} from './claudemd.js'
+} from './agentsmd.js'
 import { getMainLoopModel } from './model/model.js'
 import { permissionRuleValueToString } from './permissions/permissionRuleParser.js'
 import { detectUnreachableRules } from './permissions/shadowedRuleDetection.js'
@@ -36,7 +36,7 @@ export type CheckContextWarningsOptions = {
 
 export type ContextWarning = {
   type:
-    | 'claudemd_files'
+    | 'agentsmd_files'
     | 'agent_descriptions'
     | 'mcp_tools'
     | 'unreachable_rules'
@@ -48,7 +48,7 @@ export type ContextWarning = {
 }
 
 export type ContextWarnings = {
-  claudeMdWarning: ContextWarning | null
+  agentsMdWarning: ContextWarning | null
   agentWarning: ContextWarning | null
   mcpWarning: ContextWarning | null
   unreachableRulesWarning: ContextWarning | null
@@ -64,7 +64,7 @@ async function safeWarning(
   }
 }
 
-async function checkClaudeMdFiles(
+async function checkAgentsMdFiles(
   memoryFiles?: MemoryFileInfo[],
 ): Promise<ContextWarning | null> {
   const largeFiles = getLargeMemoryFiles(memoryFiles ?? (await getMemoryFiles()))
@@ -84,7 +84,7 @@ async function checkClaudeMdFiles(
       : `${largeFiles.length} large AGENTS.md files detected (each > ${MAX_MEMORY_CHARACTER_COUNT.toLocaleString()} chars)`
 
   return {
-    type: 'claudemd_files',
+    type: 'agentsmd_files',
     severity: 'warning',
     message,
     details,
@@ -353,9 +353,9 @@ export async function checkContextWarnings(
   options: CheckContextWarningsOptions = {},
 ): Promise<ContextWarnings> {
   const includeUnreachableRules = options.includeUnreachableRules ?? true
-  const [claudeMdWarning, agentWarning, mcpWarning, unreachableRulesWarning] =
+  const [agentsMdWarning, agentWarning, mcpWarning, unreachableRulesWarning] =
     await Promise.all([
-      safeWarning(() => checkClaudeMdFiles(options.memoryFiles)),
+      safeWarning(() => checkAgentsMdFiles(options.memoryFiles)),
       safeWarning(() => checkAgentDescriptions(agentInfo)),
       safeWarning(() =>
         checkMcpTools(
@@ -371,7 +371,7 @@ export async function checkContextWarnings(
     ])
 
   return {
-    claudeMdWarning,
+    agentsMdWarning,
     agentWarning,
     mcpWarning,
     unreachableRulesWarning,

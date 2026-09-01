@@ -43,7 +43,7 @@ import {
 import picomatch from 'picomatch'
 import { logEvent } from 'src/services/analytics/index.js'
 import {
-  getAdditionalDirectoriesForClaudeMd,
+  getAdditionalDirectoriesForAgentsMd,
   getOriginalCwd,
 } from '../bootstrap/state.js'
 import { truncateEntrypointContent } from '../utils/memoryStubs.js'
@@ -423,7 +423,7 @@ function handleMemoryFileReadError(error: unknown, filePath: string): void {
   // Log permission errors (EACCES) as they're actionable
   if (code === 'EACCES') {
     // Don't log the full file path to avoid PII/security issues
-    logEvent('tengu_claude_md_permission_error', {
+    logEvent('tengu_agents_md_permission_error', {
       is_access_error: 1,
       has_home_dir: filePath.includes(getClaudeConfigHomeDir()) ? 1 : 0,
     })
@@ -551,19 +551,20 @@ function extractIncludePathsFromTokens(
 const MAX_INCLUDE_DEPTH = 5
 
 /**
- * Checks whether a AGENTS.md file path is excluded by the claudeMdExcludes setting.
+ * Checks whether a AGENTS.md file path is excluded by the agentsMdExcludes setting.
  * Only applies to User, Project, and Local memory types.
  * Managed, AutoMem, and TeamMem types are never excluded.
  *
  * Matches both the original path and the realpath-resolved path to handle symlinks
  * (e.g., /tmp -> /private/tmp on macOS).
  */
-function isClaudeMdExcluded(filePath: string, type: MemoryType): boolean {
+function isAgentsMdExcluded(filePath: string, type: MemoryType): boolean {
   if (type !== 'User' && type !== 'Project' && type !== 'Local') {
     return false
   }
 
-  const patterns = getInitialSettings().claudeMdExcludes
+  const settings = getInitialSettings() as Record<string, unknown>
+  const patterns = (settings.agentsMdExcludes ?? settings.claudeMdExcludes) as string[] | undefined
   if (!patterns || patterns.length === 0) {
     return false
   }
@@ -610,7 +611,7 @@ function resolveExcludePatterns(patterns: string[]): string[] {
     const dirToResolve = dirname(staticPrefix)
 
     try {
-      // sync IO: called from sync context (isClaudeMdExcluded -> processMemoryFile -> getMemoryFiles)
+      // sync IO: called from sync context (isAgentsMdExcluded -> processMemoryFile -> getMemoryFiles)
       const resolvedDir = fs.realpathSync(dirToResolve).replaceAll('\\', '/')
       if (resolvedDir !== dirToResolve) {
         const resolvedPattern =
@@ -645,8 +646,8 @@ export async function processMemoryFile(
     return []
   }
 
-  // Skip if path is excluded by claudeMdExcludes setting
-  if (isClaudeMdExcluded(filePath, type)) {
+  // Skip if path is excluded by agentsMdExcludes setting
+  if (isAgentsMdExcluded(filePath, type)) {
     return []
   }
 
@@ -818,18 +819,18 @@ export const _getMemoryFilesOriginal = memoize(
     const config = getCurrentProjectConfig()
     const includeExternal =
       forceIncludeExternal ||
-      config.hasClaudeMdExternalIncludesApproved ||
+      config.hasAgentsMdExternalIncludesApproved ||
       false
     const includeExternalForUser =
       forceIncludeExternal ||
-      config.hasClaudeMdExternalIncludesApprovedForUser ||
+      config.hasAgentsMdExternalIncludesApprovedForUser ||
       false
 
     // Process Managed file first (always loaded - policy settings)
-    const managedClaudeMd = getMemoryPath('Managed')
+    const managedAgentsMd = getMemoryPath('Managed')
     result.push(
       ...(await processMemoryFile(
-        managedClaudeMd,
+        managedAgentsMd,
         'Managed',
         processedPaths,
         includeExternal,
@@ -849,10 +850,10 @@ export const _getMemoryFilesOriginal = memoize(
 
     // Process User file (only if userSettings is enabled)
     if (isSettingSourceEnabled('userSettings')) {
-      const userClaudeMd = getMemoryPath('User')
+      const userAgentsMd = getMemoryPath('User')
       result.push(
         ...(await processMemoryFile(
-          userClaudeMd,
+          userAgentsMd,
           'User',
           processedPaths,
           includeExternalForUser, // User-scope external-includes gate
@@ -962,11 +963,12 @@ export const _getMemoryFilesOriginal = memoize(
     }
 
     // Process root project instruction files from additional directories (--add-dir) if env var is enabled
-    // This is controlled by CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD and defaults to off
+    // This is controlled by CLAUDE_CODE_ADDITIONAL_DIRECTORIES_AGENTS_MD and defaults to off
     // Note: we don't check isSettingSourceEnabled('projectSettings') here because --add-dir
     // is an explicit user action and the SDK defaults settingSources to [] when not specified
-    if (isEnvTruthy(process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD)) {
-      const additionalDirs = getAdditionalDirectoriesForClaudeMd()
+    if (isEnvTruthy(process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_AGENTS_MD) ||
+        isEnvTruthy(process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD)) {
+      const additionalDirs = getAdditionalDirectoriesForAgentsMd()
       for (const dir of additionalDirs) {
         // Try reading the root project instruction file from the additional directory
         const projectPath = getProjectInstructionFilePath(
@@ -1055,7 +1057,7 @@ export const _getMemoryFilesOriginal = memoize(
 
     if (!hasLoggedInitialLoad) {
       hasLoggedInitialLoad = true
-      logEvent('tengu_claudemd__initial_load', {
+      logEvent('tengu_agentsmd__initial_load', {
         file_count: result.length,
         total_content_length: totalContentLength,
         user_count: typeCounts['User'] ?? 0,
@@ -1075,7 +1077,7 @@ export const _getMemoryFilesOriginal = memoize(
     // AutoMem/TeamMem are intentionally excluded — they're a separate
     // memory system, not "instructions" in the AGENTS.md/rules sense.
     // Gated on !forceIncludeExternal: the forceIncludeExternal=true variant
-    // is only used by getExternalClaudeMdIncludes() for approval checks, not
+    // is only used by getExternalAgentsMdIncludes() for approval checks, not
     // for building context — firing the hook there would double-fire on startup.
     // The one-shot flag is consumed on every !forceIncludeExternal cache miss
     // (NOT gated on hasInstructionsLoadedHook) so the flag is released even
@@ -1181,7 +1183,7 @@ export function filterInjectedMemoryFiles(
   return files.filter(f => f.type !== 'AutoMem' && f.type !== 'TeamMem')
 }
 
-export const getClaudeMds = (
+export const getAgentsMds = (
   memoryFiles: MemoryFileInfo[],
   filter?: (type: MemoryType) => boolean,
 ): string => {
@@ -1258,7 +1260,7 @@ export async function getManagedAndUserConditionalRules(
     // as unconditional User rules, so declining approval blocks the
     // conditional path too.
     const userClaudeRulesDir = getUserClaudeRulesDir()
-    const includeExternalForUser = config.hasClaudeMdExternalIncludesApprovedForUser ?? false
+    const includeExternalForUser = config.hasAgentsMdExternalIncludesApprovedForUser ?? false
     result.push(
       ...(await processConditionedMdRules(
         targetPath,
@@ -1435,16 +1437,16 @@ export async function processConditionedMdRules(
   })
 }
 
-export type ExternalClaudeMdInclude = {
+export type ExternalAgentsMdInclude = {
   path: string
   parent: string
 }
 
-export function getExternalClaudeMdIncludes(
+export function getExternalAgentsMdIncludes(
   files: MemoryFileInfo[],
   types?: MemoryType[],
-): ExternalClaudeMdInclude[] {
-  const externals: ExternalClaudeMdInclude[] = []
+): ExternalAgentsMdInclude[] {
+  const externals: ExternalAgentsMdInclude[] = []
   for (const file of files) {
     if (types && !types.includes(file.type)) continue
     if (file.parent && !pathInOriginalCwd(file.path)) {
@@ -1454,25 +1456,25 @@ export function getExternalClaudeMdIncludes(
   return externals
 }
 
-export function hasExternalClaudeMdIncludes(files: MemoryFileInfo[], types?: MemoryType[]): boolean {
-  return getExternalClaudeMdIncludes(files, types).length > 0
+export function hasExternalAgentsMdIncludes(files: MemoryFileInfo[], types?: MemoryType[]): boolean {
+  return getExternalAgentsMdIncludes(files, types).length > 0
 }
 
 export type ExternalIncludesScope = 'User' | 'Project' | 'None'
 
-export async function shouldShowClaudeMdExternalIncludesWarning(): Promise<ExternalIncludesScope> {
+export async function shouldShowAgentsMdExternalIncludesWarning(): Promise<ExternalIncludesScope> {
   const config = getCurrentProjectConfig()
   const files = await getMemoryFiles(true)
 
   const hasProjectExternals =
-    !config.hasClaudeMdExternalIncludesApproved &&
-    !config.hasClaudeMdExternalIncludesWarningShown &&
-    hasExternalClaudeMdIncludes(files, ['Project', 'Local'])
+    !config.hasAgentsMdExternalIncludesApproved &&
+    !config.hasAgentsMdExternalIncludesWarningShown &&
+    hasExternalAgentsMdIncludes(files, ['Project', 'Local'])
 
   const hasUserExternals =
-    !config.hasClaudeMdExternalIncludesApprovedForUser &&
-    !config.hasClaudeMdExternalIncludesWarningShownForUser &&
-    hasExternalClaudeMdIncludes(files, ['User'])
+    !config.hasAgentsMdExternalIncludesApprovedForUser &&
+    !config.hasAgentsMdExternalIncludesWarningShownForUser &&
+    hasExternalAgentsMdIncludes(files, ['User'])
 
   if (hasProjectExternals) return 'Project'
   if (hasUserExternals) return 'User'

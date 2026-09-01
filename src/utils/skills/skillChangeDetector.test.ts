@@ -58,7 +58,7 @@ async function importFreshModule(): Promise<SkillChangeDetectorModule> {
     getFsImplementation: () => ({
       stat: statImpl,
     }),
-    getAdditionalDirectoriesForClaudeMd: () => additionalDirectories,
+    getAdditionalDirectoriesForAgentsMd: () => additionalDirectories,
     getSkillsPath: (source: string, dir: string) =>
       getSkillsPathImpl(source, dir),
     hasBlockingResult: (results: { blocked: boolean }[]) =>

@@ -1,7 +1,7 @@
 import {
-  getAdditionalDirectoriesForClaudeMd,
+  getAdditionalDirectoriesForAgentsMd,
   getAllowedSettingSources,
-  setAdditionalDirectoriesForClaudeMd,
+  setAdditionalDirectoriesForAgentsMd,
   setAllowedSettingSources,
 } from '../bootstrap/state.js'
 import type { SettingSource } from '../utils/settings/constants.js'
@@ -16,12 +16,12 @@ export type SettingSourceState = {
 
 export function enableUserAndProjectSettingSources(): SettingSourceState {
   const originalSources = getAllowedSettingSources()
-  const originalAdditionalDirectories = getAdditionalDirectoriesForClaudeMd()
+  const originalAdditionalDirectories = getAdditionalDirectoriesForAgentsMd()
   const originalArgv = [...process.argv]
   const originalClaudeCodeSimple = process.env.CLAUDE_CODE_SIMPLE
   process.argv = process.argv.filter(arg => arg !== '--bare')
   delete process.env.CLAUDE_CODE_SIMPLE
-  setAdditionalDirectoriesForClaudeMd([])
+  setAdditionalDirectoriesForAgentsMd([])
   setAllowedSettingSources([
     'userSettings',
     'projectSettings',
@@ -45,7 +45,7 @@ export function restoreSettingState(original: SettingSourceState): void {
   } else {
     process.env.CLAUDE_CODE_SIMPLE = original.claudeCodeSimple
   }
-  setAdditionalDirectoriesForClaudeMd(original.additionalDirectories)
+  setAdditionalDirectoriesForAgentsMd(original.additionalDirectories)
   setAllowedSettingSources(original.sources)
   resetSettingsCache()
 }

@@ -71,6 +71,6 @@ export const EXPLORE_AGENT: BuiltInAgentDefinition = {
   source: 'built-in',
   baseDir: 'built-in',
   model: 'haiku',
-  omitClaudeMd: true,
+  omitAgentsMd: true,
   getSystemPrompt: () => getExploreSystemPrompt(),
 }

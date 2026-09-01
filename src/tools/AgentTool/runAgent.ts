@@ -221,12 +221,12 @@ export async function* runAgent({
     override?.systemContext ?? getSystemContext(),
   ])
 
-  // Read-only agents (Explore, Plan) don't need claudeMd or gitStatus
-  const shouldOmitClaudeMd = agentDefinition.omitClaudeMd && !override?.userContext
-  const { claudeMd: _omittedClaudeMd, ...userContextNoClaudeMd } =
+  // Read-only agents (Explore, Plan) don't need agentsMd or gitStatus
+  const shouldOmitAgentsMd = agentDefinition.omitAgentsMd && !override?.userContext
+  const { agentsMd: _omittedAgentsMd, ...userContextNoAgentsMd } =
     baseUserContext
-  const resolvedUserContext = shouldOmitClaudeMd
-    ? userContextNoClaudeMd
+  const resolvedUserContext = shouldOmitAgentsMd
+    ? userContextNoAgentsMd
     : baseUserContext
 
   const { gitStatus: _omittedGitStatus, ...systemContextNoGit } =

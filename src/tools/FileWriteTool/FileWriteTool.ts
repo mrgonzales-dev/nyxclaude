@@ -61,6 +61,12 @@ const inputSchema = lazySchema(() =>
         'The absolute path to the file to write (must be absolute, not relative)',
       ),
     content: z.string().describe('The content to write to the file'),
+    append: z
+      .boolean()
+      .default(false)
+      .describe(
+        'If true, append content to the end of the existing file instead of overwriting. Use this to write large files in multiple smaller chunks — the first chunk creates the file (append=false), subsequent chunks append (append=true). Each chunk should be a manageable size to avoid streaming timeouts.',
+      ),
   }),
 )
 type InputSchema = ReturnType<typeof inputSchema>
@@ -68,7 +74,7 @@ type InputSchema = ReturnType<typeof inputSchema>
 const outputSchema = lazySchema(() =>
   z.object({
     type: z
-      .enum(['create', 'update'])
+      .enum(['create', 'update', 'append'])
       .describe(
         'Whether a new file was created or an existing file was updated',
       ),
@@ -150,7 +156,7 @@ export const FileWriteTool = buildTool({
     // shown — phantom. Under-count: tool_use already indexes file_path.
     return ''
   },
-  async validateInput({ file_path, content }, toolUseContext: ToolUseContext) {
+  async validateInput({ file_path, content, append }, toolUseContext: ToolUseContext) {
     const fullFilePath = expandPath(file_path)
 
     // Reject writes to team memory files that contain secrets
@@ -190,9 +196,18 @@ export const FileWriteTool = buildTool({
       fileMtimeMs = fileStat.mtimeMs
     } catch (e) {
       if (isENOENT(e)) {
+        // File doesn't exist yet — valid for create and for append (first
+        // chunk of a chunked write creates the file).
         return { result: true }
       }
       throw e
+    }
+
+    // Append mode: skip the read-before-write staleness check. The model is
+    // adding content to an existing file, not overwriting it, so there's no
+    // risk of clobbering changes the model hasn't seen.
+    if (append) {
+      return { result: true }
     }
 
     const readTimestamp = toolUseContext.readFileState.get(fullFilePath)
@@ -221,7 +236,7 @@ export const FileWriteTool = buildTool({
     return { result: true }
   },
   async call(
-    { file_path, content },
+    { file_path, content, append },
     { readFileState, updateFileHistoryState, dynamicSkillDirTriggers },
     _,
     parentMessage,
@@ -273,6 +288,68 @@ export const FileWriteTool = buildTool({
         meta = null
       } else {
         throw e
+      }
+    }
+
+    // Append mode: read existing content and append. Skip staleness check
+    // (validated in validateInput). The file may not exist yet (first chunk
+    // of a chunked write creates it).
+    if (append) {
+      const existingContent = meta?.content ?? ''
+      const combinedContent = existingContent + content
+      const enc = meta?.encoding ?? 'utf8'
+
+      writeTextContent(fullFilePath, combinedContent, enc, 'LF')
+
+      const lspManager = getLspServerManager()
+      if (lspManager) {
+        clearDeliveredDiagnosticsForFile(`file://${fullFilePath}`)
+        lspManager.changeFile(fullFilePath, combinedContent).catch((err: Error) => {
+          logForDebugging(
+            `LSP: Failed to notify server of file change for ${fullFilePath}: ${err.message}`,
+          )
+          logError(err)
+        })
+        lspManager.saveFile(fullFilePath).catch((err: Error) => {
+          logForDebugging(
+            `LSP: Failed to notify server of file save for ${fullFilePath}: ${err.message}`,
+          )
+          logError(err)
+        })
+      }
+
+      notifyVscodeFileUpdated(fullFilePath, existingContent || null, combinedContent)
+
+      readFileState.set(fullFilePath, {
+        content: combinedContent,
+        timestamp: getFileModificationTime(fullFilePath),
+        offset: undefined,
+        limit: undefined,
+      })
+
+      if (fullFilePath.endsWith(`${sep}AGENTS.md`)) {
+        logEvent('tengu_write_agentsmd', {})
+      }
+
+      countLinesChanged([], content)
+
+      logFileOperation({
+        operation: 'write',
+        tool: 'FileWriteTool',
+        filePath: fullFilePath,
+        type: 'create',
+      })
+
+      const data = {
+        type: 'append' as const,
+        filePath: file_path,
+        content: combinedContent,
+        structuredPatch: [],
+        originalFile: existingContent || null,
+      }
+
+      return {
+        data,
       }
     }
 
@@ -430,6 +507,12 @@ export const FileWriteTool = buildTool({
           tool_use_id: toolUseID,
           type: 'tool_result',
           content: `The file ${filePath} has been updated successfully.`,
+        }
+      case 'append':
+        return {
+          tool_use_id: toolUseID,
+          type: 'tool_result',
+          content: `Content appended to ${filePath} successfully.`,
         }
     }
   },

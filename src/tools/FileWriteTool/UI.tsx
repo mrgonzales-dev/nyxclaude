@@ -148,7 +148,7 @@ export function isResultTruncated({
   type,
   content
 }: Output): boolean {
-  if (type !== 'create') return false;
+  if (type !== 'create' && type !== 'append') return false;
   let pos = 0;
   for (let i = 0; i < MAX_LINES_TO_RENDER; i++) {
     pos = content.indexOf(EOL, pos);
@@ -410,6 +410,16 @@ export function renderToolResultMessage({
           return <Text>
             Wrote <Text bold>{numLines}</Text> lines to{' '}
             <Text bold>{relative(getCwd(), filePath)}</Text>
+          </Text>;
+        }
+        return <FileWriteToolCreatedMessage filePath={filePath} content={content} verbose={verbose} />;
+      }
+    case 'append':
+      {
+        if (style === 'condensed' && !verbose) {
+          const numLines = countLines(content);
+          return <Text>
+            Appended to <Text bold>{relative(getCwd(), filePath)}</Text> ({numLines} total lines)
           </Text>;
         }
         return <FileWriteToolCreatedMessage filePath={filePath} content={content} verbose={verbose} />;

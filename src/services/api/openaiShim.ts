@@ -191,7 +191,7 @@ const DEFAULT_API_TIMEOUT_MS = 600_000
  */
 export const EMPTY_RESPONSE_ERROR_TEXT =
   '[Error: The model returned an empty response (finish_reason=stop with no content). This can happen when tool descriptions are too complex or trigger model refusal. Try simplifying your request or check NYXCLAUDE_DEBUG_API=1 for details.]'
-const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 90_000
+const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 300_000
 const MAX_STREAM_IDLE_TIMEOUT_MS = 2_147_483_647
 const GEMINI_API_HOST = 'generativelanguage.googleapis.com'
 const COPILOT_HEADERS: Record<string, string> = {

@@ -1,5 +1,5 @@
 import { afterEach, describe, test, expect, vi } from 'vitest'
-import { DEFAULT_QUERY_HARD_MAX_MS, QueryGuard } from './QueryGuard.js'
+import { DEFAULT_QUERY_HARD_MAX_MS, DEFAULT_QUERY_IDLE_TIMEOUT_MS, QueryGuard } from './QueryGuard.js'
 import { QueryLifecycleOperationTracker } from './queryLifecycle.js'
 
 describe('QueryGuard', () => {
@@ -45,14 +45,14 @@ describe('QueryGuard', () => {
     expect(guard.isActive).toBe(false)
   })
 
-  test('idle timeout auto force-ends after 5 minutes without activity', () => {
+  test('idle timeout auto force-ends after the default idle timeout without activity', () => {
     vi.useFakeTimers()
     vi.spyOn(console, 'error').mockImplementation(() => {})
     const guard = new QueryGuard()
     guard.tryStart()
     expect(guard.isActive).toBe(true)
 
-    vi.advanceTimersByTime(5 * 60 * 1000 - 1)
+    vi.advanceTimersByTime(DEFAULT_QUERY_IDLE_TIMEOUT_MS - 1)
     expect(guard.isActive).toBe(true)
 
     vi.advanceTimersByTime(1)
@@ -67,14 +67,14 @@ describe('QueryGuard', () => {
     guard.setTimeoutHandler(onTimeout)
 
     const gen = guard.tryStart()!
-    vi.advanceTimersByTime(5 * 60 * 1000)
+    vi.advanceTimersByTime(DEFAULT_QUERY_IDLE_TIMEOUT_MS)
 
     expect(onTimeout).toHaveBeenCalledTimes(1)
     expect(onTimeout).toHaveBeenCalledWith(
       expect.objectContaining({
         generation: gen,
         reason: 'idle',
-        timeoutMs: 5 * 60 * 1000,
+        timeoutMs: DEFAULT_QUERY_IDLE_TIMEOUT_MS,
         context: expect.objectContaining({
           queryGeneration: gen,
           terminalReason: 'query-timeout',
@@ -138,13 +138,13 @@ describe('QueryGuard', () => {
       getActiveOperations: () => tracker.snapshot(),
     })!
 
-    vi.advanceTimersByTime(5 * 60 * 1000)
+    vi.advanceTimersByTime(DEFAULT_QUERY_IDLE_TIMEOUT_MS)
 
     expect(onTimeout).toHaveBeenCalledTimes(1)
     expect(onTimeout).toHaveBeenCalledWith({
       generation: start.generation,
       reason: 'idle',
-      timeoutMs: 5 * 60 * 1000,
+      timeoutMs: DEFAULT_QUERY_IDLE_TIMEOUT_MS,
       elapsedMs: expect.any(Number),
       context: {
         ...start.context,
@@ -185,7 +185,7 @@ describe('QueryGuard', () => {
     cleanup()
 
     guard.tryStart()
-    vi.advanceTimersByTime(5 * 60 * 1000)
+    vi.advanceTimersByTime(DEFAULT_QUERY_IDLE_TIMEOUT_MS)
 
     expect(onTimeout).not.toHaveBeenCalled()
     expect(guard.isActive).toBe(false)
@@ -202,7 +202,7 @@ describe('QueryGuard', () => {
 
     guard.tryStart()
 
-    expect(() => vi.advanceTimersByTime(5 * 60 * 1000)).not.toThrow()
+    expect(() => vi.advanceTimersByTime(DEFAULT_QUERY_IDLE_TIMEOUT_MS)).not.toThrow()
     expect(guard.isActive).toBe(false)
     expect(consoleError).toHaveBeenCalledWith(
       '[QueryGuard] Timeout handler failed',

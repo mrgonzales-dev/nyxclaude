@@ -14,6 +14,7 @@ export function getWriteToolDescription(): string {
 Usage:
 - This tool will overwrite the existing file if there is one at the provided path.${getPreReadInstruction()}
 - Prefer the Edit tool for modifying existing files \u2014 it only sends the diff. Only use this tool to create new files or for complete rewrites.
+- For large files (500+ lines), write in chunks: first call with append=false to create the file, then call with append=true to add remaining content. Each chunk should be 200-400 lines. This prevents streaming timeouts on long responses.
 - NEVER create documentation files (*.md) or README files unless explicitly requested by the User.
 - Only use emojis if the user explicitly requests it. Avoid writing emojis to files unless asked.`
 }

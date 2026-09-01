@@ -2141,7 +2141,7 @@ test('stream idle timeout env parser parses and bounds overrides', async () => {
   const testApi = await getStreamIdleTestApi('stream-idle-env-parser')
 
   delete process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS
-  expect(testApi.getStreamIdleTimeoutMs()).toBe(90_000)
+  expect(testApi.getStreamIdleTimeoutMs()).toBe(300_000)
 
   process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS = '25'
   expect(testApi.getStreamIdleTimeoutMs()).toBe(25)
@@ -2153,16 +2153,16 @@ test('stream idle timeout env parser parses and bounds overrides', async () => {
   expect(testApi.getStreamIdleTimeoutMs()).toBe(2_147_483_647)
 
   process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS = '9007199254740993'
-  expect(testApi.getStreamIdleTimeoutMs()).toBe(90_000)
+  expect(testApi.getStreamIdleTimeoutMs()).toBe(300_000)
 
   process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS = '25ms'
-  expect(testApi.getStreamIdleTimeoutMs()).toBe(90_000)
+  expect(testApi.getStreamIdleTimeoutMs()).toBe(300_000)
 
   process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS = '0'
-  expect(testApi.getStreamIdleTimeoutMs()).toBe(90_000)
+  expect(testApi.getStreamIdleTimeoutMs()).toBe(300_000)
 
   process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS = '-5'
-  expect(testApi.getStreamIdleTimeoutMs()).toBe(90_000)
+  expect(testApi.getStreamIdleTimeoutMs()).toBe(300_000)
 })
 // openaiShim test extraction seam 024 end
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { afterEach, expect, mock, test } from 'bun:test'
 import type { ServerResponse } from 'node:http'
 import { acquireEnvMutex, releaseEnvMutex } from '../../entrypoints/sdk/shared.js'

@@ -125,13 +125,7 @@ export function TokenWarning(t0) {
   }
   const upgradeMessage = t3;
   let displayPercentLeft = percentLeft;
-  let reactiveOnlyMode = false;
   let collapseMode = false;
-  if (feature("REACTIVE_COMPACT")) {
-    if (getFeatureValue_CACHED_MAY_BE_STALE("tengu_cobalt_raccoon", false)) {
-      reactiveOnlyMode = true;
-    }
-  }
   if (feature("CONTEXT_COLLAPSE")) {
     const {
       isContextCollapseEnabled
@@ -140,7 +134,7 @@ export function TokenWarning(t0) {
       collapseMode = true;
     }
   }
-  if (reactiveOnlyMode || collapseMode) {
+  if (collapseMode) {
     const effectiveWindow = getEffectiveContextWindowSize(model);
     let t4;
     if ($[5] !== effectiveWindow || $[6] !== tokenUsage) {
@@ -163,7 +157,7 @@ export function TokenWarning(t0) {
     }
     return t4;
   }
-  const autocompactLabel = reactiveOnlyMode ? `${100 - displayPercentLeft}% context used` : `${displayPercentLeft}% until auto-compact`;
+  const autocompactLabel = `${displayPercentLeft}% until auto-compact`;
   let t4;
   if ($[9] !== autocompactLabel || $[10] !== isAboveErrorThreshold || $[11] !== percentLeft) {
     t4 = <Box flexDirection="row">{showAutoCompactWarning ? <Text dimColor={true} wrap="truncate">{upgradeMessage ? `${autocompactLabel} \u00b7 ${upgradeMessage}` : autocompactLabel}</Text> : <Text color={isAboveErrorThreshold ? "error" : "warning"} wrap="truncate">{upgradeMessage ? `Context low (${percentLeft}% remaining) \u00b7 ${upgradeMessage}` : `Context low (${percentLeft}% remaining) \u00b7 Run /compact to compact & continue`}</Text>}</Box>;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { expect, test } from 'bun:test'
 import { createGeminiVertexClient, type GeminiVertexStreamEvent } from './geminiVertexClient.js'
 

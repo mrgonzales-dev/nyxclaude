@@ -654,7 +654,7 @@ export type DeferredToolsDelta = {
  *     (fresh conversation, initialMessages has no DTD)
  *   - compact_full: compact.ts passes [] → prior=0 is EXPECTED
  *   - compact_partial: compact.ts passes messagesToKeep → depends on what survived
- *   - reactive_compact: reactiveCompact.ts passes preservedMessages → same
+ *   - reactive_compact: (removed) previously passed preservedMessages → same
  * Without this the 96%-prior=0 stat is dominated by EXPECTED buckets and
  * the real main-thread cross-turn bug (if any) is invisible in BQ.
  */

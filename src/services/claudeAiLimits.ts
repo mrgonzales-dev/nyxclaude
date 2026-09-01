@@ -10,6 +10,11 @@ export type ClaudeAILimits = {
   overageEnabled: boolean
   overageDisabledReason: OverageDisabledReason | null
   rawUtilization: RawUtilization | null
+  isUsingOverage: boolean
+  overageStatus: string | null
+  status: string | null
+  resetsAt: string | null
+  overageResetsAt: string | null
 }
 
 export type RawUtilization = {
@@ -29,6 +34,11 @@ export let currentLimits: ClaudeAILimits = {
   overageEnabled: false,
   overageDisabledReason: null,
   rawUtilization: null,
+  isUsingOverage: false,
+  overageStatus: null,
+  status: null,
+  resetsAt: null,
+  overageResetsAt: null,
 }
 
 export function getRateLimitDisplayName(_type: RateLimitType): string { return '' }

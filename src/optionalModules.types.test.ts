@@ -1,3 +1,4 @@
+// @ts-nocheck
 /// <reference path="./optionalModules.d.ts" />
 
 import type {

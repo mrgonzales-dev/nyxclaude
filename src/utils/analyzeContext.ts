@@ -1163,11 +1163,6 @@ export async function analyzeContextUsage(
   // shouldAutoCompact, so the 33k buffer shown here would be a lie too.
   let reservedTokens = 0
   let skipReservedBuffer = false
-  if (feature('REACTIVE_COMPACT')) {
-    if (getFeatureValue_CACHED_MAY_BE_STALE('tengu_cobalt_raccoon', false)) {
-      skipReservedBuffer = true
-    }
-  }
   if (feature('CONTEXT_COLLAPSE')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
     const { isContextCollapseEnabled } =

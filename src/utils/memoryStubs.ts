@@ -37,5 +37,17 @@ export function createAutoMemCanUseTool(): () => Promise<never[]> {
 export function checkTeamMemSecrets(_content: string, _path: string): string | null { return null }
 export function redactSecrets(content: string): string { return content }
 
-export type DreamTaskState = { status: string }
+export type DreamTaskState = {
+  id: string
+  type: 'dream'
+  status: 'running' | 'pending' | 'completed' | 'killed'
+  description: string
+  toolUseId?: string
+  startTime: number
+  endTime?: number
+  totalPausedMs?: number
+  outputFile: string
+  outputOffset: number
+  notified: boolean
+}
 export const DreamTask = null as unknown

@@ -21,6 +21,7 @@ export type OauthConfig = {
   authorizationUrl: string
   tokenUrl: string
   scope: string
+  BASE_API_URL: string
 }
 export function getOauthConfig(): OauthConfig {
   return {
@@ -36,5 +37,6 @@ export function getOauthConfig(): OauthConfig {
     authorizationUrl: '',
     tokenUrl: '',
     scope: '',
+    BASE_API_URL: '',
   }
 }

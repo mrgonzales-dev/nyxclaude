@@ -812,7 +812,7 @@ export async function compactConversation(
       // session) purely for this telemetry breakdown. Computed here, past
       // the compaction-API await, so the sync walk doesn't starve the
       // render loop before compaction even starts. Same deferral pattern
-      // as reactiveCompact.ts.
+      // as the reactive compact path did.
       ...(() => {
         try {
           return tokenStatsToStatsigMetrics(analyzeContext(messages))

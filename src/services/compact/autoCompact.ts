@@ -350,30 +350,14 @@ export async function shouldAutoCompact(
     return false
   }
 
-  // Reactive-only mode: suppress proactive autocompact, let reactive compact
-  // catch the API's prompt-too-long. feature() wrapper keeps the flag string
-  // out of external builds (REACTIVE_COMPACT is internal-only).
-  // Note: returning false here also means autoCompactIfNeeded never reaches
-  // trySessionMemoryCompaction in the query loop — the /compact call site
-  // still tries session memory first. Revisit if reactive-only graduates.
-  if (feature('REACTIVE_COMPACT')) {
-    if (
-      !forceReason &&
-      getFeatureValue_CACHED_MAY_BE_STALE('tengu_cobalt_raccoon', false)
-    ) {
-      return false
-    }
-  }
-
   // Context-collapse mode: same suppression. Collapse IS the context
   // management system when it's on — the 90% commit / 95% blocking-spawn
   // flow owns the headroom problem. Autocompact firing at effective-13k
   // (~93% of effective) sits right between collapse's commit-start (90%)
   // and blocking (95%), so it would race collapse and usually win, nuking
   // granular context that collapse was about to save. Gating here rather
-  // than in isAutoCompactEnabled() keeps reactiveCompact alive as the 413
-  // fallback (it consults isAutoCompactEnabled directly) and leaves
-  // sessionMemory + manual /compact working.
+  // than in isAutoCompactEnabled() keeps the 413 fallback path alive
+  // and leaves sessionMemory + manual /compact working.
   //
   // hasActiveReduction() folds in the enablement check (so the
   // CLAUDE_CONTEXT_COLLAPSE env override is honored here too) but also

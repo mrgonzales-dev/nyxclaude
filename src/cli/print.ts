@@ -38,7 +38,27 @@ import { toolMatchesName, type Tool, type Tools } from 'src/Tool.js'
 //   isBuiltInAgent,
 //   parseAgentsFromJson,
 // } from 'src/tools/AgentTool/loadAgentsDir.js'
-type AgentDefinition = { agentType: string; whenToUse: string; systemPrompt: string }
+type AgentDefinition = {
+  agentType: string
+  whenToUse: string
+  systemPrompt?: string
+  getSystemPrompt?: () => string
+  source: string
+  model?: string
+  tools?: string[]
+  disallowedTools?: string[]
+  skills?: string[]
+  color?: string
+  effort?: string
+  permissionMode?: string
+  maxTurns?: number
+  maxSteps?: number
+  filename?: string
+  baseDir?: string
+  background?: boolean
+  initialPrompt?: string
+  omitClaudeMd?: boolean
+}
 function isBuiltInAgent(_agent: unknown): boolean {
   return false
 }

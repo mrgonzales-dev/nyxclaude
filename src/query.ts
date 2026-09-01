@@ -16,9 +16,6 @@ import { consumeCompactionRequest } from './utils/memoryPressure.js'
 import { buildPostCompactMessages } from './services/compact/compact.js'
 import type { MicrocompactResult } from './services/compact/microCompact.js'
 /* eslint-disable @typescript-eslint/no-require-imports */
-const reactiveCompact = feature('REACTIVE_COMPACT')
-  ? (require('./services/compact/reactiveCompact.js') as typeof import('./services/compact/reactiveCompact.js'))
-  : null
 const contextCollapse = feature('CONTEXT_COLLAPSE')
   ? (require('./services/contextCollapse/index.js') as typeof import('./services/contextCollapse/index.js'))
   : null
@@ -63,7 +60,6 @@ import {
   createAssistantAPIErrorMessage,
   getMessagesAfterCompactBoundary,
   createToolUseSummaryMessage,
-  createMicrocompactBoundaryMessage,
 } from './utils/messages.js'
 import { analyzeContinuationIntent } from './utils/continuation.js'
 import { EMPTY_RESPONSE_ERROR_TEXT } from './services/api/openaiShim.js'
@@ -388,7 +384,7 @@ function createAutoCompactDiagnosticMessage(args: {
  * cowork/desktop) that terminate the session on any `error` field — the
  * recovery loop keeps running but nobody is listening.
  *
- * Mirrors reactiveCompact.isWithheldPromptTooLong.
+ * Mirrors the withholding pattern used for prompt-too-long errors.
  */
 function isWithheldMaxOutputTokens(
   msg: Message | StreamEvent | undefined,
@@ -524,7 +520,6 @@ type State = {
   toolUseContext: ToolUseContext
   autoCompactTracking: AutoCompactTrackingState | undefined
   maxOutputTokensRecoveryCount: number
-  hasAttemptedReactiveCompact: boolean
   hasAttemptedContextOverflowRecovery: boolean
   maxOutputTokensOverride: number | undefined
   providerMaxOutputTokensCap: number | undefined
@@ -629,7 +624,6 @@ async function* queryLoop(
     autoCompactTracking: params.autoCompactTracking,
     stopHookActive: undefined,
     maxOutputTokensRecoveryCount: 0,
-    hasAttemptedReactiveCompact: false,
     hasAttemptedContextOverflowRecovery: false,
     hasAttemptedProviderFallback: false,
     turnCount: 1,
@@ -708,7 +702,6 @@ async function* queryLoop(
       messages,
       autoCompactTracking,
       maxOutputTokensRecoveryCount,
-      hasAttemptedReactiveCompact,
       hasAttemptedContextOverflowRecovery,
       hasAttemptedProviderFallback,
       maxOutputTokensOverride,
@@ -860,12 +853,6 @@ async function* queryLoop(
       )
       messagesForQuery = microcompactResult.messages
     }
-    // For cached microcompact (cache editing), defer boundary message until after
-    // the API response so we can use actual cache_deleted_input_tokens.
-    // Gated behind feature() so the string is eliminated from external builds.
-    const pendingCacheEdits = feature('CACHED_MICROCOMPACT')
-      ? microcompactResult?.compactionInfo?.pendingCacheEdits
-      : undefined
     queryCheckpoint('query_microcompact_end')
     toolUseContext.queryActivity?.registerActivity('query:prep:microcompact')
 
@@ -1233,13 +1220,12 @@ async function* queryLoop(
     // agent needs to run to REDUCE the token count).
     // Also skip when reactive compact is enabled and automatic compaction is
     // allowed — the preempt's synthetic error returns before the API call,
-    // so reactive compact would never see a prompt-too-long to react to.
-    // Widened to walrus so RC can act as fallback when proactive fails.
+    // so it would never see a prompt-too-long to react to.
     //
     // Same skip for context-collapse: its recoverFromOverflow drains
     // staged collapses on a REAL API 413, then falls through to
-    // reactiveCompact. A synthetic preempt here would return before the
-    // API call and starve both recovery paths. The isAutoCompactEnabled()
+    // error surface. A synthetic preempt here would return before the
+    // API call and starve the recovery path. The isAutoCompactEnabled()
     // conjunct preserves the user's explicit "no automatic anything"
     // config — if they set DISABLE_AUTO_COMPACT, they get the preempt.
     // hasActiveReduction() (not mere enablement) means a turn where collapse
@@ -1256,20 +1242,10 @@ async function* queryLoop(
         (contextCollapse?.hasActiveReduction() ?? false) &&
         isAutoCompactEnabled()
     }
-    // Hoist media-recovery gate once per turn. Withholding (inside the
-    // stream loop) and recovery (after) must agree; CACHED_MAY_BE_STALE can
-    // flip during the 5-30s stream, and withhold-without-recover would eat
-    // the message. PTL doesn't hoist because its withholding is ungated —
-    // it predates the experiment and is already the control-arm baseline.
-    const mediaRecoveryEnabled =
-      reactiveCompact?.isReactiveCompactEnabled() ?? false
     if (
       !compactionResult &&
       querySource !== 'compact' &&
       querySource !== 'session_memory' &&
-      !(
-        reactiveCompact?.isReactiveCompactEnabled() && isAutoCompactEnabled()
-      ) &&
       !collapseOwnsIt
     ) {
       const { isAtBlockingLimit } = calculateTokenWarningState(
@@ -1299,7 +1275,7 @@ async function* queryLoop(
     }
 
     // Safety net: when auto-compact's circuit breaker has tripped, the normal
-    // blocking check above may be gated on reactiveCompact. If compaction is
+    // blocking check above may be skipped. If compaction is
     // cooling down or otherwise exhausted and context or message count is still
     // over the safety threshold, block immediately with a clear message instead
     // of burning an oversized API call.
@@ -1577,15 +1553,6 @@ async function* queryLoop(
                 withheld = true
               }
             }
-            if (reactiveCompact?.isWithheldPromptTooLong(message)) {
-              withheld = true
-            }
-            if (
-              mediaRecoveryEnabled &&
-              reactiveCompact?.isWithheldMediaSizeError(message)
-            ) {
-              withheld = true
-            }
             if (isWithheldMaxOutputTokens(message)) {
               withheld = true
             }
@@ -1665,34 +1632,6 @@ async function* queryLoop(
             params.onModelRequestEnd?.()
           }
           queryCheckpoint('query_api_streaming_end')
-
-          // Yield deferred microcompact boundary message using actual API-reported
-          // token deletion count instead of client-side estimates.
-          // Entire block gated behind feature() so the excluded string
-          // is eliminated from external builds.
-          if (feature('CACHED_MICROCOMPACT') && pendingCacheEdits) {
-            const lastAssistant = assistantMessages.at(-1)
-            // The API field is cumulative/sticky across requests, so we
-            // subtract the baseline captured before this request to get the delta.
-            const usage = lastAssistant?.message.usage
-            const cumulativeDeleted = usage
-              ? ((usage as unknown as Record<string, number>)
-                  .cache_deleted_input_tokens ?? 0)
-              : 0
-            const deletedTokens = Math.max(
-              0,
-              cumulativeDeleted - pendingCacheEdits.baselineCacheDeletedTokens,
-            )
-            if (deletedTokens > 0) {
-              yield createMicrocompactBoundaryMessage(
-                pendingCacheEdits.trigger,
-                0,
-                deletedTokens,
-                pendingCacheEdits.deletedToolIds,
-                [],
-              )
-            }
-          }
         } catch (innerError) {
           if (innerError instanceof FallbackTriggeredError && fallbackModel) {
             // Fallback was triggered - switch model and retry
@@ -1925,29 +1864,17 @@ async function* queryLoop(
       const lastMessage = assistantMessages.at(-1)
 
       // Prompt-too-long recovery: the streaming loop withheld the error
-      // (see withheldByCollapse / withheldByReactive above). Try collapse
-      // drain first (cheap, keeps granular context), then reactive compact
-      // (full summary). Single-shot on each — if a retry still 413's,
-      // the next stage handles it or the error surfaces.
+      // (see withheldByCollapse above). Try collapse drain first (cheap,
+      // keeps granular context). Single-shot — if a retry still 413's,
+      // the error surfaces.
       const isWithheld413 =
         lastMessage?.type === 'assistant' &&
         lastMessage.isApiErrorMessage &&
         isPromptTooLongMessage(lastMessage)
-      // Media-size rejections (image/PDF/many-image) are recoverable via
-      // reactive compact's strip-retry. Unlike PTL, media errors skip the
-      // collapse drain — collapse doesn't strip images. mediaRecoveryEnabled
-      // is the hoisted gate from before the stream loop (same value as the
-      // withholding check — these two must agree or a withheld message is
-      // lost). If the oversized media is in the preserved tail, the
-      // post-compact turn will media-error again; hasAttemptedReactiveCompact
-      // prevents a spiral and the error surfaces.
-      const isWithheldMedia =
-        mediaRecoveryEnabled &&
-        reactiveCompact?.isWithheldMediaSizeError(lastMessage)
       if (isWithheld413) {
         // First: drain all staged context-collapses. Gated on the PREVIOUS
         // transition not being collapse_drain_retry — if we already drained
-        // and the retry still 413'd, fall through to reactive compact.
+        // and the retry still 413'd, fall through to error surface.
         if (
           feature('CONTEXT_COLLAPSE') &&
           contextCollapse &&
@@ -1966,7 +1893,6 @@ async function* queryLoop(
               toolUseContext,
               autoCompactTracking: tracking,
               maxOutputTokensRecoveryCount,
-              hasAttemptedReactiveCompact,
               hasAttemptedContextOverflowRecovery,
               hasAttemptedProviderFallback,
               maxOutputTokensOverride: undefined,
@@ -1987,90 +1913,9 @@ async function* queryLoop(
             continue
           }
         }
-      }
-      if ((isWithheld413 || isWithheldMedia) && reactiveCompact) {
-        const compacted = await reactiveCompact.tryReactiveCompact({
-          hasAttempted: hasAttemptedReactiveCompact,
-          querySource,
-          aborted: toolUseContext.abortController.signal.aborted,
-          messages: messagesForQuery,
-          cacheSafeParams: {
-            systemPrompt,
-            userContext,
-            systemContext,
-            toolUseContext,
-            forkContextMessages: messagesForQuery,
-          },
-        })
-
-        if (compacted) {
-          // The reactive path also replaces the complete conversation; do not
-          // re-inject request-only context whose referent was compacted away.
-          requestOnlyMessages = undefined
-          // task_budget: same carryover as the proactive path above.
-          // messagesForQuery still holds the pre-compact array here (the
-          // 413-failed attempt's input).
-          if (params.taskBudget) {
-            const preCompactContext =
-              finalContextTokensFromLastResponse(messagesForQuery)
-            taskBudgetRemaining = Math.max(
-              0,
-              (taskBudgetRemaining ?? params.taskBudget.total) -
-                preCompactContext,
-            )
-          }
-
-          const postCompactMessages = buildPostCompactMessages(compacted)
-          const messagesAfterCompact = [
-            ...postCompactMessages,
-            ...advisoriesForCurrentRequest
-              .filter(
-                advisory =>
-                  !postCompactMessages.some(
-                    message => message.uuid === advisory.message.uuid,
-                  ),
-              )
-              .map(advisory => advisory.message),
-          ]
-          for (const msg of postCompactMessages) {
-            yield msg
-          }
-          updateAutoCompactTracking(undefined)
-          const next: State = {
-            messages: messagesAfterCompact,
-            toolUseContext,
-            autoCompactTracking: undefined,
-            maxOutputTokensRecoveryCount,
-            hasAttemptedReactiveCompact: true,
-            hasAttemptedContextOverflowRecovery,
-            hasAttemptedProviderFallback,
-            maxOutputTokensOverride: undefined,
-            providerMaxOutputTokensCap,
-            pendingToolUseSummary: undefined,
-            stopHookActive: undefined,
-            turnCount,
-            continuationNudgeCount: state.continuationNudgeCount,
-            emptyResponseProceedCount: state.emptyResponseProceedCount,
-            agentStepLimit,
-            monitorState,
-            transition: { reason: 'reactive_compact_retry' },
-          }
-          state = next
-          continue
-        }
-
-        // No recovery — surface the withheld error and exit. Do NOT fall
-        // through to stop hooks: the model never produced a valid response,
-        // so hooks have nothing meaningful to evaluate. Running stop hooks
-        // on prompt-too-long creates a death spiral: error → hook blocking
-        // → retry → error → … (the hook injects more tokens each cycle).
-        yield lastMessage
-        void executeStopFailureHooks(lastMessage, toolUseContext)
-        return { reason: isWithheldMedia ? 'image_error' : 'prompt_too_long' }
-      } else if (feature('CONTEXT_COLLAPSE') && isWithheld413) {
-        // reactiveCompact compiled out but contextCollapse withheld and
-        // couldn't recover (staged queue empty/stale). Surface. Same
-        // early-return rationale — don't fall through to stop hooks.
+        // contextCollapse withheld and couldn't recover (staged queue
+        // empty/stale). Surface. Same early-return rationale — don't fall
+        // through to stop hooks.
         yield lastMessage
         void executeStopFailureHooks(lastMessage, toolUseContext)
         return { reason: 'prompt_too_long' }
@@ -2096,7 +1941,6 @@ async function* queryLoop(
           toolUseContext,
           autoCompactTracking: nextTracking,
           maxOutputTokensRecoveryCount,
-          hasAttemptedReactiveCompact,
           hasAttemptedContextOverflowRecovery: true,
           hasAttemptedProviderFallback,
           maxOutputTokensOverride: undefined,
@@ -2144,8 +1988,7 @@ async function* queryLoop(
             toolUseContext,
             autoCompactTracking: tracking,
             maxOutputTokensRecoveryCount,
-            hasAttemptedReactiveCompact,
-            hasAttemptedContextOverflowRecovery,
+              hasAttemptedContextOverflowRecovery,
             hasAttemptedProviderFallback,
             maxOutputTokensOverride,
             providerMaxOutputTokensCap: nextProviderMaxOutputTokensCap,
@@ -2195,8 +2038,7 @@ async function* queryLoop(
             toolUseContext,
             autoCompactTracking: tracking,
             maxOutputTokensRecoveryCount,
-            hasAttemptedReactiveCompact,
-            hasAttemptedContextOverflowRecovery,
+              hasAttemptedContextOverflowRecovery,
             hasAttemptedProviderFallback,
             maxOutputTokensOverride: ESCALATED_MAX_TOKENS,
             providerMaxOutputTokensCap,
@@ -2230,8 +2072,7 @@ async function* queryLoop(
             toolUseContext,
             autoCompactTracking: tracking,
             maxOutputTokensRecoveryCount: maxOutputTokensRecoveryCount + 1,
-            hasAttemptedReactiveCompact,
-            hasAttemptedContextOverflowRecovery,
+              hasAttemptedContextOverflowRecovery,
             hasAttemptedProviderFallback,
             maxOutputTokensOverride: undefined,
             providerMaxOutputTokensCap,
@@ -2313,8 +2154,7 @@ async function* queryLoop(
               toolUseContext,
               autoCompactTracking: tracking,
               maxOutputTokensRecoveryCount,
-              hasAttemptedReactiveCompact,
-              hasAttemptedContextOverflowRecovery,
+                  hasAttemptedContextOverflowRecovery,
               hasAttemptedProviderFallback: true,
               maxOutputTokensOverride: undefined,
               providerMaxOutputTokensCap: undefined,
@@ -2391,8 +2231,7 @@ async function* queryLoop(
               toolUseContext,
               autoCompactTracking: tracking,
               maxOutputTokensRecoveryCount: 0,
-              hasAttemptedReactiveCompact: false,
-              hasAttemptedContextOverflowRecovery: false,
+                hasAttemptedContextOverflowRecovery: false,
               hasAttemptedProviderFallback: false,
               maxOutputTokensOverride: undefined,
               providerMaxOutputTokensCap,
@@ -2445,7 +2284,6 @@ async function* queryLoop(
           // blocking error will produce the same result. Resetting to false
           // here caused an infinite loop: compact → still too long → error →
           // stop hook blocking → compact → … burning thousands of API calls.
-          hasAttemptedReactiveCompact,
           hasAttemptedContextOverflowRecovery,
           // Same logic for the provider-fallback guard — a stop-hook blocking
           // error after a fallback switch is unrelated to which provider is
@@ -2491,7 +2329,6 @@ async function* queryLoop(
             toolUseContext,
             autoCompactTracking: tracking,
             maxOutputTokensRecoveryCount: 0,
-            hasAttemptedReactiveCompact: false,
             hasAttemptedContextOverflowRecovery: false,
             hasAttemptedProviderFallback: false,
             maxOutputTokensOverride: undefined,
@@ -2563,8 +2400,7 @@ async function* queryLoop(
               toolUseContext,
               autoCompactTracking: tracking,
               maxOutputTokensRecoveryCount: 0,
-              hasAttemptedReactiveCompact: false,
-              hasAttemptedContextOverflowRecovery: false,
+                hasAttemptedContextOverflowRecovery: false,
               hasAttemptedProviderFallback: false,
               maxOutputTokensOverride: undefined,
               providerMaxOutputTokensCap,
@@ -3127,7 +2963,6 @@ async function* queryLoop(
       autoCompactTracking: tracking,
       turnCount: nextTurnCount,
       maxOutputTokensRecoveryCount: 0,
-      hasAttemptedReactiveCompact: false,
       hasAttemptedContextOverflowRecovery: false,
       hasAttemptedProviderFallback: false,
       continuationNudgeCount: 0,

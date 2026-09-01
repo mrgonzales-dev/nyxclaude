@@ -95,6 +95,16 @@ export type AutoCompactTrackingState = {
 // large-context models.
 export const AUTOCOMPACT_THRESHOLD_RATIO = 0.80
 
+// Minimum number of messages before proactive auto-compact can fire. When a
+// provider returns all-zero usage (e.g. wbridge streaming), tokenCountWithEstimation
+// falls back to local estimation (content.length / 4) which overcounts because it
+// sees full tool result content that microCompact may have already cleared. A short
+// conversation with a few large file reads can falsely exceed the token threshold.
+// This guard prevents premature compaction on young conversations. Forced paths
+// (memory-pressure, message-count, context-overflow) bypass this guard. The API's
+// prompt-too-long error still triggers reactive compaction regardless.
+export const MIN_MESSAGES_BEFORE_AUTOCOMPACT = 20
+
 // Conservative floor buffer for getEffectiveContextWindowSize(). Must guarantee
 // a non-negative auto-compact threshold for small-context models, so it stays at
 // the pre-#1949 value of 13_000 and is decoupled from the ratio-based threshold.
@@ -305,6 +315,12 @@ export async function shouldAutoCompact(
   // context-collapse guards. Only message-count and provider-overflow also
   // bypass a user-disabled auto-compact setting.
   forceReason?: AutoCompactTrackingState['forceReason'],
+  // Tokens freed by cached microcompact. The cached-MC path returns messages
+  // unchanged (cache_edits tell the API to drop entries), so the local token
+  // counter still sees the full content. Subtracting this prevents false
+  // threshold trips on providers that return zero usage. Time-based MC
+  // replaces content in-place, so it passes 0 here.
+  microcompactTokensFreed = 0,
 ): Promise<boolean> {
   // Recursion guards. session_memory and compact are forked agents that
   // would deadlock.
@@ -386,12 +402,34 @@ export async function shouldAutoCompact(
     return true
   }
 
-  const tokenCount = tokenCountWithEstimation(messages) - snipTokensFreed
+  // Minimum-message guard: skip proactive auto-compact on young conversations.
+  // Local token estimation (used when providers return zero usage) overcounts
+  // because it sees full tool result content that microCompact may have already
+  // cleared. A few large file reads can falsely trip the threshold. Forced
+  // paths already bypassed above; reactive compact handles real PTL errors.
+  // The CLAUDE_AUTOCOMPACT_PCT_OVERRIDE env var (used by tests to force
+  // compaction) also bypasses this guard.
+  if (
+    messages.length < MIN_MESSAGES_BEFORE_AUTOCOMPACT &&
+    !process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
+  ) {
+    logForDebugging(
+      `autocompact: skipping — only ${messages.length} messages (min ${MIN_MESSAGES_BEFORE_AUTOCOMPACT})`,
+    )
+    return false
+  }
+
+  const tokenCount = Math.max(
+    0,
+    tokenCountWithEstimation(messages) -
+      snipTokensFreed -
+      microcompactTokensFreed,
+  )
   const threshold = getAutoCompactThreshold(model)
   const effectiveWindow = getEffectiveContextWindowSize(model)
 
   logForDebugging(
-    `autocompact: tokens=${tokenCount} threshold=${threshold} effectiveWindow=${effectiveWindow}${snipTokensFreed > 0 ? ` snipFreed=${snipTokensFreed}` : ''}`,
+    `autocompact: tokens=${tokenCount} threshold=${threshold} effectiveWindow=${effectiveWindow}${snipTokensFreed > 0 ? ` snipFreed=${snipTokensFreed}` : ''}${microcompactTokensFreed > 0 ? ` mcFreed=${microcompactTokensFreed}` : ''}`,
   )
 
   const { isAboveAutoCompactThreshold } = calculateTokenWarningState(
@@ -409,6 +447,7 @@ export async function autoCompactIfNeeded(
   querySource?: QuerySource,
   tracking?: AutoCompactTrackingState,
   snipTokensFreed?: number,
+  microcompactTokensFreed?: number,
 ): Promise<{
   wasCompacted: boolean
   compactionResult?: CompactionResult
@@ -437,6 +476,7 @@ export async function autoCompactIfNeeded(
     querySource,
     snipTokensFreed,
     forcedBy,
+    microcompactTokensFreed,
   )
 
   if (!shouldCompact) {

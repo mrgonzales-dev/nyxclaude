@@ -991,6 +991,7 @@ async function* queryLoop(
       querySource,
       tracking,
       snipTokensFreed,
+      microcompactResult?.tokensFreed ?? 0,
     )
     queryCheckpoint('query_autocompact_end')
     toolUseContext.queryActivity?.registerActivity('query:prep:autocompact')

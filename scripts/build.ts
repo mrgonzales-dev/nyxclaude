@@ -15,6 +15,12 @@ import { noTelemetryPlugin } from './no-telemetry-plugin'
 import { CLI_EXTERNALS, SDK_EXTERNALS } from './externals.js'
 import { canonicalStub, collectBundleStubs } from './stubMarkerGuard.js'
 
+// Source maps are 60MB (cli.mjs.map 41MB + sdk.mjs.map 19MB). They bloat the
+// dist directory and can be loaded into memory at runtime. Set
+// NYXCLAUDE_BUILD_SOURCEMAPS=false to skip generation for slim production builds.
+const sourcemapSetting: 'external' | 'none' =
+  process.env.NYXCLAUDE_BUILD_SOURCEMAPS === 'false' ? 'none' : 'external'
+
 const nodeRequire = createRequire(import.meta.url)
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 const version = pkg.version
@@ -180,7 +186,7 @@ result = await Bun.build({
   target: 'node',
   format: 'esm',
   splitting: false,
-  sourcemap: 'external',
+  sourcemap: sourcemapSetting,
   // Whitespace+syntax only: identifier mangling would break the
   // constructor.name matching in errors.ts/toolExecution.ts/useCanUseTool.
   // The SDK build stays unminified — its React/Ink leak check greps import
@@ -515,7 +521,7 @@ sdkResult = await Bun.build({
   target: 'node',
   format: 'esm',
   splitting: false,
-  sourcemap: 'external',
+  sourcemap: sourcemapSetting,
   minify: false,
   naming: 'sdk.mjs',
   define: {

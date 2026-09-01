@@ -257,6 +257,16 @@ export type MicrocompactResult = {
   compactionInfo?: {
     pendingCacheEdits?: PendingCacheEdits
   }
+  /**
+   * Approximate tokens freed by this microcompact pass that are NOT reflected
+   * in the returned message content. The cached-MC path returns messages
+   * unchanged but queues cache_edits that tell the API to drop tool results
+   * from the cache — the local token counter still sees the full content, so
+   * this number lets shouldAutoCompact subtract the savings. The time-based
+   * path replaces content in-place, so the counter already sees the cleared
+   * text and this field stays 0.
+   */
+  tokensFreed?: number
 }
 
 /**
@@ -412,6 +422,25 @@ async function cachedMicrocompactPath(
       pendingCacheEdits = cacheEdits
     }
 
+    // Estimate tokens freed: the cached-MC path returns messages unchanged,
+    // so the local token counter still sees the full tool result content.
+    // Sum the tokens of the deleted tool results so shouldAutoCompact can
+    // subtract them from its local estimate.
+    const deleteSet = new Set(toolsToDelete)
+    let tokensFreed = 0
+    for (const message of messages) {
+      if (message.type === 'user' && Array.isArray(message.message.content)) {
+        for (const block of message.message.content) {
+          if (
+            block.type === 'tool_result' &&
+            deleteSet.has(block.tool_use_id)
+          ) {
+            tokensFreed += calculateToolResultTokens(block)
+          }
+        }
+      }
+    }
+
     logForDebugging(
       `Cached MC deleting ${toolsToDelete.length} tool(s): ${toolsToDelete.join(', ')}`,
     )
@@ -465,6 +494,7 @@ async function cachedMicrocompactPath(
           baselineCacheDeletedTokens: baseline,
         },
       },
+      tokensFreed,
     }
   }
 

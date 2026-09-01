@@ -39,6 +39,9 @@ export const RUNTIME_DEPENDENCY_CONTRACT: Readonly<Record<string, string>> = {
   '@vscode/ripgrep': '1.18.0',
   // NYXCLAUDE: fff native file search library (node SDK)
   '@ff-labs/fff-node': '0.10.1',
+  // Used by repo-map token budgeting. Kept external to avoid bundling
+  // the ~5.6 MB BPE vocab into cli.mjs.
+  'js-tiktoken': '1.0.21',
 }
 
 /** Node range advertised to installers; changing it changes who gets EBADENGINE. */

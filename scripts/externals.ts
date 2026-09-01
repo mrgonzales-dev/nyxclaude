@@ -29,6 +29,10 @@ export const COMMON_EXTERNALS: string[] = [
   // Ships compiled JS + platform-specific native binary. Keep external so
   // the native binary path resolves correctly at runtime under node.
   '@ff-labs/fff-node',
+  // js-tiktoken bundles ~5.6 MB of BPE vocab data and is only used for
+  // repo-map token budgeting. Keep external so installs that don't use
+  // repo maps avoid loading the vocab into the CLI bundle.
+  'js-tiktoken',
 ]
 
 // Additional packages external only in the SDK bundle (TUI + heavy deps)
@@ -142,6 +146,4 @@ export const INTENTIONALLY_BUNDLED: string[] = [
   // Graph algorithms (repo map PageRank)
   'graphology',
   'graphology-metrics',
-  // Tokenizer for repo map token budgeting
-  'js-tiktoken',
 ]

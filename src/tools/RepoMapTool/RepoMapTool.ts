@@ -5,7 +5,6 @@ import { lazySchema } from '../../utils/lazySchema.js'
 import { checkReadPermissionForTool } from '../../utils/permissions/filesystem.js'
 import type { PermissionDecision } from '../../utils/permissions/PermissionResult.js'
 import { AbortError } from '../../utils/errors.js'
-import { buildRepoMap } from '../../context/repoMap/index.js'
 import { REPO_MAP_TOOL_NAME, getDescription } from './prompt.js'
 import {
   getToolUseSummary,
@@ -132,6 +131,9 @@ export const RepoMapTool = buildTool({
     const root = pwd()
 
     throwIfAborted(abortController.signal)
+    const { buildRepoMap } = await import(
+      '../../context/repoMap/index.js'
+    )
     const result = await buildRepoMap({
       root,
       maxTokens: max_tokens,

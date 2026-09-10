@@ -31,10 +31,10 @@ import { GLOB_TOOL_NAME } from 'src/tools/GlobTool/prompt.js'
 import { GREP_TOOL_NAME } from 'src/tools/GrepTool/prompt.js'
 import { hasEmbeddedSearchTools } from 'src/utils/embeddedTools.js'
 import { ASK_USER_QUESTION_TOOL_NAME } from '../tools/AskUserQuestionTool/prompt.js'
-const EXPLORE_AGENT = { agentType: 'explore' }
-const EXPLORE_AGENT_MIN_QUERIES = 5
+const EXPLORE_AGENT = { agentType: 'Explore' }
+const EXPLORE_AGENT_MIN_QUERIES = 3
 function areExplorePlanAgentsEnabled(): boolean {
-  return false
+  return true
 }
 import {
   isScratchpadEnabled,
@@ -42,13 +42,13 @@ import {
 } from '../utils/permissions/filesystem.js'
 import { isEnvTruthy } from '../utils/envUtils.js'
 function isReplModeEnabled(): boolean {
-  return false
+  return true
 }
 import { feature } from 'bun:bundle'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js'
 import { shouldUseGlobalCacheScope } from '../utils/betas.js'
 function isForkSubagentEnabled(): boolean {
-  return false
+  return true
 }
 import {
   systemPromptSection,

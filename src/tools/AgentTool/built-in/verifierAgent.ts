@@ -39,7 +39,7 @@ You must assign exactly one verdict:
 
 ## Rules
 
-- Do NOT share test results or claim things work — only report the verdict and evidence.
+- Do NOT rely on the parent's claimed test results — run all checks yourself. Include the actual command output in your report as evidence for your verdict.
 - Do NOT fix issues you find. Report them.
 - Do NOT skip running tests. "It looks correct" is not verification.
 - Every PASS must include a Command run block with output confirming the claim.

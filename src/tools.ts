@@ -3,6 +3,8 @@ import { toolMatchesName, type Tool, type Tools } from './Tool.js'
 import { AgentTool } from './tools/AgentTool/AgentTool.js'
 import { AskUserQuestionTool } from './tools/AskUserQuestionTool/AskUserQuestionTool.js'
 import { BashTool } from './tools/BashTool/BashTool.js'
+import { EnterPlanModeTool } from './tools/EnterPlanModeTool/EnterPlanModeTool.js'
+import { ExitPlanModeV2Tool } from './tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
 import { FileEditTool } from './tools/FileEditTool/FileEditTool.js'
 import { FileReadTool } from './tools/FileReadTool/FileReadTool.js'
 import { FileWriteTool } from './tools/FileWriteTool/FileWriteTool.js'
@@ -14,6 +16,7 @@ import { TaskListTool } from './tools/TaskListTool/TaskListTool.js'
 import { TaskUpdateTool } from './tools/TaskUpdateTool/TaskUpdateTool.js'
 import { TodoWriteTool } from './tools/TodoWriteTool/TodoWriteTool.js'
 import { WebFetchTool } from './tools/WebFetchTool/WebFetchTool.js'
+import { WebSearchTool } from './tools/WebSearchTool/WebSearchTool.js'
 import uniqBy from 'lodash-es/uniqBy.js'
 import {
   type ToolPermissionContext,
@@ -74,6 +77,8 @@ export function getAllBaseTools(): Tools {
     AgentTool,
     AskUserQuestionTool,
     BashTool,
+    EnterPlanModeTool,
+    ExitPlanModeV2Tool,
     ...(hasEmbeddedSearchTools() ? [] : [GlobTool, GrepTool]),
     FileReadTool,
     FileEditTool,
@@ -84,6 +89,7 @@ export function getAllBaseTools(): Tools {
     TaskUpdateTool,
     TodoWriteTool,
     WebFetchTool,
+    WebSearchTool,
   ].filter(Boolean)
 }
 

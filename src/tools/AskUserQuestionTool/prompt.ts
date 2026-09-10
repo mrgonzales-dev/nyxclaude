@@ -29,7 +29,7 @@ Preview content must be a self-contained HTML fragment (no <html>/<body> wrapper
 `,
 } as const
 
-export const ASK_USER_QUESTION_TOOL_PROMPT = `Use this tool when you need to ask the user questions during execution. This allows you to:
+export const ASK_USER_QUESTION_TOOL_PROMPT = `Present multiple-choice questions to the user to gather information, clarify ambiguity, or offer choices. Use this tool to:
 1. Gather user preferences or requirements
 2. Clarify ambiguous instructions
 3. Get decisions on implementation choices as you work

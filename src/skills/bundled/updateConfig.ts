@@ -1,6 +1,6 @@
 import { toJSONSchema } from 'zod/v4'
 import { join } from 'path'
-import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../../utils/envUtils.js'
 import { getDisplayPath } from '../../utils/file.js'
 import { SettingsSchema } from '../../utils/settings/types.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
@@ -11,12 +11,12 @@ const USER_SETTINGS_PATH_TOKEN = '{{USER_SETTINGS_PATH}}'
 const USER_BASH_LOG_PATH_TOKEN = '{{USER_BASH_LOG_PATH}}'
 
 function getUserConfigFileDisplayPath(fileName: string): string {
-  return getDisplayPath(join(getClaudeConfigHomeDir(), fileName))
+  return getDisplayPath(join(getNyxclaudeConfigHomeDir(), fileName))
 }
 
 function withConfigPaths(text: string): string {
   return text
-    .replaceAll(USER_CONFIG_HOME_TOKEN, getDisplayPath(getClaudeConfigHomeDir()))
+    .replaceAll(USER_CONFIG_HOME_TOKEN, getDisplayPath(getNyxclaudeConfigHomeDir()))
     .replaceAll(USER_SETTINGS_PATH_TOKEN, getUserConfigFileDisplayPath('settings.json'))
     .replaceAll(USER_BASH_LOG_PATH_TOKEN, getUserConfigFileDisplayPath('bash-log.txt'))
 }

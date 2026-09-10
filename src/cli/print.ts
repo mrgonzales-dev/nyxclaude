@@ -155,8 +155,7 @@ import type {
   SDKControlMcpSetServersResponse,
   SDKControlReloadPluginsResponse,
 } from 'src/entrypoints/sdk/controlTypes.js'
-import type { PermissionMode } from '@anthropic-ai/claude-agent-sdk'
-import type { PermissionMode as InternalPermissionMode } from 'src/types/permissions.js'
+import type { PermissionMode } from 'src/types/permissions.js'
 import { cwd } from 'process'
 import { getCwd } from 'src/utils/cwd.js'
 import omit from 'lodash-es/omit.js'
@@ -300,8 +299,8 @@ import { collectContextData } from 'src/commands/context/context-noninteractive.
 import { LOCAL_COMMAND_STDOUT_TAG } from 'src/constants/xml.js'
 import {
   statusListeners,
-  type ClaudeAILimits,
-} from 'src/services/claudeAiLimits.js'
+  type RateLimits,
+} from 'src/services/limits.js'
 import {
   getDefaultMainLoopModel,
   getMainLoopModel,
@@ -337,7 +336,7 @@ import {
 import { runWithWorkload, WORKLOAD_CRON } from 'src/utils/workloadContext.js'
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+import type { ContentBlockParam } from 'src/types/api.js'
 import type { AppState } from 'src/state/AppStateStore.js'
 import {
   fileHistoryRewind,
@@ -558,7 +557,7 @@ export async function runHeadless(
 ): Promise<void> {
   if (
     process.env.USER_TYPE === 'ant' &&
-    isEnvTruthy(process.env.CLAUDE_CODE_EXIT_AFTER_FIRST_RENDER)
+    isEnvTruthy(process.env.NYXCLAUDE_EXIT_AFTER_FIRST_RENDER)
   ) {
     process.stderr.write(
       `\nStartup time: ${Math.round(process.uptime() * 1000)}ms\n`,
@@ -574,7 +573,7 @@ export async function runHeadless(
   // enabledPlugins.
   if (
     feature('DOWNLOAD_USER_SETTINGS') &&
-    (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) || getIsRemoteMode())
+    (isEnvTruthy(process.env.NYXCLAUDE_REMOTE) || getIsRemoteMode())
   ) {
     void downloadUserSettings()
   }
@@ -598,13 +597,13 @@ export async function runHeadless(
 
   // Proactive activation is now handled in main.tsx before getTools() so
   // SleepTool passes isEnabled() filtering. This fallback covers the case
-  // where CLAUDE_CODE_PROACTIVE is set but main.tsx's check didn't fire
+  // where NYXCLAUDE_PROACTIVE is set but main.tsx's check didn't fire
   // (e.g. env was injected by the SDK transport after argv parsing).
   if (
     (feature('PROACTIVE') || feature('KAIROS')) &&
     proactiveModule &&
     !proactiveModule.isProactiveActive() &&
-    isEnvTruthy(process.env.CLAUDE_CODE_PROACTIVE)
+    isEnvTruthy(process.env.NYXCLAUDE_PROACTIVE)
   ) {
     proactiveModule.activateProactive('command')
   }
@@ -977,11 +976,11 @@ export async function runHeadless(
   const needsFullArray = options.outputFormat === 'json' && options.verbose
   const messages: SDKMessage[] = []
   let lastMessage: SDKMessage | undefined
-  // Streamlined mode transforms messages when CLAUDE_CODE_STREAMLINED_OUTPUT=true and using stream-json
+  // Streamlined mode transforms messages when NYXCLAUDE_STREAMLINED_OUTPUT=true and using stream-json
   // Build flag gates this out of external builds; env var is the runtime opt-in for ant builds
   const transformToStreamlined =
     feature('STREAMLINED_OUTPUT') &&
-    isEnvTruthy(process.env.CLAUDE_CODE_STREAMLINED_OUTPUT) &&
+    isEnvTruthy(process.env.NYXCLAUDE_STREAMLINED_OUTPUT) &&
     options.outputFormat === 'stream-json'
       ? createStreamlinedTransformer()
       : null
@@ -1092,7 +1091,7 @@ export async function runHeadless(
   // already flushed above, so this adds no user-visible latency — it just
   // delays process exit so gracefulShutdownSync's 5s failsafe doesn't kill
   // the forked agent mid-flight. Gated by isExtractModeActive so the
-  // tengu_slate_thimble flag controls non-interactive extraction end-to-end.
+  // nyxclaude_slate_thimble flag controls non-interactive extraction end-to-end.
   if (feature('EXTRACT_MEMORIES') && isExtractModeActive()) {
     await extractMemoriesModule!.drainPendingExtraction()
   }
@@ -1345,7 +1344,7 @@ function runHeadlessStreaming(
   // Set up rate limit status listener to emit SDKRateLimitEvent for all status changes.
   // Emitting for all statuses (including 'allowed') ensures consumers can clear warnings
   // when rate limits reset. The upstream emitStatusChange already deduplicates via isEqual.
-  const rateLimitListener = (limits: ClaudeAILimits) => {
+  const rateLimitListener = (limits: RateLimits) => {
     const rateLimitInfo = toSDKRateLimitInfo(limits)
     if (rateLimitInfo) {
       output.enqueue({
@@ -1388,7 +1387,7 @@ function runHeadlessStreaming(
   // Auto-resume interrupted turns on restart so CC continues from where it
   // left off without requiring the SDK to re-send the prompt.
   const resumeInterruptedTurnEnv =
-    process.env.CLAUDE_CODE_RESUME_INTERRUPTED_TURN
+    process.env.NYXCLAUDE_RESUME_INTERRUPTED_TURN
   if (
     turnInterruptionState &&
     turnInterruptionState.kind !== 'none' &&
@@ -1504,7 +1503,7 @@ function runHeadlessStreaming(
 
             const mode = request.params.mode === 'url' ? 'url' : 'form'
 
-            logEvent('tengu_mcp_elicitation_shown', {
+            logEvent('nyxclaude_mcp_elicitation_shown', {
               mode: mode as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
             })
 
@@ -1519,7 +1518,7 @@ function runHeadlessStreaming(
                 serverName,
                 `Elicitation resolved by hook: ${jsonStringify(hookResponse)}`,
               )
-              logEvent('tengu_mcp_elicitation_response', {
+              logEvent('nyxclaude_mcp_elicitation_response', {
                 mode: mode as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
                 action:
                   hookResponse.action as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -1562,7 +1561,7 @@ function runHeadlessStreaming(
               elicitationId,
             )
 
-            logEvent('tengu_mcp_elicitation_response', {
+            logEvent('nyxclaude_mcp_elicitation_response', {
               mode: mode as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
               action:
                 result.action as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -1725,7 +1724,7 @@ function runHeadlessStreaming(
   let bridgeLastForwardedIndex = 0
 
   // Forward new messages from mutableMessages to the bridge.
-  // Called incrementally during each turn (so claude.ai sees progress
+  // Called incrementally during each turn (so web console sees progress
   // and stays alive during permission waits) and again after the turn.
   //
   // writeMessages has its own UUID-based dedup (initialMessageUUIDs,
@@ -1853,9 +1852,9 @@ function runHeadlessStreaming(
           headers: connection.config.headers,
           oauth: connection.config.oauth,
         }
-      } else if (connection.config.type === 'claudeai-proxy') {
+      } else if (connection.config.type === 'remote-proxy') {
         config = {
-          type: 'claudeai-proxy' as const,
+          type: 'remote-proxy' as const,
           url: connection.config.url,
           id: connection.config.id,
         }
@@ -1881,7 +1880,7 @@ function runHeadlessStreaming(
             }))
           : undefined
       // Capabilities passthrough with allowlist pre-filter. The IDE reads
-      // experimental['claude/channel'] to decide whether to show the
+      // experimental['nyxclaude/channel'] to decide whether to show the
       // Enable-channel prompt — only echo it if channel_enable would
       // actually pass the allowlist. Not a security boundary (the
       // handler re-runs the full gate); just avoids dead buttons.
@@ -1893,11 +1892,11 @@ function runHeadlessStreaming(
       ) {
         const exp = { ...connection.capabilities.experimental }
         if (
-          exp['claude/channel'] &&
+          exp['nyxclaude/channel'] &&
           (!isChannelsEnabled() ||
             !isChannelAllowlisted(connection.config.pluginSource))
         ) {
-          delete exp['claude/channel']
+          delete exp['nyxclaude/channel']
         }
         if (Object.keys(exp).length > 0) {
           capabilities = { experimental: exp }
@@ -1925,7 +1924,7 @@ function runHeadlessStreaming(
       // its promise so this awaits the same in-flight request.
       await Promise.all([
         feature('DOWNLOAD_USER_SETTINGS') &&
-        (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) || getIsRemoteMode())
+        (isEnvTruthy(process.env.NYXCLAUDE_REMOTE) || getIsRemoteMode())
           ? withDiagnosticsTiming('headless_user_settings_download', () =>
               downloadUserSettings(),
             )
@@ -1947,13 +1946,13 @@ function runHeadlessStreaming(
 
   // Background plugin installation for all headless users
   // Installs marketplaces from extraKnownMarketplaces and missing enabled plugins
-  // CLAUDE_CODE_SYNC_PLUGIN_INSTALL=true: resolved in run() before the first
+  // NYXCLAUDE_SYNC_PLUGIN_INSTALL=true: resolved in run() before the first
   // query so plugins are guaranteed available on the first ask().
   let pluginInstallPromise: Promise<void> | null = null
   // --bare / SIMPLE: skip plugin install. Scripted calls don't add plugins
   // mid-session; the next interactive run reconciles.
   if (!isBareMode()) {
-    if (isEnvTruthy(process.env.CLAUDE_CODE_SYNC_PLUGIN_INSTALL)) {
+    if (isEnvTruthy(process.env.NYXCLAUDE_SYNC_PLUGIN_INSTALL)) {
       pluginInstallPromise = installPluginsAndApplyMcpInBackground()
     } else {
       void installPluginsAndApplyMcpInBackground()
@@ -1968,7 +1967,7 @@ function runHeadlessStreaming(
   let currentAgents = agents
 
   // Clear all plugin-related caches, reload commands/agents/hooks.
-  // Called after CLAUDE_CODE_SYNC_PLUGIN_INSTALL completes (before first query)
+  // Called after NYXCLAUDE_SYNC_PLUGIN_INSTALL completes (before first query)
   // and after non-sync background install finishes.
   // refreshActivePlugins calls clearAllCaches() which is required because
   // loadAllPlugins() may have run during main.tsx startup BEFORE managed
@@ -2096,14 +2095,14 @@ function runHeadlessStreaming(
     await updateSdkMcp()
     headlessProfilerCheckpoint('after_updateSdkMcp')
 
-    // Resolve deferred plugin installation (CLAUDE_CODE_SYNC_PLUGIN_INSTALL).
+    // Resolve deferred plugin installation (NYXCLAUDE_SYNC_PLUGIN_INSTALL).
     // The promise was started eagerly so installation overlaps with other init.
     // Awaiting here guarantees plugins are available before the first ask().
-    // If CLAUDE_CODE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS is set, races against that
+    // If NYXCLAUDE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS is set, races against that
     // deadline and proceeds without plugins on timeout (logging an error).
     if (pluginInstallPromise) {
       const timeoutMs = parseInt(
-        process.env.CLAUDE_CODE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS || '',
+        process.env.NYXCLAUDE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS || '',
         10,
       )
       if (timeoutMs > 0) {
@@ -2112,10 +2111,10 @@ function runHeadlessStreaming(
         if (result === 'timeout') {
           logError(
             new Error(
-              `CLAUDE_CODE_SYNC_PLUGIN_INSTALL: plugin installation timed out after ${timeoutMs}ms`,
+              `NYXCLAUDE_SYNC_PLUGIN_INSTALL: plugin installation timed out after ${timeoutMs}ms`,
             ),
           )
-          logEvent('tengu_sync_plugin_install_timeout', {
+          logEvent('nyxclaude_sync_plugin_install_timeout', {
             timeout_ms: timeoutMs,
           })
         }
@@ -2314,7 +2313,7 @@ function runHeadlessStreaming(
           const input = command.value
 
           if (structuredIO instanceof RemoteIO && command.mode === 'prompt') {
-            logEvent('tengu_bridge_message_received', {
+            logEvent('nyxclaude_bridge_message_received', {
               is_repl: false,
             })
           }
@@ -2428,7 +2427,7 @@ function runHeadlessStreaming(
               },
             })) {
               // Forward messages to bridge incrementally (mid-turn) so
-              // claude.ai sees progress and the connection stays alive
+              // web console sees progress and the connection stays alive
               // while blocked on permission requests.
               forwardMessagesToBridge()
 
@@ -2493,7 +2492,7 @@ function runHeadlessStreaming(
           // Generate and emit prompt suggestion for SDK consumers
           if (
             options.promptSuggestions &&
-            !isEnvDefinedFalsy(process.env.CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION)
+            !isEnvDefinedFalsy(process.env.NYXCLAUDE_ENABLE_PROMPT_SUGGESTION)
           ) {
             // TS narrows suggestionState to never in the while loop body;
             // cast via unknown to reset narrowing.
@@ -3015,12 +3014,12 @@ function runHeadlessStreaming(
   // extension via handleAuthDone → mcp_reconnect.
   const oauthAuthPromises = new Map<string, Promise<void>>()
 
-  // In-flight Anthropic OAuth flow (claude_authenticate). Single-slot: a
+  // In-flight Remote OAuth flow (remote_authenticate). Single-slot: a
   // second authenticate request cleans up the first. The service holds the
   // PKCE verifier + localhost listener; the promise settles after
   // installOAuthTokens — after it resolves, the in-process memoized token
   // cache is already cleared and the next API call picks up the new creds.
-  let claudeOAuth: {
+  let remoteOAuth: {
     service: OAuthService
     flow: Promise<void>
   } | null = null
@@ -3124,7 +3123,7 @@ function runHeadlessStreaming(
 
           if (
             message.request.agentProgressSummaries &&
-            getFeatureValue_CACHED_MAY_BE_STALE('tengu_slate_prism', true)
+            getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_slate_prism', true)
           ) {
             setSdkAgentProgressSummariesEnabled(true)
           }
@@ -3288,7 +3287,7 @@ function runHeadlessStreaming(
           try {
             if (
               feature('DOWNLOAD_USER_SETTINGS') &&
-              (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) || getIsRemoteMode())
+              (isEnvTruthy(process.env.NYXCLAUDE_REMOTE) || getIsRemoteMode())
             ) {
               // Re-pull user settings so enabledPlugins pushed from the
               // user's local CLI take effect before the cache sweep.
@@ -3733,23 +3732,23 @@ function runHeadlessStreaming(
               `No active OAuth flow for server: ${serverName}`,
             )
           }
-        } else if (message.request.subtype === 'claude_authenticate') {
-          // Anthropic OAuth over the control channel. The SDK client owns
+        } else if (message.request.subtype === 'remote_authenticate') {
+          // Remote OAuth over the control channel. The SDK client owns
           // the user's browser (we're headless in -p mode); we hand back
           // both URLs and wait. Automatic URL → localhost listener catches
           // the redirect if the browser is on this host; manual URL → the
-          // success page shows "code#state" for claude_oauth_callback.
-          const { loginWithClaudeAi } = message.request
+          // success page shows "code#state" for remote_oauth_callback.
+          const { loginWithRemote } = message.request
 
           // Clean up any prior flow. cleanup() closes the localhost listener
           // and nulls the manual resolver. The prior `flow` promise is left
           // pending (AuthCodeListener.close() does not reject) but its object
           // graph becomes unreachable once the server handle is released and
           // is GC'd — no fd or port is held.
-          claudeOAuth?.service.cleanup()
+          remoteOAuth?.service.cleanup()
 
-          logEvent('tengu_oauth_flow_start', {
-            loginWithClaudeAi: loginWithClaudeAi ?? true,
+          logEvent('nyxclaude_oauth_flow_start', {
+            loginWithRemote: loginWithRemote ?? true,
           })
 
           const service = new OAuthService()
@@ -3772,7 +3771,7 @@ function runHeadlessStreaming(
                 urlResolver({ manualUrl, automaticUrl: automaticUrl! })
               },
               {
-                loginWithClaudeAi: loginWithClaudeAi ?? true,
+                loginWithRemote: loginWithRemote ?? true,
                 skipBrowserOpen: true,
               },
             )
@@ -3780,28 +3779,28 @@ function runHeadlessStreaming(
               // installOAuthTokens: performLogout (clear stale state) →
               // store profile → saveOAuthTokensIfNeeded → clearOAuthTokenCache
               // → clearAuthRelatedCaches. After this resolves, the memoized
-              // getClaudeAIOAuthTokens in this process is invalidated; the
+              // getRemoteOAuthTokens in this process is invalidated; the
               // next API call re-reads keychain/file and works. No respawn.
               await installOAuthTokens(tokens)
-              logEvent('tengu_oauth_success', {
-                loginWithClaudeAi: loginWithClaudeAi ?? true,
+              logEvent('nyxclaude_oauth_success', {
+                loginWithRemote: loginWithRemote ?? true,
               })
             })
             .finally(() => {
               service.cleanup()
-              if (claudeOAuth?.service === service) {
-                claudeOAuth = null
+              if (remoteOAuth?.service === service) {
+                remoteOAuth = null
               }
             })
 
-          claudeOAuth = { service, flow }
+          remoteOAuth = { service, flow }
 
           // Attach the rejection handler before awaiting so a synchronous
           // startOAuthFlow failure doesn't surface as an unhandled rejection.
-          // The claude_oauth_callback handler re-awaits flow for the manual
+          // The remote_oauth_callback handler re-awaits flow for the manual
           // path and surfaces the real error to the client.
           void flow.catch(err =>
-            logForDebugging(`claude_authenticate flow ended: ${err}`, {
+            logForDebugging(`remote_authenticate flow ended: ${err}`, {
               level: 'info',
             }),
           )
@@ -3828,30 +3827,30 @@ function runHeadlessStreaming(
             sendControlResponseError(message, errorMessage(error))
           }
         } else if (
-          message.request.subtype === 'claude_oauth_callback' ||
-          message.request.subtype === 'claude_oauth_wait_for_completion'
+          message.request.subtype === 'remote_oauth_callback' ||
+          message.request.subtype === 'remote_oauth_wait_for_completion'
         ) {
-          if (!claudeOAuth) {
+          if (!remoteOAuth) {
             sendControlResponseError(
               message,
-              'No active claude_authenticate flow',
+              'No active remote_authenticate flow',
             )
           } else {
             // Inject the manual code synchronously — must happen in stdin
-            // message order so a subsequent claude_authenticate doesn't
+            // message order so a subsequent remote_authenticate doesn't
             // replace the service before this code lands.
-            if (message.request.subtype === 'claude_oauth_callback') {
-              claudeOAuth.service.handleManualAuthCodeInput({
+            if (message.request.subtype === 'remote_oauth_callback') {
+              remoteOAuth.service.handleManualAuthCodeInput({
                 authorizationCode: message.request.authorizationCode,
                 state: message.request.state,
               })
             }
             // Detach the await — the stdin reader is serial and blocking
-            // here deadlocks claude_oauth_wait_for_completion: flow may
-            // only resolve via a future claude_oauth_callback on stdin,
+            // here deadlocks remote_oauth_wait_for_completion: flow may
+            // only resolve via a future remote_oauth_callback on stdin,
             // which can't be read while we're parked. Capture the binding;
-            // claudeOAuth is nulled in flow's own .finally.
-            const { flow } = claudeOAuth
+            // remoteOAuth is nulled in flow's own .finally.
+            const { flow } = remoteOAuth
             void flow.then(
               () => {
                 const accountInfo = getAccountInformation()
@@ -3978,7 +3977,7 @@ function runHeadlessStreaming(
         } else if (message.request.subtype === 'get_settings') {
           const currentAppState = getAppState()
           const model = getMainLoopModel()
-          // modelSupportsEffort gate matches claude.ts — applied.effort must
+          // modelSupportsEffort gate matches modelApi.ts — applied.effort must
           // mirror what actually goes to the API, not just what's configured.
           const effort = modelSupportsEffort(model)
             ? resolveAppliedEffort(model, currentAppState.effortValue)
@@ -4008,7 +4007,7 @@ function runHeadlessStreaming(
           // interrupts for the duration of the API roundtrip).
           const { description, persist } = message.request
           // Reuse the live controller only if it has not already been aborted
-          // (e.g. by interrupt()); an aborted signal would cause queryHaiku to
+          // (e.g. by interrupt()); an aborted signal would cause querySmallModel to
           // immediately throw APIUserAbortError and return the default title.
           const titleSignal = (
             abortController && !abortController.signal.aborted
@@ -4800,7 +4799,7 @@ async function handleRewindFiles(
 }
 
 async function handleSetPermissionMode(
-  request: { mode: InternalPermissionMode },
+  request: { mode: PermissionMode },
   requestId: string,
   toolPermissionContext: ToolPermissionContext,
   output: Stream<StdoutMessage>,
@@ -4890,14 +4889,14 @@ async function sanitizeResumedExternalMetadata(
  * handler that enqueues channel messages at priority:'next' — drainCommandQueue
  * picks them up between turns.
  *
- * Intentionally does NOT register the claude/channel/permission handler that
+ * Intentionally does NOT register the nyxclaude/channel/permission handler that
  * useManageMCPConnections sets up for interactive mode. That handler resolves
  * a pending dialog inside handleInteractivePermission — but print.ts never
  * calls handleInteractivePermission. When SDK permission lands on 'ask', it
  * goes to the consumer's canUseTool callback over stdio; there is no CLI-side
  * dialog for a remote "yes tbxkq" to resolve. If an IDE wants channel-relayed
  * tool approval, that's IDE-side plumbing against its own pending-map. (Also
- * gated separately by tengu_harbor_permissions — not yet shipping on
+ * gated separately by nyxclaude_harbor_permissions — not yet shipping on
  * interactive either.)
  */
 function handleChannelEnable(
@@ -4965,7 +4964,7 @@ function handleChannelEnable(
   const pluginId =
     `${entry.name}@${entry.marketplace}` as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
   logMCPDebug(serverName, 'Channel notifications registered')
-  logEvent('tengu_mcp_channel_enable', { plugin: pluginId })
+  logEvent('nyxclaude_mcp_channel_enable', { plugin: pluginId })
 
   // Identical enqueue shape to the interactive register block in
   // useManageMCPConnections. drainCommandQueue processes it between turns —
@@ -4977,9 +4976,9 @@ function handleChannelEnable(
       const { content, meta } = notification.params
       logMCPDebug(
         serverName,
-        `notifications/claude/channel: ${content.slice(0, 80)}`,
+        `notifications/nyxclaude/channel: ${content.slice(0, 80)}`,
       )
-      logEvent('tengu_mcp_channel_message', {
+      logEvent('nyxclaude_mcp_channel_message', {
         content_length: content.length,
         meta_key_count: Object.keys(meta ?? {}).length,
         entry_kind:
@@ -5053,9 +5052,9 @@ function reregisterChannelHandlerAfterReconnect(
       const { content, meta } = notification.params
       logMCPDebug(
         connection.name,
-        `notifications/claude/channel: ${content.slice(0, 80)}`,
+        `notifications/nyxclaude/channel: ${content.slice(0, 80)}`,
       )
-      logEvent('tengu_mcp_channel_message', {
+      logEvent('nyxclaude_mcp_channel_message', {
         content_length: content.length,
         meta_key_count: Object.keys(meta ?? {}).length,
         entry_kind:
@@ -5150,7 +5149,7 @@ async function loadInitialMessages(
   // Handle continue in print mode
   if (options.continue) {
     try {
-      logEvent('tengu_continue_print', {})
+      logEvent('nyxclaude_continue_print', {})
 
       const result = await loadConversationForResume(
         undefined /* sessionId */,
@@ -5248,7 +5247,7 @@ async function loadInitialMessages(
         )
       }
 
-      logEvent('tengu_teleport_print', {})
+      logEvent('nyxclaude_teleport_print', {})
 
       if (typeof options.teleport !== 'string') {
         throw new Error('No session ID provided for teleport')
@@ -5286,7 +5285,7 @@ async function loadInitialMessages(
       let parsedSessionId: ReturnType<typeof parseSessionIdentifier> = null
 
       if (options.resume) {
-        logEvent('tengu_resume_print', {})
+        logEvent('nyxclaude_resume_print', {})
 
         // In print mode - we require a valid session ID, JSONL file or URL
         parsedSessionId = parseSessionIdentifier(
@@ -5304,7 +5303,7 @@ async function loadInitialMessages(
         }
 
         // Hydrate local transcript from remote before loading
-        if (isEnvTruthy(process.env.CLAUDE_CODE_USE_CCR_V2)) {
+        if (isEnvTruthy(process.env.NYXCLAUDE_USE_CCR_V2)) {
           // Await restore alongside hydration so SSE catchup lands on
           // restored state, not a fresh default.
           const [, metadata] = await Promise.all([
@@ -5339,7 +5338,7 @@ async function loadInitialMessages(
           parsedSessionId.jsonlFile || undefined,
         )
       } else if (options.fromPr) {
-        logEvent('tengu_resume_from_pr_print', {})
+        logEvent('nyxclaude_resume_from_pr_print', {})
         const selector =
           options.fromPr === true ? true : String(options.fromPr)
         result = await loadConversationForResumeFromPr(selector)
@@ -5363,7 +5362,7 @@ async function loadInitialMessages(
         // For URL-based or CCR v2 resume, start with empty session (it was hydrated but empty)
         if (
           parsedSessionId?.isUrl ||
-          isEnvTruthy(process.env.CLAUDE_CODE_USE_CCR_V2)
+          isEnvTruthy(process.env.NYXCLAUDE_USE_CCR_V2)
         ) {
           // Execute SessionStart hooks for startup since we're starting a new session
           return {

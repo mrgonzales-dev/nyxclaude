@@ -207,6 +207,22 @@ function getSimpleDoingTasksSection(): string {
   return [`# Doing tasks`, ...prependBullets(items)].join(`\n`)
 }
 
+export function getReasoningSection(): string {
+  return `# Reasoning
+
+Before acting on non-trivial tasks, reason through the problem step by step:
+- Decompose: break the task into ordered substeps. Identify dependencies between them.
+- Gather: read the relevant code and trace the real flow before hypothesizing.
+- Hypothesize: form a concrete hypothesis about what to change and why it will work.
+- Verify: confirm each assumption against the code before proceeding. If an assumption fails, revise before acting.
+
+For trivial tasks (one-line edits, simple lookups), skip decomposition and act directly.
+
+When you have native thinking or reasoning capabilities, use them for complex problems. When you do not, reason in your response before tool calls — but keep it brief and focused on decisions, not narration.
+
+Distinguish output brevity from internal reasoning. Your output should be concise, but your reasoning should be thorough. Never skip reasoning to save tokens — skip narration of reasoning in your output.`
+}
+
 function getActionsSection(): string {
   return `# Executing actions with care
 
@@ -361,12 +377,12 @@ function getSessionSpecificGuidanceSection(
   return ['# Session-specific guidance', ...prependBullets(items)].join('\n')
 }
 
-function getOutputEfficiencySection(): string {
+export function getOutputEfficiencySection(): string {
   return `# Output efficiency
 
 IMPORTANT: Go straight to the point. Try the simplest approach first without going in circles. Do not overdo it. Be extra concise.
 
-Keep your text output brief and direct. Lead with the answer or action, not the reasoning. Skip filler words, preamble, and unnecessary transitions. Do not restate what the user said — just do it. When explaining, include only what is necessary for the user to understand.
+Keep your text output brief and direct. Lead with the answer or action, not narration of your reasoning. Skip filler words, preamble, and unnecessary transitions. Do not restate what the user said — just do it. When explaining, include only what is necessary for the user to understand.
 
 Focus text output on:
 - Decisions that need the user's input
@@ -534,6 +550,7 @@ function getStaticSystemPromptPrefix(
     outputStyleConfig.keepCodingInstructions === true
       ? getSimpleDoingTasksSection()
       : null,
+    getReasoningSection(),
     getActionsSection(),
     getUsingYourToolsSection(enabledTools),
     getSimpleToneAndStyleSection(),

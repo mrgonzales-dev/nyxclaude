@@ -29,7 +29,7 @@ export function isUltrathinkEnabled(): boolean {
   if (!feature('ULTRATHINK')) {
     return false
   }
-  return getFeatureValue_CACHED_MAY_BE_STALE('tengu_turtle_carbon', true)
+  return getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_turtle_carbon', true)
 }
 
 /**
@@ -141,7 +141,8 @@ export function modelSupportsThinking(model: string): boolean {
   ) {
     return true
   }
-  if (provider === 'openai') {
+  // Check model catalog for any non-Anthropic provider (OpenAI, ZAI, etc.)
+  if (provider !== 'bedrock' && provider !== 'vertex') {
     const descriptorSupportsThinking = routeCatalogSupportsThinking(model)
     if (descriptorSupportsThinking !== undefined) {
       return descriptorSupportsThinking
@@ -213,7 +214,7 @@ export function shouldUseThinkingForModel(
 ): boolean {
   return (
     thinkingConfig.type !== 'disabled' &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_THINKING) &&
+    !isEnvTruthy(process.env.NYXCLAUDE_DISABLE_THINKING) &&
     modelSupportsThinking(model)
   )
 }

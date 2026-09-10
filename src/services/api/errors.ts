@@ -2,11 +2,11 @@ import {
   APIConnectionError,
   APIConnectionTimeoutError,
   APIError,
-} from '@anthropic-ai/sdk'
+} from 'src/types/api.js'
 import type {
   BetaMessage,
   BetaStopReason,
-} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+} from 'src/types/api.js'
 import { AFK_MODE_BETA_HEADER } from 'src/constants/betas.js'
 import type { SDKAssistantMessageError } from 'src/entrypoints/agentSdkTypes.js'
 import type {
@@ -16,9 +16,9 @@ import type {
 } from 'src/types/message.js'
 import {
   getAnthropicApiKeyWithSource,
-  getClaudeAIOAuthTokens,
+  getRemoteOAuthTokens,
   getOauthAccountInfo,
-  isClaudeAISubscriber,
+  isSubscriber,
 } from 'src/utils/auth.js'
 import {
   createAssistantAPIErrorMessage,
@@ -49,10 +49,10 @@ import {
   logEvent,
 } from '../analytics/index.js'
 import {
-  type ClaudeAILimits,
+  type RateLimits,
   getRateLimitErrorMessage,
   type OverageDisabledReason,
-} from '../claudeAiLimits.js'
+} from '../limits.js'
 import { shouldProcessRateLimits } from '../rateLimitMocking.js' // Used for /mock-limits command
 import { extractConnectionErrorDetails, formatAPIError } from './errorUtils.js'
 import {
@@ -561,7 +561,7 @@ export function getOauthOrgNotAllowedErrorMessage(): string {
  * not via /login. Transient auth errors should suggest retrying, not logging in.
  */
 function isCCRMode(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)
+  return isEnvTruthy(process.env.NYXCLAUDE_REMOTE)
 }
 
 // Temp helper to log tool_use/tool_result mismatch errors
@@ -708,7 +708,7 @@ function logToolUseToolResultMismatch(
     }
 
     // Log to Statsig
-    logEvent('tengu_tool_use_tool_result_mismatch_error', {
+    logEvent('nyxclaude_tool_use_tool_result_mismatch_error', {
       toolUseId:
         toolUseId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       normalizedSequence: normalizedSeq.join(
@@ -846,7 +846,7 @@ export function getAssistantMessageFromError(
   if (
     error instanceof APIError &&
     error.status === 429 &&
-    shouldProcessRateLimits(isClaudeAISubscriber())
+    shouldProcessRateLimits(isSubscriber())
   ) {
     // Check if this is the new API with multiple rate limit headers
     const rateLimitType = error.headers?.get?.(
@@ -860,10 +860,19 @@ export function getAssistantMessageFromError(
     // If we have the new headers, use the new message generation
     if (rateLimitType || overageStatus) {
       // Build limits object from error headers to determine the appropriate message
-      const limits: ClaudeAILimits = {
-        status: 'rejected',
-        unifiedRateLimitFallbackAvailable: false,
+      const limits: RateLimits = {
+        utilization: null,
+        rateLimitType: null,
+        overageEnabled: false,
+        overageDisabledReason: null,
+        rawUtilization: null,
         isUsingOverage: false,
+        overageStatus: null,
+        status: 'rejected',
+        resetsAt: null,
+        overageResetsAt: null,
+        unifiedRateLimitFallbackAvailable: false,
+        surpassedThreshold: null,
       }
 
       // Extract rate limit information from headers
@@ -920,7 +929,7 @@ export function getAssistantMessageFromError(
     // (e.g. 1M context without Extra Usage) and infra capacity 429s land here.
     if (error.message.includes('Extra usage is required for long context')) {
       const hint = getIsNonInteractiveSession()
-        ? 'enable extra usage at claude.ai/settings/usage, or use --model to switch to standard context'
+        ? 'enable extra usage at web console/settings/usage, or use --model to switch to standard context'
         : 'run /extra-usage to enable, or /model to switch to standard context'
       return createAssistantAPIErrorMessage({
         content: `${API_ERROR_MESSAGE_PREFIX}: Extra usage is required for 1M context · ${hint}`,
@@ -1107,7 +1116,7 @@ export function getAssistantMessageFromError(
     error.status === 400 &&
     error.message.includes('unexpected `tool_use_id` found in `tool_result`')
   ) {
-    logEvent('tengu_unexpected_tool_result', {})
+    logEvent('nyxclaude_unexpected_tool_result', {})
   }
 
   // Duplicate tool_use IDs (CC-1212). ensureToolResultPairing strips these
@@ -1118,7 +1127,7 @@ export function getAssistantMessageFromError(
     error.status === 400 &&
     error.message.includes('`tool_use` ids must be unique')
   ) {
-    logEvent('tengu_duplicate_tool_use_id', {})
+    logEvent('nyxclaude_duplicate_tool_use_id', {})
     const rewindInstruction = getIsNonInteractiveSession()
       ? ''
       : ' Run /rewind to recover the conversation.'
@@ -1131,7 +1140,7 @@ export function getAssistantMessageFromError(
 
   // Check for invalid model name error for subscription users trying to use Opus
   if (
-    isClaudeAISubscriber() &&
+    isSubscriber() &&
     error instanceof APIError &&
     error.status === 400 &&
     error.message.toLowerCase().includes('invalid model name') &&
@@ -1192,9 +1201,9 @@ export function getAssistantMessageFromError(
     if (
       source === 'ANTHROPIC_API_KEY' &&
       process.env.ANTHROPIC_API_KEY &&
-      !isClaudeAISubscriber()
+      !isSubscriber()
     ) {
-      const hasStoredOAuth = getClaudeAIOAuthTokens()?.accessToken != null
+      const hasStoredOAuth = getRemoteOAuthTokens()?.accessToken != null
       // Not 'authentication_failed' — that triggers VS Code's showLogin(), but
       // login can't fix this (approved env var keeps overriding OAuth). The fix
       // is configuration-based (unset the var), so invalid_request is correct.
@@ -1285,7 +1294,7 @@ export function getAssistantMessageFromError(
   // Bedrock errors like "403 You don't have access to the model with the specified model ID."
   // don't contain the actual model ID
   if (
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) &&
+    isEnvTruthy(process.env.NYXCLAUDE_USE_BEDROCK) &&
     error instanceof Error &&
     error.message.toLowerCase().includes('model id')
   ) {
@@ -1572,7 +1581,7 @@ export function classifyAPIError(error: unknown): string {
 
   // Bedrock-specific errors
   if (
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) &&
+    isEnvTruthy(process.env.NYXCLAUDE_USE_BEDROCK) &&
     error instanceof Error &&
     error.message.toLowerCase().includes('model id')
   ) {
@@ -1627,7 +1636,7 @@ export function getErrorMessageIfRefusal(
     return
   }
 
-  logEvent('tengu_refusal_api_response', {})
+  logEvent('nyxclaude_refusal_api_response', {})
 
   const usagePolicyUrl =
     isFirstPartyAnthropicProvider()

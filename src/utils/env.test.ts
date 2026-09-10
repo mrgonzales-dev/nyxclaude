@@ -9,8 +9,7 @@ import {
 
 const originalEnv = {
   NYXCLAUDE_CONFIG_DIR: process.env.NYXCLAUDE_CONFIG_DIR,
-  CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
-  CLAUDE_CODE_CUSTOM_OAUTH_URL: process.env.CLAUDE_CODE_CUSTOM_OAUTH_URL,
+  NYXCLAUDE_CUSTOM_OAUTH_URL: process.env.NYXCLAUDE_CUSTOM_OAUTH_URL,
   USER_TYPE: process.env.USER_TYPE,
 }
 
@@ -20,8 +19,7 @@ beforeEach(async () => {
   await acquireSharedMutationLock('env.test.ts')
   tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-env-test-'))
   process.env.NYXCLAUDE_CONFIG_DIR = tempDir
-  delete process.env.CLAUDE_CONFIG_DIR
-  delete process.env.CLAUDE_CODE_CUSTOM_OAUTH_URL
+  delete process.env.NYXCLAUDE_CUSTOM_OAUTH_URL
   delete process.env.USER_TYPE
 })
 
@@ -33,15 +31,10 @@ afterEach(() => {
     } else {
       process.env.NYXCLAUDE_CONFIG_DIR = originalEnv.NYXCLAUDE_CONFIG_DIR
     }
-    if (originalEnv.CLAUDE_CONFIG_DIR === undefined) {
-      delete process.env.CLAUDE_CONFIG_DIR
+    if (originalEnv.NYXCLAUDE_CUSTOM_OAUTH_URL === undefined) {
+      delete process.env.NYXCLAUDE_CUSTOM_OAUTH_URL
     } else {
-      process.env.CLAUDE_CONFIG_DIR = originalEnv.CLAUDE_CONFIG_DIR
-    }
-    if (originalEnv.CLAUDE_CODE_CUSTOM_OAUTH_URL === undefined) {
-      delete process.env.CLAUDE_CODE_CUSTOM_OAUTH_URL
-    } else {
-      process.env.CLAUDE_CODE_CUSTOM_OAUTH_URL = originalEnv.CLAUDE_CODE_CUSTOM_OAUTH_URL
+      process.env.NYXCLAUDE_CUSTOM_OAUTH_URL = originalEnv.NYXCLAUDE_CUSTOM_OAUTH_URL
     }
     if (originalEnv.USER_TYPE === undefined) {
       delete process.env.USER_TYPE
@@ -57,61 +50,59 @@ async function importFreshEnvModule() {
   return import(`./env.js?ts=${Date.now()}-${Math.random()}`)
 }
 
-// getGlobalClaudeFile — default path plus explicit override compatibility
+// getGlobalConfigFile — default path plus explicit override compatibility
 
-test('getGlobalClaudeFile: new install returns .nyxclaude.json when neither file exists', async () => {
-  const { getGlobalClaudeFile } = await importFreshEnvModule()
-  expect(getGlobalClaudeFile()).toBe(join(tempDir, '.nyxclaude.json'))
+test('getGlobalConfigFile: new install returns .nyxclaude.json when neither file exists', async () => {
+  const { getGlobalConfigFile } = await importFreshEnvModule()
+  expect(getGlobalConfigFile()).toBe(join(tempDir, '.nyxclaude.json'))
 })
 
-test('getGlobalClaudeFile: ignores .claude.json when only legacy file exists', async () => {
+test('getGlobalConfigFile: ignores .claude.json when only legacy file exists', async () => {
   writeFileSync(join(tempDir, '.claude.json'), '{}')
-  const { getGlobalClaudeFile } = await importFreshEnvModule()
-  expect(getGlobalClaudeFile()).toBe(join(tempDir, '.nyxclaude.json'))
+  const { getGlobalConfigFile } = await importFreshEnvModule()
+  expect(getGlobalConfigFile()).toBe(join(tempDir, '.nyxclaude.json'))
 })
 
-test('getGlobalClaudeFile: migrated user uses .nyxclaude.json when both files exist', async () => {
+test('getGlobalConfigFile: migrated user uses .nyxclaude.json when both files exist', async () => {
   writeFileSync(join(tempDir, '.claude.json'), '{}')
   writeFileSync(join(tempDir, '.nyxclaude.json'), '{}')
-  const { getGlobalClaudeFile } = await importFreshEnvModule()
-  expect(getGlobalClaudeFile()).toBe(join(tempDir, '.nyxclaude.json'))
+  const { getGlobalConfigFile } = await importFreshEnvModule()
+  expect(getGlobalConfigFile()).toBe(join(tempDir, '.nyxclaude.json'))
 })
 
-test('getGlobalClaudeFile: NYXCLAUDE_CONFIG_DIR uses preferred config dir', async () => {
+test('getGlobalConfigFile: NYXCLAUDE_CONFIG_DIR uses preferred config dir', async () => {
   const preferredDir = mkdtempSync(join(tmpdir(), 'nyxclaude-preferred-env-test-'))
   try {
     process.env.NYXCLAUDE_CONFIG_DIR = preferredDir
-    process.env.CLAUDE_CONFIG_DIR = tempDir
 
-    const { getGlobalClaudeFile } = await importFreshEnvModule()
+    const { getGlobalConfigFile } = await importFreshEnvModule()
 
-    expect(getGlobalClaudeFile()).toBe(join(preferredDir, '.nyxclaude.json'))
+    expect(getGlobalConfigFile()).toBe(join(preferredDir, '.nyxclaude.json'))
   } finally {
     rmSync(preferredDir, { recursive: true, force: true })
   }
 })
 
-test('getGlobalClaudeFile: NYXCLAUDE_CONFIG_DIR ignores .claude.json fallback when only legacy file exists', async () => {
+test('getGlobalConfigFile: NYXCLAUDE_CONFIG_DIR ignores .claude.json fallback when only legacy file exists', async () => {
   const preferredDir = mkdtempSync(join(tmpdir(), 'nyxclaude-preferred-env-test-'))
   try {
     process.env.NYXCLAUDE_CONFIG_DIR = preferredDir
-    process.env.CLAUDE_CONFIG_DIR = tempDir
     writeFileSync(join(preferredDir, '.claude.json'), '{}')
 
-    const { getGlobalClaudeFile } = await importFreshEnvModule()
+    const { getGlobalConfigFile } = await importFreshEnvModule()
 
-    expect(getGlobalClaudeFile()).toBe(join(preferredDir, '.nyxclaude.json'))
+    expect(getGlobalConfigFile()).toBe(join(preferredDir, '.nyxclaude.json'))
   } finally {
     rmSync(preferredDir, { recursive: true, force: true })
   }
 })
 
-test('resolveGlobalClaudeFile: ignores legacy file even when new file is missing', async () => {
+test('resolveGlobalConfigFile: ignores legacy file even when new file is missing', async () => {
   writeFileSync(join(tempDir, '.claude.json'), '{}')
-  const { resolveGlobalClaudeFile } = await importFreshEnvModule()
+  const { resolveGlobalConfigFile } = await importFreshEnvModule()
 
   expect(
-    resolveGlobalClaudeFile({
+    resolveGlobalConfigFile({
       homeDir: tempDir,
     }),
   ).toBe(join(tempDir, '.nyxclaude.json'))

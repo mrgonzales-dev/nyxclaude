@@ -19,10 +19,10 @@ export const MODEL_CONTEXT_WINDOW_DEFAULT = 200_000
 // Fallback context window for unknown 3P models. Must be large enough that
 // the effective context (this minus output token reservation) stays positive,
 // otherwise auto-compact fires on every message (issue #635).
-// Override via CLAUDE_CODE_OPENAI_FALLBACK_CONTEXT_WINDOW env var to avoid
+// Override via NYXCLAUDE_OPENAI_FALLBACK_CONTEXT_WINDOW env var to avoid
 // hardcoding when deploying models not yet in integration model metadata.
 export const OPENAI_FALLBACK_CONTEXT_WINDOW = (() => {
-  const v = parseInt(process.env.CLAUDE_CODE_OPENAI_FALLBACK_CONTEXT_WINDOW ?? '', 10)
+  const v = parseInt(process.env.NYXCLAUDE_OPENAI_FALLBACK_CONTEXT_WINDOW ?? '', 10)
   return !isNaN(v) && v > 0 ? v : 128_000
 })()
 
@@ -37,14 +37,14 @@ const MAX_OUTPUT_TOKENS_UPPER_LIMIT = 64_000
 // tokens, so 32k/64k defaults over-reserve 8-16× slot capacity. With the cap
 // enabled, <1% of requests hit the limit; those get one clean retry at 64k
 // (see query.ts max_output_tokens_escalate). Cap is applied in
-// claude.ts:getMaxOutputTokensForModel to avoid the growthbook→betas→context
+// modelApi.ts:getMaxOutputTokensForModel to avoid the growthbook→betas→context
 // import cycle.
 export const CAPPED_DEFAULT_MAX_TOKENS = 8_000
 export const ESCALATED_MAX_TOKENS = 64_000
 
 const warnedUnknownIntegrationRuntimeLimitKeys = new Set<string>()
-const PROFILE_ENV_APPLIED_FLAG = 'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED'
-const PROFILE_ENV_APPLIED_ID = 'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID'
+const PROFILE_ENV_APPLIED_FLAG = 'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED'
+const PROFILE_ENV_APPLIED_ID = 'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID'
 
 // Session-scoped context window overrides (abordagem C: module-level state)
 // Key: normalized model name (lowercase, prefix stripped)
@@ -136,7 +136,7 @@ export function getSessionContextWindowOverrides(): Map<string, number> {
  * Used by C4E admins to disable 1M context for HIPAA compliance.
  */
 export function is1mContextDisabled(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT)
+  return isEnvTruthy(process.env.NYXCLAUDE_DISABLE_1M_CONTEXT)
 }
 
 export function has1mContext(model: string): boolean {
@@ -150,6 +150,10 @@ export function has1mContext(model: string): boolean {
 export function modelSupports1M(model: string): boolean {
   if (is1mContextDisabled()) {
     return false
+  }
+  // [1m] suffix is a provider-neutral opt-in — any model can declare 1M support
+  if (/\[1m\]/i.test(model)) {
+    return true
   }
   const canonical = getCanonicalName(model)
   return (
@@ -231,9 +235,9 @@ export function getContextWindowForModel(
   // while still using a 1M-capable endpoint.
   if (
     process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS
+    process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS
   ) {
-    const override = parseInt(process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS, 10)
+    const override = parseInt(process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS, 10)
     if (!isNaN(override) && override > 0) {
       return override
     }
@@ -374,7 +378,7 @@ export function getModelMaxOutputTokens(model: string): {
     }
     // 3P provider with no runtime maxOutputTokens (e.g. ad-hoc Ollama models
     // like `gemma4:e4b` not in the route catalog) — fall through to a
-    // permissive upper limit so CLAUDE_CODE_MAX_OUTPUT_TOKENS isn't silently
+    // permissive upper limit so NYXCLAUDE_MAX_OUTPUT_TOKENS isn't silently
     // capped to the Anthropic 64k fallback below (issue #1604). Bound by the
     // runtime context window when known; otherwise use the same fallback as
     // context budgeting so output reservation cannot exceed the window.

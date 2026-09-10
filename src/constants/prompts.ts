@@ -90,7 +90,7 @@ const skillSearchFeatureCheck = feature('EXPERIMENTAL_SKILL_SEARCH')
 import type { OutputStyleConfig } from './outputStyles.js'
 import { CYBER_RISK_INSTRUCTION } from './cyberRiskInstruction.js'
 
-export const CLAUDE_CODE_DOCS_MAP_URL = ''
+export const NYXCLAUDE_DOCS_MAP_URL = ''
 
 /**
  * Boundary marker separating static (cross-org cacheable) content from dynamic content.
@@ -99,12 +99,13 @@ export const CLAUDE_CODE_DOCS_MAP_URL = ''
  *
  * WARNING: Do not remove or reorder this marker without updating cache logic in:
  * - src/utils/api.ts (splitSysPromptPrefix)
- * - src/services/api/claude.ts (buildSystemPromptBlocks)
+ * - src/services/api/modelApi.ts (buildSystemPromptBlocks)
  */
 export const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
   '__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__'
 
-const FRONTIER_MODEL_NAME = 'GLM-5.2 High'
+// Frontier model name is now derived dynamically from the active model's
+// marketing name (see computeSimpleEnvInfo). No hardcoded model name needed.
 
 function getHooksSection(): string {
   return `Users may configure 'hooks', shell commands that execute in response to events like tool calls, in settings. Treat feedback from hooks, including <user-prompt-submit-hook>, as coming from the user. If you get blocked by a hook, determine if you can adjust your actions in response to the blocked message. If not, ask the user to check their hooks configuration.`
@@ -348,7 +349,7 @@ function getSessionSpecificGuidanceSection(
     hasAgentTool &&
     feature('VERIFICATION_AGENT') &&
     // 3P default: false — verification agent is internal-only A/B
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_hive_evidence', false)
+    getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_hive_evidence', false)
       ? `The contract: when non-trivial implementation happens on your turn, independent adversarial verification must happen before you report completion \u2014 regardless of who did the implementing (you directly, a fork you spawned, or a subagent). You are the one reporting to the user; you own the gate. Non-trivial means: 3+ file edits, backend/API changes, or infrastructure changes. Spawn the ${AGENT_TOOL_NAME} tool with subagent_type="${VERIFICATION_AGENT_TYPE}". Your own checks, caveats, and a fork's self-checks do NOT substitute \u2014 only the verifier assigns a verdict; you cannot self-assign PARTIAL. Pass the original user request, all files changed (by anyone), the approach, and the plan file path if applicable. Flag concerns if you have them but do NOT share test results or claim things work. On FAIL: fix, resume the verifier with its findings plus your fix, repeat until PASS. On PASS: spot-check it \u2014 re-run 2-3 commands from its report, confirm every PASS has a Command run block with output that matches your re-run. If any PASS lacks a command block or diverges, resume the verifier with the specifics. On PARTIAL (from the verifier): report what passed and what could not be verified.`
       : null,
   ].filter(item => item !== null)
@@ -385,7 +386,7 @@ function getSimpleToneAndStyleSection(): string {
     `Flat and factual. No enthusiasm markers, no persuasive framing, no editorializing. State facts directly — do not soften bad news with qualifiers. Use imperative verbs for instructions.`,
     `Only use emojis if the user explicitly requests it. Avoid using emojis in all communication unless asked.`,
     `When referencing specific functions or pieces of code include the pattern file_path:line_number to allow the user to easily navigate to the source code location.`,
-    `When referencing GitHub issues or pull requests, use the owner/repo#123 format (for example, anthropics/claude-code#100) so they render as clickable links.`,
+    `When referencing GitHub issues or pull requests, use the owner/repo#123 format (for example, nyxclaude/nyxclaude#100) so they render as clickable links.`,
     `When explaining something, always end with a "To summarize:" section containing exactly one sentence that summarizes what you just explained. Drop any poetic tone or speech — be technical but also layman in your summarization. Never be poetic.`,
   ]
 
@@ -398,7 +399,7 @@ export async function getSystemPrompt(
   additionalWorkingDirectories?: string[],
   mcpClients?: MCPServerConnection[],
 ): Promise<string[]> {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_SIMPLE)) {
     return [
       `You are nyxclaude, a coding agent powered by omniroute.\n\nCWD: ${getCwd()}\nDate: ${getSessionStartDate()}`,
     ]
@@ -624,7 +625,7 @@ export async function computeSimpleEnvInfo(
     `OS Version: ${unameSR}`,
     modelDescription,
     `Nyxclaude is available as a CLI in the terminal and can be used across local development environments and IDE workflows.`,
-    `Fast mode for Nyxclaude uses the same ${FRONTIER_MODEL_NAME} model with faster output. It does NOT switch to a different model. It can be toggled with /fast.`,
+    `Fast mode for Nyxclaude uses the same ${marketingName ?? modelId} model with faster output. It does NOT switch to a different model. It can be toggled with /fast.`,
   ].filter(item => item !== null)
 
   return [

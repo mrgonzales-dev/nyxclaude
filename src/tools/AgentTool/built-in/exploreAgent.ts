@@ -4,16 +4,17 @@ import { FILE_EDIT_TOOL_NAME } from '../../FileEditTool/constants.js'
 import { FILE_READ_TOOL_NAME } from '../../FileReadTool/constants.js'
 import { FILE_WRITE_TOOL_NAME } from '../../FileWriteTool/prompt.js'
 import { GREP_TOOL_NAME } from '../../GrepTool/prompt.js'
+import { GLOB_TOOL_NAME } from '../../GlobTool/prompt.js'
 import { NOTEBOOK_EDIT_TOOL_NAME } from '../../NotebookEditTool/constants.js'
 import { hasEmbeddedSearchTools } from '../../../utils/embeddedTools.js'
 import { AGENT_TOOL_NAME } from '../constants.js'
 import type { BuiltInAgentDefinition } from '../loadAgentsDir.js'
 
-function getExploreSystemPrompt(): string {
+export function getExploreSystemPrompt(): string {
   const embedded = hasEmbeddedSearchTools()
   const globGuidance = embedded
     ? `- Use \`find\` via ${BASH_TOOL_NAME} for broad file pattern matching`
-    : `- Use ${GREP_TOOL_NAME} for searching file contents with regex`
+    : `- Use ${GLOB_TOOL_NAME} for finding files by glob patterns`
   const grepGuidance = embedded
     ? `- Use \`grep\` via ${BASH_TOOL_NAME} for searching file contents with regex`
     : `- Use ${GREP_TOOL_NAME} for searching file contents with regex`

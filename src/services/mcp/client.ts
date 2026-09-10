@@ -3,7 +3,7 @@ import type {
   Base64ImageSource,
   ContentBlockParam,
   MessageParam,
-} from '@anthropic-ai/sdk/resources/index.mjs'
+} from 'src/types/api.js'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import {
   SSEClientTransport,
@@ -58,7 +58,7 @@ import { AbortError, isAbortError } from '../../utils/errors.js'
 import { count } from '../../utils/array.js'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
-  getClaudeAIOAuthTokens,
+  getRemoteOAuthTokens,
   handleOAuth401Error,
 } from '../../utils/auth.js'
 import { registerCleanup } from '../../utils/cleanupRegistry.js'
@@ -128,11 +128,11 @@ import { classifyMcpToolForCollapse } from '../../tools/MCPTool/classifyForColla
 import { clearKeychainCache } from '../../utils/secureStorage/macOsKeychainHelpers.js'
 import { sleep } from '../../utils/sleep.js'
 import {
-  ClaudeAuthProvider,
+  RemoteAuthProvider,
   hasMcpDiscoveryButNoToken,
   wrapFetchWithStepUpDetection,
 } from './auth.js'
-import { markClaudeAiMcpConnected } from './claudeai.js'
+import { markRemoteMcpConnected } from './remoteAuth.js'
 import { getAllMcpConfigs, isMcpServerDisabled } from './config.js'
 import { getMcpServerHeaders } from './headersHelper.js'
 import { SdkControlClientTransport } from './SdkControlTransport.js'
@@ -235,7 +235,7 @@ function getMcpToolTimeoutMs(): number {
 
 // Lazy: wrapper.tsx → hostAdapter.ts → executor.ts pulls both native modules
 // (@ant/computer-use-input + @ant/computer-use-swift). Runtime-gated by
-// GrowthBook tengu_malort_pedway (see gates.ts).
+// GrowthBook nyxclaude_malort_pedway (see gates.ts).
 const computerUseWrapper = feature('CHICAGO_MCP')
   ? (): typeof import('../../utils/computerUse/wrapper.js') =>
     require('../../utils/computerUse/wrapper.js')
@@ -248,7 +248,7 @@ const isComputerUseMCPServer = feature('CHICAGO_MCP')
 
 import { mkdir, readFile, unlink, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
-import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../../utils/envUtils.js'
 /* eslint-enable @typescript-eslint/no-require-imports */
 import { jsonParse, jsonStringify } from '../../utils/slowOperations.js'
 import { jsonRedactor } from '../../utils/redaction.js'
@@ -258,7 +258,7 @@ const MCP_AUTH_CACHE_TTL_MS = 15 * 60 * 1000 // 15 min
 type McpAuthCacheData = Record<string, { timestamp: number }>
 
 function getMcpAuthCachePath(): string {
-  return join(getClaudeConfigHomeDir(), 'mcp-needs-auth-cache.json')
+  return join(getNyxclaudeConfigHomeDir(), 'mcp-needs-auth-cache.json')
 }
 
 // Memoized so N concurrent isMcpAuthCached() calls during batched connection
@@ -332,16 +332,16 @@ function mcpBaseUrlAnalytics(serverRef: ScopedMcpServerConfig): {
 }
 
 /**
- * Shared handler for sse/http/claudeai-proxy auth failures during connect:
- * emits tengu_mcp_server_needs_auth, caches the needs-auth entry, and returns
+ * Shared handler for sse/http/remote-proxy auth failures during connect:
+ * emits nyxclaude_mcp_server_needs_auth, caches the needs-auth entry, and returns
  * the needs-auth connection result.
  */
 function handleRemoteAuthFailure(
   name: string,
   serverRef: ScopedMcpServerConfig,
-  transportType: 'sse' | 'http' | 'claudeai-proxy',
+  transportType: 'sse' | 'http' | 'remote-proxy',
 ): MCPServerConnection {
-  logEvent('tengu_mcp_server_needs_auth', {
+  logEvent('nyxclaude_mcp_server_needs_auth', {
     transportType:
       transportType as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     ...mcpBaseUrlAnalytics(serverRef),
@@ -349,7 +349,7 @@ function handleRemoteAuthFailure(
   const label: Record<typeof transportType, string> = {
     sse: 'SSE',
     http: 'HTTP',
-    'claudeai-proxy': 'claude.ai proxy',
+    'remote-proxy': 'web console proxy',
   }
   logMCPDebug(
     name,
@@ -360,27 +360,27 @@ function handleRemoteAuthFailure(
 }
 
 /**
- * Fetch wrapper for claude.ai proxy connections. Attaches the OAuth bearer
+ * Fetch wrapper for web console proxy connections. Attaches the OAuth bearer
  * token and retries once on 401 via handleOAuth401Error (force-refresh).
  *
  * The Anthropic API path has this retry (withRetry.ts, grove.ts) to handle
  * memoize-cache staleness and clock drift. Without the same here, a single
- * stale token mass-401s every claude.ai connector and sticks them all in the
+ * stale token mass-401s every web console connector and sticks them all in the
  * 15-min needs-auth cache.
  */
-export function createClaudeAiProxyFetch(innerFetch: FetchLike): FetchLike {
+export function createRemoteProxyFetch(innerFetch: FetchLike): FetchLike {
   return async (url, init) => {
     const doRequest = async () => {
       await checkAndRefreshOAuthTokenIfNeeded()
-      const currentTokens = getClaudeAIOAuthTokens()
+      const currentTokens = getRemoteOAuthTokens()
       if (!currentTokens) {
-        throw new Error('No claude.ai OAuth token available')
+        throw new Error('No web console OAuth token available')
       }
       // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
       const headers = new Headers(init?.headers)
       headers.set('Authorization', `Bearer ${currentTokens.accessToken}`)
       const response = await innerFetch(url, { ...init, headers })
-      // Return the exact token that was sent. Reading getClaudeAIOAuthTokens()
+      // Return the exact token that was sent. Reading getRemoteOAuthTokens()
       // again after the request is wrong under concurrent 401s: another
       // connector's handleOAuth401Error clears the memoize cache, so we'd read
       // the NEW token from keychain, pass it to handleOAuth401Error, which
@@ -399,13 +399,13 @@ export function createClaudeAiProxyFetch(innerFetch: FetchLike): FetchLike {
     // downstream service genuinely needs auth (the common case: 30+ servers
     // with "MCP server requires authentication but no OAuth token configured").
     const tokenChanged = await handleOAuth401Error(sentToken).catch(() => false)
-    logEvent('tengu_mcp_claudeai_proxy_401', {
+    logEvent('nyxclaude_mcp_remote_proxy_401', {
       tokenChanged:
         tokenChanged as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
     if (!tokenChanged) {
       // ELOCKED contention: another connector may have won the lockfile and refreshed — check if token changed underneath us
-      const now = getClaudeAIOAuthTokens()?.accessToken
+      const now = getRemoteOAuthTokens()?.accessToken
       if (!now || now === sentToken) {
         return response
       }
@@ -669,7 +669,7 @@ export const connectToServer = memoize(
 
       if (serverRef.type === 'sse') {
         // Create an auth provider for this server
-        const authProvider = new ClaudeAuthProvider(name, serverRef)
+        const authProvider = new RemoteAuthProvider(name, serverRef)
 
         // Get combined headers (static + dynamic)
         const combinedHeaders = await getMcpServerHeaders(name, serverRef)
@@ -850,7 +850,7 @@ export const connectToServer = memoize(
         )
 
         // Create an auth provider for this server
-        const authProvider = new ClaudeAuthProvider(name, serverRef)
+        const authProvider = new RemoteAuthProvider(name, serverRef)
 
         // Get combined headers (static + dynamic)
         const combinedHeaders = await getMcpServerHeaders(name, serverRef)
@@ -917,24 +917,24 @@ export const connectToServer = memoize(
         logMCPDebug(name, `HTTP transport created successfully`)
       } else if (serverRef.type === 'sdk') {
         throw new Error('SDK servers should be handled in print.ts')
-      } else if (serverRef.type === 'claudeai-proxy') {
+      } else if (serverRef.type === 'remote-proxy') {
         logMCPDebug(
           name,
-          `Initializing claude.ai proxy transport for server ${serverRef.id}`,
+          `Initializing web console proxy transport for server ${serverRef.id}`,
         )
 
-        const tokens = getClaudeAIOAuthTokens()
+        const tokens = getRemoteOAuthTokens()
         if (!tokens) {
-          throw new Error('No claude.ai OAuth token found')
+          throw new Error('No web console OAuth token found')
         }
 
         const oauthConfig = getOauthConfig()
         const proxyUrl = `${oauthConfig.MCP_PROXY_URL}${oauthConfig.MCP_PROXY_PATH.replace('{server_id}', serverRef.id)}`
 
-        logMCPDebug(name, `Using claude.ai proxy at ${proxyUrl}`)
+        logMCPDebug(name, `Using web console proxy at ${proxyUrl}`)
 
         // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
-        const fetchWithAuth = createClaudeAiProxyFetch(globalThis.fetch)
+        const fetchWithAuth = createRemoteProxyFetch(globalThis.fetch)
 
         const proxyOptions = getProxyFetchOptions()
         const transportOptions: StreamableHTTPClientTransportOptions = {
@@ -953,7 +953,7 @@ export const connectToServer = memoize(
           new URL(proxyUrl),
           transportOptions,
         )
-        logMCPDebug(name, `claude.ai proxy transport created successfully`)
+        logMCPDebug(name, `web console proxy transport created successfully`)
       } else if (
         feature('CHICAGO_MCP') &&
         (serverRef.type === 'stdio' || !serverRef.type) &&
@@ -983,7 +983,7 @@ export const connectToServer = memoize(
         const { command: finalCommand, args: finalArgs } = buildMcpStdioCommand(
           serverRef.command,
           serverRef.args ?? [],
-          process.env.CLAUDE_CODE_SHELL_PREFIX,
+          process.env.NYXCLAUDE_SHELL_PREFIX,
         )
         transport = new StdioClientTransport({
           command: finalCommand,
@@ -1155,25 +1155,25 @@ export const connectToServer = memoize(
             return handleRemoteAuthFailure(name, serverRef, 'http')
           }
         } else if (
-          serverRef.type === 'claudeai-proxy' &&
+          serverRef.type === 'remote-proxy' &&
           error instanceof Error
         ) {
           logMCPDebug(
             name,
-            `claude.ai proxy connection failed after ${elapsed}ms: ${error.message}`,
+            `web console proxy connection failed after ${elapsed}ms: ${error.message}`,
           )
           logMCPError(name, error)
 
           // StreamableHTTPError has a `code` property with the HTTP status
           const errorCode = (error as Error & { code?: number }).code
           if (errorCode === 401) {
-            return handleRemoteAuthFailure(name, serverRef, 'claudeai-proxy')
+            return handleRemoteAuthFailure(name, serverRef, 'remote-proxy')
           }
         } else if (
           serverRef.type === 'sse-ide' ||
           serverRef.type === 'ws-ide'
         ) {
-          logEvent('tengu_mcp_ide_server_connection_failed', {
+          logEvent('nyxclaude_mcp_ide_server_connection_failed', {
             connectionDurationMs: elapsed,
           })
         }
@@ -1232,7 +1232,7 @@ export const connectToServer = memoize(
 
       if (serverRef.type === 'sse-ide' || serverRef.type === 'ws-ide') {
         const ideConnectionDurationMs = Date.now() - connectStartTime
-        logEvent('tengu_mcp_ide_server_connection_succeeded', {
+        logEvent('nyxclaude_mcp_ide_server_connection_succeeded', {
           connectionDurationMs: ideConnectionDurationMs,
           serverVersion:
             serverVersion as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -1348,7 +1348,7 @@ export const connectToServer = memoize(
         // and close the transport so pending tool calls reject and the next
         // call reconnects with a fresh session ID.
         if (
-          (transportType === 'http' || transportType === 'claudeai-proxy') &&
+          (transportType === 'http' || transportType === 'remote-proxy') &&
           isMcpSessionExpiredError(error)
         ) {
           logMCPDebug(
@@ -1367,7 +1367,7 @@ export const connectToServer = memoize(
         if (
           transportType === 'sse' ||
           transportType === 'http' ||
-          transportType === 'claudeai-proxy'
+          transportType === 'remote-proxy'
         ) {
           // The SDK's StreamableHTTP transport fires this after exhausting its
           // own SSE reconnect attempts (default maxRetries: 2) — but it never
@@ -1614,7 +1614,7 @@ export const connectToServer = memoize(
       }
 
       const connectionDurationMs = Date.now() - connectStartTime
-      logEvent('tengu_mcp_server_connection_succeeded', {
+      logEvent('nyxclaude_mcp_server_connection_succeeded', {
         connectionDurationMs,
         transportType: (serverRef.type ??
           'stdio') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -1638,7 +1638,7 @@ export const connectToServer = memoize(
       }
     } catch (error) {
       const connectionDurationMs = Date.now() - connectStartTime
-      logEvent('tengu_mcp_server_connection_failed', {
+      logEvent('nyxclaude_mcp_server_connection_failed', {
         connectionDurationMs,
         totalServers: serverStats?.totalServers || 1,
         stdioCount:
@@ -2310,8 +2310,8 @@ export async function reconnectMcpServerImpl(
       }
     }
 
-    if (config.type === 'claudeai-proxy') {
-      markClaudeAiMcpConnected(name)
+    if (config.type === 'remote-proxy') {
+      markRemoteMcpConnected(name)
     }
 
     const supportsResources = !!client.capabilities?.resources
@@ -2453,7 +2453,7 @@ export async function getMcpToolsCommandsAndResources(
       // Each probe is a network round-trip for connect-401 plus OAuth
       // discovery, and print mode awaits the whole batch (main.tsx:3503).
       if (
-        (config.type === 'claudeai-proxy' ||
+        (config.type === 'remote-proxy' ||
           config.type === 'http' ||
           config.type === 'sse') &&
         ((await isMcpAuthCached(name)) ||
@@ -2483,8 +2483,8 @@ export async function getMcpToolsCommandsAndResources(
         return
       }
 
-      if (config.type === 'claudeai-proxy') {
-        markClaudeAiMcpConnected(name)
+      if (config.type === 'remote-proxy') {
+        markRemoteMcpConnected(name)
       }
 
       const supportsResources = !!client.capabilities?.resources
@@ -2593,7 +2593,7 @@ export function prefetchAllMcpResources(
             (command.argumentHint ?? '').length
           return sum + commandMetadataLength
         }, 0)
-        logEvent('tengu_mcp_tools_commands_loaded', {
+        logEvent('nyxclaude_mcp_tools_commands_loaded', {
           tools_count: tools.length,
           commands_count: commands.length,
           commands_metadata_length: commandsMetadataLength,
@@ -2694,7 +2694,7 @@ export async function transformResultContent(
             imageBuffer.length,
             ext,
           )
-          const content: MessageParam['content'] = []
+          const content: ContentBlockParam[] = []
           if (prefix) {
             content.push({
               type: 'text',
@@ -2889,7 +2889,7 @@ export async function processMCPResult(
 
   // If large output files feature is disabled, fall back to old truncation behavior
   if (isEnvDefinedFalsy(process.env.ENABLE_MCP_LARGE_OUTPUT_FILES)) {
-    logEvent('tengu_mcp_large_result_handled', {
+    logEvent('nyxclaude_mcp_large_result_handled', {
       outcome: 'truncated',
       reason: 'env_disabled',
       sizeEstimateTokens,
@@ -2906,7 +2906,7 @@ export async function processMCPResult(
   // If content contains images, fall back to truncation - persisting images as JSON
   // defeats the image compression logic and makes them non-viewable
   if (contentContainsImages(content)) {
-    logEvent('tengu_mcp_large_result_handled', {
+    logEvent('nyxclaude_mcp_large_result_handled', {
       outcome: 'truncated',
       reason: 'contains_images',
       sizeEstimateTokens,
@@ -2924,7 +2924,7 @@ export async function processMCPResult(
 
   if (isPersistError(persistResult)) {
     // If file save failed, fall back to returning truncated content info
-    logEvent('tengu_mcp_large_result_handled', {
+    logEvent('nyxclaude_mcp_large_result_handled', {
       outcome: 'truncated',
       reason: 'persist_failed',
       sizeEstimateTokens,
@@ -2935,7 +2935,7 @@ export async function processMCPResult(
     )
   }
 
-  logEvent('tengu_mcp_large_result_handled', {
+  logEvent('nyxclaude_mcp_large_result_handled', {
     outcome: 'persisted',
     reason: 'file_saved',
     sizeEstimateTokens,
@@ -3324,7 +3324,7 @@ async function callMCPTool({
     // Log code indexing tool usage
     const codeIndexingTool = detectCodeIndexingFromMcpServerName(name)
     if (codeIndexingTool) {
-      logEvent('tengu_code_indexing_tool_used', {
+      logEvent('nyxclaude_code_indexing_tool_used', {
         tool: codeIndexingTool as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         source:
           'mcp' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -3364,7 +3364,7 @@ async function callMCPTool({
           name,
           `Tool call returned 401 Unauthorized - token may have expired`,
         )
-        logEvent('tengu_mcp_tool_call_auth_error', {})
+        logEvent('nyxclaude_mcp_tool_call_auth_error', {})
         throw new McpAuthError(
           name,
           `MCP server "${name}" requires re-authorization (token expired)`,
@@ -3383,13 +3383,13 @@ async function callMCPTool({
         'code' in e &&
         (e as Error & { code?: number }).code === -32000 &&
         e.message.includes('Connection closed') &&
-        (config.type === 'http' || config.type === 'claudeai-proxy')
+        (config.type === 'http' || config.type === 'remote-proxy')
       if (isSessionExpired || isConnectionClosedOnHttp) {
         logMCPDebug(
           name,
           `MCP session expired during tool call (${isSessionExpired ? '404/-32001' : 'connection closed'}), clearing connection cache for re-initialization`,
         )
-        logEvent('tengu_mcp_session_expired', {})
+        logEvent('nyxclaude_mcp_session_expired', {})
         await clearServerCache(name, config)
         throw new McpSessionExpiredError(name)
       }
@@ -3424,7 +3424,7 @@ function extractToolUseId(message: AssistantMessage): string | undefined {
 
 /**
  * Build the command and args for a stdio MCP transport, applying the
- * CLAUDE_CODE_SHELL_PREFIX split into separate argv entries. This
+ * NYXCLAUDE_SHELL_PREFIX split into separate argv entries. This
  * ensures the MCP SDK receives a proper command + args[] instead of
  * a shell-joined string, preventing shell metacharacter injection
  * from serverRef.args.

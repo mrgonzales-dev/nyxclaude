@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, mock, spyOn, test } from 'bun:test'
 import { acquireSharedMutationLock, releaseSharedMutationLock } from '../test/sharedMutationLock.js'
 
-import { getMaxOutputTokensForModel } from '../services/api/claude.ts'
+import { getMaxOutputTokensForModel } from '../services/api/modelApi.ts'
 import { resolveOpenAIShimRuntimeContext } from '../integrations/runtimeMetadata.ts'
 import {
   calculateContextPercentages,
@@ -12,73 +12,73 @@ import {
 } from './context.ts'
 
 const originalEnv = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_MAX_OUTPUT_TOKENS: process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS,
-  CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS:
-    process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS,
-  CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS:
-    process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_MAX_OUTPUT_TOKENS: process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS,
+  NYXCLAUDE_OPENAI_CONTEXT_WINDOWS:
+    process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS,
+  NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS:
+    process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   OPENAI_API_BASE: process.env.OPENAI_API_BASE,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   AIMLAPI_API_KEY: process.env.AIMLAPI_API_KEY,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
   MINIMAX_API_KEY: process.env.MINIMAX_API_KEY,
   XAI_API_KEY: process.env.XAI_API_KEY,
   LONGCAT_API_KEY: process.env.LONGCAT_API_KEY,
-  CLAUDE_CODE_MAX_CONTEXT_TOKENS: process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS,
+  NYXCLAUDE_MAX_CONTEXT_TOKENS: process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS,
   USER_TYPE: process.env.USER_TYPE,
 }
 
 beforeEach(async () => {
   await acquireSharedMutationLock('context.test.ts')
   clearSessionContextWindowOverride()
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
-  delete process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS
-  delete process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS
+  delete process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_BASE_URL
   delete process.env.OPENAI_API_BASE
   delete process.env.OPENAI_API_KEY
   delete process.env.AIMLAPI_API_KEY
   delete process.env.OPENAI_MODEL
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
   delete process.env.MINIMAX_API_KEY
   delete process.env.XAI_API_KEY
   delete process.env.LONGCAT_API_KEY
-  delete process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS
   delete process.env.USER_TYPE
 })
 
 afterEach(() => {
   try {
-    if (originalEnv.CLAUDE_CODE_USE_OPENAI === undefined) {
-      delete process.env.CLAUDE_CODE_USE_OPENAI
+    if (originalEnv.NYXCLAUDE_USE_OPENAI === undefined) {
+      delete process.env.NYXCLAUDE_USE_OPENAI
     } else {
-      process.env.CLAUDE_CODE_USE_OPENAI = originalEnv.CLAUDE_CODE_USE_OPENAI
+      process.env.NYXCLAUDE_USE_OPENAI = originalEnv.NYXCLAUDE_USE_OPENAI
     }
-    if (originalEnv.CLAUDE_CODE_MAX_OUTPUT_TOKENS === undefined) {
-      delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+    if (originalEnv.NYXCLAUDE_MAX_OUTPUT_TOKENS === undefined) {
+      delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
     } else {
-      process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS =
-        originalEnv.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+      process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS =
+        originalEnv.NYXCLAUDE_MAX_OUTPUT_TOKENS
     }
-    if (originalEnv.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS === undefined) {
-      delete process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS
+    if (originalEnv.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS === undefined) {
+      delete process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS
     } else {
-      process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS =
-        originalEnv.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS
+      process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS =
+        originalEnv.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS
     }
-    if (originalEnv.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS === undefined) {
-      delete process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS
+    if (originalEnv.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS === undefined) {
+      delete process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS
     } else {
-      process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS =
-        originalEnv.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS
+      process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS =
+        originalEnv.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS
     }
     if (originalEnv.OPENAI_MODEL === undefined) {
       delete process.env.OPENAI_MODEL
@@ -105,17 +105,17 @@ afterEach(() => {
     } else {
       process.env.AIMLAPI_API_KEY = originalEnv.AIMLAPI_API_KEY
     }
-    if (originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED === undefined) {
-      delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+    if (originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED === undefined) {
+      delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
     } else {
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED =
-        originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED =
+        originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
     }
-    if (originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID === undefined) {
-      delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+    if (originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID === undefined) {
+      delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
     } else {
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID =
-        originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID =
+        originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
     }
     if (originalEnv.MINIMAX_API_KEY === undefined) {
       delete process.env.MINIMAX_API_KEY
@@ -132,10 +132,10 @@ afterEach(() => {
     } else {
       process.env.LONGCAT_API_KEY = originalEnv.LONGCAT_API_KEY
     }
-    if (originalEnv.CLAUDE_CODE_MAX_CONTEXT_TOKENS === undefined) {
-      delete process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS
+    if (originalEnv.NYXCLAUDE_MAX_CONTEXT_TOKENS === undefined) {
+      delete process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS
     } else {
-      process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS = originalEnv.CLAUDE_CODE_MAX_CONTEXT_TOKENS
+      process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS = originalEnv.NYXCLAUDE_MAX_CONTEXT_TOKENS
     }
     if (originalEnv.USER_TYPE === undefined) {
       delete process.env.USER_TYPE
@@ -165,8 +165,8 @@ test('calculateContextPercentages preserves tiny nonzero usage', () => {
 })
 
 test('deepseek-v4-flash uses the gateway-safe output cap by default', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('deepseek-v4-flash')).toBe(1_048_576)
@@ -178,9 +178,9 @@ test('deepseek-v4-flash uses the gateway-safe output cap by default', () => {
 })
 
 test('deepseek-v4-flash uses DeepSeek direct API max output cap on api.deepseek.com', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.deepseek.com/v1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('deepseek-v4-flash')).toBe(1_048_576)
@@ -192,8 +192,8 @@ test('deepseek-v4-flash uses DeepSeek direct API max output cap on api.deepseek.
 })
 
 test('deepseek-v4-pro uses the gateway-safe output cap by default', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('deepseek-v4-pro')).toBe(1_048_576)
@@ -205,9 +205,9 @@ test('deepseek-v4-pro uses the gateway-safe output cap by default', () => {
 })
 
 test('Ollama deepseek-v4-pro cloud variant uses DeepSeek V4 Pro runtime limits', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('deepseek-v4-pro:cloud')).toBe(1_048_576)
@@ -222,7 +222,7 @@ test('Ollama deepseek-v4-pro cloud variant is modeled as route catalog metadata'
   const runtimeContext = resolveOpenAIShimRuntimeContext({
     processEnv: {
       ...process.env,
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'http://localhost:11434/v1',
     },
     baseUrl: 'http://localhost:11434/v1',
@@ -238,9 +238,9 @@ test('Ollama deepseek-v4-pro cloud variant is modeled as route catalog metadata'
 })
 
 test('Ollama deepseek-v4-pro cloud variant clamps oversized output token overrides', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '262144'
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '262144'
   delete process.env.OPENAI_MODEL
 
   expect(getModelMaxOutputTokens('deepseek-v4-pro:cloud')).toEqual({
@@ -251,15 +251,15 @@ test('Ollama deepseek-v4-pro cloud variant clamps oversized output token overrid
 })
 
 test('Ollama deepseek-v4-pro cloud variant does not inherit base-model env override prefixes', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     'deepseek-v4-pro': 262_144,
   })
-  process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
     'deepseek-v4-pro': 262_144,
   })
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('deepseek-v4-pro:cloud')).toBe(1_048_576)
@@ -270,15 +270,15 @@ test('Ollama deepseek-v4-pro cloud variant does not inherit base-model env overr
 })
 
 test('Ollama deepseek-v4-pro cloud variant still honors exact env overrides', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     'deepseek-v4-pro:cloud': 262_144,
   })
-  process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
     'deepseek-v4-pro:cloud': 12_288,
   })
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('deepseek-v4-pro:cloud')).toBe(262_144)
@@ -289,15 +289,15 @@ test('Ollama deepseek-v4-pro cloud variant still honors exact env overrides', ()
 })
 
 test('OpenAI-compatible env override prefixes still match colon-tagged local models', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     llama3: 262_144,
   })
-  process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
     llama3: 12_288,
   })
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('llama3:70b')).toBe(262_144)
@@ -311,7 +311,7 @@ test('Ollama deepseek-v4-pro cloud variant keeps the local max_tokens transport 
   const runtimeContext = resolveOpenAIShimRuntimeContext({
     processEnv: {
       ...process.env,
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'http://localhost:11434/v1',
     },
     baseUrl: 'http://localhost:11434/v1',
@@ -323,9 +323,9 @@ test('Ollama deepseek-v4-pro cloud variant keeps the local max_tokens transport 
 })
 
 test('deepseek-v4-pro uses DeepSeek direct API max output cap on api.deepseek.com', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.deepseek.com/v1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('deepseek-v4-pro')).toBe(1_048_576)
@@ -337,9 +337,9 @@ test('deepseek-v4-pro uses DeepSeek direct API max output cap on api.deepseek.co
 })
 
 test('deepseek-v4-pro keeps gateway routes on the lower output cap', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getModelMaxOutputTokens('deepseek-v4-pro')).toEqual({
@@ -350,8 +350,8 @@ test('deepseek-v4-pro keeps gateway routes on the lower output cap', () => {
 })
 
 test('deepseek legacy aliases keep their documented provider caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('deepseek-chat')).toBe(128_000)
@@ -361,25 +361,25 @@ test('deepseek legacy aliases keep their documented provider caps', () => {
 })
 
 test('deepseek-v4-pro clamps oversized max output overrides to the provider limit', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '500000'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '500000'
   delete process.env.OPENAI_MODEL
 
   expect(getMaxOutputTokensForModel('deepseek-v4-pro')).toBe(65_536)
 })
 
 test('deepseek-v4-flash clamps oversized max output overrides to the provider limit', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.deepseek.com/v1'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '500000'
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '500000'
   delete process.env.OPENAI_MODEL
 
   expect(getMaxOutputTokensForModel('deepseek-v4-flash')).toBe(393_216)
 })
 
 test('gpt-4o uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('gpt-4o')).toBe(128_000)
@@ -391,16 +391,16 @@ test('gpt-4o uses provider-specific context and output caps', () => {
 })
 
 test('gpt-4o clamps oversized max output overrides to the provider limit', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '32000'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '32000'
   delete process.env.OPENAI_MODEL
 
   expect(getMaxOutputTokensForModel('gpt-4o')).toBe(16_384)
 })
 
 test('gpt-5.5 uses conservative Codex-route context window (issue #1118)', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   // gpt-5.5 is primarily routed through the Codex transport in this repo
@@ -412,9 +412,9 @@ test('gpt-5.5 uses conservative Codex-route context window (issue #1118)', () =>
 })
 
 test('gpt-5.6 family pins the Codex effective input limit on the Codex route', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://chatgpt.com/backend-api/codex'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   // Same rationale as gpt-5.5 above, but scoped to the Codex transport: the
@@ -431,9 +431,9 @@ test('gpt-5.6 family pins the Codex effective input limit on the Codex route', (
 })
 
 test('gpt-5.6 family keeps the full window on the direct-OpenAI route', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   delete process.env.OPENAI_BASE_URL
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   // Unlike gpt-5.5 (Codex-only, blanket-capped in the vendor catalog), the
@@ -445,8 +445,8 @@ test('gpt-5.6 family keeps the full window on the direct-OpenAI route', () => {
 })
 
 test('gpt-5.4 family uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('gpt-5.4')).toBe(1_050_000)
@@ -469,8 +469,8 @@ test('gpt-5.4 family uses provider-specific context and output caps', () => {
 })
 
 test('gpt-5.4 family keeps large max output overrides within provider limits', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '200000'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '200000'
 
   expect(getMaxOutputTokensForModel('gpt-5.4')).toBe(128_000)
   expect(getMaxOutputTokensForModel('gpt-5.4-mini')).toBe(128_000)
@@ -478,8 +478,8 @@ test('gpt-5.4 family keeps large max output overrides within provider limits', (
 })
 
 test('MiniMax-M2.7 uses the shared gateway-safe context cap by default', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('MiniMax-M2.7')).toBe(196_608)
@@ -492,8 +492,8 @@ test('MiniMax-M2.7 uses the shared gateway-safe context cap by default', () => {
 
 test('env-only MiniMax key uses provider-specific context and output caps before client setup', () => {
   process.env.MINIMAX_API_KEY = 'minimax-test-key'
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('MiniMax-M2.7')).toBe(204_800)
@@ -507,8 +507,8 @@ test('env-only MiniMax key uses provider-specific context and output caps before
 
 test('env-only xAI key uses provider-specific context and output caps before client setup', () => {
   process.env.XAI_API_KEY = 'xai-test-key'
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('grok-4.3')).toBe(1_000_000)
@@ -526,16 +526,16 @@ test('env-only xAI key uses provider-specific context and output caps before cli
 })
 
 test('unknown openai-compatible models use the 128k fallback window (not 8k, see #635)', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('some-unknown-3p-model')).toBe(128_000)
 })
 
 test('unknown openai-compatible model fallback logs one debug warning and no console errors', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   const actualDebugModule = await import('./debug.js')
@@ -568,8 +568,8 @@ test('unknown openai-compatible model fallback logs one debug warning and no con
 })
 
 test('prefixed OpenGateway Gemini Flash Lite uses integration metadata', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('google/gemini-3.1-flash-lite')).toBe(1_048_576)
@@ -580,11 +580,11 @@ test('prefixed OpenGateway Gemini Flash Lite uses integration metadata', () => {
   expect(getMaxOutputTokensForModel('google/gemini-3.1-flash-lite')).toBe(65_536)
 })
 test('prefixed Gemini 3.1 Pro router model uses integration metadata', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
 
   expect(getContextWindowForModel('google/gemini-3.1-pro')).toBe(1_048_576)
   expect(getModelMaxOutputTokens('google/gemini-3.1-pro')).toEqual({
@@ -595,12 +595,12 @@ test('prefixed Gemini 3.1 Pro router model uses integration metadata', () => {
 })
 
 test('NVIDIA NIM DeepSeek V4 Pro uses NIM route catalog metadata', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://integrate.api.nvidia.com/v1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
 
   expect(getContextWindowForModel('deepseek-ai/deepseek-v4-pro')).toBe(1_048_576)
   expect(getModelMaxOutputTokens('deepseek-ai/deepseek-v4-pro')).toEqual({
@@ -611,11 +611,11 @@ test('NVIDIA NIM DeepSeek V4 Pro uses NIM route catalog metadata', () => {
 })
 
 test('OpenAI-compatible custom model limits honor documented env overrides', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     'custom-model': 262_144,
   })
-  process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
     'custom-model': 12_288,
   })
 
@@ -627,11 +627,11 @@ test('OpenAI-compatible custom model limits honor documented env overrides', () 
 })
 
 test('OpenAI-compatible env overrides take precedence over integration metadata', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     'gpt-4o': 64_000,
   })
-  process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
     'gpt-4o': 4_096,
   })
 
@@ -643,13 +643,13 @@ test('OpenAI-compatible env overrides take precedence over integration metadata'
 })
 
 test('OpenAI-compatible host-qualified env overrides beat generic overrides', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.foo.com/v1'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     'gpt-4o': 128_000,
     'api.foo.com:gpt-4o': 64_000,
   })
-  process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
     'gpt-4o': 16_384,
     'api.foo.com:gpt-4o': 4_096,
   })
@@ -662,13 +662,13 @@ test('OpenAI-compatible host-qualified env overrides beat generic overrides', ()
 })
 
 test('OpenAI-compatible host-qualified env overrides honor OPENAI_API_BASE', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_BASE = 'https://legacy.foo.com/v1'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     'gpt-4o': 128_000,
     'legacy.foo.com:gpt-4o': 96_000,
   })
-  process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
     'gpt-4o': 16_384,
     'legacy.foo.com:gpt-4o': 8_192,
   })
@@ -681,13 +681,13 @@ test('OpenAI-compatible host-qualified env overrides honor OPENAI_API_BASE', () 
 })
 
 test('OpenAI-compatible exact env overrides beat host-qualified prefixes', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.foo.com/v1'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     'api.foo.com:gpt-4': 8_192,
     'gpt-4o': 128_000,
   })
-  process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS = JSON.stringify({
     'api.foo.com:gpt-4': 1_024,
     'gpt-4o': 16_384,
   })
@@ -700,8 +700,8 @@ test('OpenAI-compatible exact env overrides beat host-qualified prefixes', () =>
 })
 
 test('OpenAI-compatible legacy aliases keep their migrated limits', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('qwen2.5-coder:32b')).toBe(32_768)
   expect(getModelMaxOutputTokens('qwen2.5-coder:32b')).toEqual({
@@ -721,8 +721,8 @@ test('OpenAI-compatible legacy aliases keep their migrated limits', () => {
 })
 
 test('MiniMax-M2.5 and M2.1 use shared gateway-safe context caps by default', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_MODEL
 
   expect(getContextWindowForModel('MiniMax-M2.5')).toBe(196_608)
@@ -736,8 +736,8 @@ test('MiniMax-M2.5 and M2.1 use shared gateway-safe context caps by default', ()
 })
 
 test('DashScope qwen3.6-plus uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('qwen3.6-plus')).toBe(1_000_000)
   expect(getModelMaxOutputTokens('qwen3.6-plus')).toEqual({
@@ -748,8 +748,8 @@ test('DashScope qwen3.6-plus uses provider-specific context and output caps', ()
 })
 
 test('DashScope qwen3.5-plus uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('qwen3.5-plus')).toBe(1_000_000)
   expect(getModelMaxOutputTokens('qwen3.5-plus')).toEqual({
@@ -760,8 +760,8 @@ test('DashScope qwen3.5-plus uses provider-specific context and output caps', ()
 })
 
 test('DashScope qwen3-coder-plus uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('qwen3-coder-plus')).toBe(1_000_000)
   expect(getModelMaxOutputTokens('qwen3-coder-plus')).toEqual({
@@ -771,8 +771,8 @@ test('DashScope qwen3-coder-plus uses provider-specific context and output caps'
 })
 
 test('DashScope qwen3-coder-next uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('qwen3-coder-next')).toBe(262_144)
   expect(getModelMaxOutputTokens('qwen3-coder-next')).toEqual({
@@ -786,9 +786,9 @@ test('Ollama qwen3-coder-next cloud variant uses gateway-specific output cap', (
   // `:cloud` variant is capped to 32768 via the gateway catalog override
   // because Ollama Cloud rejects requests above that. Context window is
   // inherited from the descriptor (262144).
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('qwen3-coder-next:cloud')).toBe(262_144)
   expect(getModelMaxOutputTokens('qwen3-coder-next:cloud')).toEqual({
@@ -798,8 +798,8 @@ test('Ollama qwen3-coder-next cloud variant uses gateway-specific output cap', (
 })
 
 test('DashScope qwen3-max uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('qwen3-max')).toBe(262_144)
   expect(getModelMaxOutputTokens('qwen3-max')).toEqual({
@@ -809,8 +809,8 @@ test('DashScope qwen3-max uses provider-specific context and output caps', () =>
 })
 
 test('DashScope qwen3-max dated variant resolves to base entry via prefix match', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('qwen3-max-2026-01-23')).toBe(262_144)
   expect(getModelMaxOutputTokens('qwen3-max-2026-01-23')).toEqual({
@@ -820,8 +820,8 @@ test('DashScope qwen3-max dated variant resolves to base entry via prefix match'
 })
 
 test('DashScope kimi-k2.5 uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('kimi-k2.5')).toBe(262_144)
   expect(getModelMaxOutputTokens('kimi-k2.5')).toEqual({
@@ -831,8 +831,8 @@ test('DashScope kimi-k2.5 uses provider-specific context and output caps', () =>
 })
 
 test('Kimi Code kimi-for-coding uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('kimi-for-coding')).toBe(262_144)
   expect(getModelMaxOutputTokens('kimi-for-coding')).toEqual({
@@ -842,9 +842,9 @@ test('Kimi Code kimi-for-coding uses provider-specific context and output caps',
 })
 
 test('Kimi Code K3 1M choice uses the Allegretto cap', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.kimi.com/coding/v1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('k3')).toBe(1_048_576)
   expect(getModelMaxOutputTokens('k3')).toEqual({
@@ -854,16 +854,16 @@ test('Kimi Code K3 1M choice uses the Allegretto cap', () => {
 })
 
 test('Kimi Code K3 256K catalog choice uses the Moderato cap', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.kimi.com/coding/v1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('k3-256k')).toBe(262_144)
 })
 
 test('DashScope glm-5 uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('glm-5')).toBe(202_752)
   expect(getModelMaxOutputTokens('glm-5')).toEqual({
@@ -873,8 +873,8 @@ test('DashScope glm-5 uses provider-specific context and output caps', () => {
 })
 
 test('DashScope glm-4.7 uses provider-specific context and output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('glm-4.7')).toBe(202_752)
   expect(getModelMaxOutputTokens('glm-4.7')).toEqual({
@@ -884,8 +884,8 @@ test('DashScope glm-4.7 uses provider-specific context and output caps', () => {
 })
 
 test('Z.AI GLM models use Coding Plan output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getContextWindowForModel('glm-5.2')).toBe(1_000_000)
   expect(getModelMaxOutputTokens('glm-5.2')).toEqual({
@@ -908,8 +908,8 @@ test('Z.AI GLM models use Coding Plan output caps', () => {
 })
 
 test('lowercase GLM aliases keep conservative output caps', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
 
   expect(getModelMaxOutputTokens('glm-5.1')).toEqual({
     default: 16_384,
@@ -926,8 +926,8 @@ test('lowercase GLM aliases keep conservative output caps', () => {
 })
 
 test('DashScope models clamp oversized max output overrides to the provider limit', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '100000'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '100000'
 
   expect(getMaxOutputTokensForModel('qwen3.6-plus')).toBe(65_536)
   expect(getMaxOutputTokensForModel('qwen3.5-plus')).toBe(65_536)
@@ -941,12 +941,12 @@ test('DashScope models clamp oversized max output overrides to the provider limi
 test('Ollama model with no runtime metadata uses permissive upper limit (#1604)', () => {
   // gemma4:e4b is not in the Ollama catalog — no runtime maxOutputTokens
   // available. Previously the fallback Anthropic 64k upper limit silently
-  // capped the user's CLAUDE_CODE_MAX_OUTPUT_TOKENS override.
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  // capped the user's NYXCLAUDE_MAX_OUTPUT_TOKENS override.
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
   process.env.OPENAI_MODEL = 'gemma4:e4b'
-  delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
-  delete process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS
 
   expect(getModelMaxOutputTokens('gemma4:e4b')).toEqual({
     default: 32_000,
@@ -955,12 +955,12 @@ test('Ollama model with no runtime metadata uses permissive upper limit (#1604)'
   expect(getMaxOutputTokensForModel('gemma4:e4b')).toBe(32_000)
 })
 
-test('Ollama model with no runtime metadata honors CLAUDE_CODE_MAX_OUTPUT_TOKENS above 64k (#1604)', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+test('Ollama model with no runtime metadata honors NYXCLAUDE_MAX_OUTPUT_TOKENS above 64k (#1604)', () => {
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
   process.env.OPENAI_MODEL = 'gemma4:e4b'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '128000'
-  delete process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '128000'
+  delete process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS
 
   // Previously this returned 64000 because the unknown-model fallback used
   // MAX_OUTPUT_TOKENS_UPPER_LIMIT (64k) as the upper limit, silently capping
@@ -969,35 +969,35 @@ test('Ollama model with no runtime metadata honors CLAUDE_CODE_MAX_OUTPUT_TOKENS
 })
 
 test('Ollama model with no runtime metadata caps absurd overrides at the context window (#1604)', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
   process.env.OPENAI_MODEL = 'gemma4:e4b'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     'gemma4:e4b': 32_000,
   })
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '999999999'
-  delete process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '999999999'
+  delete process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS
 
   expect(getMaxOutputTokensForModel('gemma4:e4b')).toBe(32_000)
 })
 
 test('Ollama model with no runtime metadata caps at fallback context window when context window is also unknown (#1604)', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
   process.env.OPENAI_MODEL = 'gemma4:e4b'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '999999999'
-  delete process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS
-  delete process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '999999999'
+  delete process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS
 
   expect(getMaxOutputTokensForModel('gemma4:e4b')).toBe(128_000)
 })
 
-test('Anthropic model with high CLAUDE_CODE_MAX_OUTPUT_TOKENS still caps at model upper limit (#1604)', () => {
+test('Anthropic model with high NYXCLAUDE_MAX_OUTPUT_TOKENS still caps at model upper limit (#1604)', () => {
   // Regression guard: the fix for #1604 must not relax the cap for Anthropic
   // models where the API itself rejects values above the model's real limit.
-  delete process.env.CLAUDE_CODE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_OPENAI
   delete process.env.OPENAI_BASE_URL
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '128000'
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '128000'
 
   expect(getMaxOutputTokensForModel('sonnet-4-6')).toBe(128_000)
   expect(getMaxOutputTokensForModel('opus-4-1')).toBe(32_000)
@@ -1019,8 +1019,8 @@ test('recent Opus models (4.8/4.7/4.6) get the elevated output-token limits (#17
 })
 
 test('modelSupports1M recognizes the current default Opus (4.8) as 1M-capable', () => {
-  const original = process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
-  delete process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+  const original = process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
+  delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
   try {
     // Regression: the firstParty default session model is claude-opus-4-8[1m]
     // (getDefaultMainLoopModelSetting), so dropping 4.8 here downgrades a 1M
@@ -1040,23 +1040,42 @@ test('modelSupports1M recognizes the current default Opus (4.8) as 1M-capable', 
     expect(modelSupports1M('claude-3-5-haiku')).toBe(false)
   } finally {
     if (original === undefined) {
-      delete process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+      delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
     } else {
-      process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT = original
+      process.env.NYXCLAUDE_DISABLE_1M_CONTEXT = original
     }
   }
 })
 
 test('modelSupports1M honors the 1M disable switch even for Opus 4.7', () => {
-  const original = process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
-  process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT = '1'
+  const original = process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
+  process.env.NYXCLAUDE_DISABLE_1M_CONTEXT = '1'
   try {
     expect(modelSupports1M('claude-opus-4-7')).toBe(false)
   } finally {
     if (original === undefined) {
-      delete process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+      delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
     } else {
-      process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT = original
+      process.env.NYXCLAUDE_DISABLE_1M_CONTEXT = original
+    }
+  }
+})
+
+test('modelSupports1M recognizes [1m] suffix for any provider', () => {
+  const original = process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
+  delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
+  try {
+    // Any model with [1m] suffix should be 1M-capable, regardless of provider
+    expect(modelSupports1M('gpt-4o[1m]')).toBe(true)
+    expect(modelSupports1M('gemini-2.0-flash[1m]')).toBe(true)
+    expect(modelSupports1M('llama-3.1-405b[1m]')).toBe(true)
+    // Without [1m] suffix, non-Anthropic models should not claim 1M
+    expect(modelSupports1M('gpt-4o')).toBe(false)
+  } finally {
+    if (original === undefined) {
+      delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
+    } else {
+      process.env.NYXCLAUDE_DISABLE_1M_CONTEXT = original
     }
   }
 })
@@ -1172,8 +1191,8 @@ test('getSessionContextWindowOverrides returns a copy', () => {
 })
 
 test('session override takes precedence over env override for OpenAI-compatible model', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({ 'custom-model': 64_000 })
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({ 'custom-model': 64_000 })
   expect(getContextWindowForModel('custom-model')).toBe(64_000)
   setSessionContextWindowOverride('custom-model', 256_000)
   expect(getContextWindowForModel('custom-model')).toBe(256_000)
@@ -1182,7 +1201,7 @@ test('session override takes precedence over env override for OpenAI-compatible 
 })
 
 test('session override takes precedence over unknown model fallback', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   setSessionContextWindowOverride('unknown-model', 200_000)
   expect(getContextWindowForModel('unknown-model')).toBe(200_000)
   clearSessionContextWindowOverride()
@@ -1197,9 +1216,9 @@ test('session override takes precedence over known model catalog metadata', () =
   expect(getContextWindowForModel('gpt-4o')).toBe(defaultWindow)
 })
 
-test('CLAUDE_CODE_MAX_CONTEXT_TOKENS takes precedence over session override', () => {
+test('NYXCLAUDE_MAX_CONTEXT_TOKENS takes precedence over session override', () => {
   process.env.USER_TYPE = 'ant'
-  process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS = '50000'
+  process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS = '50000'
   setSessionContextWindowOverride('gpt-4o', 200_000)
   expect(getContextWindowForModel('gpt-4o')).toBe(50_000)
 })

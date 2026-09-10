@@ -8,7 +8,6 @@ import { NOTEBOOK_EDIT_TOOL_NAME } from '../../NotebookEditTool/constants.js'
 import { hasEmbeddedSearchTools } from '../../../utils/embeddedTools.js'
 import { AGENT_TOOL_NAME } from '../constants.js'
 import type { BuiltInAgentDefinition } from '../loadAgentsDir.js'
-import { EXPLORE_AGENT } from './exploreAgent.js'
 
 function getPlanV2SystemPrompt(): string {
   const searchToolsHint = hasEmbeddedSearchTools()
@@ -79,7 +78,7 @@ export const PLAN_AGENT: BuiltInAgentDefinition = {
     NOTEBOOK_EDIT_TOOL_NAME,
   ],
   source: 'built-in',
-  tools: EXPLORE_AGENT.tools,
+  tools: undefined,
   baseDir: 'built-in',
   model: 'inherit',
   omitAgentsMd: true,

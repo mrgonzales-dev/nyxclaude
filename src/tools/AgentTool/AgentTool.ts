@@ -78,7 +78,7 @@ import {
 
 // Check if background tasks are disabled at module load time
 const isBackgroundTasksDisabled = isEnvTruthy(
-  process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS,
+  process.env.NYXCLAUDE_DISABLE_BACKGROUND_TASKS,
 )
 
 // Base input schema
@@ -201,11 +201,17 @@ export const AgentTool = buildTool({
 
     let selectedAgent: AgentDefinition
     if (isForkPath) {
-      // Fork path: use parent's context — no separate agent definition needed
-      // But we need a minimal agent definition for the fork
-      throw new Error(
-        'Fork subagent path is not yet supported in this build. Specify a subagent_type.',
-      )
+      // Fork path: inherit parent's context. The fork uses the parent's
+      // system prompt (via forkContextMessages) and tool set. We provide a
+      // minimal agent definition for metadata and model resolution.
+      selectedAgent = {
+        agentType: 'fork',
+        whenToUse: 'Fork of parent agent',
+        source: 'built-in',
+        baseDir: 'built-in',
+        model: 'inherit',
+        getSystemPrompt: () => '',
+      } as AgentDefinition
     } else {
       const allAgents = toolUseContext.options.agentDefinitions.activeAgents
       const { allowedAgentTypes } = toolUseContext.options.agentDefinitions

@@ -1,7 +1,7 @@
 /**
  * Files are loaded in the following order:
  *
- * 1. Managed memory (eg. /etc/claude-code/AGENTS.md) - Global instructions for all users
+ * 1. Managed memory (eg. /etc/nyxclaude/AGENTS.md) - Global instructions for all users
  * 2. User memory (~/.nyxclaude/AGENTS.md) - Private global instructions for all projects
  * 3. Project memory (AGENTS.md, plus .nyxclaude/AGENTS.md and .nyxclaude/rules/*.md in project roots) - Instructions checked into the codebase
  * 4. Local memory (AGENTS.local.md in project roots) - Private project-specific instructions
@@ -51,13 +51,13 @@ import { getAutoMemEntrypoint, isAutoMemoryEnabled } from '../utils/memoryStubs.
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js'
 import {
   getCurrentProjectConfig,
-  getManagedClaudeRulesDir,
+  getManagedRulesDir,
   getMemoryPath,
-  getUserClaudeRulesDir,
+  getUserRulesDir,
 } from './config.js'
 import { logForDebugging } from './debug.js'
 import { logForDiagnosticsNoPII } from './diagLogs.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
+import { getNyxclaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
 import { getErrnoCode } from './errors.js'
 import { normalizePathForComparison } from './file.js'
 import { cacheKeys, type FileStateCache } from './fileStateCache.js'
@@ -423,9 +423,9 @@ function handleMemoryFileReadError(error: unknown, filePath: string): void {
   // Log permission errors (EACCES) as they're actionable
   if (code === 'EACCES') {
     // Don't log the full file path to avoid PII/security issues
-    logEvent('tengu_agents_md_permission_error', {
+    logEvent('nyxclaude_agents_md_permission_error', {
       is_access_error: 1,
-      has_home_dir: filePath.includes(getClaudeConfigHomeDir()) ? 1 : 0,
+      has_home_dir: filePath.includes(getNyxclaudeConfigHomeDir()) ? 1 : 0,
     })
   }
 }
@@ -793,9 +793,9 @@ export async function processMdRules({
     return result
   } catch (error) {
     if (error instanceof Error && error.message.includes('EACCES')) {
-      logEvent('tengu_claude_rules_md_permission_error', {
+      logEvent('nyxclaude_rules_md_permission_error', {
         is_access_error: 1,
-        has_home_dir: rulesDir.includes(getClaudeConfigHomeDir()) ? 1 : 0,
+        has_home_dir: rulesDir.includes(getNyxclaudeConfigHomeDir()) ? 1 : 0,
       })
     }
     return []
@@ -803,9 +803,8 @@ export async function processMdRules({
 }
 
 export const getMemoryFiles = memoize(
-  async (_forceIncludeExternal: boolean = false): Promise<MemoryFileInfo[]> => {
-    // NYXCLAUDE: Memory system removed — return empty array.
-    return []
+  async (forceIncludeExternal: boolean = false): Promise<MemoryFileInfo[]> => {
+    return _getMemoryFilesOriginal(forceIncludeExternal)
   },
 )
 
@@ -837,10 +836,10 @@ export const _getMemoryFilesOriginal = memoize(
       )),
     )
     // Process Managed .nyxclaude/rules/*.md files
-    const managedClaudeRulesDir = getManagedClaudeRulesDir()
+    const managedRulesDir = getManagedRulesDir()
     result.push(
       ...(await processMdRules({
-        rulesDir: managedClaudeRulesDir,
+        rulesDir: managedRulesDir,
         type: 'Managed',
         processedPaths,
         includeExternal,
@@ -860,10 +859,10 @@ export const _getMemoryFilesOriginal = memoize(
         )),
       )
       // Process User ~/.nyxclaude/rules/*.md files
-      const userClaudeRulesDir = getUserClaudeRulesDir()
+      const userRulesDir = getUserRulesDir()
       result.push(
         ...(await processMdRules({
-          rulesDir: userClaudeRulesDir,
+          rulesDir: userRulesDir,
           type: 'User',
           processedPaths,
           includeExternal: includeExternalForUser, // User-scope external-includes gate
@@ -883,14 +882,14 @@ export const _getMemoryFilesOriginal = memoize(
     }
 
     // When running from a git worktree nested inside its main repo (e.g.,
-    // .nyxclaude/worktrees/<name>/ from `claude -w`), the upward walk passes
+    // .nyxclaude/worktrees/<name>/ from `nyxclaude -w`), the upward walk passes
     // through both the worktree root and the main repo root. Both contain
     // checked-in files like AGENTS.md and .nyxclaude/rules/*.md, so the same
     // content gets loaded twice. Skip Project-type (checked-in) files from
     // directories above the worktree but within the main repo — the worktree
     // already has its own checkout. AGENTS.local.md is gitignored so it only
     // exists in the main repo and is still loaded.
-    // See: https://github.com/anthropics/claude-code/issues/29599
+    // See: https://github.com/nyxclaude/nyxclaude/issues/29599
     const gitRoot = findGitRoot(originalCwd)
     const canonicalRoot = findCanonicalGitRoot(originalCwd)
     const isNestedWorktree =
@@ -925,10 +924,10 @@ export const _getMemoryFilesOriginal = memoize(
         )
 
         // Try reading .nyxclaude/AGENTS.md (Project)
-        const dotClaudePath = join(dir, '.nyxclaude', 'AGENTS.md')
+        const dotNyxclaudePath = join(dir, '.nyxclaude', 'AGENTS.md')
         result.push(
           ...(await processMemoryFile(
-            dotClaudePath,
+            dotNyxclaudePath,
             'Project',
             processedPaths,
             includeExternal,
@@ -963,11 +962,11 @@ export const _getMemoryFilesOriginal = memoize(
     }
 
     // Process root project instruction files from additional directories (--add-dir) if env var is enabled
-    // This is controlled by CLAUDE_CODE_ADDITIONAL_DIRECTORIES_AGENTS_MD and defaults to off
+    // This is controlled by NYXCLAUDE_ADDITIONAL_DIRECTORIES_AGENTS_MD and defaults to off
     // Note: we don't check isSettingSourceEnabled('projectSettings') here because --add-dir
     // is an explicit user action and the SDK defaults settingSources to [] when not specified
-    if (isEnvTruthy(process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_AGENTS_MD) ||
-        isEnvTruthy(process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD)) {
+    if (isEnvTruthy(process.env.NYXCLAUDE_ADDITIONAL_DIRECTORIES_AGENTS_MD) ||
+        isEnvTruthy(process.env.NYXCLAUDE_ADDITIONAL_DIRECTORIES_AGENTS_MD)) {
       const additionalDirs = getAdditionalDirectoriesForAgentsMd()
       for (const dir of additionalDirs) {
         // Try reading the root project instruction file from the additional directory
@@ -985,10 +984,10 @@ export const _getMemoryFilesOriginal = memoize(
         )
 
         // Try reading .nyxclaude/AGENTS.md from the additional directory
-        const dotClaudePath = join(dir, '.nyxclaude', 'AGENTS.md')
+        const dotNyxclaudePath = join(dir, '.nyxclaude', 'AGENTS.md')
         result.push(
           ...(await processMemoryFile(
-            dotClaudePath,
+            dotNyxclaudePath,
             'Project',
             processedPaths,
             includeExternal,
@@ -1057,7 +1056,7 @@ export const _getMemoryFilesOriginal = memoize(
 
     if (!hasLoggedInitialLoad) {
       hasLoggedInitialLoad = true
-      logEvent('tengu_agentsmd__initial_load', {
+      logEvent('nyxclaude_agentsmd__initial_load', {
         file_count: result.length,
         total_content_length: totalContentLength,
         user_count: typeCounts['User'] ?? 0,
@@ -1167,7 +1166,7 @@ export function getLargeMemoryFiles(files: MemoryFileInfo[]): MemoryFileInfo[] {
 }
 
 /**
- * When tengu_moth_copse is on, the findRelevantMemories prefetch surfaces
+ * When nyxclaude_moth_copse is on, the findRelevantMemories prefetch surfaces
  * memory files via attachments, so the MEMORY.md index is no longer injected
  * into the system prompt. Callsites that care about "what's actually in
  * context" (context builder, /context viz) should filter through this.
@@ -1176,7 +1175,7 @@ export function filterInjectedMemoryFiles(
   files: MemoryFileInfo[],
 ): MemoryFileInfo[] {
   const skipMemoryIndex = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_moth_copse',
+    'nyxclaude_moth_copse',
     false,
   )
   if (!skipMemoryIndex) return files
@@ -1189,7 +1188,7 @@ export const getAgentsMds = (
 ): string => {
   const memories: string[] = []
   const skipProjectLevel = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_paper_halyard',
+    'nyxclaude_paper_halyard',
     false,
   )
 
@@ -1243,11 +1242,11 @@ export async function getManagedAndUserConditionalRules(
   const config = getCurrentProjectConfig()
 
   // Process Managed conditional .nyxclaude/rules/*.md files
-  const managedClaudeRulesDir = getManagedClaudeRulesDir()
+  const managedRulesDir = getManagedRulesDir()
   result.push(
     ...(await processConditionedMdRules(
       targetPath,
-      managedClaudeRulesDir,
+      managedRulesDir,
       'Managed',
       processedPaths,
       false,
@@ -1259,12 +1258,12 @@ export async function getManagedAndUserConditionalRules(
     // Gate external includes through the same User-scope approval flag
     // as unconditional User rules, so declining approval blocks the
     // conditional path too.
-    const userClaudeRulesDir = getUserClaudeRulesDir()
+    const userRulesDir = getUserRulesDir()
     const includeExternalForUser = config.hasAgentsMdExternalIncludesApprovedForUser ?? false
     result.push(
       ...(await processConditionedMdRules(
         targetPath,
-        userClaudeRulesDir,
+        userRulesDir,
         'User',
         processedPaths,
         includeExternalForUser,
@@ -1305,10 +1304,10 @@ export async function getMemoryFilesForNestedDirectory(
         false,
       )),
     )
-    const dotClaudePath = join(dir, '.nyxclaude', 'AGENTS.md')
+    const dotNyxclaudePath = join(dir, '.nyxclaude', 'AGENTS.md')
     result.push(
       ...(await processMemoryFile(
-        dotClaudePath,
+        dotNyxclaudePath,
         'Project',
         processedPaths,
         false,

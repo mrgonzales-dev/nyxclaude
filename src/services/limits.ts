@@ -47,7 +47,7 @@ export let currentLimits: RateLimits = {
 
 export function getRateLimitDisplayName(_type: RateLimitType): string { return '' }
 export function getRawUtilization(): RawUtilization | null { return null }
-export const statusListeners: Set<() => void> = new Set()
+export const statusListeners: Set<(limits: RateLimits) => void> = new Set()
 export function emitStatusChange(_limits: RateLimits): void {}
 export async function checkQuotaStatus(): Promise<void> {}
 export function extractQuotaStatusFromHeaders(_headers: unknown): void {}

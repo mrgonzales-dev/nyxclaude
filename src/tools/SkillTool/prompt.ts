@@ -1,6 +1,6 @@
 // NYX: SkillTool deleted, stubbed
 export function clearPromptCache(): void {}
-export function getCharBudget(): number {
+export function getCharBudget(_contextWindowTokens?: number): number {
   return 5000
 }
 export const SUBAGENT_SKILL_LISTING_CHAR_BUDGET = 5000

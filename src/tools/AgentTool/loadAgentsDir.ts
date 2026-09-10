@@ -77,6 +77,7 @@ export type BaseAgentDefinition = {
   background?: boolean
   initialPrompt?: string
   omitAgentsMd?: boolean
+  memory?: string
 }
 
 // Built-in agents - dynamic prompts only, no static systemPrompt field

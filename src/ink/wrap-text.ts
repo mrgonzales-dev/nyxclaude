@@ -67,7 +67,16 @@ export default function wrapText(
       position = 'start'
     }
 
-    return truncate(text, maxWidth, position)
+    // Truncate each line independently. The prompt input pre-wraps its value
+    // to the column width and embeds '\n'; measuring stringWidth across the
+    // whole multi-line string would collapse it to a single '…'-terminated
+    // line, hiding everything past the first columns. Per-line truncation
+    // keeps each pre-wrapped line intact (they're already <= maxWidth, so
+    // truncate is a no-op) while still truncating any genuinely over-wide line.
+    return text
+      .split('\n')
+      .map(line => truncate(line, maxWidth, position))
+      .join('\n')
   }
 
   return text

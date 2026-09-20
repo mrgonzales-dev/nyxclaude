@@ -96,6 +96,8 @@ const zenModels: OpenCodeModelSpec[] = [
 ]
 
 const goModels: OpenCodeModelSpec[] = [
+  { id: 'opencode-go-glm-5.3', label: 'GLM 5.3', defaultModel: 'glm-5.3', contextWindow: 1_048_576, maxOutputTokens: 131_072, reasoning: true, coding: true },
+  { id: 'opencode-go-glm-5.3-flash', label: 'GLM 5.3 Flash', defaultModel: 'glm-5.3-flash', contextWindow: 1_048_576, maxOutputTokens: 131_072, reasoning: true, vision: true, coding: true },
   { id: 'opencode-go-glm-5.2', label: 'GLM 5.2', defaultModel: 'glm-5.2', contextWindow: 1_000_000, maxOutputTokens: 131_072, reasoning: true, coding: true },
   { id: 'opencode-go-qwen3.7-max', label: 'Qwen3.7 Max', defaultModel: 'qwen3.7-max', contextWindow: 1_000_000, maxOutputTokens: 65_536, reasoning: true, coding: true },
   { id: 'opencode-go-kimi-k2.7-code', label: 'Kimi K2.7 Code', defaultModel: 'kimi-k2.7-code', contextWindow: 262_144, maxOutputTokens: 262_144, reasoning: true, coding: true },

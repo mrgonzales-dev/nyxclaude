@@ -289,12 +289,14 @@ describe('OpenCode model catalog', () => {
 
   test('go model count matches expected', () => {
     const models = getCatalogEntriesForRoute('opencode-go')
-    expect(models.length).toBe(13)
+    expect(models.length).toBe(15)
   })
 
   test('go model set matches opencode.ai/go catalog exactly', () => {
     const models = getCatalogEntriesForRoute('opencode-go')
     const expectedIds = new Set([
+      'opencode-go-glm-5.3',
+      'opencode-go-glm-5.3-flash',
       'opencode-go-glm-5.2',
       'opencode-go-qwen3.7-max',
       'opencode-go-kimi-k2.7-code',

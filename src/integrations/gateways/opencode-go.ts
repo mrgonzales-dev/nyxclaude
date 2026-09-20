@@ -49,6 +49,10 @@ function catalogEntry(spec: OpenCodeGoCatalogSpec) {
 }
 
 const goModels: OpenCodeGoCatalogSpec[] = [
+  { id: 'glm-5.3', apiName: 'glm-5.3', label: 'GLM 5.3', zaiGlm: true },
+  // GLM 5.3 Flash's upstream on this gateway rejects the `thinking` field
+  // (400 unknown field), so it must not get the inferred Z.AI shim.
+  { id: 'glm-5.3-flash', apiName: 'glm-5.3-flash', label: 'GLM 5.3 Flash' },
   { id: 'glm-5.2', apiName: 'glm-5.2', label: 'GLM 5.2', zaiGlm: true },
   { id: 'qwen3.7-max', apiName: 'qwen3.7-max', label: 'Qwen3.7 Max', endpointPath: '/messages' },
   { id: 'kimi-k2.7-code', apiName: 'kimi-k2.7-code', label: 'Kimi K2.7 Code' },
@@ -93,7 +97,7 @@ export default defineGateway({
   preset: {
     id: 'opencode-go',
     vendorId: 'openai',
-    description: 'OpenCode Go - $10/mo subscription for open models (13 models)',
+    description: 'OpenCode Go - $10/mo subscription for open models (15 models)',
     apiKeyEnvVars: ['OPENCODE_API_KEY'],
     modelEnvVars: ['OPENAI_MODEL'],
   },

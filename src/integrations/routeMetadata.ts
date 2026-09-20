@@ -270,6 +270,25 @@ export function isXaiBaseUrl(value: string | undefined): boolean {
   }
 }
 
+// OpenCode Go (opencode.ai/zen/go) shares its host with OpenCode Zen
+// (opencode.ai/zen), so the match is host + path-prefix, not hostname alone.
+export function isOpenCodeGoBaseUrl(value: string | undefined): boolean {
+  const trimmed = value?.trim()
+  if (!trimmed) {
+    return false
+  }
+
+  try {
+    const url = new URL(trimmed)
+    return (
+      url.hostname.toLowerCase() === 'opencode.ai' &&
+      /^\/zen\/go(?:\/|$)/.test(url.pathname.toLowerCase())
+    )
+  } catch {
+    return false
+  }
+}
+
 export function isXiaomiMimoBaseUrl(value: string | undefined): boolean {
   const trimmed = value?.trim()
   if (!trimmed) {

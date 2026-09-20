@@ -64,6 +64,7 @@ import {
 import {
   getRouteDescriptor,
   isLongcatBaseUrl,
+  isOpenCodeGoBaseUrl,
   isXaiBaseUrl,
   resolveRouteCredentialValue,
 } from '../../integrations/routeMetadata.js'
@@ -3476,6 +3477,9 @@ class OpenAIShimMessages {
     // sent as a Bearer to api.x.ai/v1 — same surface as an API key.
     const isXaiRoute =
       runtimeShimContext.routeId === 'xai' || isXaiBaseUrl(request.baseUrl)
+    const isOpenCodeGoRoute =
+      runtimeShimContext.routeId === 'opencode-go' ||
+      isOpenCodeGoBaseUrl(request.baseUrl)
     const routeAcceptsGenericOpenAICredentials =
       runtimeShimContext.routeId === null ||
       getRouteDescriptor(runtimeShimContext.routeId)?.setup
@@ -3663,6 +3667,14 @@ class OpenAIShimMessages {
       // implementation (RELEASE_v0.8.0 PR #5604).
       if (isXaiRoute) {
         headers['x-grok-conv-id'] ??= getSessionId()
+      }
+
+      // OpenCode Go rejects requests without a stable per-conversation
+      // x-opencode-session header (400 MissingSessionID). The native
+      // X-Claude-Code-Session-Id can't cover it: filterAnthropicHeaders
+      // strips x-claude* headers before third-party requests are sent.
+      if (isOpenCodeGoRoute) {
+        headers['x-opencode-session'] ??= getSessionId()
       }
 
       return headers

@@ -4356,6 +4356,90 @@ test('opencode go messages endpoint rotates raw x-api-key credentials after rate
 // openaiShim test extraction seam 065 end
 
 
+test('opencode go sends a stable x-opencode-session header on every request', async () => {
+  const capturedSessions: Array<string | null> = []
+
+  process.env.OPENAI_BASE_URL = 'https://opencode.ai/zen/go/v1'
+  delete process.env.OPENAI_API_KEY
+  process.env.OPENAI_MODEL = 'minimax-m3'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.OPENCODE_API_KEY = 'fake-opencode-key'
+
+  globalThis.fetch = (async (_input, init) => {
+    capturedSessions.push(new Headers(init?.headers).get('x-opencode-session'))
+
+    return new Response(
+      JSON.stringify({
+        id: 'msg_opencode_go',
+        type: 'message',
+        role: 'assistant',
+        model: 'minimax-m3',
+        content: [{ type: 'text', text: 'ok' }],
+        stop_reason: 'end_turn',
+        stop_sequence: null,
+        usage: {
+          input_tokens: 1,
+          output_tokens: 1,
+        },
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+  }) as unknown as FetchType
+
+  const client = createOpenAIShimClient({}) as OpenAIShimClient
+
+  await client.beta.messages.create({
+    model: 'minimax-m3',
+    messages: [{ role: 'user', content: 'hello' }],
+    max_tokens: 32,
+    stream: false,
+  })
+  await client.beta.messages.create({
+    model: 'minimax-m3',
+    messages: [{ role: 'user', content: 'again' }],
+    max_tokens: 32,
+    stream: false,
+  })
+
+  expect(capturedSessions).toHaveLength(2)
+  expect(capturedSessions[0]).toMatch(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+  )
+  // Stable per conversation: both requests carry the same session id.
+  expect(capturedSessions[1]).toBe(capturedSessions[0])
+})
+
+test('opencode zen (non-go base URL) does not send x-opencode-session', async () => {
+  let capturedHeaders: Headers | undefined
+
+  process.env.OPENAI_BASE_URL = 'https://opencode.ai/zen/v1'
+  delete process.env.OPENAI_API_KEY
+  process.env.OPENAI_MODEL = 'deepseek-v4-pro'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.OPENCODE_API_KEY = 'fake-opencode-key'
+
+  globalThis.fetch = (async (_input, init) => {
+    capturedHeaders = new Headers(init?.headers)
+    return makeChatCompletionResponse('deepseek-v4-pro')
+  }) as unknown as FetchType
+
+  const client = createOpenAIShimClient({}) as OpenAIShimClient
+
+  await client.beta.messages.create({
+    model: 'deepseek-v4-pro',
+    messages: [{ role: 'user', content: 'hello' }],
+    max_tokens: 32,
+    stream: false,
+  })
+
+  expect(capturedHeaders?.get('x-opencode-session')).toBeNull()
+})
+
+
 // openaiShim test extraction seam 066 start: gitlawb opengateway provider flag sends OPENGATEWAY_API_KEY as bearer auth despite stale generic base URL
 test('gitlawb opengateway provider flag sends OPENGATEWAY_API_KEY as bearer auth despite stale generic base URL', async () => {
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'

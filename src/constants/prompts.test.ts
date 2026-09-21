@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test'
-import { getOutputEfficiencySection, getReasoningSection } from './prompts.js'
+import {
+  getLanguageIntegritySection,
+  getOutputEfficiencySection,
+  getReasoningSection,
+  LANGUAGE_INTEGRITY_SUBAGENT_LINE,
+} from './prompts.js'
 
 describe('getReasoningSection', () => {
   const section = getReasoningSection()
@@ -28,5 +33,32 @@ describe('getOutputEfficiencySection', () => {
 
   test('says narration not reasoning', () => {
     expect(section).toContain('not narration of your reasoning')
+  })
+})
+
+describe('getLanguageIntegritySection', () => {
+  const section = getLanguageIntegritySection()
+
+  test('has a Language integrity heading', () => {
+    expect(section).toContain('# Language integrity')
+  })
+
+  test('bans Chinese thinking and replies', () => {
+    expect(section).toContain('Never think')
+    expect(section).toContain('Never reply')
+  })
+
+  test('declares precedence over language preference', () => {
+    expect(section).toContain('takes precedence')
+  })
+
+  test('includes hard self-correct knock/poke', () => {
+    expect(section).toContain('ENGLISH ONLY')
+    expect(section).toContain('STOP')
+  })
+
+  test('subagent line carries the same hard rule', () => {
+    expect(LANGUAGE_INTEGRITY_SUBAGENT_LINE).toContain('ENGLISH ONLY')
+    expect(LANGUAGE_INTEGRITY_SUBAGENT_LINE).toContain('never think')
   })
 })

@@ -207,6 +207,27 @@ function getSimpleDoingTasksSection(): string {
   return [`# Doing tasks`, ...prependBullets(items)].join(`\n`)
 }
 
+/**
+ * Hard language-integrity rule: English-only thinking and replies.
+ * Static and cache-safe — takes precedence over # Language and output styles.
+ * Subagent paths that bypass getStaticSystemPromptPrefix reuse
+ * LANGUAGE_INTEGRITY_SUBAGENT_LINE via enhanceSystemPromptWithEnvDetails.
+ */
+export const LANGUAGE_INTEGRITY_SUBAGENT_LINE = `Language integrity: never think, reason, plan, or reply in Chinese (Simplified, Traditional, Han/CJK characters). Use English only. If you detect Chinese in your own thinking or output, STOP that span at once, self-poke with "ENGLISH ONLY", discard it, restate it in English, then continue.`
+
+export function getLanguageIntegritySection(): string {
+  const items = [
+    `Never think, reason, plan, or draft in Chinese in any form. No Simplified. No Traditional. No Han or CJK characters in your own thinking, planning, or prose.`,
+    `Never reply to the user in Chinese. Keep all exposed reasoning, tool-call narration, and final responses in English.`,
+    `Do not use Pinyin or romanization to evade this rule when the intended meaning is Chinese prose. Discussing Pinyin as a topic or naming a proper noun is allowed. Emitting Chinese meaning in romanized form is not.`,
+    `This section takes precedence over # Language, output styles, and any request for Chinese. If settings or the user asks for Chinese, decline in English and continue in English. Offer an English alternative.`,
+    `Exemptions cover only what you did not author: code identifiers, string literals, and short verbatim quotes from files or tool results when load-bearing (always with an absolute file path). Otherwise translate or summarize Chinese source material into English. Do not adopt it as your own prose.`,
+    `Hard self-correct (model knock/poke): if you detect Chinese characters or evasive Pinyin in your own thinking or output, STOP that span at once. Self-poke with "ENGLISH ONLY". Discard the span and restate it in English. Then continue. Do not apologize at length.`,
+  ]
+
+  return [`# Language integrity - English only`, ...prependBullets(items)].join(`\n`)
+}
+
 export function getReasoningSection(): string {
   return `# Reasoning
 
@@ -421,6 +442,7 @@ export async function getSystemPrompt(
   if (isEnvTruthy(process.env.NYXCLAUDE_SIMPLE)) {
     return [
       `You are nyxclaude, a coding agent powered by omniroute.\n\nCWD: ${getCwd()}\nDate: ${getSessionStartDate()}`,
+      LANGUAGE_INTEGRITY_SUBAGENT_LINE,
     ]
   }
 
@@ -446,6 +468,7 @@ ${CYBER_RISK_INSTRUCTION}`,
       await loadMemoryPrompt(),
       envInfo,
       getLanguageSection(settings.language),
+      getLanguageIntegritySection(),
       // When delta enabled, instructions are announced via persisted
       // mcp_instructions_delta attachments (attachments.ts) instead.
       isMcpInstructionsDeltaEnabled()
@@ -551,6 +574,7 @@ function getStaticSystemPromptPrefix(
       ? getSimpleDoingTasksSection()
       : null,
     getReasoningSection(),
+    getLanguageIntegritySection(),
     getActionsSection(),
     getUsingYourToolsSection(enabledTools),
     getSimpleToneAndStyleSection(),
@@ -693,7 +717,8 @@ export async function enhanceSystemPromptWithEnvDetails(
 - Agent threads always have their cwd reset between bash calls, as a result please only use absolute file paths.
 - In your final response, share file paths (always absolute, never relative) that are relevant to the task. Include code snippets only when the exact text is load-bearing (e.g., a bug you found, a function signature the caller asked for) — do not recap code you merely read.
 - For clear communication with the user the assistant MUST avoid using emojis.
-- Do not use a colon before tool calls. Text like "Let me read the file:" followed by a read tool call should just be "Let me read the file." with a period.`
+- Do not use a colon before tool calls. Text like "Let me read the file:" followed by a read tool call should just be "Let me read the file." with a period.
+- ${LANGUAGE_INTEGRITY_SUBAGENT_LINE}`
   // Subagents get skill_discovery attachments (prefetch.ts runs in query(),
   // no agentId guard since #22830) but don't go through getSystemPrompt —
   // surface the same DiscoverSkills framing the main session gets. Gated on

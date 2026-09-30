@@ -42,6 +42,7 @@ import { fetchBootstrapData } from './services/api/bootstrap.js';
 import { refreshStartupDiscoveryForActiveRoute } from './integrations/discoveryService.js';
 import { MAX_AMOUNT_USD_MINOR, MIN_AMOUNT_USD_MINOR } from './integrations/aimlapi/config.js';
 import { prefetchOllamaModels } from './utils/model/ollamaModels.js';
+import { prefetchModelsDevCatalog } from './utils/model/modelsDevCatalog.js';
 import { type DownloadResult, downloadSessionFiles, type FilesApiConfig, parseFileSpecs } from './services/api/filesApi.js';
 import { prefetchPassesEligibility } from './services/api/referral.js';
 import type { McpSdkServerConfig, McpServerConfig, ScopedMcpServerConfig } from './services/mcp/types.js';
@@ -2237,6 +2238,8 @@ async function run(): Promise<CommanderCommand> {
     const skipStartupPrefetches = isBareMode() || bgRefreshThrottleMs > 0 && Date.now() - lastPrefetched < bgRefreshThrottleMs;
     // Always prefetch Ollama models (not gated by throttle — local server, fast & cheap)
     prefetchOllamaModels();
+    // Always prefetch models.dev catalog (not gated by throttle — needed for /model picker)
+    prefetchModelsDevCatalog();
     void refreshStartupDiscoveryForActiveRoute();
 
     if (!skipStartupPrefetches) {

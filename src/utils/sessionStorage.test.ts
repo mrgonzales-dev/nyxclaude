@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ToolResultBlockParam } from 'src/types/api.js'
 import { type UUID } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -38,8 +38,8 @@ import {
 import type { GoalState } from '../services/goal/types.js'
 import type { SessionBranchEntry } from '../types/logs.js'
 import {
-  getClaudeConfigHomeDir,
-  setClaudeConfigHomeDirForTesting,
+  getNyxclaudeConfigHomeDir,
+  setNyxclaudeConfigHomeDirForTesting,
 } from './envUtils.js'
 import { resetSettingsCache } from './settings/settingsCache.js'
 
@@ -191,14 +191,14 @@ function readSessionBranchEntries(text: string): SessionBranchEntry[] {
 async function withSessionPersistence<T>(fn: () => Promise<T>): Promise<T> {
   const originalPersistence = process.env.TEST_ENABLE_SESSION_PERSISTENCE
   const originalSessionPersistence = process.env.ENABLE_SESSION_PERSISTENCE
-  const originalSkipPromptHistory = process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY
+  const originalSkipPromptHistory = process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY
   const originalNodeEnv = process.env.NODE_ENV
   const originalSessionId = getSessionId()
   const originalSessionPersistenceDisabled = isSessionPersistenceDisabled()
   process.env.NODE_ENV = 'development'
   process.env.TEST_ENABLE_SESSION_PERSISTENCE = 'true'
   process.env.ENABLE_SESSION_PERSISTENCE = 'true'
-  delete process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY
+  delete process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY
   setSessionPersistenceDisabled(false)
   try {
     resetProjectForTesting()
@@ -215,9 +215,9 @@ async function withSessionPersistence<T>(fn: () => Promise<T>): Promise<T> {
       process.env.ENABLE_SESSION_PERSISTENCE = originalSessionPersistence
     }
     if (originalSkipPromptHistory === undefined) {
-      delete process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY
+      delete process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY
     } else {
-      process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY = originalSkipPromptHistory
+      process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY = originalSkipPromptHistory
     }
     if (originalNodeEnv === undefined) {
       delete process.env.NODE_ENV
@@ -249,7 +249,7 @@ test('recordTranscript respects prompt-history opt-out for replay state', async 
       join(tmpdir(), 'nyxclaude-session-storage-config-'),
     )
     tempDirs.push(configDir)
-    setClaudeConfigHomeDirForTesting(configDir)
+    setNyxclaudeConfigHomeDirForTesting(configDir)
     await writeFile(
       join(configDir, 'settings.json'),
       JSON.stringify({ cleanupPeriodDays: 30 }),
@@ -257,7 +257,7 @@ test('recordTranscript respects prompt-history opt-out for replay state', async 
     )
     resetSettingsCache()
     process.env.TEST_ENABLE_SESSION_PERSISTENCE = 'false'
-    process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY = 'true'
+    process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY = 'true'
     resetProjectForTesting()
     resetAllReplayIndexBuilders()
 
@@ -277,7 +277,7 @@ test('recordTranscript respects prompt-history opt-out for replay state', async 
 
       expect(resetAllReplayIndexBuilders()).toEqual([])
     } finally {
-      setClaudeConfigHomeDirForTesting(undefined)
+      setNyxclaudeConfigHomeDirForTesting(undefined)
       resetSettingsCache()
     }
   })
@@ -692,8 +692,8 @@ test('loadSameRepoMessageLogsProgressive preserves branch metadata across worktr
   const branchId = id(62)
 
   try {
-    setClaudeConfigHomeDirForTesting(configDir)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(configDir)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
     const rootProjectDir = getProjectDir(rootProject)
     const branchProjectDir = getProjectDir(branchProject)
     await mkdir(rootProjectDir, { recursive: true })
@@ -735,8 +735,8 @@ test('loadSameRepoMessageLogsProgressive preserves branch metadata across worktr
     expect(branchLog?.sessionBranch?.branchName).toBe('Worktree branch')
     expect(branchLog?.sessionBranch?.rootSessionId).toBe(rootId)
   } finally {
-    setClaudeConfigHomeDirForTesting(undefined)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(undefined)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
   }
 })
 
@@ -764,8 +764,8 @@ test('loadSameRepoMessageLogsProgressive preserves branch metadata from the lite
   }
 
   try {
-    setClaudeConfigHomeDirForTesting(configDir)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(configDir)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
     const rootProjectDir = getProjectDir(rootProject)
     const branchProjectDir = getProjectDir(branchProject)
     await mkdir(rootProjectDir, { recursive: true })
@@ -805,8 +805,8 @@ test('loadSameRepoMessageLogsProgressive preserves branch metadata from the lite
     expect(branchLog?.sessionBranch?.branchName).toBe('Long-lived branch')
     expect(branchLog?.sessionBranch?.rootSessionId).toBe(rootId)
   } finally {
-    setClaudeConfigHomeDirForTesting(undefined)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(undefined)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
   }
 })
 
@@ -834,8 +834,8 @@ test('loadSameRepoMessageLogsProgressive ignores branch metadata outside lite re
   }
 
   try {
-    setClaudeConfigHomeDirForTesting(configDir)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(configDir)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
     const rootProjectDir = getProjectDir(rootProject)
     const branchProjectDir = getProjectDir(branchProject)
     await mkdir(rootProjectDir, { recursive: true })
@@ -875,8 +875,8 @@ test('loadSameRepoMessageLogsProgressive ignores branch metadata outside lite re
     expect(branchLog).toBeDefined()
     expect(branchLog?.sessionBranch).toBeUndefined()
   } finally {
-    setClaudeConfigHomeDirForTesting(undefined)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(undefined)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
   }
 })
 

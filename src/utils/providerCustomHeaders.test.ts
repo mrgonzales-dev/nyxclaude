@@ -39,7 +39,7 @@ describe('parseProfileCustomHeadersInput', () => {
 })
 
 describe('serializeProfileCustomHeaders', () => {
-  test('serializes profile headers for ANTHROPIC_CUSTOM_HEADERS', () => {
+  test('serializes profile headers for NYXCLAUDE_CUSTOM_HEADERS', () => {
     expect(
       serializeProfileCustomHeaders({
         'X-Team': 'devtools',

@@ -2,7 +2,7 @@
 import type {
   ToolResultBlockParam,
   ToolUseBlock,
-} from '@anthropic-ai/sdk/resources/index.mjs'
+} from 'src/types/api.js'
 import type { CanUseToolFn } from './hooks/useCanUseTool.js'
 import { FallbackTriggeredError } from './services/api/withRetry.js'
 import {
@@ -450,7 +450,7 @@ export type QueryParams = {
   // API task_budget (output_config.task_budget, beta task-budgets-2026-03-13).
   // Distinct from the tokenBudget +500k auto-continue feature. `total` is the
   // budget for the whole agentic turn; `remaining` is computed per iteration
-  // from cumulative API usage. See configureTaskBudgetParams in claude.ts.
+  // from cumulative API usage. See configureTaskBudgetParams in modelApi.ts.
   taskBudget?: { total: number }
   agentStepLimit?: AgentStepLimitConfig
   deps?: QueryDeps
@@ -983,7 +983,7 @@ async function* queryLoop(
         compactionUsage,
       } = compactionResult
 
-      logEvent('tengu_auto_compact_succeeded', {
+      logEvent('nyxclaude_auto_compact_succeeded', {
         originalMessageCount: messages.length,
         compactedMessageCount:
           compactionResult.summaryMessages.length +
@@ -1101,7 +1101,7 @@ async function* queryLoop(
 
     const assistantMessages: AssistantMessage[] = []
     const toolResults: (UserMessage | AttachmentMessage)[] = []
-    // @see https://docs.claude.com/en/docs/build-with-claude/tool-use
+    // @see https://docs.nyxclaude.dev/tool-use
     // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
     // Set during streaming whenever a tool_use block arrives — the sole
     // loop-exit signal. If false after streaming, we're done (modulo stop-hook retry).
@@ -1347,7 +1347,7 @@ async function* queryLoop(
       logForDebugging(
         `Tool failure loop guard advisory: threshold=${advisory.threshold} hasToolName=true hasErrorCategory=true`,
       )
-      logEvent('tengu_tool_failure_loop_guard_advisory', {
+      logEvent('nyxclaude_tool_failure_loop_guard_advisory', {
         threshold: advisory.threshold,
         hasToolName: true,
         hasErrorCategory: true,
@@ -1450,7 +1450,7 @@ async function* queryLoop(
               for (const msg of assistantMessages) {
                 yield { type: 'tombstone' as const, message: msg }
               }
-              logEvent('tengu_orphaned_messages_tombstoned', {
+              logEvent('nyxclaude_orphaned_messages_tombstoned', {
                 orphanedMessageCount: assistantMessages.length,
                 queryChainId: queryChainIdForAnalytics,
                 queryDepth: queryTracking.depth,
@@ -1657,7 +1657,7 @@ async function* queryLoop(
             // Strip before retry so the fallback model gets clean history.
 
             // Log the fallback event
-            logEvent('tengu_model_fallback_triggered', {
+            logEvent('nyxclaude_model_fallback_triggered', {
               original_model:
                 innerError.originalModel as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
               fallback_model:
@@ -1742,7 +1742,7 @@ async function* queryLoop(
       logError(error)
       const errorMessage =
         error instanceof Error ? error.message : String(error)
-      logEvent('tengu_query_error', {
+      logEvent('nyxclaude_query_error', {
         assistantMessages: assistantMessages.length,
         toolUses: assistantMessages.flatMap(_ =>
           _.message.content.filter(content => content.type === 'tool_use'),
@@ -1959,7 +1959,7 @@ async function* queryLoop(
             providerMaxOutputTokensCap === undefined
               ? providerMaxTokensCap
               : Math.min(providerMaxOutputTokensCap, providerMaxTokensCap)
-          logEvent('tengu_provider_max_tokens_cap_retry', {
+          logEvent('nyxclaude_provider_max_tokens_cap_retry', {
             cap: providerMaxTokensCap,
             ...(effectiveMaxOutputTokensOverride !== undefined && {
               previousMaxOutputTokensOverride:
@@ -2008,15 +2008,15 @@ async function* queryLoop(
         // 64k also hits the cap.
         // 3P default: false (not validated on Bedrock/Vertex)
         const capEnabled = getFeatureValue_CACHED_MAY_BE_STALE(
-          'tengu_otk_slot_v1',
+          'nyxclaude_otk_slot_v1',
           false,
         )
         if (
           capEnabled &&
           effectiveMaxOutputTokensOverride === undefined &&
-          !process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+          !process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
         ) {
-          logEvent('tengu_max_tokens_escalate', {
+          logEvent('nyxclaude_max_tokens_escalate', {
             escalatedTo: ESCALATED_MAX_TOKENS,
           })
           const next: State = {
@@ -2329,7 +2329,7 @@ async function* queryLoop(
               `Token budget early stop: diminishing returns at ${decision.completionEvent.pct}%`,
             )
           }
-          logEvent('tengu_token_budget_completed', {
+          logEvent('nyxclaude_token_budget_completed', {
             ...decision.completionEvent,
             queryChainId: queryChainIdForAnalytics,
             queryDepth: queryTracking.depth,
@@ -2447,13 +2447,13 @@ async function* queryLoop(
     }
 
     if (streamingToolExecutor) {
-      logEvent('tengu_streaming_tool_execution_used', {
+      logEvent('nyxclaude_streaming_tool_execution_used', {
         tool_count: toolUseBlocks.length,
         queryChainId: queryChainIdForAnalytics,
         queryDepth: queryTracking.depth,
       })
     } else {
-      logEvent('tengu_streaming_tool_execution_not_used', {
+      logEvent('nyxclaude_streaming_tool_execution_not_used', {
         tool_count: toolUseBlocks.length,
         queryChainId: queryChainIdForAnalytics,
         queryDepth: queryTracking.depth,
@@ -2613,7 +2613,7 @@ async function* queryLoop(
           `hasErrorCategory=${toolFailureLoopDecision.errorCategory !== undefined} ` +
           `hasPath=${toolFailureLoopDecision.path !== undefined}`,
       )
-      logEvent('tengu_tool_failure_loop_guard_tripped', {
+      logEvent('nyxclaude_tool_failure_loop_guard_tripped', {
         threshold: toolFailureLoopDecision.threshold,
         isPathTrip: toolFailureLoopDecision.kind === 'path',
         isSignatureTrip: toolFailureLoopDecision.kind === 'signature',
@@ -2638,7 +2638,7 @@ async function* queryLoop(
       logForDebugging(
         `[Agent: ${nextAgentStepLimit.agentType ?? 'subagent'}] Reached maxSteps limit (${nextAgentStepLimit.stepsUsed}/${nextAgentStepLimit.maxSteps}); requesting final summary`,
       )
-      logEvent('tengu_agent_step_limit_reached', {
+      logEvent('nyxclaude_agent_step_limit_reached', {
         agent_type:
           (nextAgentStepLimit.agentType ??
             'subagent') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -2727,7 +2727,7 @@ async function* queryLoop(
         turnCounter: tracking.turnCounter + 1,
       }
       updateAutoCompactTracking(tracking)
-      logEvent('tengu_post_autocompact_turn', {
+      logEvent('nyxclaude_post_autocompact_turn', {
         turnId:
           tracking.turnId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         turnCounter: tracking.turnCounter,
@@ -2741,7 +2741,7 @@ async function* queryLoop(
     // will error if we interleave tool_result messages with regular user messages.
 
     // Instrumentation: Track message count before attachments
-    logEvent('tengu_query_before_attachments', {
+    logEvent('nyxclaude_query_before_attachments', {
       messagesForQueryCount: messagesForQuery.length,
       assistantMessagesCount: assistantMessages.length,
       toolResultsCount: toolResults.length,
@@ -2785,7 +2785,6 @@ async function* queryLoop(
     for await (const attachment of getAttachmentMessages(
       null,
       updatedToolUseContext,
-      null,
       queuedCommandsSnapshot,
       [...messagesForQuery, ...assistantMessages, ...toolResults],
       querySource,
@@ -2854,7 +2853,7 @@ async function* queryLoop(
         tr.type === 'attachment' && tr.attachment.type === 'edited_text_file',
     )
 
-    logEvent('tengu_query_after_attachments', {
+    logEvent('nyxclaude_query_after_attachments', {
       totalToolResultsCount: toolResults.length,
       fileChangeAttachmentCount,
       queryChainId: queryChainIdForAnalytics,
@@ -2883,7 +2882,7 @@ async function* queryLoop(
     // Each time we have tool results and are about to recurse, that's a turn
     const nextTurnCount = turnCount + 1
 
-    // Periodic task summary for `claude ps` — fires mid-turn so a
+    // Periodic task summary for `nyxclaude ps` — fires mid-turn so a
     // long-running agent still refreshes what it's working on. Gated
     // only on !agentId so every top-level conversation (REPL, SDK, HFI,
     // remote) generates summaries; subagents/forks don't.

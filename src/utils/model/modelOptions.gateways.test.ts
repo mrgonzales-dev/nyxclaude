@@ -35,7 +35,7 @@ async function getOpenAIModelOptions() {
   return getModelOptions()
 }
 const originalEnv = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
   OPENAI_API_BASE: process.env.OPENAI_API_BASE,
   OPENAI_API_FORMAT: process.env.OPENAI_API_FORMAT,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
@@ -94,7 +94,7 @@ afterEach(() => {
 })
 
 test('OpenRouter keeps static catalog entries and the active custom model', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'deepseek/deepseek-chat'
   process.env.OPENROUTER_API_KEY = 'sk-openrouter-test'
@@ -106,7 +106,7 @@ test('OpenRouter keeps static catalog entries and the active custom model', asyn
 })
 
 test('Kimi Code keeps context variants distinct in the active route picker', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.kimi.com/coding/v1'
   process.env.OPENAI_MODEL = 'k3-256k'
   process.env.OPENAI_API_KEY = 'sk-kimi-test'
@@ -129,7 +129,7 @@ test('custom Anthropic endpoints use the third-party default description', async
 })
 
 test('OpenRouter active profile cache merges with the static route catalog', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'qwen/qwen3-32b'
   process.env.OPENROUTER_API_KEY = 'sk-openrouter-test'
@@ -164,7 +164,7 @@ test('OpenRouter active profile cache merges with the static route catalog', asy
 })
 
 test('Atlas Cloud canonicalizes static catalog aliases without hiding the catalog', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.atlascloud.ai/v1'
   process.env.OPENAI_MODEL = 'claude-opus-4-8'
   process.env.ATLAS_CLOUD_API_KEY = 'sk-atlas-test'

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ToolUseBlock } from 'src/types/api.js'
 import { BashTool } from '../../tools/BashTool/BashTool.js'
 import { _test } from './toolOrchestration.js'
 

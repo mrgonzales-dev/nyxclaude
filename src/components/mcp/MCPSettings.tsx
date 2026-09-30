@@ -1,8 +1,8 @@
 import { c as _c } from "react-compiler-runtime";
 import React, { useEffect, useMemo } from 'react';
 import type { CommandResultDisplay } from '../../commands.js';
-import { ClaudeAuthProvider } from '../../services/mcp/auth.js';
-import type { McpClaudeAIProxyServerConfig, McpHTTPServerConfig, McpSSEServerConfig, McpStdioServerConfig } from '../../services/mcp/types.js';
+import { RemoteAuthProvider } from '../../services/mcp/auth.js';
+import type { McpRemoteProxyServerConfig, McpHTTPServerConfig, McpSSEServerConfig, McpStdioServerConfig } from '../../services/mcp/types.js';
 import { extractAgentMcpServers, filterToolsByServer } from '../../services/mcp/utils.js';
 import { useAppState } from '../../state/AppState.js';
 import { getSessionIngressAuthToken } from '../../utils/sessionIngressAuth.js';
@@ -55,7 +55,7 @@ export function MCPSettings(t0: Props): React.ReactNode {
   const agentMcpServers = t3;
   let t4;
   if ($[4] !== mcpClients) {
-    t4 = mcpClients.filter(_temp3).sort(_temp4);
+    t4 = mcpClients.slice().sort(_temp4);
     $[4] = mcpClients;
     $[5] = t4;
   } else {
@@ -72,10 +72,10 @@ export function MCPSettings(t0: Props): React.ReactNode {
           const scope = client_0.config.scope;
           const isSSE = client_0.config.type === "sse";
           const isHTTP = client_0.config.type === "http";
-          const isClaudeAIProxy = client_0.config.type === "claudeai-proxy";
+          const isRemoteProxy = client_0.config.type === "remote-proxy";
           let isAuthenticated: boolean | undefined = undefined;
           if (isSSE || isHTTP) {
-            const authProvider = new ClaudeAuthProvider(client_0.name, client_0.config as McpSSEServerConfig | McpHTTPServerConfig);
+            const authProvider = new RemoteAuthProvider(client_0.name, client_0.config as McpSSEServerConfig | McpHTTPServerConfig);
             const tokens = await authProvider.tokens();
             const hasSessionAuth = getSessionIngressAuthToken() !== null && client_0.type === "connected";
             const hasToolsAndConnected = client_0.type === "connected" && filterToolsByServer(mcp.tools, client_0.name).length > 0;
@@ -86,12 +86,12 @@ export function MCPSettings(t0: Props): React.ReactNode {
             client: client_0,
             scope
           };
-          if (isClaudeAIProxy) {
+          if (isRemoteProxy) {
             return {
               ...baseInfo,
-              transport: "claudeai-proxy" as const,
+              transport: "remote-proxy" as const,
               isAuthenticated: false,
-              config: client_0.config as McpClaudeAIProxyServerConfig
+              config: client_0.config as McpRemoteProxyServerConfig
             };
           } else {
             if (isSSE) {
@@ -207,7 +207,7 @@ export function MCPSettings(t0: Props): React.ReactNode {
           t9 = $[25];
         }
         const serverTools_0 = t9;
-        const defaultTab = viewState.server.transport === "claudeai-proxy" ? "claude.ai" : "Nyxclaude";
+        const defaultTab = viewState.server.transport === "remote-proxy" ? "Web Console" : "Nyxclaude";
         if (viewState.server.transport === "stdio") {
           let t10;
           if ($[26] !== viewState.server) {
@@ -385,9 +385,6 @@ export function MCPSettings(t0: Props): React.ReactNode {
 }
 function _temp4(a, b) {
   return a.name.localeCompare(b.name);
-}
-function _temp3(client) {
-  return client.name !== "ide";
 }
 function _temp2(s_0) {
   return s_0.agentDefinitions;

@@ -15,19 +15,19 @@ import {
 const historySnipTest = feature('HISTORY_SNIP') ? test : test.skip
 
 const ENV_KEYS = [
-  'CLAUDE_CODE_AUTO_COMPACT_WINDOW',
-  'CLAUDE_CODE_MAX_CONTEXT_TOKENS',
-  'CLAUDE_CODE_MAX_OUTPUT_TOKENS',
+  'NYXCLAUDE_AUTO_COMPACT_WINDOW',
+  'NYXCLAUDE_MAX_CONTEXT_TOKENS',
+  'NYXCLAUDE_MAX_OUTPUT_TOKENS',
   'CLAUDE_AUTOCOMPACT_PCT_OVERRIDE',
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
   'OPENAI_BASE_URL',
   'OPENAI_API_BASE',
   'OPENAI_MODEL',
@@ -58,7 +58,7 @@ function clearTestEnv(): void {
 }
 
 function useZaiGlmRuntime(): void {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.z.ai/api/coding/paas/v4'
   process.env.OPENAI_MODEL = 'glm-5.2'
 }
@@ -89,7 +89,7 @@ describe('snip nudge policy', () => {
   })
 
   test('keeps small effective windows eligible for early nudges', () => {
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '40000'
+    process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW = '40000'
 
     expect(getSnipNudgeStartThreshold('claude-sonnet-4')).toBe(10_000)
     expect(getSnipNudgeRepeatInterval('claude-sonnet-4')).toBe(10_000)
@@ -111,7 +111,7 @@ describe('getContextEfficiencyAttachment', () => {
   historySnipTest(
     'nudges small effective windows once above pressure threshold and repeat interval',
     () => {
-      process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '40000'
+      process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW = '40000'
 
       expect(
         getContextEfficiencyAttachment([userMessage(12_000)], 'claude-sonnet-4'),

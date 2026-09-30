@@ -1,7 +1,7 @@
-import { APIUserAbortError } from '@anthropic-ai/sdk'
+import { APIUserAbortError } from 'src/types/api.js'
 import type { AbortReason } from './abortReasons.js'
 
-export class ClaudeError extends Error {
+export class SDKErrorBase extends Error {
   constructor(message: string) {
     super(message)
     this.name = this.constructor.name
@@ -222,11 +222,11 @@ export type AxiosErrorKind =
 // ============================================================================
 
 /**
- * Base class for all SDK errors. Extends ClaudeError so that existing
- * `catch (e) { if (e instanceof ClaudeError) … }` checks still work,
+ * Base class for all SDK errors. Extends SDKErrorBase so that existing
+ * `catch (e) { if (e instanceof SDKErrorBase) … }` checks still work,
  * while giving SDK consumers a more specific base to match against.
  */
-export class SDKError extends ClaudeError {
+export class SDKError extends SDKErrorBase {
   constructor(message: string) {
     super(message)
     this.name = 'SDKError'
@@ -294,7 +294,7 @@ export type SDKAssistantMessageError =
 export function sdkErrorFromType(
   errorType: SDKAssistantMessageError,
   message?: string,
-): SDKError | ClaudeError {
+): SDKError | SDKErrorBase {
   switch (errorType) {
     case 'authentication_failed': return new SDKAuthenticationError(message)
     case 'billing_error': return new SDKBillingError(message)
@@ -302,7 +302,7 @@ export function sdkErrorFromType(
     case 'invalid_request': return new SDKInvalidRequestError(message)
     case 'server_error': return new SDKServerError(message)
     case 'max_output_tokens': return new SDKMaxOutputTokensError(message)
-    default: return new ClaudeError(message ?? 'Unknown error')
+    default: return new SDKErrorBase(message ?? 'Unknown error')
   }
 }
 

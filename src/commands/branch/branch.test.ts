@@ -29,9 +29,9 @@ import type {
 } from '../../types/logs.js'
 import type { Message } from '../../types/message.js'
 import {
-  getClaudeConfigHomeDir,
-  getClaudeConfigHomeDirOverrideForTesting,
-  setClaudeConfigHomeDirForTesting,
+  getNyxclaudeConfigHomeDir,
+  getNyxclaudeConfigHomeDirOverrideForTesting,
+  setNyxclaudeConfigHomeDirForTesting,
 } from '../../utils/envUtils.js'
 import {
   getProjectDir,
@@ -58,7 +58,7 @@ let originalCwd: string
 let originalSessionId: string
 let originalSessionProjectDir: string | null
 let originalPersistenceDisabled: boolean
-let originalClaudeConfigHomeDirOverride: string | undefined
+let originalConfigHomeDirOverride: string | undefined
 let analyticsEvents: Array<{
   name: string
   metadata: Record<string, unknown>
@@ -252,8 +252,8 @@ async function setupSourceTranscript(
   tempDirs.push(projectCwd, configDir)
   if (sessionProjectDir) tempDirs.push(sessionProjectDir)
 
-  setClaudeConfigHomeDirForTesting(configDir)
-  getClaudeConfigHomeDir.cache?.clear?.()
+  setNyxclaudeConfigHomeDirForTesting(configDir)
+  getNyxclaudeConfigHomeDir.cache?.clear?.()
   getProjectDir.cache?.clear?.()
   setOriginalCwd(projectCwd)
   switchSession(sourceSessionId as never, sessionProjectDir)
@@ -320,8 +320,8 @@ beforeEach(async () => {
   originalSessionId = getSessionId()
   originalSessionProjectDir = getSessionProjectDir()
   originalPersistenceDisabled = isSessionPersistenceDisabled()
-  originalClaudeConfigHomeDirOverride =
-    getClaudeConfigHomeDirOverrideForTesting()
+  originalConfigHomeDirOverride =
+    getNyxclaudeConfigHomeDirOverrideForTesting()
 
   process.env.NODE_ENV = 'development'
   process.env.TEST_ENABLE_SESSION_PERSISTENCE = 'true'
@@ -354,8 +354,8 @@ afterEach(async () => {
     }
 
     setSessionPersistenceDisabled(originalPersistenceDisabled)
-    setClaudeConfigHomeDirForTesting(originalClaudeConfigHomeDirOverride)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(originalConfigHomeDirOverride)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
     getProjectDir.cache?.clear?.()
     setOriginalCwd(originalCwd)
     switchSession(originalSessionId as never, originalSessionProjectDir)
@@ -568,7 +568,7 @@ test('/branch creates a new session, copies messages, keeps the source transcrip
     branchedAt,
   })
   const forkEvent = analyticsEvents.findLast(
-    event => event.name === 'tengu_conversation_forked',
+    event => event.name === 'nyxclaude_conversation_forked',
   )
   expect(forkEvent?.metadata).toMatchObject({
     message_count: 3,
@@ -586,7 +586,7 @@ test('/branch creates a new session, copies messages, keeps the source transcrip
   expect(message).toContain('experiment')
   expect(message).toContain('same working tree')
   expect(message).toContain('not filesystem isolation')
-  expect(message).toContain(`To resume the original: claude -r ${sourceSessionId}`)
+  expect(message).toContain(`To resume the original: nyxclaude -r ${sourceSessionId}`)
 })
 
 test('/branch without a name auto-titles the fork and reports non-custom title metadata', async () => {
@@ -618,7 +618,7 @@ test('/branch without a name auto-titles the fork and reports non-custom title m
   ).toBe('explore another approach (Branch)')
 
   const forkEvent = analyticsEvents.findLast(
-    event => event.name === 'tengu_conversation_forked',
+    event => event.name === 'nyxclaude_conversation_forked',
   )
   expect(forkEvent?.metadata).toMatchObject({
     message_count: 2,
@@ -725,11 +725,11 @@ test('/branch keeps a created branch recoverable if switching into it fails', as
   expect(message).toContain(`Resume this branch with: /resume ${newSessionId}`)
   expect(message).toContain('same working tree')
   expect(
-    analyticsEvents.find(event => event.name === 'tengu_conversation_forked'),
+    analyticsEvents.find(event => event.name === 'nyxclaude_conversation_forked'),
   ).toBeUndefined()
   expect(
     analyticsEvents.find(
-      event => event.name === 'tengu_conversation_fork_switch_failed',
+      event => event.name === 'nyxclaude_conversation_fork_switch_failed',
     )?.metadata,
   ).toMatchObject({
     message_count: 2,
@@ -756,7 +756,7 @@ test('/branch shows a manual resume hint when automatic switching is unavailable
   expect(message).toContain('Resume this branch with: /resume ')
   expect(message).toContain('same working tree')
   expect(message).toContain('not filesystem isolation')
-  expect(message).toContain(`To resume the original: claude -r ${sourceSessionId}`)
+  expect(message).toContain(`To resume the original: nyxclaude -r ${sourceSessionId}`)
   expect(message).not.toContain('You are now in the branch')
 })
 

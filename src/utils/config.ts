@@ -17,8 +17,8 @@ import { registerCleanup } from './cleanupRegistry.js'
 import { createDeferredWriter } from './deferredConfigWrites.js'
 import { logForDebugging } from './debug.js'
 import { logForDiagnosticsNoPII } from './diagLogs.js'
-import { getGlobalClaudeFile } from './env.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
+import { getGlobalConfigFile } from './env.js'
+import { getNyxclaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
 import { ConfigParseError, getErrnoCode } from './errors.js'
 import { writeFileSyncAndFlush_DEPRECATED } from './file.js'
 import { getFsImplementation } from './fsOperations.js'
@@ -135,7 +135,7 @@ export type ProjectConfig = {
     sessionId: string
     hookBased?: boolean
   }
-  /** Spawn mode for `claude remote-control` multi-session. Set by first-run dialog or `w` toggle. */
+  /** Spawn mode for `nyxclaude remote-control` multi-session. Set by first-run dialog or `w` toggle. */
   remoteControlSpawnMode?: 'same-dir' | 'worktree'
 }
 
@@ -264,7 +264,7 @@ export type GlobalConfig = {
   // @deprecated - Migrated to ~/.nyxclaude/cache/changelog.md. Keep for migration support.
   cachedChangelog?: string
   mcpServers?: Record<string, McpServerConfig>
-  // claude.ai MCP connectors that have successfully connected at least once.
+  // web console MCP connectors that have successfully connected at least once.
   // Used to gate "connector unavailable" / "needs auth" startup notifications:
   // a connector the user has actually used is worth flagging when it breaks,
   // but an org-configured connector that's been needs-auth since day one is
@@ -319,15 +319,6 @@ export type GlobalConfig = {
   // Key binding setup tracking
   shiftEnterKeyBindingInstalled?: boolean // Whether Shift+Enter key binding is installed (for iTerm2 or VSCode)
   optionAsMetaKeyInstalled?: boolean // Whether Option as Meta key is installed (for Terminal.app)
-
-  // IDE configurations
-  autoConnectIde?: boolean // Whether to automatically connect to IDE on startup if exactly one valid IDE is available
-  autoInstallIdeExtension?: boolean // Whether to automatically install IDE extensions when running from within an IDE
-
-  // IDE dialogs
-  hasIdeOnboardingBeenShown?: Record<string, boolean> // Map of terminal name to whether IDE onboarding has been shown
-  ideHintShownCount?: number // Number of times the /ide command hint has been shown
-  hasIdeAutoConnectDialogBeenShown?: boolean // Whether the auto-connect IDE dialog has been shown
 
   tipsHistory: {
     [tipId: string]: number // Key is tipId, value is the numStartups when tip was last shown
@@ -523,7 +514,7 @@ export type GlobalConfig = {
   // Fullscreen in-app text selection behavior
   copyOnSelect?: boolean // Auto-copy to clipboard on mouse-up (undefined → true; lets cmd+c "work" via no-op)
 
-  // Flicker-free fullscreen mode (equivalent to CLAUDE_CODE_NO_FLICKER=1 env var).
+  // Flicker-free fullscreen mode (equivalent to NYXCLAUDE_NO_FLICKER=1 env var).
   // When true, enables alt-screen + virtualized scroll for all users.
   // Env var still takes precedence: =0 always off, =1 always on.
   flickerFreeMode?: boolean
@@ -543,24 +534,13 @@ export type GlobalConfig = {
 
   // Skill usage tracking for autocomplete ranking
   skillUsage?: Record<string, { usageCount: number; lastUsedAt: number }>
-  // Official marketplace auto-install tracking
-  officialMarketplaceAutoInstallAttempted?: boolean // Whether auto-install was attempted
-  officialMarketplaceAutoInstalled?: boolean // Whether auto-install succeeded
-  officialMarketplaceAutoInstallFailReason?:
-    | 'policy_blocked'
-    | 'git_unavailable'
-    | 'gcs_unavailable'
-    | 'unknown' // Reason for failure if applicable
-  officialMarketplaceAutoInstallRetryCount?: number // Number of retry attempts
-  officialMarketplaceAutoInstallLastAttemptTime?: number // Timestamp of last attempt
-  officialMarketplaceAutoInstallNextRetryTime?: number // Earliest time to retry again
 
   // LSP plugin recommendation preferences
   lspRecommendationDisabled?: boolean // Disable all LSP plugin recommendations
   lspRecommendationNeverPlugins?: string[] // Plugin IDs to never suggest
   lspRecommendationIgnoredCount?: number // Track ignored recommendations (stops after 5)
 
-  // Nyxclaude hint protocol state (<claude-code-hint /> tags from CLIs/SDKs).
+  // Nyxclaude hint protocol state (<code-hint /> tags from CLIs/SDKs).
   // Nested by hint type so future types (docs, mcp, ...) slot in without new
   // top-level keys.
   claudeCodeHints?: {
@@ -595,7 +575,7 @@ export type GlobalConfig = {
   penguinModeOrgEnabled?: boolean
 
   // Epoch ms when background refreshes last ran (fast mode, quota, passes, client data).
-  // Used with tengu_cicada_nap_ms to throttle API calls
+  // Used with nyxclaude_cicada_nap_ms to throttle API calls
   startupPrefetchedAt?: number
 
   // Run Remote Control at startup (requires BRIDGE_MODE)
@@ -634,7 +614,7 @@ export type GlobalConfig = {
 
   // Disk cache for /api/claude_code/organizations/metrics_enabled.
   // Org-level settings change rarely; persisting across processes avoids a
-  // cold API call on every `claude -p` invocation.
+  // cold API call on every `nyxclaude -p` invocation.
   metricsStatusCache?: {
     enabled: boolean
     timestamp: number
@@ -697,8 +677,6 @@ function createDefaultGlobalConfig(): GlobalConfig {
     todoFeatureEnabled: true,
     showExpandedTodos: false,
     messageIdleNotifThresholdMs: 60000,
-    autoConnectIde: false,
-    autoInstallIdeExtension: true,
     fileCheckpointingEnabled: true,
     terminalProgressBarEnabled: true,
     defaultStatusLineEnabled: true,
@@ -747,8 +725,6 @@ export const GLOBAL_CONFIG_KEYS = [
   'todoFeatureEnabled',
   'showExpandedTodos',
   'messageIdleNotifThresholdMs',
-  'autoConnectIde',
-  'autoInstallIdeExtension',
   'fileCheckpointingEnabled',
   'terminalProgressBarEnabled',
   'showStatusInTerminalTab',
@@ -944,7 +920,7 @@ export function saveGlobalConfig(
   let written: GlobalConfig | null = null
   try {
     const didWrite = saveConfigWithLock(
-      getGlobalClaudeFile(),
+      getGlobalConfigFile(),
       createDefaultGlobalConfig,
       current => {
         const config = updater(current)
@@ -982,7 +958,7 @@ export function saveGlobalConfig(
     // getConfig returns defaults. Refuse to write those over a good cached
     // config to avoid wiping auth. See GH #3117.
     const currentConfig = getConfig(
-      getGlobalClaudeFile(),
+      getGlobalConfigFile(),
       createDefaultGlobalConfig,
     )
     if (wouldLoseAuthState(currentConfig)) {
@@ -990,7 +966,7 @@ export function saveGlobalConfig(
         'saveGlobalConfig fallback: re-read config is missing auth that cache has; refusing to write. See GH #3117.',
         { level: 'error' },
       )
-      logEvent('tengu_config_auth_loss_prevented', {})
+      logEvent('nyxclaude_config_auth_loss_prevented', {})
       return
     }
     const config = updater(currentConfig)
@@ -1002,7 +978,7 @@ export function saveGlobalConfig(
       ...config,
       projects: removeProjectHistory(currentConfig.projects),
     }
-    saveConfig(getGlobalClaudeFile(), written, DEFAULT_GLOBAL_CONFIG)
+    saveConfig(getGlobalConfigFile(), written, DEFAULT_GLOBAL_CONFIG)
     writeThroughGlobalConfigCache(written)
   }
 }
@@ -1103,7 +1079,7 @@ export const CONFIG_WRITE_DISPLAY_THRESHOLD = 20
 function reportConfigCacheStats(): void {
   const total = configCacheHits + configCacheMisses
   if (total > 0) {
-    logEvent('tengu_config_cache_stats', {
+    logEvent('nyxclaude_config_cache_stats', {
       cache_hits: configCacheHits,
       cache_misses: configCacheMisses,
       hit_rate: configCacheHits / total,
@@ -1227,7 +1203,7 @@ let freshnessWatcherStarted = false
 function startGlobalConfigFreshnessWatcher(): void {
   if (freshnessWatcherStarted || process.env.NODE_ENV === 'test') return
   freshnessWatcherStarted = true
-  const file = getGlobalClaudeFile()
+  const file = getGlobalConfigFile()
   watchFile(
     file,
     { interval: CONFIG_FRESHNESS_POLL_MS, persistent: false },
@@ -1291,12 +1267,12 @@ export function getGlobalConfig(): GlobalConfig {
   try {
     let stats: { mtimeMs: number; size: number } | null = null
     try {
-      stats = getFsImplementation().statSync(getGlobalClaudeFile())
+      stats = getFsImplementation().statSync(getGlobalConfigFile())
     } catch {
       // File doesn't exist
     }
     const config = migrateConfigFields(
-      getConfig(getGlobalClaudeFile(), createDefaultGlobalConfig),
+      getConfig(getGlobalConfigFile(), createDefaultGlobalConfig),
     )
     globalConfigCache = {
       config,
@@ -1310,7 +1286,7 @@ export function getGlobalConfig(): GlobalConfig {
   } catch {
     // If anything goes wrong, fall back to uncached behavior
     return migrateConfigFields(
-      getConfig(getGlobalClaudeFile(), createDefaultGlobalConfig),
+      getConfig(getGlobalConfigFile(), createDefaultGlobalConfig),
     )
   }
 }
@@ -1369,7 +1345,7 @@ function saveConfig<A extends object>(
       mode: 0o600,
     },
   )
-  if (file === getGlobalClaudeFile()) {
+  if (file === getGlobalConfigFile()) {
     globalConfigWriteCount++
   }
 }
@@ -1410,21 +1386,21 @@ function saveConfigWithLock<A extends object>(
       logForDebugging(
         'Lock acquisition took longer than expected - another Nyxclaude instance may be running',
       )
-      logEvent('tengu_config_lock_contention', {
+      logEvent('nyxclaude_config_lock_contention', {
         lock_time_ms: lockTime,
       })
     }
 
     // Check for stale write - file changed since we last read it
     // Only check for global config file since lastReadFileStats tracks that specific file
-    if (lastReadFileStats && file === getGlobalClaudeFile()) {
+    if (lastReadFileStats && file === getGlobalConfigFile()) {
       try {
         const currentStats = fs.statSync(file)
         if (
           currentStats.mtimeMs !== lastReadFileStats.mtime ||
           currentStats.size !== lastReadFileStats.size
         ) {
-          logEvent('tengu_config_stale_write', {
+          logEvent('nyxclaude_config_stale_write', {
             read_mtime: lastReadFileStats.mtime,
             write_mtime: currentStats.mtimeMs,
             read_size: lastReadFileStats.size,
@@ -1444,12 +1420,12 @@ function saveConfigWithLock<A extends object>(
     // momentarily corrupted (concurrent writes, kill-during-write), this
     // returns defaults -- we must not write those back over good config.
     const currentConfig = getConfig(file, createDefault)
-    if (file === getGlobalClaudeFile() && wouldLoseAuthState(currentConfig)) {
+    if (file === getGlobalConfigFile() && wouldLoseAuthState(currentConfig)) {
       logForDebugging(
         'saveConfigWithLock: re-read config is missing auth that cache has; refusing to write to avoid wiping ~/.nyxclaude.json. See GH #3117.',
         { level: 'error' },
       )
-      logEvent('tengu_config_auth_loss_prevented', {})
+      logEvent('nyxclaude_config_auth_loss_prevented', {})
       return false
     }
 
@@ -1568,7 +1544,7 @@ function saveConfigWithLock<A extends object>(
         mode: 0o600,
       },
     )
-    if (file === getGlobalClaudeFile()) {
+    if (file === getGlobalConfigFile()) {
       globalConfigWriteCount++
     }
     return true
@@ -1598,7 +1574,7 @@ export function enableConfigs(): void {
   // file. This warms the recovery path (recover from a healthy backup, or
   // preserve the corrupt file and start from defaults) without throwing, so a
   // corrupt global config self-heals instead of crashing startup (#1807).
-  getConfig(getGlobalClaudeFile(), createDefaultGlobalConfig)
+  getConfig(getGlobalConfigFile(), createDefaultGlobalConfig)
 
   logForDiagnosticsNoPII('info', 'enable_configs_completed', {
     duration_ms: Date.now() - startTime,
@@ -1616,7 +1592,7 @@ const LEGACY_GLOBAL_CONFIG_BASENAME = '.claude.json'
  * Uses ~/.nyxclaude/backups/ to keep the home directory clean.
  */
 function getConfigBackupDir(): string {
-  return join(getClaudeConfigHomeDir(), 'backups')
+  return join(getNyxclaudeConfigHomeDir(), 'backups')
 }
 
 /**
@@ -1856,7 +1832,7 @@ function getConfig<A>(
           } catch {
             // No backup
           }
-          logEvent('tengu_config_parse_error', {
+          logEvent('nyxclaude_config_parse_error', {
             has_backup: hasBackup,
           })
         } finally {
@@ -2024,7 +2000,7 @@ export function saveCurrentProjectConfig(
   let written: GlobalConfig | null = null
   try {
     const didWrite = saveConfigWithLock(
-      getGlobalClaudeFile(),
+      getGlobalConfigFile(),
       createDefaultGlobalConfig,
       current => {
         const currentProjectConfig =
@@ -2054,13 +2030,13 @@ export function saveCurrentProjectConfig(
 
     // Same race window as saveGlobalConfig's fallback -- refuse to write
     // defaults over good cached config. See GH #3117.
-    const config = getConfig(getGlobalClaudeFile(), createDefaultGlobalConfig)
+    const config = getConfig(getGlobalConfigFile(), createDefaultGlobalConfig)
     if (wouldLoseAuthState(config)) {
       logForDebugging(
         'saveCurrentProjectConfig fallback: re-read config is missing auth that cache has; refusing to write. See GH #3117.',
         { level: 'error' },
       )
-      logEvent('tengu_config_auth_loss_prevented', {})
+      logEvent('nyxclaude_config_auth_loss_prevented', {})
       return
     }
     const currentProjectConfig =
@@ -2077,7 +2053,7 @@ export function saveCurrentProjectConfig(
         [absolutePath]: newProjectConfig,
       },
     }
-    saveConfig(getGlobalClaudeFile(), written, DEFAULT_GLOBAL_CONFIG)
+    saveConfig(getGlobalConfigFile(), written, DEFAULT_GLOBAL_CONFIG)
     writeThroughGlobalConfigCache(written)
   }
 }
@@ -2166,7 +2142,7 @@ export function getMemoryPath(memoryType: MemoryType): string {
 
   switch (memoryType) {
     case 'User':
-      return join(getClaudeConfigHomeDir(), 'AGENTS.md')
+      return join(getNyxclaudeConfigHomeDir(), 'AGENTS.md')
     case 'Local':
       return join(cwd, 'AGENTS.local.md')
     case 'Project':
@@ -2183,12 +2159,12 @@ export function getMemoryPath(memoryType: MemoryType): string {
   return '' // unreachable in external builds where TeamMem is not in MemoryType
 }
 
-export function getManagedClaudeRulesDir(): string {
+export function getManagedRulesDir(): string {
   return join(getManagedFilePath(), '.nyxclaude', 'rules')
 }
 
-export function getUserClaudeRulesDir(): string {
-  return join(getClaudeConfigHomeDir(), 'rules')
+export function getUserRulesDir(): string {
+  return join(getNyxclaudeConfigHomeDir(), 'rules')
 }
 
 // Exported for testing only

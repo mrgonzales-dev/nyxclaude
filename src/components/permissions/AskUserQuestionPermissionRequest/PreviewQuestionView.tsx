@@ -7,7 +7,6 @@ import { useKeybinding, useKeybindings } from '../../../keybindings/useKeybindin
 import { useAppState } from '../../../state/AppState.js';
 import type { Question } from '../../../tools/AskUserQuestionTool/AskUserQuestionTool.js';
 import { getExternalEditor } from '../../../utils/editor.js';
-import { toIDEDisplayName } from '../../../utils/ide.js';
 import { editPromptInEditor } from '../../../utils/promptEditor.js';
 import { Divider } from '../../design-system/Divider.js';
 import TextInput from '../../TextInput.js';
@@ -15,6 +14,10 @@ import { PermissionRequestTitle } from '../PermissionRequestTitle.js';
 import { PreviewBox } from './PreviewBox.js';
 import { QuestionNavigationBar } from './QuestionNavigationBar.js';
 import type { QuestionState } from './use-multiple-choice-state.js';
+const editorDisplayName = (cmd: string) => {
+  const base = cmd.split('/').pop() ?? cmd;
+  return base.charAt(0).toUpperCase() + base.slice(1);
+};
 type Props = {
   question: Question;
   questions: Question[];
@@ -30,7 +33,7 @@ type Props = {
   onCancel: () => void;
   onTabPrev?: () => void;
   onTabNext?: () => void;
-  onRespondToClaude: () => void;
+  onRespondToAgent: () => void;
   onFinishPlanInterview: () => void;
 };
 
@@ -53,7 +56,7 @@ export function PreviewQuestionView({
   onCancel,
   onTabPrev,
   onTabNext,
-  onRespondToClaude,
+  onRespondToAgent,
   onFinishPlanInterview
 }: Props): React.ReactNode {
   const isInPlanMode = useAppState(s => s.toolPermissionContext.mode) === 'plan';
@@ -62,7 +65,7 @@ export function PreviewQuestionView({
   const [isInNotesInput, setIsInNotesInput] = useState(false);
   const [cursorOffset, setCursorOffset] = useState(0);
   const editor = getExternalEditor();
-  const editorName = editor ? toIDEDisplayName(editor) : null;
+  const editorName = editor ? editorDisplayName(editor) : null;
   const questionText = question.question;
   const questionState = questionStates[questionText];
 
@@ -173,7 +176,7 @@ export function PreviewQuestionView({
       if (e.key === 'return') {
         e.preventDefault();
         if (footerIndex === 0) {
-          onRespondToClaude();
+          onRespondToAgent();
         } else {
           onFinishPlanInterview();
         }
@@ -226,7 +229,7 @@ export function PreviewQuestionView({
         handleNavigate(idx_0);
       }
     }
-  }, [isFooterFocused, footerIndex, isInPlanMode, isInNotesInput, focusedIndex, allOptions.length, handleUpFromFooter, handleDownFromPreview, handleNavigate, handleSelectOption, handleNotesExit, onRespondToClaude, onFinishPlanInterview, onCancel, onTextInputFocus]);
+  }, [isFooterFocused, footerIndex, isInPlanMode, isInNotesInput, focusedIndex, allOptions.length, handleUpFromFooter, handleDownFromPreview, handleNavigate, handleSelectOption, handleNotesExit, onRespondToAgent, onFinishPlanInterview, onCancel, onTextInputFocus]);
   const previewContent = focusedOption?.preview || null;
 
   // The right panel's available width is terminal minus the left panel and gap.

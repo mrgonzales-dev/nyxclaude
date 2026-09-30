@@ -8,15 +8,15 @@ type FetchType = typeof globalThis.fetch
 const originalFetch = globalThis.fetch
 
 const originalEnv = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_AUTO_COMPACT_WINDOW:
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW,
-  CLAUDE_CODE_MAX_OUTPUT_TOKENS: process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_AUTO_COMPACT_WINDOW:
+    process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW,
+  NYXCLAUDE_MAX_OUTPUT_TOKENS: process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_API_FORMAT: process.env.OPENAI_API_FORMAT,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
   GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   NYXCLAUDE_LOCAL_FAST_PATH: process.env.NYXCLAUDE_LOCAL_FAST_PATH,
   OPENCODE_API_KEY: process.env.OPENCODE_API_KEY,
@@ -48,9 +48,9 @@ function restoreEnv(key: keyof typeof originalEnv): void {
 
 function setEffectiveWindowForTest(effectiveWindow: number): void {
   mockState.effectiveWindow = effectiveWindow
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '8000'
-  process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = String(effectiveWindow + 8_000)
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '8000'
+  process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW = String(effectiveWindow + 8_000)
 }
 
 function setCompressionEnabledForTest(enabled: boolean): void {
@@ -188,7 +188,7 @@ beforeEach(async () => {
   process.env.OPENAI_API_KEY = 'test-key'
   delete process.env.OPENAI_MODEL
   delete process.env.OPENAI_API_FORMAT
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.NYXCLAUDE_LOCAL_FAST_PATH
   delete process.env.OPENCODE_API_KEY
@@ -217,14 +217,14 @@ async function captureRequestBody(
   model: string,
   options: { useModelWindow?: boolean } = {},
 ): Promise<Record<string, unknown>> {
-  const originalAutoCompactWindow = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW
-  const originalMaxOutputTokens = process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+  const originalAutoCompactWindow = process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW
+  const originalMaxOutputTokens = process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   const originalFetch = globalThis.fetch
   try {
     setCompressionEnabledForTest(mockState.enabled)
     if (options.useModelWindow) {
-      delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW
-      delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+      delete process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW
+      delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
     } else {
       setEffectiveWindowForTest(mockState.effectiveWindow)
     }
@@ -246,14 +246,14 @@ async function captureRequestBody(
     return captured
   } finally {
     if (originalAutoCompactWindow === undefined) {
-      delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW
+      delete process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW
     } else {
-      process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = originalAutoCompactWindow
+      process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW = originalAutoCompactWindow
     }
     if (originalMaxOutputTokens === undefined) {
-      delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+      delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
     } else {
-      process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = originalMaxOutputTokens
+      process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = originalMaxOutputTokens
     }
     globalThis.fetch = originalFetch
   }
@@ -913,9 +913,9 @@ test('GitHub chat fallback compresses the retried Responses request', async () =
   mockState.effectiveWindow = 100_000
   setCompressionEnabledForTest(true)
   setEffectiveWindowForTest(100_000)
-  delete process.env.CLAUDE_CODE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_OPENAI
   delete process.env.OPENAI_API_FORMAT
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
   process.env.OPENAI_API_KEY = 'github-test-key'
   process.env.GITHUB_TOKEN = 'github-test-key'
@@ -973,7 +973,7 @@ test('non-chat transports do not invoke the Chat message converter', () => {
 
   expect(selectMessages('responses', unexpectedConversion)).toBeUndefined()
   expect(selectMessages('responses_compat', unexpectedConversion)).toBeUndefined()
-  expect(selectMessages('anthropic_messages', unexpectedConversion)).toBeUndefined()
+  expect(selectMessages('provider_messages', unexpectedConversion)).toBeUndefined()
   expect(selectMessages('gemini', unexpectedConversion)).toBeUndefined()
 
   const chatMessages = [{ role: 'user', content: 'hello' }]
@@ -990,7 +990,7 @@ test('only OpenAI-compatible transports invoke tool history compression', () => 
     return compressedMessages
   }
 
-  expect(selectMessages('anthropic_messages', rawMessages, compress)).toBe(rawMessages)
+  expect(selectMessages('provider_messages', rawMessages, compress)).toBe(rawMessages)
   expect(selectMessages('gemini', rawMessages, compress)).toBe(rawMessages)
   expect(selectMessages('future_transport', rawMessages, compress)).toBe(rawMessages)
   expect(compressionCalls).toBe(0)
@@ -1234,7 +1234,7 @@ test('native Ollama image requests keep vision diagnosis after local fallbacks',
 })
 
 test('image error classification follows JSON-normalized Anthropic content', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://opencode.ai/zen/go/v1'
   process.env.OPENAI_MODEL = 'minimax-m3'
   process.env.OPENCODE_API_KEY = 'test-opencode-key'

@@ -1,4 +1,4 @@
-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ToolUseBlock } from 'src/types/api.js'
 
 import type { AttachmentMessage, UserMessage } from '../types/message.js'
 import { getMissingToolResultAbortMessage } from '../utils/abortReasons.js'
@@ -60,7 +60,7 @@ export function createToolFailureLoopGuardState(): ToolFailureLoopGuardState {
 }
 
 export function getToolFailureLoopThreshold(
-  value = process.env.CLAUDE_CODE_TOOL_FAILURE_LOOP_THRESHOLD,
+  value = process.env.NYXCLAUDE_TOOL_FAILURE_LOOP_THRESHOLD,
 ): number {
   if (value === undefined) {
     return DEFAULT_TOOL_FAILURE_LOOP_THRESHOLD

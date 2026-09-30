@@ -11,7 +11,7 @@ type ExecaCall = [string, ...unknown[]]
 
 const originalPlatform = process.platform
 const originalTemp = process.env.TEMP
-const originalClaudeCodeTmpdir = process.env.CLAUDE_CODE_TMPDIR
+const originalNyxclaudeTmpdir = process.env.NYXCLAUDE_TMPDIR
 
 let actualExecFileModule: ExecFileModule | undefined
 let actualExecaModule: ExecaModule | undefined
@@ -50,10 +50,10 @@ afterEach(async () => {
   } else {
     process.env.TEMP = originalTemp
   }
-  if (originalClaudeCodeTmpdir === undefined) {
-    delete process.env.CLAUDE_CODE_TMPDIR
+  if (originalNyxclaudeTmpdir === undefined) {
+    delete process.env.NYXCLAUDE_TMPDIR
   } else {
-    process.env.CLAUDE_CODE_TMPDIR = originalClaudeCodeTmpdir
+    process.env.NYXCLAUDE_TMPDIR = originalNyxclaudeTmpdir
   }
   for (const tempDir of tempDirs) {
     rmSync(tempDir, { recursive: true, force: true })
@@ -148,7 +148,7 @@ describe('Windows clipboard image handling', () => {
     setPlatform('win32')
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-image-paste-'))
     tempDirs.push(tempDir)
-    process.env.CLAUDE_CODE_TMPDIR = tempDir
+    process.env.NYXCLAUDE_TMPDIR = tempDir
     const screenshotPath = join(tempDir, 'claude_cli_latest_screenshot.png')
     const imageBuffer = Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',

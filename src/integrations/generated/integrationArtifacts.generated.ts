@@ -4,7 +4,7 @@
 // Evaluating this module loads every descriptor module. Import it lazily
 // (via ensureIntegrationsLoaded) so startup does not pay for the full graph.
 
-import type { AnthropicProxyDescriptor, BrandDescriptor, GatewayDescriptor, ModelDescriptor, VendorDescriptor } from '../descriptors.js'
+import type { ProviderProxyDescriptor, BrandDescriptor, GatewayDescriptor, ModelDescriptor, VendorDescriptor } from '../descriptors.js'
 import vendorAnthropic from '../vendors/anthropic.js'
 import vendorBankr from '../vendors/bankr.js'
 import vendorDeepseek from '../vendors/deepseek.js'
@@ -43,8 +43,8 @@ import gatewayOpencode from '../gateways/opencode.js'
 import gatewayOpenrouter from '../gateways/openrouter.js'
 import gatewayTogether from '../gateways/together.js'
 import gatewayXiaomiMimoToken from '../gateways/xiaomi-mimo-token.js'
-import anthropicproxyCustom from '../anthropicProxies/custom.js'
-import brandClaude from '../brands/claude.js'
+import providerProxyCustom from '../providerProxies/custom.js'
+import brandClaude from '../brands/anthropic.js'
 import brandDeepseek from '../brands/deepseek.js'
 import brandFireworks from '../brands/fireworks.js'
 import brandGemini from '../brands/gemini.js'
@@ -62,7 +62,7 @@ import brandQwen from '../brands/qwen.js'
 import brandTencent from '../brands/tencent.js'
 import brandXai from '../brands/xai.js'
 import brandXiaomiMimo from '../brands/xiaomi-mimo.js'
-import modelClaude from '../models/claude.js'
+import modelClaude from '../models/anthropic.js'
 import modelDeepseek from '../models/deepseek.js'
 import modelFireworksMerged from '../models/fireworks-merged.js'
 import modelGemini from '../models/gemini.js'
@@ -84,7 +84,7 @@ import modelXiaomiMimo from '../models/xiaomi-mimo.js'
 
 export const VENDOR_DESCRIPTORS = [vendorAnthropic, vendorBankr, vendorDeepseek, vendorFireworks, vendorGemini, vendorLongcat, vendorMinimax, vendorMoonshot, vendorNearai, vendorOpenai, vendorVenice, vendorXai, vendorXiaomiMimo, vendorZai] as const satisfies readonly VendorDescriptor[]
 export const GATEWAY_DESCRIPTORS = [gatewayAimlapi, gatewayAtlasCloud, gatewayAtomicChat, gatewayAzureOpenai, gatewayClinepass, gatewayCloudflare, gatewayCustom, gatewayDashscopeCn, gatewayDashscopeIntl, gatewayGithubEnterprise, gatewayGithub, gatewayGitlawbOpengateway, gatewayGroq, gatewayHicap, gatewayKimiCode, gatewayLmstudio, gatewayMistral, gatewayNvidiaNim, gatewayOllama, gatewayOpencodeGo, gatewayOpencode, gatewayOpenrouter, gatewayTogether, gatewayXiaomiMimoToken] as const satisfies readonly GatewayDescriptor[]
-export const ANTHROPIC_PROXY_DESCRIPTORS = [anthropicproxyCustom] as const satisfies readonly AnthropicProxyDescriptor[]
+export const ANTHROPIC_PROXY_DESCRIPTORS = [providerProxyCustom] as const satisfies readonly ProviderProxyDescriptor[]
 export const BRAND_DESCRIPTORS = [brandClaude, brandDeepseek, brandFireworks, brandGemini, brandGlm, brandGpt, brandKimi, brandLlama, brandLongcat, brandMinimax, brandMistral, brandNearai, brandNemotron, brandOpenaiCompatibleAlias, brandQwen, brandTencent, brandXai, brandXiaomiMimo] as const satisfies readonly BrandDescriptor[]
 export const MODEL_DESCRIPTOR_GROUPS = [modelClaude, modelDeepseek, modelFireworksMerged, modelGemini, modelGlm, modelGpt, modelKimi, modelLlama, modelLongcat, modelMinimax, modelMistral, modelNearai, modelNemotron, modelOpenaiCompatibleAlias, modelOpencode, modelQwen, modelTencent, modelXai, modelXiaomiMimo] as const satisfies readonly (readonly ModelDescriptor[])[]
 export const MODEL_DESCRIPTORS = MODEL_DESCRIPTOR_GROUPS.flat() satisfies readonly ModelDescriptor[]

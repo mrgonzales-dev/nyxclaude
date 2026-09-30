@@ -15,10 +15,10 @@ import { isEnvTruthy } from './envUtils.js'
 const GHA_SUBPROCESS_SCRUB = [
   // Anthropic auth — claude re-reads these per-request, subprocesses don't need them
   'ANTHROPIC_API_KEY',
-  'CLAUDE_CODE_OAUTH_TOKEN',
+  'NYXCLAUDE_OAUTH_TOKEN',
   'ANTHROPIC_AUTH_TOKEN',
   'ANTHROPIC_FOUNDRY_API_KEY',
-  'ANTHROPIC_CUSTOM_HEADERS',
+  'NYXCLAUDE_CUSTOM_HEADERS',
 
   // OTLP exporter headers — documented to carry Authorization=Bearer tokens
   // for monitoring backends; read in-process by OTEL SDK, subprocesses never need them
@@ -57,12 +57,12 @@ const GHA_SUBPROCESS_SCRUB = [
  * spawning subprocesses (Bash tool, shell snapshot, MCP stdio servers, LSP
  * servers, shell hooks).
  *
- * Gated on CLAUDE_CODE_SUBPROCESS_ENV_SCRUB. claude-code-action sets this
+ * Gated on NYXCLAUDE_SUBPROCESS_ENV_SCRUB. claude-code-action sets this
  * automatically when `allowed_non_write_users` is configured — the flag that
  * exposes a workflow to untrusted content (prompt injection surface).
  */
 export function subprocessEnv(): NodeJS.ProcessEnv {
-  if (!isEnvTruthy(process.env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB)) {
+  if (!isEnvTruthy(process.env.NYXCLAUDE_SUBPROCESS_ENV_SCRUB)) {
     return process.env
   }
   const env = { ...process.env }

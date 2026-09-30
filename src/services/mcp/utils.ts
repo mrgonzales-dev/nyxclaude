@@ -6,7 +6,7 @@ import type { AgentMcpServerInfo } from '../../components/mcp/types.js'
 import type { Tool } from '../../Tool.js'
 import type { AgentDefinition } from '../../tools/AgentTool/loadAgentsDir.js'
 import { getCwd } from '../../utils/cwd.js'
-import { getGlobalClaudeFile } from '../../utils/env.js'
+import { getGlobalConfigFile } from '../../utils/env.js'
 import { isSettingSourceEnabled } from '../../utils/settings/constants.js'
 import {
   getSettings_DEPRECATED,
@@ -263,17 +263,17 @@ export function isMcpCommand(command: Command): boolean {
 export function describeMcpConfigFilePath(scope: ConfigScope): string {
   switch (scope) {
     case 'user':
-      return getGlobalClaudeFile()
+      return getGlobalConfigFile()
     case 'project':
       return join(getCwd(), '.mcp.json')
     case 'local':
-      return `${getGlobalClaudeFile()} [project: ${getCwd()}]`
+      return `${getGlobalConfigFile()} [project: ${getCwd()}]`
     case 'dynamic':
       return 'Dynamically configured'
     case 'enterprise':
       return getEnterpriseMcpFilePath()
-    case 'claudeai':
-      return 'claude.ai'
+    case 'remote':
+      return 'web console'
     default:
       return scope
   }
@@ -291,8 +291,8 @@ export function getScopeLabel(scope: ConfigScope): string {
       return 'Dynamic config (from command line)'
     case 'enterprise':
       return 'Enterprise config (managed by your organization)'
-    case 'claudeai':
-      return 'claude.ai config'
+    case 'remote':
+      return 'web console config'
     default:
       return scope
   }
@@ -426,10 +426,10 @@ export function getMcpServerScopeFromToolName(
   // Look up server config
   const serverConfig = getMcpConfigByName(mcpInfo.serverName)
 
-  // Fallback: claude.ai servers have normalized names starting with "claude_ai_"
+  // Fallback: web console servers have normalized names starting with "claude_ai_"
   // but aren't in getMcpConfigByName (they're fetched async separately)
   if (!serverConfig && mcpInfo.serverName.startsWith('claude_ai_')) {
-    return 'claudeai'
+    return 'remote'
   }
 
   return serverConfig?.scope ?? null
@@ -545,7 +545,7 @@ export function extractAgentMcpServers(
         needsAuth: false,
       })
     }
-    // Skip unsupported transport types (sdk, claudeai-proxy, sse-ide, ws-ide)
+    // Skip unsupported transport types (sdk, remote-proxy)
     // These are internal types not meant for agent MCP server display
   }
 

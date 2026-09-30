@@ -6,7 +6,7 @@ import { join } from 'path'
  * Resolves the override env value for the config home directory.
  * Resolves the Nyxclaude config home override.
  *
- * Intentionally does not read `CLAUDE_CONFIG_DIR`: Nyxclaude config must stay
+ * Intentionally does not read `NYXCLAUDE_CONFIG_DIR`: Nyxclaude config must stay
  * independent from Nyxclaude config and credentials.
  */
 export function resolveConfigDirEnv(options?: {
@@ -43,13 +43,13 @@ export function resolveClaudeConfigHomeDir(options?: {
 
 let claudeConfigHomeDirOverride: string | undefined
 
-export function setClaudeConfigHomeDirForTesting(
+export function setNyxclaudeConfigHomeDirForTesting(
   configDir: string | undefined,
 ): void {
   claudeConfigHomeDirOverride = configDir?.normalize('NFC')
 }
 
-export function getClaudeConfigHomeDirOverrideForTesting(): string | undefined {
+export function getNyxclaudeConfigHomeDirOverrideForTesting(): string | undefined {
   return claudeConfigHomeDirOverride
 }
 
@@ -66,7 +66,7 @@ const getDefaultClaudeConfigHomeDir = memoize(
   () => homedir(),
 )
 
-export const getClaudeConfigHomeDir = Object.assign(
+export const getNyxclaudeConfigHomeDir = Object.assign(
   (): string => {
     if (claudeConfigHomeDirOverride) {
       return claudeConfigHomeDirOverride
@@ -85,11 +85,11 @@ export const getClaudeConfigHomeDir = Object.assign(
 )
 
 export function getTeamsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'teams')
+  return join(getNyxclaudeConfigHomeDir(), 'teams')
 }
 
 export function getProjectsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'projects')
+  return join(getNyxclaudeConfigHomeDir(), 'projects')
 }
 
 /**
@@ -122,19 +122,19 @@ export function isEnvDefinedFalsy(
 }
 
 /**
- * --bare / CLAUDE_CODE_SIMPLE — skip hooks, LSP, plugin sync, skill dir-walk,
+ * --bare / NYXCLAUDE_SIMPLE — skip hooks, LSP, plugin sync, skill dir-walk,
  * attribution, background prefetches, and ALL keychain/credential reads.
  * Auth is strictly ANTHROPIC_API_KEY env or apiKeyHelper from --settings.
  * Explicit CLI flags (--plugin-dir, --add-dir, --mcp-config) still honored.
  * ~30 gates across the codebase.
  *
  * Checks argv directly (in addition to the env var) because several gates
- * run before main.tsx's action handler sets CLAUDE_CODE_SIMPLE=1 from --bare
+ * run before main.tsx's action handler sets NYXCLAUDE_SIMPLE=1 from --bare
  * — notably startKeychainPrefetch() at main.tsx top-level.
  */
 export function isBareMode(): boolean {
   return (
-    isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) ||
+    isEnvTruthy(process.env.NYXCLAUDE_SIMPLE) ||
     process.argv.includes('--bare')
   )
 }

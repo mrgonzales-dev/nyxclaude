@@ -12,9 +12,9 @@ import * as bootstrapState from '../bootstrap/state.js'
 import * as debug from './debug.js'
 
 const originalEnv = {
-  CLAUDE_CODE_PROFILE_QUERY: process.env.CLAUDE_CODE_PROFILE_QUERY,
-  CLAUDE_CODE_PROFILE_STARTUP: process.env.CLAUDE_CODE_PROFILE_STARTUP,
-  CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
+  NYXCLAUDE_PROFILE_QUERY: process.env.NYXCLAUDE_PROFILE_QUERY,
+  NYXCLAUDE_PROFILE_STARTUP: process.env.NYXCLAUDE_PROFILE_STARTUP,
+  NYXCLAUDE_CONFIG_DIR: process.env.NYXCLAUDE_CONFIG_DIR,
   USER_TYPE: process.env.USER_TYPE,
 }
 
@@ -78,7 +78,7 @@ function runIsolatedProfilerScript(script: string): Record<string, unknown> {
     cwd: process.cwd(),
     env: {
       ...process.env,
-      CLAUDE_CODE_PROFILE_QUERY: '1',
+      NYXCLAUDE_PROFILE_QUERY: '1',
     },
     stdout: 'pipe',
     stderr: 'pipe',
@@ -106,7 +106,7 @@ function handlePromptSubmitProfilerScript(
     import { mock } from 'bun:test'
     import { performance } from 'perf_hooks'
 
-    process.env.CLAUDE_CODE_PROFILE_QUERY = '1'
+    process.env.NYXCLAUDE_PROFILE_QUERY = '1'
 
     mock.module('./src/utils/processUserInput/processUserInput.js', () => ({
       processUserInput: async () => {
@@ -143,7 +143,6 @@ function handlePromptSubmitProfilerScript(
         commands: [],
         messages: [],
         mainLoopModel: 'sonnet',
-        ideSelection: undefined,
         querySource: 'repl',
         setToolJSX() {},
         getToolUseContext() { return {} },
@@ -167,11 +166,11 @@ function handlePromptSubmitProfilerScript(
 
 beforeEach(async () => {
   await acquireSharedMutationLock('utils/profilerRetention.test.ts')
-  process.env.CLAUDE_CODE_PROFILE_QUERY = '1'
-  process.env.CLAUDE_CODE_PROFILE_STARTUP = '1'
+  process.env.NYXCLAUDE_PROFILE_QUERY = '1'
+  process.env.NYXCLAUDE_PROFILE_STARTUP = '1'
   process.env.USER_TYPE = 'external'
   tempConfigDir = mkdtempSync(join(tmpdir(), 'nyxclaude-profiler-retention-'))
-  process.env.CLAUDE_CONFIG_DIR = tempConfigDir
+  process.env.NYXCLAUDE_CONFIG_DIR = tempConfigDir
   clearEntriesByName([
     'external_profiler_retention_start',
     'external_profiler_retention_end',
@@ -196,9 +195,9 @@ afterEach(() => {
         clearEntriesByName(nyxClaudeEntryNames(type, scope))
       }
     }
-    restoreEnv('CLAUDE_CODE_PROFILE_QUERY')
-    restoreEnv('CLAUDE_CODE_PROFILE_STARTUP')
-    restoreEnv('CLAUDE_CONFIG_DIR')
+    restoreEnv('NYXCLAUDE_PROFILE_QUERY')
+    restoreEnv('NYXCLAUDE_PROFILE_STARTUP')
+    restoreEnv('NYXCLAUDE_CONFIG_DIR')
     restoreEnv('USER_TYPE')
     if (tempConfigDir) {
       rmSync(tempConfigDir, { recursive: true, force: true })

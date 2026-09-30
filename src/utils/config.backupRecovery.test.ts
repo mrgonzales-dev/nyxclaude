@@ -335,7 +335,7 @@ describe('getConfig recovery (production path)', () => {
 describe('enableConfigs startup validation (#1807)', () => {
   // Capture the real env module once before any test overrides it. Bun's
   // mock.module() is process-global and is NOT undone by mock.restore(), so the
-  // getGlobalClaudeFile override below would otherwise leak the virtual global
+  // getGlobalConfigFile override below would otherwise leak the virtual global
   // config path into later same-process tests. Teardown re-registers the real
   // module alongside the fs reset to contain that state.
   let realEnv: Record<string, unknown>
@@ -357,7 +357,7 @@ describe('enableConfigs startup validation (#1807)', () => {
     // from defaults) and return normally.
     mock.module('./env.js', () => ({
       ...realEnv,
-      getGlobalClaudeFile: () => FILE,
+      getGlobalConfigFile: () => FILE,
     }))
     installFs({
       // No backups anywhere, and no already-saved corrupted copies.

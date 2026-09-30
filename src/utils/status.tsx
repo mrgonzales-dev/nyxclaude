@@ -1,16 +1,14 @@
 import chalk from 'chalk';
-import figures from 'figures';
 import * as React from 'react';
-import { color, Text } from '../ink.js';
+import { color } from '../ink.js';
 import type { MCPServerConnection } from '../services/mcp/types.js';
-import { getAccountInformation, isClaudeAISubscriber } from './auth.js';
+import { getAccountInformation, isSubscriber } from './auth.js';
 import { getLargeMemoryFiles, getMemoryFiles, MAX_MEMORY_CHARACTER_COUNT } from './agentsmd.js';
 import { getDoctorDiagnostic } from './doctorDiagnostic.js';
 import { getAWSRegion, getDefaultVertexRegion, isEnvTruthy } from './envUtils.js';
 import { getDisplayPath } from './file.js';
 import { formatNumber } from './format.js';
-import { getIdeClientName, type IDEExtensionInstallationStatus, isJetBrainsIde, toIDEDisplayName } from './ide.js';
-import { getClaudeAiUserDefaultModelDescription, modelDisplayString } from './model/model.js';
+import { getUserDefaultModelDescription, modelDisplayString } from './model/model.js';
 import { getAPIProvider, type APIProvider } from './model/providers.js';
 import { resolveProviderRequest } from '../services/api/providerConfig.js';
 import { getMTLSConfig } from './mtls.js';
@@ -432,60 +430,8 @@ export function buildSandboxProperties(): Property[] {
     value: isSandboxed ? 'Enabled' : 'Disabled'
   }];
 }
-export function buildIDEProperties(mcpClients: MCPServerConnection[], ideInstallationStatus: IDEExtensionInstallationStatus | null = null, theme: ThemeName): Property[] {
-  const ideClient = mcpClients?.find(client => client.name === 'ide');
-  if (ideInstallationStatus) {
-    const ideName = toIDEDisplayName(ideInstallationStatus.ideType);
-    const pluginOrExtension = isJetBrainsIde(ideInstallationStatus.ideType) ? 'plugin' : 'extension';
-    if (ideInstallationStatus.error) {
-      return [{
-        label: 'IDE',
-        value: <Text>
-              {color('error', theme)(figures.cross)} Error installing {ideName}{' '}
-              {pluginOrExtension}: {ideInstallationStatus.error}
-              {'\n'}Please restart your IDE and try again.
-            </Text>
-      }];
-    }
-    if (ideInstallationStatus.installed) {
-      if (ideClient && ideClient.type === 'connected') {
-        if (ideInstallationStatus.installedVersion !== ideClient.serverInfo?.version) {
-          return [{
-            label: 'IDE',
-            value: `Connected to ${ideName} ${pluginOrExtension} version ${ideInstallationStatus.installedVersion} (server version: ${ideClient.serverInfo?.version})`
-          }];
-        } else {
-          return [{
-            label: 'IDE',
-            value: `Connected to ${ideName} ${pluginOrExtension} version ${ideInstallationStatus.installedVersion}`
-          }];
-        }
-      } else {
-        return [{
-          label: 'IDE',
-          value: `Installed ${ideName} ${pluginOrExtension}`
-        }];
-      }
-    }
-  } else if (ideClient) {
-    const ideName = getIdeClientName(ideClient) ?? 'IDE';
-    if (ideClient.type === 'connected') {
-      return [{
-        label: 'IDE',
-        value: `Connected to ${ideName} extension`
-      }];
-    } else {
-      return [{
-        label: 'IDE',
-        value: `${color('error', theme)(figures.cross)} Not connected to ${ideName}`
-      }];
-    }
-  }
-  return [];
-}
 export function buildMcpProperties(clients: MCPServerConnection[] = [], theme: ThemeName): Property[] {
-  const servers = clients.filter(client => client.name !== 'ide');
-  if (!servers.length) {
+  if (!clients.length) {
     return [];
   }
 
@@ -497,7 +443,7 @@ export function buildMcpProperties(clients: MCPServerConnection[] = [], theme: T
     needsAuth: 0,
     failed: 0
   };
-  for (const s of servers) {
+  for (const s of clients) {
     if (s.type === 'connected') byState.connected++;else if (s.type === 'pending') byState.pending++;else if (s.type === 'needs-auth') byState.needsAuth++;else byState.failed++;
   }
   const parts: string[] = [];
@@ -677,7 +623,7 @@ export function buildAPIProviderProperties(): Property[] {
       label: 'AWS region',
       value: getAWSRegion()
     });
-    if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH)) {
+    if (isEnvTruthy(process.env.NYXCLAUDE_SKIP_BEDROCK_AUTH)) {
       properties.push({
         value: 'AWS auth skipped'
       });
@@ -700,7 +646,7 @@ export function buildAPIProviderProperties(): Property[] {
       label: 'Default region',
       value: getDefaultVertexRegion()
     });
-    if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_VERTEX_AUTH)) {
+    if (isEnvTruthy(process.env.NYXCLAUDE_SKIP_VERTEX_AUTH)) {
       properties.push({
         value: 'GCP auth skipped'
       });
@@ -719,7 +665,7 @@ export function buildAPIProviderProperties(): Property[] {
         value: foundryResource
       });
     }
-    if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_FOUNDRY_AUTH)) {
+    if (isEnvTruthy(process.env.NYXCLAUDE_SKIP_FOUNDRY_AUTH)) {
       properties.push({
         value: 'Microsoft Foundry auth skipped'
       });
@@ -789,13 +735,13 @@ export function buildAPIProviderProperties(): Property[] {
     });
   }
   if (mtlsConfig) {
-    if (mtlsConfig.cert && process.env.CLAUDE_CODE_CLIENT_CERT) {
+    if (mtlsConfig.cert && process.env.NYXCLAUDE_CLIENT_CERT) {
       properties.push({
         label: 'mTLS client cert',
-        value: redactPathForStatus(process.env.CLAUDE_CODE_CLIENT_CERT)
+        value: redactPathForStatus(process.env.NYXCLAUDE_CLIENT_CERT)
       });
     }
-    if (mtlsConfig.key && process.env.CLAUDE_CODE_CLIENT_KEY) {
+    if (mtlsConfig.key && process.env.NYXCLAUDE_CLIENT_KEY) {
       properties.push({
         label: 'mTLS client key',
         value: 'configured'
@@ -806,8 +752,8 @@ export function buildAPIProviderProperties(): Property[] {
 }
 export function getModelDisplayLabel(mainLoopModel: string | null): string {
   let modelLabel = modelDisplayString(mainLoopModel);
-  if (mainLoopModel === null && isClaudeAISubscriber()) {
-    const description = getClaudeAiUserDefaultModelDescription();
+  if (mainLoopModel === null && isSubscriber()) {
+    const description = getUserDefaultModelDescription();
     modelLabel = `${chalk.bold('Default')} ${description}`;
   }
   return modelLabel;

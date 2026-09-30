@@ -6,7 +6,6 @@ import React, { useEffect } from 'react'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 
 import type { Notification } from '../../context/notifications.js'
-import type { IDESelection } from '../../hooks/useIdeSelection.js'
 import { createRoot } from '../../ink.js'
 import type { MCPServerConnection } from '../../services/mcp/types.js'
 import {
@@ -25,7 +24,7 @@ import { renderToString } from '../../utils/staticRender.js'
 const actualAutoUpdaterWrapper = await import(
   `../AutoUpdaterWrapper.js?actual=${Date.now()}-${Math.random()}`
 )
-const EFFORT_ENV_KEY = 'CLAUDE_CODE_EFFORT_LEVEL'
+const EFFORT_ENV_KEY = 'NYXCLAUDE_EFFORT_LEVEL'
 let savedEffortEnv: string | undefined
 
 const SYNC_START = '\x1B[?2026h'
@@ -108,14 +107,12 @@ afterEach(() => {
 async function renderNotifications({
   effortValue,
   currentNotification = null,
-  ideSelection = undefined,
   mcpClients = undefined,
   isBriefOnly = false,
   viewingAgentTaskId = undefined,
 }: {
   effortValue: EffortValue | undefined
   currentNotification?: Notification | null
-  ideSelection?: IDESelection
   mcpClients?: MCPServerConnection[]
   isBriefOnly?: boolean
   viewingAgentTaskId?: string
@@ -147,7 +144,6 @@ async function renderNotifications({
         messages={[] as Message[]}
         onAutoUpdaterResult={() => {}}
         onChangeIsUpdating={() => {}}
-        ideSelection={ideSelection}
         mcpClients={mcpClients}
       />
     </AppStateProvider>,
@@ -198,7 +194,6 @@ test('updates the mounted effort footer when app state changes', async () => {
         messages={[] as Message[]}
         onAutoUpdaterResult={() => {}}
         onChangeIsUpdating={() => {}}
-        ideSelection={undefined}
         mcpClients={undefined}
       />
       <AppStateController />
@@ -264,34 +259,6 @@ test('ignores empty JSX notifications when rendering the effort footer fallback'
   })
 
   expect(output).toContain('medium · /effort')
-})
-
-test('preserves IDE selection status before the effort fallback', async () => {
-  const output = await renderNotifications({
-    effortValue: 'medium',
-    ideSelection: {
-      lineCount: 0,
-      filePath: '/tmp/example.ts',
-    },
-    mcpClients: [
-      {
-        name: 'ide',
-        type: 'connected',
-        capabilities: {},
-        config: {
-          type: 'sse-ide',
-          url: 'http://localhost:1234',
-          ideName: 'VS Code',
-          scope: 'local',
-        },
-        client: {},
-        cleanup: async () => {},
-      } as unknown as MCPServerConnection,
-    ],
-  })
-
-  expect(output).toContain('In example.ts')
-  expect(output).not.toContain('medium · /effort')
 })
 
 if (feature('KAIROS') || feature('KAIROS_BRIEF')) {

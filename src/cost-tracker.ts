@@ -1,4 +1,4 @@
-import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { BetaUsage as Usage } from 'src/types/api.js'
 import chalk from 'chalk'
 import {
   extractCacheMetrics,
@@ -367,7 +367,7 @@ export function addToTotalSessionCost(
   recordCacheRequest(cacheMetrics, model)
 
   // Opt-in structured per-request debug log on stderr. Power-user knob, not
-  // shown in the REPL — complements CLAUDE_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT
+  // shown in the REPL — complements NYXCLAUDE_ENABLE_TOKEN_USAGE_ATTACHMENT
   // (which is model-facing). Any truthy value except "0"/"false" enables it.
   if (shouldLogTokenUsageVerbose()) {
     process.stderr.write(
@@ -394,7 +394,7 @@ export function addToTotalSessionCost(
   let totalCost = cost
   for (const advisorUsage of getAdvisorUsage(usage)) {
     const advisorCost = calculateUSDCost(advisorUsage.model, advisorUsage)
-    logEvent('tengu_advisor_tool_token_usage', {
+    logEvent('nyxclaude_advisor_tool_token_usage', {
       advisor_model:
         advisorUsage.model as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       input_tokens: advisorUsage.input_tokens,

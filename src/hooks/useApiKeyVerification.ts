@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getIsNonInteractiveSession } from '../bootstrap/state.js'
-import { verifyApiKey } from '../services/api/claude.js'
+import { verifyApiKey } from '../services/api/modelApi.js'
 import {
   getAnthropicApiKeyWithSource,
   getApiKeyFromApiKeyHelper,
-  isAnthropicAuthEnabled,
-  isClaudeAISubscriber,
+  isRemoteAuthEnabled,
+  isSubscriber,
 } from '../utils/auth.js'
 
 export type VerificationStatus =
@@ -22,7 +22,7 @@ export type ApiKeyVerificationResult = {
 }
 
 function getInitialVerificationStatus(): VerificationStatus {
-  if (!isAnthropicAuthEnabled() || isClaudeAISubscriber()) {
+  if (!isRemoteAuthEnabled() || isSubscriber()) {
     return 'valid'
   }
   // Use skipRetrievingKeyFromApiKeyHelper to avoid executing apiKeyHelper
@@ -44,7 +44,7 @@ export function useApiKeyVerification(): ApiKeyVerificationResult {
   )
   const [error, setError] = useState<Error | null>(null)
   const anthropicVerificationEnabled =
-    isAnthropicAuthEnabled() && !isClaudeAISubscriber()
+    isRemoteAuthEnabled() && !isSubscriber()
 
   useEffect(() => {
     const nextStatus = anthropicVerificationEnabled
@@ -60,7 +60,7 @@ export function useApiKeyVerification(): ApiKeyVerificationResult {
   }, [anthropicVerificationEnabled])
 
   const verify = useCallback(async (): Promise<void> => {
-    if (!isAnthropicAuthEnabled() || isClaudeAISubscriber()) {
+    if (!isRemoteAuthEnabled() || isSubscriber()) {
       setStatus('valid')
       return
     }

@@ -6,7 +6,7 @@ import { call as knowledgeCall } from './knowledge.js'
 import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
 import { getArc, addEntity, resetArc } from '../../utils/conversationArc.js'
 import { getGlobalGraph, resetGlobalGraph } from '../../utils/knowledgeGraph.js'
-import { setClaudeConfigHomeDirForTesting } from '../../utils/envUtils.js'
+import { setNyxclaudeConfigHomeDirForTesting } from '../../utils/envUtils.js'
 import {
   acquireSharedMutationLock,
   releaseSharedMutationLock,
@@ -14,14 +14,14 @@ import {
 
 describe('knowledge command', () => {
   const mockContext = {} as any
-  const originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const originalConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   let configDir: string | undefined
 
   beforeEach(async () => {
     await acquireSharedMutationLock('commands/knowledge.test.ts')
     configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-knowledge-command-'))
-    process.env.CLAUDE_CONFIG_DIR = configDir
-    setClaudeConfigHomeDirForTesting(configDir)
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
+    setNyxclaudeConfigHomeDirForTesting(configDir)
     resetArc()
     resetGlobalGraph()
   })
@@ -31,11 +31,11 @@ describe('knowledge command', () => {
       resetArc()
       resetGlobalGraph()
       if (originalConfigDir === undefined) {
-        delete process.env.CLAUDE_CONFIG_DIR
+        delete process.env.NYXCLAUDE_CONFIG_DIR
       } else {
-        process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+        process.env.NYXCLAUDE_CONFIG_DIR = originalConfigDir
       }
-      setClaudeConfigHomeDirForTesting(undefined)
+      setNyxclaudeConfigHomeDirForTesting(undefined)
     } finally {
       const dirToRemove = configDir
       configDir = undefined

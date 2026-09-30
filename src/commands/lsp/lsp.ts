@@ -23,10 +23,6 @@ import {
   listLspPluginCandidates,
   type LspPluginCandidate,
 } from '../../utils/plugins/lspRecommendation.js'
-import {
-  checkAndInstallOfficialMarketplace,
-  type OfficialMarketplaceCheckResult,
-} from '../../utils/plugins/officialMarketplaceStartupCheck.js'
 import { refreshActivePlugins } from '../../utils/plugins/refresh.js'
 import { plural } from '../../utils/stringUtils.js'
 
@@ -57,7 +53,6 @@ export type LspCommandDeps = {
   getLspServerManager: () => LspServerManagerLike | undefined
   getAllLspServers: typeof getAllLspServers
   listLspPluginCandidates: typeof listLspPluginCandidates
-  checkAndInstallOfficialMarketplace: typeof checkAndInstallOfficialMarketplace
   installPluginOp: typeof installPluginOp
   uninstallPluginOp: typeof uninstallPluginOp
   refreshActivePlugins: typeof refreshActivePlugins
@@ -71,7 +66,6 @@ const DEFAULT_DEPS: LspCommandDeps = {
   getLspServerManager,
   getAllLspServers,
   listLspPluginCandidates,
-  checkAndInstallOfficialMarketplace,
   installPluginOp,
   uninstallPluginOp,
   refreshActivePlugins,
@@ -290,8 +284,8 @@ function helpText(): string {
     '  /lsp recommend .',
     '  /lsp recommend src/main.ts',
     '  /lsp recommend .ts',
-    '  /lsp install typescript-lsp@claude-plugins-official',
-    '  /lsp uninstall typescript-lsp@claude-plugins-official',
+    '  /lsp install typescript-lsp@nyxclaude-plugins-official',
+    '  /lsp uninstall typescript-lsp@nyxclaude-plugins-official',
     '  /lsp restart',
     '',
     'Tip:',
@@ -359,110 +353,25 @@ async function renderRecommendations(
       : 'No file extensions found in this workspace.'
   }
 
-  const { candidates, marketplaceSetup, marketplaceSetupError } =
-    await listRecommendationCandidates(extensions, deps)
+  const candidates = await deps.listLspPluginCandidates({
+    extensions,
+    includeInstalled: true,
+    includeMissingBinaries: true,
+  })
   const scope = formatExtensionScope(extensions)
 
   if (candidates.length === 0) {
-    const lines = [`No LSP plugin candidates found for ${scope}.`]
-    const setupMessage = renderMarketplaceSetupMessage(
-      marketplaceSetup,
-      marketplaceSetupError,
-      false,
-    )
-    if (setupMessage) lines.push(setupMessage)
-    return lines.join('\n')
+    return `No LSP plugin candidates found for ${scope}.`
   }
 
   const matchedScope = formatExtensionScope(
     getCandidateMatchedExtensions(extensions, candidates),
   )
   const lines = [`LSP recommendations for ${matchedScope || scope}`]
-  const setupMessage = renderMarketplaceSetupMessage(
-    marketplaceSetup,
-    marketplaceSetupError,
-    true,
-  )
-  if (setupMessage) lines.push(setupMessage)
   for (const candidate of candidates) {
     lines.push(...renderCandidate(candidate))
   }
   return lines.join('\n')
-}
-
-type RecommendationCandidateLookup = {
-  candidates: LspPluginCandidate[]
-  marketplaceSetup?: OfficialMarketplaceCheckResult
-  marketplaceSetupError?: string
-}
-
-async function listRecommendationCandidates(
-  extensions: string[],
-  deps: LspCommandDeps,
-): Promise<RecommendationCandidateLookup> {
-  const candidateOptions = {
-    extensions,
-    includeInstalled: true,
-    includeMissingBinaries: true,
-  }
-  let candidates = await deps.listLspPluginCandidates(candidateOptions)
-  if (candidates.length > 0) {
-    return { candidates }
-  }
-
-  let marketplaceSetup: OfficialMarketplaceCheckResult
-  try {
-    marketplaceSetup = await deps.checkAndInstallOfficialMarketplace()
-  } catch (error) {
-    return {
-      candidates,
-      marketplaceSetupError: errorMessage(error),
-    }
-  }
-
-  if (
-    marketplaceSetup.installed ||
-    marketplaceSetup.reason === 'already_installed'
-  ) {
-    candidates = await deps.listLspPluginCandidates(candidateOptions)
-  }
-
-  return { candidates, marketplaceSetup }
-}
-
-function renderMarketplaceSetupMessage(
-  result: OfficialMarketplaceCheckResult | undefined,
-  error: string | undefined,
-  foundCandidates: boolean,
-): string | undefined {
-  if (error) {
-    return `Anthropic marketplace setup failed: ${error}`
-  }
-  if (!result) {
-    return undefined
-  }
-  if (result.installed) {
-    return foundCandidates
-      ? 'Anthropic marketplace installed for LSP recommendations.'
-      : 'Anthropic marketplace was installed, but it has no matching LSP plugin candidates for this scope.'
-  }
-  if (!result.skipped || result.reason === 'already_installed') {
-    return undefined
-  }
-
-  switch (result.reason) {
-    case 'policy_blocked':
-      return 'Anthropic marketplace is unavailable because policy blocks it.'
-    case 'git_unavailable':
-      return 'Anthropic marketplace is unavailable because git is not available.'
-    case 'gcs_unavailable':
-      return 'Anthropic marketplace download is temporarily unavailable; it will retry later.'
-    case 'already_attempted':
-      return 'Anthropic marketplace setup was already attempted and is waiting before retrying.'
-    case 'unknown':
-    default:
-      return 'Anthropic marketplace setup failed; run /doctor for details.'
-  }
 }
 
 function renderCandidate(candidate: LspPluginCandidate): string[] {

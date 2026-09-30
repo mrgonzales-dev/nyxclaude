@@ -33,7 +33,7 @@ async function importFreshModule() {
 beforeEach(async () => {
   await acquireSharedMutationLock('utils/geminiCredentials.test.ts')
   process.env = { ...originalEnv }
-  delete process.env.CLAUDE_CODE_SIMPLE
+  delete process.env.NYXCLAUDE_SIMPLE
   process.argv = originalArgv.filter(arg => arg !== '--bare')
   storageState = {}
 })

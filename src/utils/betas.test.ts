@@ -4,7 +4,7 @@ import {
   releaseSharedMutationLock,
 } from '../test/sharedMutationLock.js'
 import {
-  CLAUDE_CODE_20250219_BETA_HEADER,
+  NYXCLAUDE_20250219_BETA_HEADER,
 } from '../constants/betas.js'
 import { setSdkBetas } from '../bootstrap/state.js'
 
@@ -20,13 +20,13 @@ import { setSdkBetas } from '../bootstrap/state.js'
 // we scrub every key before and after each test, and each test sets only the
 // vars it explicitly needs.
 const PROVIDER_ENV_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
   'NVIDIA_NIM',
   'MINIMAX_API_KEY',
   'XAI_API_KEY',
@@ -56,11 +56,11 @@ const PROVIDER_ENV_KEYS = [
   'OPENAI_MODEL',
   'OPENAI_API_KEY',
   'USER_TYPE',
-  'CLAUDE_CODE_ENTRYPOINT',
+  'NYXCLAUDE_ENTRYPOINT',
   'DISABLE_INTERLEAVED_THINKING',
-  'CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+  'NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
 ] as const
 
 function clearProviderEnv(): void {
@@ -127,13 +127,13 @@ const MODEL = 'claude-sonnet-4-5'
 // --- getMergedBetas: non-Anthropic providers return [] ---
 
 test('getMergedBetas returns [] for the openai provider', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   const { getMergedBetas } = await importFreshBetas()
   expect(getMergedBetas(MODEL)).toEqual([])
 })
 
 test('getMergedBetas returns [] for the gemini provider', async () => {
-  process.env.CLAUDE_CODE_USE_GEMINI = '1'
+  process.env.NYXCLAUDE_USE_GEMINI = '1'
   const { getMergedBetas } = await importFreshBetas()
   expect(getMergedBetas(MODEL)).toEqual([])
 })
@@ -159,28 +159,28 @@ test('modelSupportsStructuredOutputs covers the recent Opus models (4.8/4.7/4.6)
 })
 
 test('getMergedBetas returns a non-empty list for the bedrock provider', async () => {
-  process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+  process.env.NYXCLAUDE_USE_BEDROCK = '1'
   const { getMergedBetas } = await importFreshBetas()
   expect(getMergedBetas(MODEL).length).toBeGreaterThan(0)
 })
 
 test('getMergedBetas returns a non-empty list for the vertex provider', async () => {
-  process.env.CLAUDE_CODE_USE_VERTEX = '1'
+  process.env.NYXCLAUDE_USE_VERTEX = '1'
   const { getMergedBetas } = await importFreshBetas()
   expect(getMergedBetas(MODEL).length).toBeGreaterThan(0)
 })
 
 test('getMergedBetas returns a non-empty list for the foundry provider', async () => {
-  process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+  process.env.NYXCLAUDE_USE_FOUNDRY = '1'
   const { getMergedBetas } = await importFreshBetas()
   expect(getMergedBetas(MODEL).length).toBeGreaterThan(0)
 })
 
 test('getMergedBetas returns a non-empty list in GitHub Native Anthropic mode', async () => {
   // GitHub resolves to the (non-Anthropic) "github" provider, but when the
-  // model is a Claude model the request uses Anthropic native format, so the
+  // model is a Model the request uses Anthropic native format, so the
   // beta headers must still flow through.
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.ANTHROPIC_BASE_URL = 'https://api.githubcopilot.com'
   process.env.ANTHROPIC_API_KEY = 'gh-token'
   process.env.OPENAI_MODEL = MODEL
@@ -188,14 +188,14 @@ test('getMergedBetas returns a non-empty list in GitHub Native Anthropic mode', 
   expect(getMergedBetas(MODEL).length).toBeGreaterThan(0)
 })
 
-test('getMergedBetas returns [] for GitHub with a non-Claude model', async () => {
-  // The risky half of the provider gate: CLAUDE_CODE_USE_GITHUB=1 with a
-  // non-Claude model resolves to the "github" provider, but since the model
-  // is not a Claude model, isGithubNativeAnthropicMode() returns false and
+test('getMergedBetas returns [] for GitHub with a non-Model', async () => {
+  // The risky half of the provider gate: NYXCLAUDE_USE_GITHUB=1 with a
+  // non-Model resolves to the "github" provider, but since the model
+  // is not a Model, isGithubNativeAnthropicMode() returns false and
   // the gate must strip the Anthropic-only beta headers. A future broadening
   // of isGithubNativeAnthropicMode() (e.g. matching on the wrong substring)
   // would silently re-introduce these for OpenAI-style models.
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.ANTHROPIC_BASE_URL = 'https://api.githubcopilot.com'
   process.env.ANTHROPIC_API_KEY = 'gh-token'
   process.env.OPENAI_MODEL = 'gpt-4o-mini'
@@ -260,37 +260,37 @@ test('first-party Anthropic retains the beta gates excluded for custom proxies',
 })
 
 test('isAnthropicProvider is true for bedrock', async () => {
-  process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+  process.env.NYXCLAUDE_USE_BEDROCK = '1'
   const { isAnthropicProvider } = await importFreshBetas()
   expect(isAnthropicProvider()).toBe(true)
 })
 
 test('isAnthropicProvider is true for vertex', async () => {
-  process.env.CLAUDE_CODE_USE_VERTEX = '1'
+  process.env.NYXCLAUDE_USE_VERTEX = '1'
   const { isAnthropicProvider } = await importFreshBetas()
   expect(isAnthropicProvider()).toBe(true)
 })
 
 test('isAnthropicProvider is true for foundry', async () => {
-  process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+  process.env.NYXCLAUDE_USE_FOUNDRY = '1'
   const { isAnthropicProvider } = await importFreshBetas()
   expect(isAnthropicProvider()).toBe(true)
 })
 
 test('isAnthropicProvider is false for the openai provider', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   const { isAnthropicProvider } = await importFreshBetas()
   expect(isAnthropicProvider()).toBe(false)
 })
 
 test('isAnthropicProvider is false for the gemini provider', async () => {
-  process.env.CLAUDE_CODE_USE_GEMINI = '1'
+  process.env.NYXCLAUDE_USE_GEMINI = '1'
   const { isAnthropicProvider } = await importFreshBetas()
   expect(isAnthropicProvider()).toBe(false)
 })
 
 test('isAnthropicProvider is false for the mistral provider', async () => {
-  process.env.CLAUDE_CODE_USE_MISTRAL = '1'
+  process.env.NYXCLAUDE_USE_MISTRAL = '1'
   const { isAnthropicProvider } = await importFreshBetas()
   expect(isAnthropicProvider()).toBe(false)
 })
@@ -325,7 +325,7 @@ test('adds trimmed user-provided beta headers without empty entries', async () =
 
 test('does not duplicate an env-provided agentic beta for Haiku requests', async () => {
   process.env.ANTHROPIC_BETAS = [
-    CLAUDE_CODE_20250219_BETA_HEADER,
+    NYXCLAUDE_20250219_BETA_HEADER,
     'custom-beta-2026-01-01',
   ].join(',')
 
@@ -335,7 +335,7 @@ test('does not duplicate an env-provided agentic beta for Haiku requests', async
   })
 
   expect(
-    mergedBetas.filter(beta => beta === CLAUDE_CODE_20250219_BETA_HEADER),
+    mergedBetas.filter(beta => beta === NYXCLAUDE_20250219_BETA_HEADER),
   ).toHaveLength(1)
   expect(mergedBetas).toContain('custom-beta-2026-01-01')
 })

@@ -229,7 +229,7 @@ function BashPermissionRequestInner({
 
   const { destructiveWarning, sandboxingEnabled, isSandboxed } = useMemo(() => {
     const warning = getFeatureValue_CACHED_MAY_BE_STALE(
-      'tengu_destructive_command_warning',
+      'nyxclaude_destructive_command_warning',
       false,
     )
       ? getDestructiveCommandWarning(command)
@@ -295,7 +295,7 @@ function BashPermissionRequestInner({
       'no-with-reason': 4,
       no: 5,
     }
-    logEvent('tengu_permission_request_option_selected', {
+    logEvent('nyxclaude_permission_request_option_selected', {
       option_index: optionIndex[value],
       explainer_visible: explainerState.visible,
     })

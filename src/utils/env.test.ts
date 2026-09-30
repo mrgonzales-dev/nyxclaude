@@ -197,18 +197,14 @@ test('env.terminal: returns agy if VSCODE_GIT_ASKPASS_MAIN contains mixed-case A
   }
 })
 
-test('env.terminal: agy is classified as a VS Code-like IDE terminal', async () => {
+test('env.terminal: agy is detected as the terminal', async () => {
   const originalTermProgram = process.env.TERM_PROGRAM
   const originalAskpass = process.env.VSCODE_GIT_ASKPASS_MAIN
   try {
     process.env.TERM_PROGRAM = 'agy'
     delete process.env.VSCODE_GIT_ASKPASS_MAIN
     const { env } = await importFreshEnvModule()
-    const { isVSCodeIde, toIDEDisplayName } =
-      await import(`./ide.js?ts=${Date.now()}-${Math.random()}`)
     expect(env.terminal).toBe('agy')
-    expect(toIDEDisplayName(env.terminal)).toBe('Antigravity')
-    expect(isVSCodeIde(env.terminal)).toBe(true)
   } finally {
     if (originalTermProgram === undefined) {
       delete process.env.TERM_PROGRAM

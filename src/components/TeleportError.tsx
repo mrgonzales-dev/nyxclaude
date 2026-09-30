@@ -1,6 +1,6 @@
 import { c as _c } from "react-compiler-runtime";
 import React, { useCallback, useEffect, useState } from 'react';
-import { checkIsGitClean, checkNeedsClaudeAiLogin } from 'src/utils/background/remote/preconditions.js';
+import { checkIsGitClean, checkNeedsRemoteLogin } from 'src/utils/background/remote/preconditions.js';
 import { gracefulShutdownSync } from 'src/utils/gracefulShutdown.js';
 import { Box, Text } from '../ink.js';
 import { ConsoleOAuthFlow } from './ConsoleOAuthFlow.js';
@@ -88,12 +88,12 @@ export function TeleportError(t0) {
   } else {
     t6 = $[8];
   }
-  const handleLoginWithClaudeAI = t6;
+  const handleLoginWithRemote = t6;
   let t7;
   if ($[9] === Symbol.for("react.memo_cache_sentinel")) {
     t7 = value => {
       if (value === "login") {
-        handleLoginWithClaudeAI();
+        handleLoginWithRemote();
       } else {
         onCancel();
       }
@@ -135,7 +135,7 @@ export function TeleportError(t0) {
         if (isLoggingIn) {
           let t9;
           if ($[14] !== handleLoginComplete) {
-            t9 = <ConsoleOAuthFlow onDone={handleLoginComplete} mode="login" forceLoginMethod="claudeai" />;
+            t9 = <ConsoleOAuthFlow onDone={handleLoginComplete} mode="login" forceLoginMethod="remote" />;
             $[14] = handleLoginComplete;
             $[15] = t9;
           } else {
@@ -145,7 +145,7 @@ export function TeleportError(t0) {
         }
         let t9;
         if ($[16] === Symbol.for("react.memo_cache_sentinel")) {
-          t9 = <Box flexDirection="column"><Text dimColor={true}>Teleport requires a Claude.ai account.</Text><Text dimColor={true}>Your Claude Pro/Max subscription will be used by Claude Code.</Text></Box>;
+          t9 = <Box flexDirection="column"><Text dimColor={true}>Teleport requires a remote account.</Text><Text dimColor={true}>Your subscription will be used by Nyxclaude.</Text></Box>;
           $[16] = t9;
         } else {
           t9 = $[16];
@@ -177,7 +177,7 @@ function _temp() {
 }
 export async function getTeleportErrors(): Promise<Set<TeleportLocalErrorType>> {
   const errors = new Set<TeleportLocalErrorType>();
-  const [needsLogin, isGitClean] = await Promise.all([checkNeedsClaudeAiLogin(), checkIsGitClean()]);
+  const [needsLogin, isGitClean] = await Promise.all([checkNeedsRemoteLogin(), checkIsGitClean()]);
   if (needsLogin) {
     errors.add('needsLogin');
   }

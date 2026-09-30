@@ -72,7 +72,7 @@ function isExecutable(shellPath: string): boolean {
  */
 export async function findSuitableShell(): Promise<string> {
   // Check for explicit shell override first
-  const shellOverride = process.env.CLAUDE_CODE_SHELL
+  const shellOverride = process.env.NYXCLAUDE_SHELL
   if (shellOverride) {
     // Validate it's a supported shell type
     const isSupported =
@@ -83,7 +83,7 @@ export async function findSuitableShell(): Promise<string> {
     } else {
       // Note, if we ever want to add support for new shells here we'll need to update or Bash tool parsing to account for this
       logForDebugging(
-        `CLAUDE_CODE_SHELL="${shellOverride}" is not a valid bash/zsh path, falling back to detection`,
+        `NYXCLAUDE_SHELL="${shellOverride}" is not a valid bash/zsh path, falling back to detection`,
       )
     }
   }
@@ -354,7 +354,7 @@ export async function exec(
         ...envOverrides,
         ...(process.env.USER_TYPE === 'ant'
           ? {
-              CLAUDE_CODE_SESSION_ID: getSessionId(),
+              NYXCLAUDE_SESSION_ID: getSessionId(),
             }
           : {}),
       },
@@ -441,7 +441,7 @@ export async function exec(
             void onCwdChangedForHooks(cwd, newCwd)
           }
         } catch {
-          logEvent('tengu_shell_set_cwd', { success: false })
+          logEvent('nyxclaude_shell_set_cwd', { success: false })
         }
       }
       // Clean up the temp file used for cwd tracking
@@ -503,7 +503,7 @@ export function setCwd(path: string, relativeTo?: string): void {
   setCwdState(physicalPath)
   if (process.env.NODE_ENV !== 'test') {
     try {
-      logEvent('tengu_shell_set_cwd', {
+      logEvent('nyxclaude_shell_set_cwd', {
         success: true,
       })
     } catch (_error) {

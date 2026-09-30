@@ -9,7 +9,7 @@ import {
 } from 'node:fs/promises'
 import { createHash, randomUUID } from 'node:crypto'
 import { basename, join } from 'node:path'
-import { getClaudeConfigHomeDir } from '../utils/envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../utils/envUtils.js'
 import {
   getProcessCommand,
   isProcessRunning,
@@ -86,7 +86,7 @@ function getBackgroundSessionsRoot(): string {
   if (backgroundSessionsRootForTesting) {
     return backgroundSessionsRootForTesting
   }
-  return join(getClaudeConfigHomeDir(), 'bg-sessions')
+  return join(getNyxclaudeConfigHomeDir(), 'bg-sessions')
 }
 
 function getBackgroundSessionMetadataDir(): string {

@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import { APIUserAbortError } from '@anthropic-ai/sdk'
+import { APIUserAbortError } from 'src/types/api.js'
 import { PRODUCT_DISPLAY_NAME } from '../../constants/product.js'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
 import {
@@ -700,7 +700,7 @@ const hasPermissionsToUseToolWithModeHandling: CanUseToolFn = async (
             logForDebugging(
               `Skipping auto mode classifier for ${tool.name}: would be allowed in acceptEdits mode`,
             )
-            logEvent('tengu_auto_mode_decision', {
+            logEvent('nyxclaude_auto_mode_decision', {
               decision:
                 'allowed' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
               toolName: sanitizeToolNameForAnalytics(tool.name),
@@ -740,7 +740,7 @@ const hasPermissionsToUseToolWithModeHandling: CanUseToolFn = async (
         logForDebugging(
           `Skipping auto mode classifier for ${tool.name}: tool is on the safe allowlist`,
         )
-        logEvent('tengu_auto_mode_decision', {
+        logEvent('nyxclaude_auto_mode_decision', {
           decision:
             'allowed' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           toolName: sanitizeToolNameForAnalytics(tool.name),
@@ -807,7 +807,7 @@ const hasPermissionsToUseToolWithModeHandling: CanUseToolFn = async (
               classifierResult.usage,
             )
           : undefined
-      logEvent('tengu_auto_mode_decision', {
+      logEvent('nyxclaude_auto_mode_decision', {
         decision:
           yoloDecision as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         toolName: sanitizeToolNameForAnalytics(tool.name),
@@ -918,12 +918,12 @@ const hasPermissionsToUseToolWithModeHandling: CanUseToolFn = async (
           }
         }
         // When classifier is unavailable (API error), behavior depends on
-        // the tengu_iron_gate_closed gate.
+        // the nyxclaude_iron_gate_closed gate.
         if (classifierResult.unavailable) {
           if (
             // The local growthbook shim takes no refresh-interval argument;
             // CLASSIFIER_FAIL_CLOSED_REFRESH_MS documents the intended cadence.
-            getFeatureValue_CACHED_WITH_REFRESH('tengu_iron_gate_closed', true)
+            getFeatureValue_CACHED_WITH_REFRESH('nyxclaude_iron_gate_closed', true)
           ) {
             logForDebugging(
               'Auto mode classifier unavailable, denying with retry guidance (fail closed)',
@@ -1113,7 +1113,7 @@ function handleDenialLimitExceeded(
     ? `${totalCount} actions were blocked this session. Please review the transcript before continuing.`
     : `${consecutiveCount} consecutive actions were blocked. Please review the transcript before continuing.`
 
-  logEvent('tengu_auto_mode_denial_limit_exceeded', {
+  logEvent('nyxclaude_auto_mode_denial_limit_exceeded', {
     limit: (hitTotalLimit
       ? 'total'
       : 'consecutive') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

@@ -267,7 +267,7 @@ export function createSdkMcpServer(config: SdkMcpServerConfig): SdkScopedMcpServ
 
 export {
   AbortError,
-  ClaudeError,
+  SDKErrorBase,
   SDKError,
   SDKAuthenticationError,
   SDKBillingError,

@@ -695,9 +695,9 @@ describe('resolveOutOfProcessTeammateProviderFromCliArgs', () => {
 describe('applyAgentProviderOverrideToEnv', () => {
   test('switches a spawned teammate process to OpenAI-compatible routing', () => {
     const env: Record<string, string | undefined> = {
-      CLAUDE_CODE_USE_GEMINI: '1',
-      CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED: '1',
-      CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID: 'saved-gemini',
+      NYXCLAUDE_USE_GEMINI: '1',
+      NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED: '1',
+      NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID: 'saved-gemini',
       GEMINI_MODEL: 'gemini-parent',
       GEMINI_API_KEY: 'gemini-key',
       ANTHROPIC_MODEL: 'claude-parent',
@@ -716,13 +716,13 @@ describe('applyAgentProviderOverrideToEnv', () => {
       env,
     )
 
-    expect(env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(env.OPENAI_MODEL).toBe('deepseek-chat')
     expect(env.OPENAI_BASE_URL).toBe('https://api.deepseek.com/v1')
     expect(env.OPENAI_API_KEY).toBe('sk-ds')
-    expect(env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
-    expect(env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBeUndefined()
+    expect(env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
+    expect(env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBeUndefined()
     expect(env.GEMINI_MODEL).toBeUndefined()
     expect(env.ANTHROPIC_MODEL).toBeUndefined()
     expect(env.OPENAI_API_BASE).toBeUndefined()

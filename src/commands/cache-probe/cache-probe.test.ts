@@ -55,7 +55,7 @@ test('cache-probe retains cache extensions for supported Chat and Responses endp
   await acquireSharedMutationLock('commands/cache-probe/cache-probe.test.ts')
   try {
     const chatBody = await captureFirstProbeBody({
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'https://api.openai.com/v1',
       OPENAI_MODEL: 'gpt-4o',
       OPENAI_API_KEY: 'test-key',
@@ -65,7 +65,7 @@ test('cache-probe retains cache extensions for supported Chat and Responses endp
     expect(chatBody).not.toHaveProperty('prompt_cache_retention')
 
     const responsesBody = await captureFirstProbeBody({
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'https://resource.openai.azure.com/openai/v1',
       OPENAI_MODEL: 'gpt-5.4',
       OPENAI_API_FORMAT: 'responses',
@@ -78,7 +78,7 @@ test('cache-probe retains cache extensions for supported Chat and Responses endp
     expect(responsesBody).toHaveProperty('prompt_cache_key')
 
     const compatResponsesBody = await captureFirstProbeBody({
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'https://api.openai.com/v1',
       OPENAI_MODEL: 'gpt-4o',
       OPENAI_API_FORMAT: 'responses_compat',
@@ -102,7 +102,7 @@ test('cache-probe omits cache extensions from NVIDIA NIM requests (#2042)', asyn
     for (const key of Object.keys(process.env)) {
       delete process.env[key]
     }
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://integrate.api.nvidia.com/v1'
     process.env.OPENAI_MODEL = 'nvidia/llama-3.1-nemotron-70b-instruct'
     process.env.OPENAI_API_KEY = 'test-key'
@@ -170,7 +170,7 @@ test('resolveCacheProbeRequestApiKey prefers GitHub credentials in GitHub mode',
   expect(
     resolveCacheProbeRequestApiKey(
       {
-        CLAUDE_CODE_USE_GITHUB: '1',
+        NYXCLAUDE_USE_GITHUB: '1',
         OPENAI_API_KEYS: 'openai-key-a,openai-key-b',
         GITHUB_TOKEN: 'github-token',
       } as NodeJS.ProcessEnv,
@@ -186,7 +186,7 @@ test('cache-probe no-key guidance mentions pooled OpenAI credentials', async () 
     for (const key of Object.keys(process.env)) {
       delete process.env[key]
     }
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
     process.env.OPENAI_MODEL = 'gpt-5.5'
 

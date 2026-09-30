@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import type { Anthropic } from '@anthropic-ai/sdk'
+import type { Anthropic } from 'src/types/api.js'
 import {
   getSystemPrompt,
   SYSTEM_PROMPT_DYNAMIC_BOUNDARY,
@@ -339,7 +339,7 @@ async function countMemoryFileTokens(): Promise<{
   agentsMdTokens: number
 }> {
   // Simple mode disables AGENTS.md loading, so don't report tokens for them
-  if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_SIMPLE)) {
     return { memoryFileDetails: [], agentsMdTokens: 0 }
   }
 

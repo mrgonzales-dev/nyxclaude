@@ -1,4 +1,4 @@
-import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { BetaContentBlock } from 'src/types/api.js'
 import { randomUUID, type UUID } from 'crypto'
 import { getSessionId } from 'src/bootstrap/state.js'
 import {
@@ -11,7 +11,7 @@ import type {
   SDKMessage,
   SDKRateLimitInfo,
 } from 'src/entrypoints/agentSdkTypes.js'
-import type { ClaudeAILimits } from 'src/services/claudeAiLimits.js'
+import type { RateLimits } from 'src/services/limits.js'
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from 'src/tools/ExitPlanModeTool/constants.js'
 import type {
   AssistantMessage,
@@ -216,11 +216,11 @@ export function localCommandOutputToSDKAssistantMessage(
 }
 
 /**
- * Maps internal ClaudeAILimits to the SDK-facing SDKRateLimitInfo type,
+ * Maps internal Limits to the SDK-facing SDKRateLimitInfo type,
  * stripping internal-only fields like unifiedRateLimitFallbackAvailable.
  */
 export function toSDKRateLimitInfo(
-  limits: ClaudeAILimits | undefined,
+  limits: RateLimits | undefined,
 ): SDKRateLimitInfo | undefined {
   if (!limits) {
     return undefined

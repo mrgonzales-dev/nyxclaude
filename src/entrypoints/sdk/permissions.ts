@@ -568,8 +568,6 @@ export async function connectSdkMcpServers(
           stdioCount: 0,
           sseCount: 0,
           httpCount: 0,
-          sseIdeCount: 0,
-          wsIdeCount: 0,
         })
 
         // If connected, fetch tools

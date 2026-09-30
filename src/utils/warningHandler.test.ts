@@ -81,7 +81,7 @@ test('logs compact analytics for performance entry buffer warnings', async () =>
 
   expect(logEventSpy).toHaveBeenCalledTimes(1)
   const [eventName, metadata] = logEventSpy.mock.calls[0] ?? []
-  expect(eventName).toBe('tengu_node_warning')
+  expect(eventName).toBe('nyxclaude_node_warning')
   expect(metadata).toMatchObject({
     is_internal: 0,
     occurrence_count: 1,

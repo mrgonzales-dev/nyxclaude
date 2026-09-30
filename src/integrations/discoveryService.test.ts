@@ -11,23 +11,23 @@ import { publicBuildVersion } from '../utils/version.js'
 
 const originalFetch = globalThis.fetch
 const originalEnv = {
-  CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
+  NYXCLAUDE_CONFIG_DIR: process.env.NYXCLAUDE_CONFIG_DIR,
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   OPENAI_API_BASE: process.env.OPENAI_API_BASE,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_API_KEYS: process.env.OPENAI_API_KEYS,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
-  ANTHROPIC_CUSTOM_HEADERS: process.env.ANTHROPIC_CUSTOM_HEADERS,
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
-  CLAUDE_CODE_USE_MISTRAL: process.env.CLAUDE_CODE_USE_MISTRAL,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
-  CLAUDE_CODE_USE_BEDROCK: process.env.CLAUDE_CODE_USE_BEDROCK,
-  CLAUDE_CODE_USE_VERTEX: process.env.CLAUDE_CODE_USE_VERTEX,
-  CLAUDE_CODE_USE_FOUNDRY: process.env.CLAUDE_CODE_USE_FOUNDRY,
-  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC:
-    process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,
+  NYXCLAUDE_CUSTOM_HEADERS: process.env.NYXCLAUDE_CUSTOM_HEADERS,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
+  NYXCLAUDE_USE_MISTRAL: process.env.NYXCLAUDE_USE_MISTRAL,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
+  NYXCLAUDE_USE_BEDROCK: process.env.NYXCLAUDE_USE_BEDROCK,
+  NYXCLAUDE_USE_VERTEX: process.env.NYXCLAUDE_USE_VERTEX,
+  NYXCLAUDE_USE_FOUNDRY: process.env.NYXCLAUDE_USE_FOUNDRY,
+  NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC:
+    process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC,
 }
 
 let tempDir: string
@@ -59,24 +59,24 @@ function clearProviderEnv(): void {
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENAI_API_KEYS
   delete process.env.OPENAI_MODEL
-  delete process.env.ANTHROPIC_CUSTOM_HEADERS
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
-  delete process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+  delete process.env.NYXCLAUDE_CUSTOM_HEADERS
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC
 }
 
 beforeEach(async () => {
   await acquireSharedMutationLock('discoveryService.test.ts')
   mock.restore()
   tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-discovery-service-test-'))
-  process.env.CLAUDE_CONFIG_DIR = tempDir
+  process.env.NYXCLAUDE_CONFIG_DIR = tempDir
   delete process.env.OPENROUTER_API_KEY
-  delete process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+  delete process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC
   clearProviderEnv()
   globalThis.fetch = originalFetch
 })
@@ -86,22 +86,22 @@ afterEach(() => {
     mock.restore()
     globalThis.fetch = originalFetch
     rmSync(tempDir, { recursive: true, force: true })
-    restoreEnvValue('CLAUDE_CONFIG_DIR')
+    restoreEnvValue('NYXCLAUDE_CONFIG_DIR')
     restoreEnvValue('OPENROUTER_API_KEY')
     restoreEnvValue('OPENAI_BASE_URL')
     restoreEnvValue('OPENAI_API_BASE')
     restoreEnvValue('OPENAI_API_KEY')
     restoreEnvValue('OPENAI_API_KEYS')
     restoreEnvValue('OPENAI_MODEL')
-    restoreEnvValue('ANTHROPIC_CUSTOM_HEADERS')
-    restoreEnvValue('CLAUDE_CODE_USE_OPENAI')
-    restoreEnvValue('CLAUDE_CODE_USE_GEMINI')
-    restoreEnvValue('CLAUDE_CODE_USE_MISTRAL')
-    restoreEnvValue('CLAUDE_CODE_USE_GITHUB')
-    restoreEnvValue('CLAUDE_CODE_USE_BEDROCK')
-    restoreEnvValue('CLAUDE_CODE_USE_VERTEX')
-    restoreEnvValue('CLAUDE_CODE_USE_FOUNDRY')
-    restoreEnvValue('CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC')
+    restoreEnvValue('NYXCLAUDE_CUSTOM_HEADERS')
+    restoreEnvValue('NYXCLAUDE_USE_OPENAI')
+    restoreEnvValue('NYXCLAUDE_USE_GEMINI')
+    restoreEnvValue('NYXCLAUDE_USE_MISTRAL')
+    restoreEnvValue('NYXCLAUDE_USE_GITHUB')
+    restoreEnvValue('NYXCLAUDE_USE_BEDROCK')
+    restoreEnvValue('NYXCLAUDE_USE_VERTEX')
+    restoreEnvValue('NYXCLAUDE_USE_FOUNDRY')
+    restoreEnvValue('NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC')
     _clearRegistryForTesting()
     ensureIntegrationsLoaded()
   } finally {
@@ -556,7 +556,7 @@ describe('discoverModelsForRoute', () => {
   })
 
   test('skips descriptor network discovery when nonessential traffic is disabled', async () => {
-    process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
+    process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
     process.env.OPENROUTER_API_KEY = 'or-key'
     const { discoverModelsForRoute } = await loadDiscoveryServiceModule()
 
@@ -609,7 +609,7 @@ describe('discoverModelsForRoute', () => {
       await loadDiscoveryServiceModule()
 
     const startupEnv: NodeJS.ProcessEnv = {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'http://127.0.0.1:1234/v1',
     }
 
@@ -680,7 +680,7 @@ describe('discoverModelsForRoute', () => {
       await loadDiscoveryServiceModule()
 
     const startupEnv: NodeJS.ProcessEnv = {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'https://custom.example/v1',
       OPENAI_API_KEYS: 'key-a,key-b',
     }
@@ -710,9 +710,9 @@ describe('discoverModelsForRoute', () => {
       await loadDiscoveryServiceModule()
 
     const startupEnv: NodeJS.ProcessEnv = {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'http://localhost:4000/v1',
-      ANTHROPIC_CUSTOM_HEADERS: 'X-Test-Case: startup-context',
+      NYXCLAUDE_CUSTOM_HEADERS: 'X-Test-Case: startup-context',
     }
 
     setMockFetch(mock((_input, init) => {
@@ -747,9 +747,9 @@ describe('discoverModelsForRoute', () => {
     const { getCachedModels } = await import('./discoveryCache.js')
 
     const startupEnv: NodeJS.ProcessEnv = {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'http://localhost:4000/v1',
-      ANTHROPIC_CUSTOM_HEADERS: 'X-Tenant: acme',
+      NYXCLAUDE_CUSTOM_HEADERS: 'X-Tenant: acme',
     }
 
     setMockFetch(mock((input: string | URL | Request, init?: RequestInit) => {
@@ -797,7 +797,7 @@ describe('discoverModelsForRoute', () => {
       await loadDiscoveryServiceModule()
 
     const startupEnv: NodeJS.ProcessEnv = {
-      CLAUDE_CODE_USE_ANTHROPIC: '1',
+      NYXCLAUDE_USE_ANTHROPIC: '1',
       ANTHROPIC_BASE_URL: 'https://api.anthropic.com',
     }
 

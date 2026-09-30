@@ -26,7 +26,7 @@ describe('getGlobalUpdateFailureHint', () => {
 
 describe('writePackageManagerUpdateGuidance', () => {
   test.each([
-    ['@anthropic-ai/claude-code', true],
+    ['nyxclaude', true],
     ['nyxclaude', false],
     ['@example/custom-cli', false],
   ] as const)(
@@ -50,11 +50,11 @@ describe('writePackageManagerUpdateGuidance', () => {
       )
       expect(output).toContain('Update available: 1.0.0 → 2.0.0')
       if (expectsUpstreamCommand) {
-        expect(output).toContain('brew upgrade claude-code')
+        expect(output).toContain('brew upgrade nyxclaude')
       } else {
-        expect(output).not.toContain('brew upgrade claude-code')
-        expect(output).not.toContain('Anthropic.ClaudeCode')
-        expect(output).not.toContain('apk upgrade claude-code')
+        expect(output).not.toContain('brew upgrade nyxclaude')
+        expect(output).not.toContain('nyxclaude')
+        expect(output).not.toContain('apk upgrade nyxclaude')
       }
     },
   )

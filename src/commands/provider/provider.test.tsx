@@ -24,7 +24,7 @@ import { createProfileFile } from '../../utils/providerProfile.js'
 
 const SYNC_START = '\x1B[?2026h'
 const SYNC_END = '\x1B[?2026l'
-const ORIGINAL_SIMPLE_ENV = process.env.CLAUDE_CODE_SIMPLE
+const ORIGINAL_SIMPLE_ENV = process.env.NYXCLAUDE_SIMPLE
 const ORIGINAL_CODEX_API_KEY = process.env.CODEX_API_KEY
 const ORIGINAL_CHATGPT_ACCOUNT_ID = process.env.CHATGPT_ACCOUNT_ID
 const ORIGINAL_CODEX_ACCOUNT_ID = process.env.CODEX_ACCOUNT_ID
@@ -169,9 +169,9 @@ afterEach(() => {
     mock.restore()
 
     if (ORIGINAL_SIMPLE_ENV === undefined) {
-      delete process.env.CLAUDE_CODE_SIMPLE
+      delete process.env.NYXCLAUDE_SIMPLE
     } else {
-      process.env.CLAUDE_CODE_SIMPLE = ORIGINAL_SIMPLE_ENV
+      process.env.NYXCLAUDE_SIMPLE = ORIGINAL_SIMPLE_ENV
     }
 
     if (ORIGINAL_CODEX_API_KEY === undefined) {
@@ -563,14 +563,14 @@ test('explicitly declared env takes precedence over applySavedProfileToCurrentSe
       'apply-saved-profile-codex',
     )
   const processEnv: NodeJS.ProcessEnv = {
-    CLAUDE_CODE_USE_OPENAI: '1',
+    NYXCLAUDE_USE_OPENAI: '1',
     OPENAI_MODEL: 'gpt-4o',
     OPENAI_BASE_URL: 'https://api.openai.com/v1',
     OPENAI_API_KEY: 'sk-openai',
     CODEX_API_KEY: 'codex-live',
     CHATGPT_ACCOUNT_ID: 'acct_codex',
-    CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED: '1',
-    CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID: 'provider_old',
+    NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED: '1',
+    NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID: 'provider_old',
   }
   const profileFile = createProfileFile('codex', {
     OPENAI_MODEL: 'codexplan',
@@ -585,7 +585,7 @@ test('explicitly declared env takes precedence over applySavedProfileToCurrentSe
   })
 
   expect(warning).toBeNull()
-  expect(processEnv.CLAUDE_CODE_USE_OPENAI).toBe('1')
+  expect(processEnv.NYXCLAUDE_USE_OPENAI).toBe('1')
   expect(processEnv.OPENAI_MODEL).toBe('gpt-4o')
   expect(processEnv.OPENAI_BASE_URL).toBe(
     "https://api.openai.com/v1",
@@ -593,8 +593,8 @@ test('explicitly declared env takes precedence over applySavedProfileToCurrentSe
   expect(processEnv.CODEX_API_KEY).toBeUndefined()
   expect(processEnv.CHATGPT_ACCOUNT_ID).toBeUndefined()
   expect(processEnv.OPENAI_API_KEY).toBe("sk-openai")
-  expect(processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
-  expect(processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBeUndefined()
+  expect(processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
+  expect(processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBeUndefined()
 })
 
 test('explicitly declared env takes precedence over applySavedProfileToCurrentSession for oauth codex profiles', async () => {
@@ -603,7 +603,7 @@ test('explicitly declared env takes precedence over applySavedProfileToCurrentSe
       'apply-saved-profile-codex-oauth',
     )
   const processEnv: NodeJS.ProcessEnv = {
-    CLAUDE_CODE_USE_OPENAI: '1',
+    NYXCLAUDE_USE_OPENAI: '1',
     OPENAI_MODEL: 'gpt-4o',
     OPENAI_BASE_URL: 'https://api.openai.com/v1',
     CODEX_API_KEY: 'stale-codex-key',
@@ -634,7 +634,7 @@ test('explicitly declared env takes precedence over applySavedProfileToCurrentSe
 test('buildCurrentProviderSummary redacts poisoned model and endpoint values', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_API_KEY: 'sk-secret-12345678',
       OPENAI_MODEL: 'sk-secret-12345678',
       OPENAI_BASE_URL: 'sk-secret-12345678',
@@ -650,7 +650,7 @@ test('buildCurrentProviderSummary redacts poisoned model and endpoint values', (
 test('buildCurrentProviderSummary labels generic local openai-compatible providers', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_MODEL: 'qwen2.5-coder-7b-instruct',
       OPENAI_BASE_URL: 'http://127.0.0.1:8080/v1',
     },
@@ -665,7 +665,7 @@ test('buildCurrentProviderSummary labels generic local openai-compatible provide
 test('buildCurrentProviderSummary recognizes descriptor-backed openai-compatible routes', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_MODEL: 'openai/gpt-5-mini',
       OPENAI_BASE_URL: 'https://openrouter.ai/api/v1',
     },
@@ -680,7 +680,7 @@ test('buildCurrentProviderSummary recognizes descriptor-backed openai-compatible
 test('buildCurrentProviderSummary recognizes Venice routes', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_MODEL: 'venice-uncensored',
       OPENAI_BASE_URL: 'https://api.venice.ai/api/v1',
       VENICE_API_KEY: 'sk-venice-secret',
@@ -696,7 +696,7 @@ test('buildCurrentProviderSummary recognizes Venice routes', () => {
 test('buildCurrentProviderSummary does not relabel local gpt-5.4 providers as Codex when custom base URL is set', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_MODEL: 'gpt-5.4',
       OPENAI_BASE_URL: 'http://127.0.0.1:8080/v1',
     },
@@ -711,7 +711,7 @@ test('buildCurrentProviderSummary does not relabel local gpt-5.4 providers as Co
 test('buildCurrentProviderSummary recognizes Gemini mode', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_GEMINI: '1',
+      NYXCLAUDE_USE_GEMINI: '1',
       GEMINI_MODEL: 'gemini-2.5-pro',
       GEMINI_BASE_URL:
         'https://generativelanguage.googleapis.com/v1beta/openai',
@@ -729,7 +729,7 @@ test('buildCurrentProviderSummary recognizes Gemini mode', () => {
 test('buildCurrentProviderSummary recognizes Mistral mode', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_MISTRAL: '1',
+      NYXCLAUDE_USE_MISTRAL: '1',
       MISTRAL_MODEL: 'mistral-medium-latest',
       MISTRAL_BASE_URL: 'https://api.mistral.ai/v1',
     },
@@ -744,7 +744,7 @@ test('buildCurrentProviderSummary recognizes Mistral mode', () => {
 test('buildCurrentProviderSummary recognizes GitHub Models mode', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_GITHUB: '1',
+      NYXCLAUDE_USE_GITHUB: '1',
       OPENAI_MODEL: 'github:copilot',
       OPENAI_BASE_URL: 'https://models.github.ai/inference',
     },
@@ -771,7 +771,7 @@ test('getProviderWizardDefaults ignores poisoned current provider values', () =>
 })
 
 test('ProviderWizard hides Codex OAuth while running in bare mode', async () => {
-  process.env.CLAUDE_CODE_SIMPLE = '1'
+  process.env.NYXCLAUDE_SIMPLE = '1'
 
   const output = await renderProviderWizardFrame()
 

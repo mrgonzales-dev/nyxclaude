@@ -3,14 +3,14 @@ import { getCwdState, setCwdState } from './bootstrap/state.js'
 
 const originalCwdState = getCwdState()
 const originalRepoMapEnv = process.env.REPO_MAP
-const originalRemoteEnv = process.env.CLAUDE_CODE_REMOTE
+const originalRemoteEnv = process.env.NYXCLAUDE_REMOTE
 
 afterEach(async () => {
   const { getRepoMapContext, getSystemContext } = await import('./context.js')
   if (originalRepoMapEnv === undefined) delete process.env.REPO_MAP
   else process.env.REPO_MAP = originalRepoMapEnv
-  if (originalRemoteEnv === undefined) delete process.env.CLAUDE_CODE_REMOTE
-  else process.env.CLAUDE_CODE_REMOTE = originalRemoteEnv
+  if (originalRemoteEnv === undefined) delete process.env.NYXCLAUDE_REMOTE
+  else process.env.NYXCLAUDE_REMOTE = originalRemoteEnv
   setCwdState(originalCwdState)
   getRepoMapContext.cache.clear?.()
   getSystemContext.cache.clear?.()
@@ -174,9 +174,9 @@ describe('getRepoMapContext', () => {
   test('getSystemContext does not include repoMap key when flag is off', async () => {
     const { getRepoMapContext, getSystemContext } = await import('./context.js')
     const previousRepoMap = process.env.REPO_MAP
-    const previousRemote = process.env.CLAUDE_CODE_REMOTE
+    const previousRemote = process.env.NYXCLAUDE_REMOTE
     delete process.env.REPO_MAP
-    process.env.CLAUDE_CODE_REMOTE = '1'
+    process.env.NYXCLAUDE_REMOTE = '1'
     getRepoMapContext.cache.clear?.()
     getSystemContext.cache.clear?.()
 
@@ -186,8 +186,8 @@ describe('getRepoMapContext', () => {
     } finally {
       if (previousRepoMap === undefined) delete process.env.REPO_MAP
       else process.env.REPO_MAP = previousRepoMap
-      if (previousRemote === undefined) delete process.env.CLAUDE_CODE_REMOTE
-      else process.env.CLAUDE_CODE_REMOTE = previousRemote
+      if (previousRemote === undefined) delete process.env.NYXCLAUDE_REMOTE
+      else process.env.NYXCLAUDE_REMOTE = previousRemote
       getRepoMapContext.cache.clear?.()
       getSystemContext.cache.clear?.()
     }

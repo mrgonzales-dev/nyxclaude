@@ -541,7 +541,7 @@ test('Gemini Vertex client propagates HTTP errors', async () => {
     location: 'us-central1',
     model: 'gemini-3.5-flash',
     getAccessToken: async () => 'access-token-123',
-    fetch: (async () => new Response('permission denied', { status: 403 })) as NonNullable<import('@anthropic-ai/sdk').ClientOptions['fetch']>,
+    fetch: (async () => new Response('permission denied', { status: 403 })) as NonNullable<import('src/types/api.js').ClientOptions['fetch']>,
   })
 
   await expect(client.messages.create({

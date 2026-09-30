@@ -90,8 +90,8 @@ export type ProviderPresetDefaults = Omit<ProviderProfileInput, 'provider'> & {
   requiresApiKey: boolean
 }
 
-const PROFILE_ENV_APPLIED_FLAG = 'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED'
-const PROFILE_ENV_APPLIED_ID = 'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID'
+const PROFILE_ENV_APPLIED_FLAG = 'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED'
+const PROFILE_ENV_APPLIED_ID = 'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID'
 
 type ProfileCompatibilityMode =
   | 'anthropic'
@@ -460,7 +460,7 @@ function applySupportedProfileCustomHeaders(
   env: ProfileEnv,
 ): ProfileEnv {
   const customHeaders = getSupportedProfileCustomHeadersEnv(profile)
-  return customHeaders ? { ...env, ANTHROPIC_CUSTOM_HEADERS: customHeaders } : env
+  return customHeaders ? { ...env, NYXCLAUDE_CUSTOM_HEADERS: customHeaders } : env
 }
 
 function buildAnthropicCredentialEnv(
@@ -545,20 +545,20 @@ function hasProviderSelectionFlags(
   processEnv: NodeJS.ProcessEnv = process.env,
 ): boolean {
   return (
-    processEnv.CLAUDE_CODE_USE_OPENAI !== undefined ||
-    processEnv.CLAUDE_CODE_USE_GEMINI !== undefined ||
-    processEnv.CLAUDE_CODE_USE_MISTRAL !== undefined ||
-    processEnv.CLAUDE_CODE_USE_GITHUB !== undefined ||
-    processEnv.CLAUDE_CODE_USE_BEDROCK !== undefined ||
-    processEnv.CLAUDE_CODE_USE_VERTEX !== undefined ||
-    processEnv.CLAUDE_CODE_USE_FOUNDRY !== undefined
+    processEnv.NYXCLAUDE_USE_OPENAI !== undefined ||
+    processEnv.NYXCLAUDE_USE_GEMINI !== undefined ||
+    processEnv.NYXCLAUDE_USE_MISTRAL !== undefined ||
+    processEnv.NYXCLAUDE_USE_GITHUB !== undefined ||
+    processEnv.NYXCLAUDE_USE_BEDROCK !== undefined ||
+    processEnv.NYXCLAUDE_USE_VERTEX !== undefined ||
+    processEnv.NYXCLAUDE_USE_FOUNDRY !== undefined
   )
 }
 
 /**
  * A "complete" explicit provider selection = a USE flag AND at least one
  * concrete config value that tells us WHERE to route (a base URL) or WHAT
- * to run (a model id). A bare `CLAUDE_CODE_USE_OPENAI=1` with nothing else
+ * to run (a model id). A bare `NYXCLAUDE_USE_OPENAI=1` with nothing else
  * is almost always a stale shell export from a previous session, not real
  * intent — and if we respect it, we skip the user's saved active profile
  * and fall back to hardcoded defaults (gpt-4o / api.openai.com), which is
@@ -582,14 +582,14 @@ function hasCompleteProviderSelection(
     return true
   }
   if (!hasProviderSelectionFlags(processEnv)) return false
-  if (processEnv.CLAUDE_CODE_USE_OPENAI !== undefined) {
+  if (processEnv.NYXCLAUDE_USE_OPENAI !== undefined) {
     return (
       trimOrUndefined(processEnv.OPENAI_BASE_URL) !== undefined ||
       trimOrUndefined(processEnv.OPENAI_API_BASE) !== undefined ||
       trimOrUndefined(processEnv.OPENAI_MODEL) !== undefined
     )
   }
-  if (processEnv.CLAUDE_CODE_USE_GEMINI !== undefined) {
+  if (processEnv.NYXCLAUDE_USE_GEMINI !== undefined) {
     return (
       trimOrUndefined(processEnv.GEMINI_BASE_URL) !== undefined ||
       trimOrUndefined(processEnv.GEMINI_MODEL) !== undefined ||
@@ -597,14 +597,14 @@ function hasCompleteProviderSelection(
       trimOrUndefined(processEnv.GOOGLE_API_KEY) !== undefined
     )
   }
-  if (processEnv.CLAUDE_CODE_USE_MISTRAL !== undefined) {
+  if (processEnv.NYXCLAUDE_USE_MISTRAL !== undefined) {
     return (
       trimOrUndefined(processEnv.MISTRAL_BASE_URL) !== undefined ||
       trimOrUndefined(processEnv.MISTRAL_MODEL) !== undefined ||
       trimOrUndefined(processEnv.MISTRAL_API_KEY) !== undefined
     )
   }
-  if (processEnv.CLAUDE_CODE_USE_GITHUB !== undefined) {
+  if (processEnv.NYXCLAUDE_USE_GITHUB !== undefined) {
     return (
       trimOrUndefined(processEnv.GITHUB_ENTERPRISE_URL) !== undefined ||
       trimOrUndefined(processEnv.GITHUB_COPILOT_KEY) !== undefined ||
@@ -629,14 +629,14 @@ function hasConflictingProviderFlagsForProfile(
   }
 
   return (
-    (compatibilityMode !== 'openai' && processEnv.CLAUDE_CODE_USE_OPENAI !== undefined) ||
-    (compatibilityMode !== 'gemini' && processEnv.CLAUDE_CODE_USE_GEMINI !== undefined) ||
-    (compatibilityMode !== 'mistral' && processEnv.CLAUDE_CODE_USE_MISTRAL !== undefined) ||
+    (compatibilityMode !== 'openai' && processEnv.NYXCLAUDE_USE_OPENAI !== undefined) ||
+    (compatibilityMode !== 'gemini' && processEnv.NYXCLAUDE_USE_GEMINI !== undefined) ||
+    (compatibilityMode !== 'mistral' && processEnv.NYXCLAUDE_USE_MISTRAL !== undefined) ||
     (!isGithubCompatibilityMode(compatibilityMode) &&
-      processEnv.CLAUDE_CODE_USE_GITHUB !== undefined) ||
-    (compatibilityMode !== 'bedrock' && processEnv.CLAUDE_CODE_USE_BEDROCK !== undefined) ||
-    (compatibilityMode !== 'vertex' && processEnv.CLAUDE_CODE_USE_VERTEX !== undefined) ||
-    processEnv.CLAUDE_CODE_USE_FOUNDRY !== undefined
+      processEnv.NYXCLAUDE_USE_GITHUB !== undefined) ||
+    (compatibilityMode !== 'bedrock' && processEnv.NYXCLAUDE_USE_BEDROCK !== undefined) ||
+    (compatibilityMode !== 'vertex' && processEnv.NYXCLAUDE_USE_VERTEX !== undefined) ||
+    processEnv.NYXCLAUDE_USE_FOUNDRY !== undefined
   )
 }
 
@@ -681,13 +681,13 @@ function isProcessEnvAlignedWithProfile(
 
   if (compatibilityMode === 'mistral') {
     return (
-      processEnv.CLAUDE_CODE_USE_MISTRAL !== undefined &&
-      processEnv.CLAUDE_CODE_USE_GEMINI === undefined &&
-      processEnv.CLAUDE_CODE_USE_OPENAI === undefined &&
-      processEnv.CLAUDE_CODE_USE_GITHUB === undefined &&
-      processEnv.CLAUDE_CODE_USE_BEDROCK === undefined &&
-      processEnv.CLAUDE_CODE_USE_VERTEX === undefined &&
-      processEnv.CLAUDE_CODE_USE_FOUNDRY === undefined &&
+      processEnv.NYXCLAUDE_USE_MISTRAL !== undefined &&
+      processEnv.NYXCLAUDE_USE_GEMINI === undefined &&
+      processEnv.NYXCLAUDE_USE_OPENAI === undefined &&
+      processEnv.NYXCLAUDE_USE_GITHUB === undefined &&
+      processEnv.NYXCLAUDE_USE_BEDROCK === undefined &&
+      processEnv.NYXCLAUDE_USE_VERTEX === undefined &&
+      processEnv.NYXCLAUDE_USE_FOUNDRY === undefined &&
       sameOptionalEnvValue(processEnv.MISTRAL_BASE_URL, profile.baseUrl) &&
       sameOptionalEnvValue(processEnv.MISTRAL_MODEL, primaryModel) &&
       (!includeApiKey ||
@@ -697,13 +697,13 @@ function isProcessEnvAlignedWithProfile(
 
   if (compatibilityMode === 'gemini') {
     return (
-      processEnv.CLAUDE_CODE_USE_GEMINI !== undefined &&
-      processEnv.CLAUDE_CODE_USE_MISTRAL === undefined &&
-      processEnv.CLAUDE_CODE_USE_OPENAI === undefined &&
-      processEnv.CLAUDE_CODE_USE_GITHUB === undefined &&
-      processEnv.CLAUDE_CODE_USE_BEDROCK === undefined &&
-      processEnv.CLAUDE_CODE_USE_VERTEX === undefined &&
-      processEnv.CLAUDE_CODE_USE_FOUNDRY === undefined &&
+      processEnv.NYXCLAUDE_USE_GEMINI !== undefined &&
+      processEnv.NYXCLAUDE_USE_MISTRAL === undefined &&
+      processEnv.NYXCLAUDE_USE_OPENAI === undefined &&
+      processEnv.NYXCLAUDE_USE_GITHUB === undefined &&
+      processEnv.NYXCLAUDE_USE_BEDROCK === undefined &&
+      processEnv.NYXCLAUDE_USE_VERTEX === undefined &&
+      processEnv.NYXCLAUDE_USE_FOUNDRY === undefined &&
       sameOptionalEnvValue(processEnv.GEMINI_BASE_URL, profile.baseUrl) &&
       sameOptionalEnvValue(processEnv.GEMINI_MODEL, primaryModel) &&
       (!includeApiKey ||
@@ -717,13 +717,13 @@ function isProcessEnvAlignedWithProfile(
         ? deriveGithubEnterpriseUrl(profile.baseUrl)
         : undefined
     return (
-      processEnv.CLAUDE_CODE_USE_GITHUB !== undefined &&
-      processEnv.CLAUDE_CODE_USE_OPENAI === undefined &&
-      processEnv.CLAUDE_CODE_USE_GEMINI === undefined &&
-      processEnv.CLAUDE_CODE_USE_MISTRAL === undefined &&
-      processEnv.CLAUDE_CODE_USE_BEDROCK === undefined &&
-      processEnv.CLAUDE_CODE_USE_VERTEX === undefined &&
-      processEnv.CLAUDE_CODE_USE_FOUNDRY === undefined &&
+      processEnv.NYXCLAUDE_USE_GITHUB !== undefined &&
+      processEnv.NYXCLAUDE_USE_OPENAI === undefined &&
+      processEnv.NYXCLAUDE_USE_GEMINI === undefined &&
+      processEnv.NYXCLAUDE_USE_MISTRAL === undefined &&
+      processEnv.NYXCLAUDE_USE_BEDROCK === undefined &&
+      processEnv.NYXCLAUDE_USE_VERTEX === undefined &&
+      processEnv.NYXCLAUDE_USE_FOUNDRY === undefined &&
       sameOptionalEnvValue(processEnv.OPENAI_BASE_URL, profile.baseUrl) &&
       sameOptionalEnvValue(processEnv.OPENAI_MODEL, primaryModel) &&
       sameOptionalEnvValue(processEnv.GITHUB_ENTERPRISE_URL, expectedGheUrl) &&
@@ -735,13 +735,13 @@ function isProcessEnvAlignedWithProfile(
 
   if (compatibilityMode === 'bedrock') {
     return (
-      processEnv.CLAUDE_CODE_USE_BEDROCK !== undefined &&
-      processEnv.CLAUDE_CODE_USE_OPENAI === undefined &&
-      processEnv.CLAUDE_CODE_USE_GEMINI === undefined &&
-      processEnv.CLAUDE_CODE_USE_MISTRAL === undefined &&
-      processEnv.CLAUDE_CODE_USE_GITHUB === undefined &&
-      processEnv.CLAUDE_CODE_USE_VERTEX === undefined &&
-      processEnv.CLAUDE_CODE_USE_FOUNDRY === undefined &&
+      processEnv.NYXCLAUDE_USE_BEDROCK !== undefined &&
+      processEnv.NYXCLAUDE_USE_OPENAI === undefined &&
+      processEnv.NYXCLAUDE_USE_GEMINI === undefined &&
+      processEnv.NYXCLAUDE_USE_MISTRAL === undefined &&
+      processEnv.NYXCLAUDE_USE_GITHUB === undefined &&
+      processEnv.NYXCLAUDE_USE_VERTEX === undefined &&
+      processEnv.NYXCLAUDE_USE_FOUNDRY === undefined &&
       sameOptionalEnvValue(processEnv.ANTHROPIC_MODEL, primaryModel) &&
       sameOptionalEnvValue(processEnv.ANTHROPIC_BEDROCK_BASE_URL, profile.baseUrl)
     )
@@ -749,13 +749,13 @@ function isProcessEnvAlignedWithProfile(
 
   if (compatibilityMode === 'vertex') {
     return (
-      processEnv.CLAUDE_CODE_USE_VERTEX !== undefined &&
-      processEnv.CLAUDE_CODE_USE_OPENAI === undefined &&
-      processEnv.CLAUDE_CODE_USE_GEMINI === undefined &&
-      processEnv.CLAUDE_CODE_USE_MISTRAL === undefined &&
-      processEnv.CLAUDE_CODE_USE_GITHUB === undefined &&
-      processEnv.CLAUDE_CODE_USE_BEDROCK === undefined &&
-      processEnv.CLAUDE_CODE_USE_FOUNDRY === undefined &&
+      processEnv.NYXCLAUDE_USE_VERTEX !== undefined &&
+      processEnv.NYXCLAUDE_USE_OPENAI === undefined &&
+      processEnv.NYXCLAUDE_USE_GEMINI === undefined &&
+      processEnv.NYXCLAUDE_USE_MISTRAL === undefined &&
+      processEnv.NYXCLAUDE_USE_GITHUB === undefined &&
+      processEnv.NYXCLAUDE_USE_BEDROCK === undefined &&
+      processEnv.NYXCLAUDE_USE_FOUNDRY === undefined &&
       sameOptionalEnvValue(processEnv.ANTHROPIC_MODEL, primaryModel) &&
       sameOptionalEnvValue(processEnv.ANTHROPIC_VERTEX_BASE_URL, profile.baseUrl)
     )
@@ -771,13 +771,13 @@ function isProcessEnvAlignedWithProfile(
     resolveRouteIdFromBaseUrl(profile.baseUrl) === 'aimlapi'
 
   return (
-    processEnv.CLAUDE_CODE_USE_OPENAI !== undefined &&
-    processEnv.CLAUDE_CODE_USE_GEMINI === undefined &&
-    processEnv.CLAUDE_CODE_USE_MISTRAL === undefined &&
-    processEnv.CLAUDE_CODE_USE_GITHUB === undefined &&
-    processEnv.CLAUDE_CODE_USE_BEDROCK === undefined &&
-    processEnv.CLAUDE_CODE_USE_VERTEX === undefined &&
-    processEnv.CLAUDE_CODE_USE_FOUNDRY === undefined &&
+    processEnv.NYXCLAUDE_USE_OPENAI !== undefined &&
+    processEnv.NYXCLAUDE_USE_GEMINI === undefined &&
+    processEnv.NYXCLAUDE_USE_MISTRAL === undefined &&
+    processEnv.NYXCLAUDE_USE_GITHUB === undefined &&
+    processEnv.NYXCLAUDE_USE_BEDROCK === undefined &&
+    processEnv.NYXCLAUDE_USE_VERTEX === undefined &&
+    processEnv.NYXCLAUDE_USE_FOUNDRY === undefined &&
     sameOptionalEnvValue(processEnv.OPENAI_BASE_URL, profile.baseUrl) &&
     sameOptionalEnvValue(processEnv.OPENAI_MODEL, primaryModel) &&
     sameOptionalEnvValue(processEnv.OPENAI_API_FORMAT, profile.apiFormat) &&
@@ -789,7 +789,7 @@ function isProcessEnvAlignedWithProfile(
     sameOptionalEnvValue(processEnv.OPENAI_AUTH_SCHEME, profile.authScheme) &&
     sameOptionalEnvValue(processEnv.OPENAI_AUTH_HEADER_VALUE, profile.authHeaderValue) &&
     sameOptionalEnvValue(
-      processEnv.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS,
+      processEnv.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS,
       expectedContextWindows,
     ) &&
     (!includeApiKey ||
@@ -1052,7 +1052,7 @@ export function applyProviderProfileToProcessEnv(
       }
     }
     if (isAimlapiProfile) {
-      openAIProfileEnv.CLAUDE_CODE_PROVIDER_ROUTE_ID = 'aimlapi'
+      openAIProfileEnv.NYXCLAUDE_PROVIDER_ROUTE_ID = 'aimlapi'
       // The ambient AIMLAPI_API_KEY is the canonical aimlapi.com credential.
       // Only forward it when the profile targets the canonical inference host;
       // a keyless `aimlapi` profile can point at a user-controlled proxy, and
@@ -1074,7 +1074,7 @@ export function applyProviderProfileToProcessEnv(
       openAIProfileEnv.NVIDIA_NIM = '1'
     }
     if (profile.maxContextLength) {
-      openAIProfileEnv.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+      openAIProfileEnv.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
         [primaryModel]: profile.maxContextLength,
       })
     }
@@ -1118,7 +1118,7 @@ export function applyActiveProviderProfileFromConfig(
     // Respect explicit startup provider intent. Auto-heal only when this
     // exact active profile previously applied the current env.
     // NOTE: we gate on hasCompleteProviderSelection (flag + concrete config)
-    // rather than hasProviderSelectionFlags alone. A bare CLAUDE_CODE_USE_*=1
+    // rather than hasProviderSelectionFlags alone. A bare NYXCLAUDE_USE_*=1
     // with no BASE_URL/MODEL is almost always a stale shell export, not
     // intent — respecting it would skip the saved profile and fall through
     // to hardcoded provider defaults, which surfaces as "my saved provider
@@ -1354,7 +1354,7 @@ function buildOpenAICompatibleStartupEnv(
     if (strictEnv) {
       if (isAimlapiProfile) {
         strictEnv.AIMLAPI_API_KEY = activeProfile.apiKey
-        strictEnv.CLAUDE_CODE_PROVIDER_ROUTE_ID = 'aimlapi'
+        strictEnv.NYXCLAUDE_PROVIDER_ROUTE_ID = 'aimlapi'
       }
       // Atlas Cloud is dedicatedCredentialsOnly: its route ignores
       // OPENAI_API_KEY, so a generic OpenAI profile pointed at Atlas must
@@ -1398,7 +1398,7 @@ function buildOpenAICompatibleStartupEnv(
     ...(activeProfile.authHeaderValue ? { OPENAI_AUTH_HEADER_VALUE: activeProfile.authHeaderValue } : {}),
     ...(activeProfile.maxContextLength
       ? {
-          CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS: JSON.stringify({
+          NYXCLAUDE_OPENAI_CONTEXT_WINDOWS: JSON.stringify({
             [getPrimaryModel(effectiveModel)]: activeProfile.maxContextLength,
           }),
         }
@@ -1406,7 +1406,7 @@ function buildOpenAICompatibleStartupEnv(
   }
 
   if (isAimlapiProfile) {
-    env.CLAUDE_CODE_PROVIDER_ROUTE_ID = 'aimlapi'
+    env.NYXCLAUDE_PROVIDER_ROUTE_ID = 'aimlapi'
   }
   if (activeProfile.apiKey) {
     env.OPENAI_API_KEY = activeProfile.apiKey

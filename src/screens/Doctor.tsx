@@ -5,7 +5,7 @@ import React, { Suspense, use, useCallback, useEffect, useMemo, useState } from 
 import { KeybindingWarnings } from 'src/components/KeybindingWarnings.js';
 import { McpParsingWarnings } from 'src/components/mcp/McpParsingWarnings.js';
 import { getModelMaxOutputTokens } from 'src/utils/context.js';
-import { getClaudeConfigHomeDir } from 'src/utils/envUtils.js';
+import { getNyxclaudeConfigHomeDir } from 'src/utils/envUtils.js';
 import type { SettingSource } from 'src/utils/settings/constants.js';
 import { getOriginalCwd } from '../bootstrap/state.js';
 import type { CommandResultDisplay } from '../commands.js';
@@ -150,7 +150,7 @@ export function Doctor(t0: Props) {
       default: TASK_MAX_OUTPUT_DEFAULT,
       upperLimit: TASK_MAX_OUTPUT_UPPER_LIMIT
     }, {
-      name: "CLAUDE_CODE_MAX_OUTPUT_TOKENS",
+      name: "NYXCLAUDE_MAX_OUTPUT_TOKENS",
       ...getModelMaxOutputTokens("claude-opus-4-6")
     }];
     t4 = envVars.map(_temp8).filter(_temp9);
@@ -165,7 +165,7 @@ export function Doctor(t0: Props) {
       { setDiagnostic, setDiagnosticLoadFailed },
     );
     (async () => {
-      const userAgentsDir = join(getClaudeConfigHomeDir(), "agents");
+      const userAgentsDir = join(getNyxclaudeConfigHomeDir(), "agents");
       const projectAgentsDir = join(getOriginalCwd(), ".nyxclaude", "agents");
       const {
         activeAgents,

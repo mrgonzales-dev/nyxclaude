@@ -116,7 +116,7 @@ export function EffortPicker({ onSelect, onCancel }: Props) {
             {supportsEffort && usesOpenAIEffort
               ? `OpenAI/Codex provider (${provider})`
               : supportsEffort
-              ? `Claude model · ${provider} provider`
+              ? `Model · ${provider} provider`
               : `Effort not supported for this model`
           }
         </Text>

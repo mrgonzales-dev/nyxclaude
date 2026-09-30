@@ -4,7 +4,7 @@ import { execa } from 'execa'
 import { mkdir, stat } from 'fs/promises'
 import memoize from 'lodash-es/memoize.js'
 import { join } from 'path'
-import { CLAUDE_AI_PROFILE_SCOPE } from 'src/constants/oauth.js'
+import { REMOTE_PROFILE_SCOPE } from 'src/constants/oauth.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
@@ -27,7 +27,7 @@ type OAuthTokens = { accessToken: string; refreshToken: string; expiresAt: numbe
 type SubscriptionType = string
 const isOAuthTokenExpired = (_tokens: OAuthTokens): boolean => true
 const refreshOAuthToken = async (_tokens: OAuthTokens): Promise<OAuthTokens | null> => null
-const shouldUseClaudeAIAuth = (): boolean => false
+const shouldUseRemoteAuth = (): boolean => false
 const getOauthProfileFromOauthToken = (_tokens: OAuthTokens): null => null
 import {
   getApiKeyFromFileDescriptor,
@@ -53,7 +53,7 @@ import {
 } from './config.js'
 import { logAntError, logForDebugging } from './debug.js'
 import {
-  getClaudeConfigHomeDir,
+  getNyxclaudeConfigHomeDir,
   isBareMode,
   isEnvTruthy,
   isRunningOnHomespace,
@@ -85,7 +85,7 @@ import { clearToolSchemaCache } from './toolSchemaCache.js'
 const DEFAULT_API_KEY_HELPER_TTL = 5 * 60 * 1000
 
 /**
- * CCR and Claude Desktop spawn the CLI with OAuth and should never fall back
+ * CCR and Desktop Config spawn the CLI with OAuth and should never fall back
  * to the user's ~/.nyxclaude/settings.json API-key config (apiKeyHelper,
  * env.ANTHROPIC_API_KEY, env.ANTHROPIC_AUTH_TOKEN). Those settings exist for
  * the user's terminal CLI, not managed sessions. Without this guard, a user
@@ -94,36 +94,36 @@ const DEFAULT_API_KEY_HELPER_TTL = 5 * 60 * 1000
  */
 function isManagedOAuthContext(): boolean {
   return (
-    isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) ||
-    process.env.CLAUDE_CODE_ENTRYPOINT === 'claude-desktop'
+    isEnvTruthy(process.env.NYXCLAUDE_REMOTE) ||
+    process.env.NYXCLAUDE_ENTRYPOINT === 'claude-desktop'
   )
 }
 
 /** Whether we are supporting direct 1P auth. */
 // this code is closely related to getAuthTokenSource
-export function isAnthropicAuthEnabled(): boolean {
+export function isRemoteAuthEnabled(): boolean {
   // --bare: API-key-only, never OAuth.
   if (isBareMode()) return false
 
-  // `claude ssh` remote: ANTHROPIC_UNIX_SOCKET tunnels API calls through a
-  // local auth-injecting proxy. The launcher sets CLAUDE_CODE_OAUTH_TOKEN as a
+  // `nyxclaude ssh` remote: ANTHROPIC_UNIX_SOCKET tunnels API calls through a
+  // local auth-injecting proxy. The launcher sets NYXCLAUDE_OAUTH_TOKEN as a
   // placeholder iff the local side is a subscriber (so the remote includes the
   // oauth-2025 beta header to match what the proxy will inject). The remote's
   // ~/.nyxclaude settings (apiKeyHelper, settings.env.ANTHROPIC_API_KEY) MUST NOT
   // flip this — they'd cause a header mismatch with the proxy and a bogus
   // "invalid x-api-key" from the API. See src/ssh/sshAuthProxy.ts.
   if (process.env.ANTHROPIC_UNIX_SOCKET) {
-    return !!process.env.CLAUDE_CODE_OAUTH_TOKEN
+    return !!process.env.NYXCLAUDE_OAUTH_TOKEN
   }
 
   const is3P =
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_FOUNDRY) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_OPENAI) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_GEMINI) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_MISTRAL) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)
+    isEnvTruthy(process.env.NYXCLAUDE_USE_BEDROCK) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_VERTEX) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_FOUNDRY) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_OPENAI) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_GEMINI) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_MISTRAL) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_GITHUB)
 
   // Check if user has configured an external API key source
   // This allows externally-provided API keys to work (without requiring proxy configuration)
@@ -132,7 +132,7 @@ export function isAnthropicAuthEnabled(): boolean {
   const hasExternalAuthToken =
     process.env.ANTHROPIC_AUTH_TOKEN ||
     apiKeyHelper ||
-    process.env.CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR
+    process.env.NYXCLAUDE_API_KEY_FILE_DESCRIPTOR
 
   // Check if API key is from an external source (not managed by /login).
   // Predicate must not throw: getAnthropicApiKeyWithSource throws under
@@ -154,7 +154,7 @@ export function isAnthropicAuthEnabled(): boolean {
   // 2. User has an external API key (regardless of proxy configuration)
   // 3. User has an external auth token (regardless of proxy configuration)
   // this may cause issues if users have complex proxy / gateway "client-side creds" auth scenarios,
-  // e.g. if they want to set X-Api-Key to a gateway key but use Anthropic OAuth for the Authorization
+  // e.g. if they want to set X-Api-Key to a gateway key but use Remote OAuth for the Authorization
   // if we get reports of that, we should probably add an env var to force OAuth enablement
   const shouldDisableAuth =
     is3P ||
@@ -165,7 +165,7 @@ export function isAnthropicAuthEnabled(): boolean {
 }
 
 /** Where the auth token is being sourced from, if any. */
-// this code is closely related to isAnthropicAuthEnabled
+// this code is closely related to isRemoteAuthEnabled
 export function getAuthTokenSource() {
   // --bare: API-key-only. apiKeyHelper (from --settings) is the only
   // bearer-token-shaped source allowed. OAuth env vars, FD tokens, and
@@ -181,8 +181,8 @@ export function getAuthTokenSource() {
     return { source: 'ANTHROPIC_AUTH_TOKEN' as const, hasToken: true }
   }
 
-  if (process.env.CLAUDE_CODE_OAUTH_TOKEN) {
-    return { source: 'CLAUDE_CODE_OAUTH_TOKEN' as const, hasToken: true }
+  if (process.env.NYXCLAUDE_OAUTH_TOKEN) {
+    return { source: 'NYXCLAUDE_OAUTH_TOKEN' as const, hasToken: true }
   }
 
   // Check for OAuth token from file descriptor (or its CCR disk fallback)
@@ -194,9 +194,9 @@ export function getAuthTokenSource() {
     // doesn't exist. Call sites fall through correctly — the new source is
     // !== 'none' (cli/handlers/auth.ts → oauth_token) and not in the
     // isEnvVarToken set (auth.ts:1844 → generic re-login message).
-    if (process.env.CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR) {
+    if (process.env.NYXCLAUDE_OAUTH_TOKEN_FILE_DESCRIPTOR) {
       return {
-        source: 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR' as const,
+        source: 'NYXCLAUDE_OAUTH_TOKEN_FILE_DESCRIPTOR' as const,
         hasToken: true,
       }
     }
@@ -213,9 +213,9 @@ export function getAuthTokenSource() {
     return { source: 'apiKeyHelper' as const, hasToken: true }
   }
 
-  const oauthTokens = getClaudeAIOAuthTokens()
-  if (shouldUseClaudeAIAuth(oauthTokens?.scopes) && oauthTokens?.accessToken) {
-    return { source: 'claude.ai' as const, hasToken: true }
+  const oauthTokens = getRemoteOAuthTokens()
+  if (shouldUseRemoteAuth() && oauthTokens?.accessToken) {
+    return { source: 'web console' as const, hasToken: true }
   }
 
   return { source: 'none' as const, hasToken: false }
@@ -298,11 +298,11 @@ export function getAnthropicApiKeyWithSource(
     if (
       !isUsing3PServices() &&
       !apiKeyEnv &&
-      !process.env.CLAUDE_CODE_OAUTH_TOKEN &&
-      !process.env.CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR
+      !process.env.NYXCLAUDE_OAUTH_TOKEN &&
+      !process.env.NYXCLAUDE_OAUTH_TOKEN_FILE_DESCRIPTOR
     ) {
       throw new Error(
-        'ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required',
+        'ANTHROPIC_API_KEY or NYXCLAUDE_OAUTH_TOKEN env var is required',
       )
     }
 
@@ -454,11 +454,11 @@ export function isAwsCredentialExportFromProjectSettings(): boolean {
 
 /**
  * Calculate TTL in milliseconds for the API key helper cache
- * Uses CLAUDE_CODE_API_KEY_HELPER_TTL_MS env var if set and valid,
+ * Uses NYXCLAUDE_API_KEY_HELPER_TTL_MS env var if set and valid,
  * otherwise defaults to 5 minutes
  */
 export function calculateApiKeyHelperTTL(): number {
-  const envTtl = process.env.CLAUDE_CODE_API_KEY_HELPER_TTL_MS
+  const envTtl = process.env.NYXCLAUDE_API_KEY_HELPER_TTL_MS
 
   if (envTtl) {
     const parsed = parseInt(envTtl, 10)
@@ -466,7 +466,7 @@ export function calculateApiKeyHelperTTL(): number {
       return parsed
     }
     logForDebugging(
-      `Found CLAUDE_CODE_API_KEY_HELPER_TTL_MS env var, but it was not a valid number. Got ${envTtl}`,
+      `Found NYXCLAUDE_API_KEY_HELPER_TTL_MS env var, but it was not a valid number. Got ${envTtl}`,
       { level: 'error' },
     )
   }
@@ -575,7 +575,7 @@ async function _executeApiKeyHelper(
         `Security: apiKeyHelper executed before workspace trust is confirmed. If you see this message, post in ${MACRO.FEEDBACK_CHANNEL}.`,
       )
       logAntError('apiKeyHelper invoked before trust check', error)
-      logEvent('tengu_apiKeyHelper_missing_trust11', {})
+      logEvent('nyxclaude_apiKeyHelper_missing_trust11', {})
       return null
     }
   }
@@ -650,7 +650,7 @@ async function runAwsAuthRefresh(): Promise<boolean> {
         `Security: awsAuthRefresh executed before workspace trust is confirmed. If you see this message, post in ${MACRO.FEEDBACK_CHANNEL}.`,
       )
       logAntError('awsAuthRefresh invoked before trust check', error)
-      logEvent('tengu_awsAuthRefresh_missing_trust', {})
+      logEvent('nyxclaude_awsAuthRefresh_missing_trust', {})
       return false
     }
   }
@@ -747,7 +747,7 @@ async function getAwsCredsFromCredentialExport(): Promise<{
         `Security: awsCredentialExport executed before workspace trust is confirmed. If you see this message, post in ${MACRO.FEEDBACK_CHANNEL}.`,
       )
       logAntError('awsCredentialExport invoked before trust check', error)
-      logEvent('tengu_awsCredentialExport_missing_trust', {})
+      logEvent('nyxclaude_awsCredentialExport_missing_trust', {})
       return null
     }
   }
@@ -917,7 +917,7 @@ async function runGcpAuthRefresh(): Promise<boolean> {
         `Security: gcpAuthRefresh executed before workspace trust is confirmed. If you see this message, post in ${MACRO.FEEDBACK_CHANNEL}.`,
       )
       logAntError('gcpAuthRefresh invoked before trust check', error)
-      logEvent('tengu_gcpAuthRefresh_missing_trust', {})
+      logEvent('nyxclaude_gcpAuthRefresh_missing_trust', {})
       return false
     }
   }
@@ -1148,19 +1148,19 @@ export async function saveApiKey(apiKey: string): Promise<void> {
         reject: false,
       })
 
-      logEvent('tengu_api_key_saved_to_keychain', {})
+      logEvent('nyxclaude_api_key_saved_to_keychain', {})
       savedToKeychain = true
     } catch (e) {
       logError(e)
-      logEvent('tengu_api_key_keychain_error', {
+      logEvent('nyxclaude_api_key_keychain_error', {
         error: errorMessage(
           e,
         ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
-      logEvent('tengu_api_key_saved_to_config', {})
+      logEvent('nyxclaude_api_key_saved_to_config', {})
     }
   } else {
-    logEvent('tengu_api_key_saved_to_config', {})
+    logEvent('nyxclaude_api_key_saved_to_config', {})
   }
 
   const normalizedKey = normalizeApiKeyForConfig(apiKey)
@@ -1229,12 +1229,12 @@ export function saveOAuthTokensIfNeeded(_tokens: OAuthTokens): {
   return { success: true }
 }
 
-export const getClaudeAIOAuthTokens = memoize((): OAuthTokens | null => null)
-export function clearOAuthTokenCache(): void { getClaudeAIOAuthTokens.cache?.clear?.() }
+export const getRemoteOAuthTokens = memoize((): OAuthTokens | null => null)
+export function clearOAuthTokenCache(): void { getRemoteOAuthTokens.cache?.clear?.() }
 export async function handleOAuth401Error(_err: unknown): Promise<boolean> { return false }
-export async function getClaudeAIOAuthTokensAsync(): Promise<OAuthTokens | null> { return null }
+export async function getRemoteOAuthTokensAsync(): Promise<OAuthTokens | null> { return null }
 export async function checkAndRefreshOAuthTokenIfNeeded(_opts?: { silent?: boolean }): Promise<void> {}
-export function isClaudeAISubscriber(): boolean { return false }
+export function isSubscriber(): boolean { return false }
 export function hasProfileScope(): boolean { return false }
 export function is1PApiCustomer(): boolean { return false }
 export function getOauthAccountInfo(): AccountInfo | undefined { return undefined }
@@ -1249,13 +1249,13 @@ export function isProSubscriber(): boolean { return false }
 export function getRateLimitTier(): string | null { return null }
 export function getSubscriptionName(): string { return '' }
 export function isUsing3PServices(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_FOUNDRY) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_OPENAI) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_GEMINI) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_MISTRAL) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)
+  return isEnvTruthy(process.env.NYXCLAUDE_USE_BEDROCK) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_VERTEX) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_FOUNDRY) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_OPENAI) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_GEMINI) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_MISTRAL) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_GITHUB)
 }
 export function isOtelHeadersHelperFromProjectOrLocalSettings(): boolean { return false }
 export function getOtelHeadersFromHelper(): Record<string, string> { return {} }

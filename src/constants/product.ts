@@ -4,9 +4,9 @@ export const PRODUCT_URL = 'https://github.com/mrg/nyxclaude'
 // Remote session URLs — neutralized. Bridge code is deleted; remote sessions
 // are not supported. These constants remain for type compat with downstream
 // consumers but resolve to inert values.
-export const CLAUDE_AI_BASE_URL = ''
-export const CLAUDE_AI_STAGING_BASE_URL = ''
-export const CLAUDE_AI_LOCAL_BASE_URL = ''
+export const REMOTE_BASE_URL = ''
+export const REMOTE_STAGING_BASE_URL = ''
+export const REMOTE_LOCAL_BASE_URL = ''
 
 export function isRemoteSessionStaging(
   _sessionId?: string,
@@ -22,7 +22,7 @@ export function isRemoteSessionLocal(
   return false
 }
 
-export function getClaudeAiBaseUrl(
+export function getRemoteBaseUrl(
   _sessionId?: string,
   _ingressUrl?: string,
 ): string {

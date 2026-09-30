@@ -8,8 +8,8 @@ import {
 } from './providerConfig.js'
 
 const ENV_KEYS = [
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_OPENAI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_OPENAI',
   'OPENAI_MODEL',
   'OPENAI_BASE_URL',
   'OPENAI_API_BASE',
@@ -56,29 +56,29 @@ test.each([
   expect(normalizeGithubModelsApiModel(input)).toBe(expected)
 })
 
-test('resolveProviderRequest applies GitHub normalization when CLAUDE_CODE_USE_GITHUB=1', () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+test('resolveProviderRequest applies GitHub normalization when NYXCLAUDE_USE_GITHUB=1', () => {
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   const r = resolveProviderRequest({ model: 'github:gpt-4o' })
   expect(r.resolvedModel).toBe('gpt-4o')
   expect(r.transport).toBe('chat_completions')
 })
 
 test('resolveProviderRequest routes GitHub GPT-5 codex models to responses transport', () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   const r = resolveProviderRequest({ model: 'gpt-5.3-codex' })
   expect(r.resolvedModel).toBe('gpt-5.3-codex')
   expect(r.transport).toBe('codex_responses')
 })
 
 test('resolveProviderRequest keeps gpt-5-mini on chat_completions for GitHub', () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   const r = resolveProviderRequest({ model: 'gpt-5-mini' })
   expect(r.resolvedModel).toBe('gpt-5-mini')
   expect(r.transport).toBe('chat_completions')
 })
 
 test('resolveProviderRequest routes GitHub Enterprise to Enterprise Copilot API', () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.GITHUB_ENTERPRISE_URL = 'https://github.mycompany.com/'
 
   const r = resolveProviderRequest({ model: 'github:copilot:gpt-5.3-codex' })
@@ -92,7 +92,7 @@ test('resolveProviderRequest uses injected Enterprise env for endpoint detection
   const r = resolveProviderRequest({
     model: 'github:copilot:gpt-5.3-codex',
     processEnv: {
-      CLAUDE_CODE_USE_GITHUB: '1',
+      NYXCLAUDE_USE_GITHUB: '1',
       GITHUB_ENTERPRISE_URL: 'https://github.mycompany.com',
       OPENAI_BASE_URL: 'https://github.mycompany.com/api/copilot',
     },
@@ -107,7 +107,7 @@ test('resolveProviderRequest expands Enterprise origin base URL to Copilot API p
   const r = resolveProviderRequest({
     model: 'github:copilot:gpt-5.3-codex',
     processEnv: {
-      CLAUDE_CODE_USE_GITHUB: '1',
+      NYXCLAUDE_USE_GITHUB: '1',
       GITHUB_ENTERPRISE_URL: 'https://github.mycompany.com',
       OPENAI_BASE_URL: 'https://github.mycompany.com',
     },
@@ -122,7 +122,7 @@ test('resolveProviderRequest expands GHE base URL without Enterprise env', () =>
   const r = resolveProviderRequest({
     model: 'github:copilot:gpt-5.3-codex',
     processEnv: {
-      CLAUDE_CODE_USE_GITHUB: '1',
+      NYXCLAUDE_USE_GITHUB: '1',
       OPENAI_BASE_URL: 'https://octo.ghe.com',
     },
   })
@@ -133,7 +133,7 @@ test('resolveProviderRequest expands GHE base URL without Enterprise env', () =>
 })
 
 test('resolveProviderRequest leaves model unchanged without GitHub flag', () => {
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_GITHUB
   const r = resolveProviderRequest({ model: 'github:gpt-4o' })
   expect(r.resolvedModel).toBe('github:gpt-4o')
 })

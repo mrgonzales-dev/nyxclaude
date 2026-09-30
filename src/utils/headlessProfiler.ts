@@ -9,7 +9,7 @@
  * Uses Node.js built-in performance hooks API for standard timing measurement.
  * Sampled logging: 100% of ant users, 5% of external users.
  *
- * Set CLAUDE_CODE_PROFILE_STARTUP=1 for detailed logging output.
+ * Set NYXCLAUDE_PROFILE_STARTUP=1 for detailed logging output.
  */
 
 import { getIsNonInteractiveSession } from '../bootstrap/state.js'
@@ -30,7 +30,7 @@ import { jsonStringify } from './slowOperations.js'
 
 // Detailed profiling mode - same env var as startupProfiler
 // eslint-disable-next-line custom-rules/no-process-env-top-level
-const DETAILED_PROFILING = isEnvTruthy(process.env.CLAUDE_CODE_PROFILE_STARTUP)
+const DETAILED_PROFILING = isEnvTruthy(process.env.NYXCLAUDE_PROFILE_STARTUP)
 
 // Sampling for Statsig logging: 100% ant, 5% external
 // Decision made once at module load - non-sampled users pay no profiling cost
@@ -155,19 +155,19 @@ export function logHeadlessProfilerTurn(): void {
     metadata.checkpoint_count = marks.length
 
     // Add entrypoint for segmentation (sdk-ts, sdk-py, sdk-cli, or undefined)
-    if (process.env.CLAUDE_CODE_ENTRYPOINT) {
-      metadata.entrypoint = process.env.CLAUDE_CODE_ENTRYPOINT
+    if (process.env.NYXCLAUDE_ENTRYPOINT) {
+      metadata.entrypoint = process.env.NYXCLAUDE_ENTRYPOINT
     }
 
     // Log to Statsig if sampled
     if (STATSIG_LOGGING_SAMPLED) {
       logEvent(
-        'tengu_headless_latency',
+        'nyxclaude_headless_latency',
         metadata as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       )
     }
 
-    // Log detailed output if CLAUDE_CODE_PROFILE_STARTUP=1
+    // Log detailed output if NYXCLAUDE_PROFILE_STARTUP=1
     if (DETAILED_PROFILING) {
       logForDebugging(
         `[headlessProfiler] Turn ${currentTurnNumber} metrics: ${jsonStringify(metadata)}`,

@@ -1,5 +1,5 @@
 /**
- * Inert stub for periodic background-session task summaries (`claude ps`).
+ * Inert stub for periodic background-session task summaries (`nyxclaude ps`).
  *
  * The real implementation is not part of this source tree; the bundler
  * noop-stubs this specifier in builds where `feature('BG_SESSIONS')` is
@@ -20,7 +20,7 @@ export function shouldGenerateTaskSummary(): boolean {
 }
 
 /**
- * Fire-and-forget generation of a task summary for `claude ps`.
+ * Fire-and-forget generation of a task summary for `nyxclaude ps`.
  * Inert: no-op.
  */
 export function maybeGenerateTaskSummary(_params: {

@@ -8,10 +8,10 @@ import { isBilledAsExtraUsage } from './extraUsage.js'
 
 beforeEach(async () => {
   await acquireSharedMutationLock('utils/extraUsage.test.ts')
-  delete process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+  delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
   mock.module('./auth.js', () => ({
     ...realAuth,
-    isClaudeAISubscriber: () => true,
+    isSubscriber: () => true,
   }))
 })
 

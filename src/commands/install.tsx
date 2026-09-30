@@ -106,7 +106,7 @@ export function Install({
         // install the user is running, so just confirm the current install.
         if (!hasNativeDistribution()) {
           logForDebugging('Install: build has no native distribution; reporting npm installation instead');
-          logEvent('tengu_claude_install_command', {
+          logEvent('nyxclaude_install_command', {
             has_version: 1,
             forced: force ? 1 : 0
           });
@@ -186,7 +186,7 @@ export function Install({
         }
 
         // Log success event
-        logEvent('tengu_claude_install_command', {
+        logEvent('nyxclaude_install_command', {
           has_version: result.latestVersion ? 1 : 0,
           forced: force ? 1 : 0
         });

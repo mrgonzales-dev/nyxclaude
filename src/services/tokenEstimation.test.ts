@@ -1,4 +1,4 @@
-import type { Anthropic } from '@anthropic-ai/sdk'
+import type { Anthropic } from 'src/types/api.js'
 import { expect, mock, test } from 'bun:test'
 import { jsonStringify } from '../utils/slowOperations.js'
 import { __test, roughTokenCountEstimation } from './tokenEstimation.js'

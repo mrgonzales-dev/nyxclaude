@@ -449,7 +449,7 @@ export const NodeFsOperations: FsOperations = {
       // FILE_ATTRIBUTE_READONLY bit set (Group Policy, OneDrive, desktop.ini).
       // Bun's directoryExistsAt misclassifies DIRECTORY+READONLY as not-a-dir
       // (bun-internal src/sys.zig existsAtType). The dir exists; ignore.
-      // https://github.com/anthropics/claude-code/issues/30924
+      // https://github.com/nyxclaude/nyxclaude/issues/30924
       if (code === 'EEXIST') return
       // Permission denied on recursive:true — the parent dir may exist but
       // refuse writes (e.g. /tmp in container environments with restricted
@@ -601,7 +601,7 @@ export const NodeFsOperations: FsOperations = {
       // FILE_ATTRIBUTE_READONLY bit set (Group Policy, OneDrive, desktop.ini).
       // Bun's directoryExistsAt misclassifies DIRECTORY+READONLY as not-a-dir
       // (bun-internal src/sys.zig existsAtType). The dir exists; ignore.
-      // https://github.com/anthropics/claude-code/issues/30924
+      // https://github.com/nyxclaude/nyxclaude/issues/30924
       if (code === 'EEXIST') return
       // Permission denied on recursive:true — the parent dir may exist but
       // refuse writes (e.g. /tmp in container environments with restricted

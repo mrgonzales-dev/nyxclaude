@@ -7,7 +7,7 @@ import {
 import { getIsNonInteractiveSession, getSdkBetas } from '../bootstrap/state.js'
 import {
   BEDROCK_EXTRA_PARAMS_HEADERS,
-  CLAUDE_CODE_20250219_BETA_HEADER,
+  NYXCLAUDE_20250219_BETA_HEADER,
   CLI_INTERNAL_BETA_HEADER,
   CONTEXT_1M_BETA_HEADER,
   CONTEXT_MANAGEMENT_BETA_HEADER,
@@ -22,7 +22,7 @@ import {
   WEB_SEARCH_BETA_HEADER,
 } from '../constants/betas.js'
 import { OAUTH_BETA_HEADER } from '../constants/oauth.js'
-import { isClaudeAISubscriber } from './auth.js'
+import { isSubscriber } from './auth.js'
 import { has1mContext } from './context.js'
 import { isEnvDefinedFalsy, isEnvTruthy } from './envUtils.js'
 import { getCanonicalName } from './model/model.js'
@@ -72,7 +72,7 @@ export function filterAllowedSdkBetas(
     return undefined
   }
 
-  if (isClaudeAISubscriber()) {
+  if (isSubscriber()) {
     // biome-ignore lint/suspicious/noConsole: intentional warning
     console.warn(
       'Warning: Custom betas are only available for API key users. Ignoring provided betas.',
@@ -178,13 +178,13 @@ export function modelSupportsAutoMode(model: string): boolean {
     ) {
       return false
     }
-    // GrowthBook override: tengu_auto_mode_config.allowModels force-enables
+    // GrowthBook override: nyxclaude_auto_mode_config.allowModels force-enables
     // auto mode for listed models, bypassing the denylist/allowlist below.
     // Exact model IDs (e.g. "claude-strudel-v6-p") match only that model;
     // canonical names (e.g. "claude-strudel") match the whole family.
     const config = getFeatureValue_CACHED_MAY_BE_STALE<{
       allowModels?: string[]
-    }>('tengu_auto_mode_config', {})
+    }>('nyxclaude_auto_mode_config', {})
     const rawLower = model.toLowerCase()
     if (
       config?.allowModels?.some(
@@ -208,7 +208,7 @@ export function modelSupportsAutoMode(model: string): boolean {
 
 /**
  * Get the correct tool search beta header for the current API provider.
- * - Claude API / Foundry: advanced-tool-use-2025-11-20
+ * - API / Foundry: advanced-tool-use-2025-11-20
  * - Vertex AI / Bedrock: tool-search-tool-2025-10-19
  */
 export function getToolSearchBetaHeader(): string {
@@ -228,7 +228,7 @@ export function shouldIncludeFirstPartyOnlyBetas(): boolean {
   return (
     ((getAPIProvider() === 'firstParty' && isFirstPartyAnthropicBaseUrl()) ||
       getAPIProvider() === 'foundry') &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS)
+    !isEnvTruthy(process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS)
   )
 }
 
@@ -241,7 +241,7 @@ export function shouldUseGlobalCacheScope(): boolean {
   return (
     getAPIProvider() === 'firstParty' &&
     isFirstPartyAnthropicBaseUrl() &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS)
+    !isEnvTruthy(process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS)
   )
 }
 
@@ -251,7 +251,7 @@ function getBetaCacheKey(model: string): string {
     getAPIProvider(),
     process.env.ANTHROPIC_BASE_URL ?? '',
     process.env.USER_TYPE ?? '',
-    process.env.CLAUDE_CODE_USE_GITHUB ?? '',
+    process.env.NYXCLAUDE_USE_GITHUB ?? '',
   ].join('\0')
 }
 
@@ -262,17 +262,17 @@ export const getAllModelBetas = memoize((model: string): string[] => {
   const includeFirstPartyOnlyBetas = shouldIncludeFirstPartyOnlyBetas()
 
   if (!isHaiku) {
-    betaHeaders.push(CLAUDE_CODE_20250219_BETA_HEADER)
+    betaHeaders.push(NYXCLAUDE_20250219_BETA_HEADER)
     if (
       process.env.USER_TYPE === 'ant' &&
-      process.env.CLAUDE_CODE_ENTRYPOINT === 'cli'
+      process.env.NYXCLAUDE_ENTRYPOINT === 'cli'
     ) {
       if (CLI_INTERNAL_BETA_HEADER) {
         betaHeaders.push(CLI_INTERNAL_BETA_HEADER)
       }
     }
   }
-  if (isClaudeAISubscriber()) {
+  if (isSubscriber()) {
     betaHeaders.push(OAUTH_BETA_HEADER)
   }
   if (has1mContext(model)) {
@@ -304,7 +304,7 @@ export const getAllModelBetas = memoize((model: string): string[] => {
   // API buffers assistant text between tool calls, summarizes it, and returns
   // the summary with a signature so the original can be restored on subsequent
   // turns — same mechanism as thinking blocks. Ant-only while we measure
-  // TTFT/TTLT/capacity; betas already flow to tengu_api_success for splitting.
+  // TTFT/TTLT/capacity; betas already flow to nyxclaude_api_success for splitting.
   // Backend independently requires Capability.ANTHROPIC_INTERNAL_RESEARCH.
   //
   // USE_CONNECTOR_TEXT_SUMMARIZATION is tri-state: =1 forces on (opt-in even
@@ -316,7 +316,7 @@ export const getAllModelBetas = memoize((model: string): string[] => {
     includeFirstPartyOnlyBetas &&
     !isEnvDefinedFalsy(process.env.USE_CONNECTOR_TEXT_SUMMARIZATION) &&
     (isEnvTruthy(process.env.USE_CONNECTOR_TEXT_SUMMARIZATION) ||
-      getFeatureValue_CACHED_MAY_BE_STALE('tengu_slate_prism', false))
+      getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_slate_prism', false))
   ) {
     betaHeaders.push(SUMMARIZE_CONNECTOR_TEXT_BETA_HEADER)
   }
@@ -335,18 +335,18 @@ export const getAllModelBetas = memoize((model: string): string[] => {
     betaHeaders.push(CONTEXT_MANAGEMENT_BETA_HEADER)
   }
   // Add strict tool use beta if experiment is enabled.
-  // Gate on includeFirstPartyOnlyBetas: CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS
+  // Gate on includeFirstPartyOnlyBetas: NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS
   // already strips schema.strict from tool bodies at api.ts's choke point, but
   // this header was escaping that kill switch. Proxy gateways that look like
   // firstParty but forward to Vertex reject this header with 400.
   // github.com/deshaw/anthropic-issues/issues/5
   const strictToolsEnabled =
-    checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_tool_pear')
+    checkStatsigFeatureGate_CACHED_MAY_BE_STALE('nyxclaude_tool_pear')
   // 3P default: false. API rejects strict + token-efficient-tools together
   // (tool_use.py:139), so these are mutually exclusive — strict wins.
   const tokenEfficientToolsEnabled =
     !strictToolsEnabled &&
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_amber_json_tools', false)
+    getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_amber_json_tools', false)
   if (
     includeFirstPartyOnlyBetas &&
     modelSupportsStructuredOutputs(model) &&
@@ -450,12 +450,12 @@ export function getMergedBetas(
   // For non-Haiku models these are already in baseBetas; for Haiku they're
   // excluded by getAllModelBetas() since non-agentic Haiku calls don't need them.
   if (options?.isAgenticQuery) {
-    if (!baseBetas.includes(CLAUDE_CODE_20250219_BETA_HEADER)) {
-      baseBetas.push(CLAUDE_CODE_20250219_BETA_HEADER)
+    if (!baseBetas.includes(NYXCLAUDE_20250219_BETA_HEADER)) {
+      baseBetas.push(NYXCLAUDE_20250219_BETA_HEADER)
     }
     if (
       process.env.USER_TYPE === 'ant' &&
-      process.env.CLAUDE_CODE_ENTRYPOINT === 'cli' &&
+      process.env.NYXCLAUDE_ENTRYPOINT === 'cli' &&
       CLI_INTERNAL_BETA_HEADER &&
       !baseBetas.includes(CLI_INTERNAL_BETA_HEADER)
     ) {

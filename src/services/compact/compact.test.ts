@@ -68,7 +68,7 @@ const _realTokenEstimationModule = await import(
   `../tokenEstimation.js?real=${Date.now()}-${Math.random()}`
 )
 const _realClaudeApiModule = await import(
-  `../api/claude.js?real=${Date.now()}-${Math.random()}`
+  `../api/modelApi.js?real=${Date.now()}-${Math.random()}`
 )
 const _realGrowthBookModule = await import(
   `../analytics/growthbook.js?real=${Date.now()}-${Math.random()}`
@@ -90,7 +90,7 @@ const compactTestTaskOutputPath = join(
 const COMPACT_STUB_MODULES = [
   '../analytics/growthbook.js',
   '../analytics/index.js',
-  '../api/claude.js',
+  '../api/modelApi.js',
   '../api/errors.js',
   '../api/promptCacheBreakDetection.js',
   '../api/withRetry.js',
@@ -275,15 +275,15 @@ function cacheSafeParams(messages: Message[]) {
 // before this one in the smoke suite). Each test starts with a clean slate and
 // sets only the vars it explicitly needs.
 const PROVIDER_ENV_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
   'MINIMAX_API_KEY',
   'XAI_API_KEY',
   'VENICE_API_KEY',
@@ -302,7 +302,7 @@ const PROVIDER_ENV_KEYS = [
   'ANTHROPIC_BASE_URL',
   'ANTHROPIC_MODEL',
   'USER_TYPE',
-  'CLAUDE_CODE_ENTRYPOINT',
+  'NYXCLAUDE_ENTRYPOINT',
 ] as const
 
 function clearProviderEnv(): void {
@@ -324,7 +324,7 @@ function clearProviderEnv(): void {
  *
  * **Provider gate control via environment variables:**
  * - The `isAnthropicProvider()` gate is tested by setting provider env vars
- *   (e.g. CLAUDE_CODE_USE_OPENAI=1) instead of mocking betas.ts. This avoids
+ *   (e.g. NYXCLAUDE_USE_OPENAI=1) instead of mocking betas.ts. This avoids
  *   mock.module() leaks that cause CI failures in other test files.
  *
  * **Defensive stubs** (prevent transitive import/side-effect failures):
@@ -335,7 +335,7 @@ function clearProviderEnv(): void {
 export type CompactMockOptions = {
   /** Mock for runForkedAgent(). ESSENTIAL — spy asserted on by both tests. */
   runForkedAgent?: ReturnType<typeof mock>
-  /** GrowthBook default for tengu_compact_cache_prefix. */
+  /** GrowthBook default for nyxclaude_compact_cache_prefix. */
   growthBookDefault?: boolean
   /** Mock for executePreCompactHooks. */
   executePreCompactHooks?: ReturnType<typeof mock>
@@ -362,7 +362,7 @@ function registerCommonCompactStubs(options: CompactMockOptions = {}) {
 
   // --- Provider gate control ---
   // The isAnthropicProvider() gate is exercised via environment variables
-  // (e.g. CLAUDE_CODE_USE_OPENAI=1) instead of mock.module() on betas.ts.
+  // (e.g. NYXCLAUDE_USE_OPENAI=1) instead of mock.module() on betas.ts.
   // This avoids mock.module() leaks that cause CI failures in other test
   // files (betas.test.ts, autoCompact.test.ts) that import the real module.
   // The beforeEach hook already calls clearProviderEnv(), so each test
@@ -448,7 +448,7 @@ function registerCommonCompactStubs(options: CompactMockOptions = {}) {
   }))
 
   // --- API / streaming (DEFENSIVE) ---
-  mock.module('../api/claude.js', () => ({
+  mock.module('../api/modelApi.js', () => ({
     queryModelWithStreaming:
       options.queryModelWithStreaming ??
       mock(async function* () {
@@ -632,7 +632,7 @@ function registerCommonCompactStubs(options: CompactMockOptions = {}) {
 
   // --- Auth (DEFENSIVE) ---
   mock.module('../../utils/auth.js', () => ({
-    isClaudeAISubscriber: mock(() => false),
+    isSubscriber: mock(() => false),
   }))
 
   // --- Model support overrides (DEFENSIVE) ---
@@ -660,7 +660,7 @@ function registerCommonCompactStubs(options: CompactMockOptions = {}) {
  *
  * **Provider gate control via environment variables:**
  * - The `isAnthropicProvider()` gate is exercised by setting provider env vars
- *   (e.g. CLAUDE_CODE_USE_OPENAI=1) in the test body, rather than via mock
+ *   (e.g. NYXCLAUDE_USE_OPENAI=1) in the test body, rather than via mock
  *   options. The beforeEach hook calls clearProviderEnv() so each test starts
  *   with a clean provider state and the real betas.ts / providers.ts read
  *   live env vars.
@@ -747,7 +747,7 @@ async function restoreCompactTestMocks() {
   // These compact-only stubs affect the standalone microcompact and
   // auto-compact tests that run later in the serialized smoke suite.
   mock.module('../tokenEstimation.js', () => ({ ..._realTokenEstimationModule }))
-  mock.module('../api/claude.js', () => ({ ..._realClaudeApiModule }))
+  mock.module('../api/modelApi.js', () => ({ ..._realClaudeApiModule }))
   mock.module('../analytics/growthbook.js', () => ({ ..._realGrowthBookModule }))
   mock.module('../../utils/context.js', () => ({ ..._realContextModule }))
   mock.module('../../utils/errors.js', () => ({ ..._realErrorsModule }))
@@ -766,7 +766,7 @@ async function restoreCompactTestMocks() {
     import('../../utils/errors.js'),
     import('../../utils/tokens.js'),
     import('../tokenEstimation.js'),
-    import('../api/claude.js'),
+    import('../api/modelApi.js'),
     import('../analytics/growthbook.js'),
   ])
   expect(restoredContext.getContextWindowForModel).toBe(
@@ -818,7 +818,7 @@ describe('compactConversation provider gate', () => {
   test('skips forked-agent cache-sharing for non-Anthropic providers', async () => {
     // Simulate a non-Anthropic provider (e.g. OpenAI) via env vars.
     // The real isAnthropicProvider() reads from process.env and returns false.
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_API_KEY = 'test-openai-key'
     const { compactConversation, runForkedAgent } = await importCompact({})
 
@@ -846,12 +846,12 @@ describe('compactConversation provider gate', () => {
   })
 
   test('uses forked-agent cache-sharing for GitHub Native Anthropic mode', async () => {
-    // CLAUDE_CODE_USE_GITHUB=1 with a Claude model resolves to the "github"
+    // NYXCLAUDE_USE_GITHUB=1 with a Model resolves to the "github"
     // provider, so isAnthropicProvider() is false — but it routes through the
     // native Anthropic client where prompt caching works, and the beta gate
     // already treats it as Anthropic-capable. Compaction must do the same and
     // keep cache-sharing on, instead of taking the cold-cache path.
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     const { compactConversation, runForkedAgent } = await importCompact({})
 
     const messages = [userMessage('Hello'), assistantMessage('Hi there!')]

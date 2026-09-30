@@ -46,7 +46,6 @@ type Props = {
   mainThreadAgentDefinition?: AgentDefinition;
   baseMainLoopModel?: ModelSetting;
   hasExplicitModelOverride?: boolean;
-  autoConnectIdeFlag?: boolean;
   strictMcpConfig?: boolean;
   systemPrompt?: string;
   appendSystemPrompt?: string;
@@ -69,7 +68,6 @@ export function ResumeConversation({
   mainThreadAgentDefinition,
   baseMainLoopModel,
   hasExplicitModelOverride,
-  autoConnectIdeFlag,
   strictMcpConfig = false,
   systemPrompt,
   appendSystemPrompt,
@@ -260,7 +258,7 @@ export function ResumeConversation({
         (require('../services/contextCollapse/persist.js') as typeof import('../services/contextCollapse/persist.js')).restoreFromEntries(result_3.contextCollapseCommits ?? [], result_3.contextCollapseSnapshot);
         /* eslint-enable @typescript-eslint/no-require-imports */
       }
-      logEvent('tengu_session_resumed', {
+      logEvent('nyxclaude_session_resumed', {
         entrypoint: 'picker' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         success: true,
         resume_duration_ms: Math.round(performance.now() - resumeStart)
@@ -275,7 +273,7 @@ export function ResumeConversation({
         mainThreadAgentDefinition: resolvedAgentDef
       });
     } catch (e) {
-      logEvent('tengu_session_resumed', {
+      logEvent('nyxclaude_session_resumed', {
         entrypoint: 'picker' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         success: false
       });
@@ -288,7 +286,7 @@ export function ResumeConversation({
     return <CrossProjectMessage command={crossProjectCommand} />;
   }
   if (resumeData) {
-    return <REPL debug={debug} commands={commands} initialTools={initialTools} initialMessages={resumeData.messages} initialFileHistorySnapshots={resumeData.fileHistorySnapshots} initialContentReplacements={resumeData.contentReplacements} initialAgentName={resumeData.agentName} initialAgentColor={resumeData.agentColor} mcpClients={mcpClients} dynamicMcpConfig={dynamicMcpConfig} strictMcpConfig={strictMcpConfig} systemPrompt={systemPrompt} appendSystemPrompt={appendSystemPrompt} mainThreadAgentDefinition={resumeData.mainThreadAgentDefinition} baseMainLoopModel={baseMainLoopModel} hasExplicitModelOverride={hasExplicitModelOverride} autoConnectIdeFlag={autoConnectIdeFlag} disableSlashCommands={disableSlashCommands} thinkingConfig={thinkingConfig} fallbackModel={fallbackModel} maxTurns={maxTurns} onTurnComplete={onTurnComplete} />;
+    return <REPL debug={debug} commands={commands} initialTools={initialTools} initialMessages={resumeData.messages} initialFileHistorySnapshots={resumeData.fileHistorySnapshots} initialContentReplacements={resumeData.contentReplacements} initialAgentName={resumeData.agentName} initialAgentColor={resumeData.agentColor} mcpClients={mcpClients} dynamicMcpConfig={dynamicMcpConfig} strictMcpConfig={strictMcpConfig} systemPrompt={systemPrompt} appendSystemPrompt={appendSystemPrompt} mainThreadAgentDefinition={resumeData.mainThreadAgentDefinition} baseMainLoopModel={baseMainLoopModel} hasExplicitModelOverride={hasExplicitModelOverride} disableSlashCommands={disableSlashCommands} thinkingConfig={thinkingConfig} fallbackModel={fallbackModel} maxTurns={maxTurns} onTurnComplete={onTurnComplete} />;
   }
   if (loading) {
     return <Box>

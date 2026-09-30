@@ -13,7 +13,7 @@ describe('/auto-fix command prompt', () => {
 
     expect(text).toContain('.nyxclaude/settings.json')
     expect(text).toContain('.nyxclaude/settings.local.json')
-    expect(text).not.toContain('.claude/settings.json')
-    expect(text).not.toContain('.claude/settings.local.json')
+    expect(text).not.toContain('.nyxclaude/settings.json')
+    expect(text).not.toContain('.nyxclaude/settings.local.json')
   })
 })

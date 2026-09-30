@@ -18,9 +18,9 @@ export function enableUserAndProjectSettingSources(): SettingSourceState {
   const originalSources = getAllowedSettingSources()
   const originalAdditionalDirectories = getAdditionalDirectoriesForAgentsMd()
   const originalArgv = [...process.argv]
-  const originalClaudeCodeSimple = process.env.CLAUDE_CODE_SIMPLE
+  const originalNyxclaudeSimple = process.env.NYXCLAUDE_SIMPLE
   process.argv = process.argv.filter(arg => arg !== '--bare')
-  delete process.env.CLAUDE_CODE_SIMPLE
+  delete process.env.NYXCLAUDE_SIMPLE
   setAdditionalDirectoriesForAgentsMd([])
   setAllowedSettingSources([
     'userSettings',
@@ -33,7 +33,7 @@ export function enableUserAndProjectSettingSources(): SettingSourceState {
   return {
     additionalDirectories: originalAdditionalDirectories,
     argv: originalArgv,
-    claudeCodeSimple: originalClaudeCodeSimple,
+    claudeCodeSimple: originalNyxclaudeSimple,
     sources: originalSources,
   }
 }
@@ -41,9 +41,9 @@ export function enableUserAndProjectSettingSources(): SettingSourceState {
 export function restoreSettingState(original: SettingSourceState): void {
   process.argv = original.argv
   if (original.claudeCodeSimple === undefined) {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
   } else {
-    process.env.CLAUDE_CODE_SIMPLE = original.claudeCodeSimple
+    process.env.NYXCLAUDE_SIMPLE = original.claudeCodeSimple
   }
   setAdditionalDirectoriesForAgentsMd(original.additionalDirectories)
   setAllowedSettingSources(original.sources)

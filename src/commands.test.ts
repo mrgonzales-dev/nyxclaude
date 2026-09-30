@@ -778,11 +778,11 @@ describe('bundled skill localization', () => {
     )
     const expectedDebugEnglish =
       process.env.USER_TYPE === 'ant'
-        ? 'Debug your current Claude Code session by reading the session debug log. Includes all event logging'
+        ? 'Debug your current Nyxclaude session by reading the session debug log. Includes all event logging'
         : 'Enable debug logging for this session and help diagnose issues'
     const expectedDebugVietnamese =
       process.env.USER_TYPE === 'ant'
-        ? 'Debug phiên Claude Code hiện tại bằng cách đọc debug log của phiên. Bao gồm toàn bộ event logging'
+        ? 'Debug phiên Nyxclaude hiện tại bằng cách đọc debug log của phiên. Bao gồm toàn bộ event logging'
         : 'Bật debug logging cho phiên này và hỗ trợ chẩn đoán sự cố'
 
     expect(batch).toBeDefined()
@@ -809,7 +809,7 @@ describe('bundled skill localization', () => {
       'Review changed code for reuse, quality, and efficiency, then fix any issues found.',
     )
     expect(updateConfig!.description).toStartWith(
-      'Use this skill to configure the Claude Code harness via settings.json.',
+      'Use this skill to configure the Nyxclaude harness via settings.json.',
     )
 
     useLanguage('vietnamese')
@@ -827,7 +827,7 @@ describe('bundled skill localization', () => {
       'Đánh giá code đã thay đổi về mặt tái sử dụng, chất lượng và hiệu suất, sau đó sửa các vấn đề tìm được.',
     )
     expect(updateConfig!.description).toStartWith(
-      'Sử dụng skill này để cấu hình Claude Code qua settings.json.',
+      'Sử dụng skill này để cấu hình Nyxclaude qua settings.json.',
     )
 
     useLanguage('english')
@@ -835,7 +835,7 @@ describe('bundled skill localization', () => {
       'Run a prompt on a fixed interval or dynamically reschedule it, including bare maintenance-mode loops.',
     )
     expect(updateConfig!.description).toStartWith(
-      'Use this skill to configure the Claude Code harness via settings.json.',
+      'Use this skill to configure the Nyxclaude harness via settings.json.',
     )
   })
 

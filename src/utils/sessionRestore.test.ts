@@ -247,7 +247,7 @@ beforeEach(async () => {
   originalNodeEnv = process.env.NODE_ENV
   originalTestPersistence = process.env.TEST_ENABLE_SESSION_PERSISTENCE
   originalPersistence = process.env.ENABLE_SESSION_PERSISTENCE
-  originalSkipPromptHistory = process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY
+  originalSkipPromptHistory = process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY
   originalSessionId = getSessionId()
   originalSessionProjectDir = getSessionProjectDir()
   originalPersistenceDisabled = isSessionPersistenceDisabled()
@@ -255,7 +255,7 @@ beforeEach(async () => {
   process.env.NODE_ENV = 'test'
   process.env.TEST_ENABLE_SESSION_PERSISTENCE = 'true'
   process.env.ENABLE_SESSION_PERSISTENCE = 'true'
-  delete process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY
+  delete process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY
   setSessionPersistenceDisabled(false)
   resetProjectForTesting()
 })
@@ -283,9 +283,9 @@ afterEach(async () => {
       process.env.ENABLE_SESSION_PERSISTENCE = originalPersistence
     }
     if (originalSkipPromptHistory === undefined) {
-      delete process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY
+      delete process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY
     } else {
-      process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY =
+      process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY =
         originalSkipPromptHistory
     }
     setSessionPersistenceDisabled(originalPersistenceDisabled)

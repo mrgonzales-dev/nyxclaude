@@ -25,14 +25,14 @@ import { importOptionalRuntimeModule } from './optionalRuntimeModule.js'
 // Works under Bun (native fetch respects keepalive:false for pooling).
 // Under Node/undici, keepalive is a no-op for pooling, but undici
 // naturally evicts dead sockets from the pool on ECONNRESET.
-let keepAliveDisabled = isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_KEEPALIVE)
+let keepAliveDisabled = isEnvTruthy(process.env.NYXCLAUDE_DISABLE_KEEPALIVE)
 
 export function disableKeepAlive(): void {
   keepAliveDisabled = true
 }
 
 export function _resetKeepAliveForTesting(): void {
-  keepAliveDisabled = isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_KEEPALIVE)
+  keepAliveDisabled = isEnvTruthy(process.env.NYXCLAUDE_DISABLE_KEEPALIVE)
 }
 
 /**
@@ -174,7 +174,7 @@ function createHttpsProxyAgent(
     ...(caCerts && { ca: caCerts }),
   }
 
-  if (isEnvTruthy(process.env.CLAUDE_CODE_PROXY_RESOLVES_HOSTS)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_PROXY_RESOLVES_HOSTS)) {
     // Skip local DNS resolution - let the proxy resolve hostnames
     // This is needed for environments where DNS is not configured locally
     // and instead handled by the proxy (as in sandboxes)
@@ -305,7 +305,7 @@ export function getWebSocketProxyUrl(url: string): string | undefined {
  * Returns fetch options with appropriate dispatcher for proxy and/or mTLS
  *
  * @param opts.forAnthropicAPI - Enables ANTHROPIC_UNIX_SOCKET tunneling. This
- *   env var is set by `claude ssh` on the remote CLI to route API calls through
+ *   env var is set by `nyxclaude ssh` on the remote CLI to route API calls through
  *   an ssh -R forwarded unix socket to a local auth proxy. It MUST NOT leak
  *   into non-Anthropic-API fetch paths (MCP HTTP/SSE transports, etc.) or those
  *   requests get misrouted to api.anthropic.com. Only the Anthropic SDK client
@@ -320,7 +320,7 @@ export function getProxyFetchOptions(opts?: { forAnthropicAPI?: boolean }): {
 } {
   const base = keepAliveDisabled ? ({ keepalive: false } as const) : {}
 
-  // ANTHROPIC_UNIX_SOCKET tunnels through the `claude ssh` auth proxy, which
+  // ANTHROPIC_UNIX_SOCKET tunnels through the `nyxclaude ssh` auth proxy, which
   // hardcodes the upstream to the Anthropic API. Scope to the Anthropic API
   // client so MCP/SSE/other callers don't get their requests misrouted.
   if (opts?.forAnthropicAPI) {

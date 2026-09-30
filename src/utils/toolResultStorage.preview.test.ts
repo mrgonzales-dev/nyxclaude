@@ -11,8 +11,8 @@ import {
 } from '../bootstrap/state.ts'
 import type { SessionId } from '../types/ids.ts'
 import {
-  getClaudeConfigHomeDirOverrideForTesting,
-  setClaudeConfigHomeDirForTesting,
+  getNyxclaudeConfigHomeDirOverrideForTesting,
+  setNyxclaudeConfigHomeDirForTesting,
 } from './envUtils.ts'
 import { formatFileSize } from './format.ts'
 import {
@@ -368,10 +368,10 @@ describe('persisted tool-result preview integration', () => {
 
   beforeAll(async () => {
     tempConfigDir = await mkdtemp(join(tmpdir(), 'tool-preview-'))
-    previousConfigDir = getClaudeConfigHomeDirOverrideForTesting()
+    previousConfigDir = getNyxclaudeConfigHomeDirOverrideForTesting()
     previousCwd = getOriginalCwd()
     previousSessionId = getSessionId()
-    setClaudeConfigHomeDirForTesting(tempConfigDir)
+    setNyxclaudeConfigHomeDirForTesting(tempConfigDir)
     setOriginalCwd(join(tempConfigDir, 'workspace'))
     switchSession('tool-preview-session' as SessionId)
   })
@@ -379,7 +379,7 @@ describe('persisted tool-result preview integration', () => {
   afterAll(async () => {
     switchSession(previousSessionId)
     setOriginalCwd(previousCwd)
-    setClaudeConfigHomeDirForTesting(previousConfigDir)
+    setNyxclaudeConfigHomeDirForTesting(previousConfigDir)
     await rm(tempConfigDir, { recursive: true, force: true })
   })
 

@@ -8,7 +8,7 @@ import {
   PERMISSION_MODES,
 } from '../permissions/PermissionMode.js'
 import { MarketplaceSourceSchema } from '../plugins/schemas.js'
-import { CLAUDE_CODE_SETTINGS_SCHEMA_URL } from './constants.js'
+import { NYXCLAUDE_SETTINGS_SCHEMA_URL } from './constants.js'
 import { PermissionRuleSchema } from './permissionValidation.js'
 
 // Re-export hook schemas and types from centralized location for backward compatibility
@@ -263,7 +263,7 @@ export const SettingsSchema = lazySchema(() =>
   z
     .object({
       $schema: z
-        .literal(CLAUDE_CODE_SETTINGS_SCHEMA_URL)
+        .literal(NYXCLAUDE_SETTINGS_SCHEMA_URL)
         .optional()
         .describe('JSON Schema reference for Nyxclaude settings'),
       subscriptionType: z
@@ -290,11 +290,11 @@ export const SettingsSchema = lazySchema(() =>
         .describe(
           'Command to refresh GCP authentication (e.g., gcloud auth application-default login)',
         ),
-      // Gated so the SDK generator (which runs without CLAUDE_CODE_ENABLE_XAA)
+      // Gated so the SDK generator (which runs without NYXCLAUDE_ENABLE_XAA)
       // doesn't surface this in GlobalClaudeSettings. Read via getXaaIdpSettings().
       // .passthrough() on the outer object keeps an existing settings.json key
       // alive across env-var-off sessions — it's just not schema-validated then.
-      ...(isEnvTruthy(process.env.CLAUDE_CODE_ENABLE_XAA)
+      ...(isEnvTruthy(process.env.NYXCLAUDE_ENABLE_XAA)
         ? {
             xaaIdp: z
               .object({
@@ -669,12 +669,12 @@ export const SettingsSchema = lazySchema(() =>
             'these exact sources are blocked from being added as marketplaces. The check happens BEFORE ' +
             'downloading, so blocked sources never touch the filesystem.',
         ),
-      // Force a specific login method: 'claudeai' for Claude Pro/Max, 'console' for Console billing
+      // Force a specific login method: 'remote' for Claude Pro/Max, 'console' for Console billing
       forceLoginMethod: z
-        .enum(['claudeai', 'console'])
+        .enum(['remote', 'console'])
         .optional()
         .describe(
-          'Force a specific login method: "claudeai" for Claude Pro/Max, "console" for Console billing',
+          'Force a specific login method: "remote" for subscription, "console" for Console billing',
         ),
       // Organization UUID to use for OAuth login (will be added as URL param to authorization URL)
       forceLoginOrgUUID: z
@@ -842,7 +842,7 @@ export const SettingsSchema = lazySchema(() =>
           'Per-model overrides for context window and max output tokens. ' +
             'Used for OpenAI-compatible models whose limits are not in the built-in catalog. ' +
             'Keys are matched against the model name (exact match preferred, then prefix). ' +
-            'CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS / CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS env vars take precedence. ' +
+            'NYXCLAUDE_OPENAI_CONTEXT_WINDOWS / NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS env vars take precedence. ' +
             'Example: { "qwen3.6-plus": { "contextWindow": 1048576, "maxOutputTokens": 32768 } }',
         ),
       fastMode: z
@@ -1013,12 +1013,12 @@ export const SettingsSchema = lazySchema(() =>
               .string()
               .optional()
               .describe(
-                'Display name for the assistant, shown in the claude.ai session list',
+                'Display name for the assistant, shown in the web console session list',
               ),
           }
         : {}),
       // Teams/Enterprise opt-IN for channel notifications. Default OFF.
-      // MCP servers that declare the claude/channel capability can push
+      // MCP servers that declare the nyxclaude/channel capability can push
       // inbound messages into the conversation; for managed orgs this only
       // works when explicitly enabled. Which servers can connect at all is
       // still governed by allowedMcpServers/deniedMcpServers. Not
@@ -1030,7 +1030,7 @@ export const SettingsSchema = lazySchema(() =>
         .optional()
         .describe(
           'Teams/Enterprise opt-in for channel notifications (MCP servers with the ' +
-            'claude/channel capability pushing inbound messages). Default off. ' +
+            'nyxclaude/channel capability pushing inbound messages). Default off. ' +
             'Set true to allow; users then select servers via --channels.',
         ),
       // Org-level channel plugin allowlist. When set, REPLACES the
@@ -1222,7 +1222,7 @@ export const SettingsSchema = lazySchema(() =>
                 'Default working directory on the remote host. ' +
                   'Supports tilde expansion (e.g. ~/projects). ' +
                   'If not specified, defaults to the remote user home directory. ' +
-                  'Can be overridden by the [dir] positional argument in `claude ssh <config> [dir]`.',
+                  'Can be overridden by the [dir] positional argument in `nyxclaude ssh <config> [dir]`.',
               ),
           }),
         )

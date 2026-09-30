@@ -33,8 +33,8 @@ const { loadAndCacheMarketplace } = _test
  * The static import above uses a query-string suffix to bypass Bun's
  * mock.module() registry under the bare `./marketplaceManager.js` path.
  *
- * Why: in the full test suite, `lspRecommendation.test.ts` (line 32) and
- * `officialMarketplaceStartupCheck.test.ts` (line 96) both call
+ * Why: in the full test suite, `lspRecommendation.test.ts` (line 32)
+ * calls
  * `mock.module('./marketplaceManager.js', () => ({...}))` at module
  * top-level to stub out `addMarketplaceSource`, `getMarketplace`, etc.
  * Neither stub exports `_test`, so a static import under the bare path
@@ -93,8 +93,8 @@ describe('loadAndCacheMarketplace — Windows cache finalization (#1500)', () =>
     tempDir = mkdtempSync(join(tmpdir(), 'mp-cache-'))
     // getPluginsDirectory() honours this env var, so getMarketplacesCacheDir()
     // resolves to <tempDir>/marketplaces.
-    originalCacheDir = process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR
-    process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR = tempDir
+    originalCacheDir = process.env.NYXCLAUDE_PLUGIN_CACHE_DIR
+    process.env.NYXCLAUDE_PLUGIN_CACHE_DIR = tempDir
 
     // Wrap the real filesystem so all operations actually happen, but rm and
     // rename are observable. The guard is a pure string comparison, so its
@@ -121,9 +121,9 @@ describe('loadAndCacheMarketplace — Windows cache finalization (#1500)', () =>
   afterEach(() => {
     setFsImplementation(originalFs)
     if (originalCacheDir === undefined) {
-      delete process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR
+      delete process.env.NYXCLAUDE_PLUGIN_CACHE_DIR
     } else {
-      process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR = originalCacheDir
+      process.env.NYXCLAUDE_PLUGIN_CACHE_DIR = originalCacheDir
     }
     if (originalPlatform) {
       Object.defineProperty(process, 'platform', originalPlatform)
@@ -163,7 +163,7 @@ describe('loadAndCacheMarketplace — Windows cache finalization (#1500)', () =>
     expect(result.marketplace.name).toBe('MyMarketplace')
     expect(result.cachePath).toBe(temporaryCachePath)
     expect(
-      existsSync(join(temporaryCachePath, '.claude-plugin', 'marketplace.json')),
+      existsSync(join(temporaryCachePath, '.nyxclaude-plugin', 'marketplace.json')),
     ).toBe(true)
   })
 
@@ -199,7 +199,7 @@ describe('loadAndCacheMarketplace — Windows cache finalization (#1500)', () =>
     expect(result.marketplace.name).toBe('AgriciDaniel-claude-obsidian')
     expect(result.cachePath).toBe(temporaryCachePath)
     expect(
-      existsSync(join(temporaryCachePath, '.claude-plugin', 'marketplace.json')),
+      existsSync(join(temporaryCachePath, '.nyxclaude-plugin', 'marketplace.json')),
     ).toBe(true)
   })
 
@@ -230,7 +230,7 @@ describe('loadAndCacheMarketplace — Windows cache finalization (#1500)', () =>
     expect(result.marketplace.name).toBe('claude-obsidian')
     expect(result.cachePath).toBe(cachePath)
     expect(
-      existsSync(join(cachePath, '.claude-plugin', 'marketplace.json')),
+      existsSync(join(cachePath, '.nyxclaude-plugin', 'marketplace.json')),
     ).toBe(true)
   })
 })
@@ -282,7 +282,7 @@ describe('loadAndCacheMarketplace — rename failure fallback (EXDEV)', () => {
     // The `?bust=` suffix is the same trick the dynamic import at the top of
     // this file uses — it gives Bun a unique module id that bypasses any
     // mock.module('./marketplaceManager.js', ...) registration made by
-    // other test files (lspRecommendation, officialMarketplaceStartupCheck).
+    // other test files (lspRecommendation).
     // Without it, when those test files run first their partial mock is
     // picked up here and `_test` is undefined.
     // Template literal with interpolation so TypeScript treats the
@@ -302,8 +302,8 @@ describe('loadAndCacheMarketplace — rename failure fallback (EXDEV)', () => {
 
   beforeEach(() => {
     tempDir = mkdtempSync(join(tmpdir(), 'mp-cache-'))
-    originalCacheDir = process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR
-    process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR = tempDir
+    originalCacheDir = process.env.NYXCLAUDE_PLUGIN_CACHE_DIR
+    process.env.NYXCLAUDE_PLUGIN_CACHE_DIR = tempDir
 
     originalFs = getFsImplementation()
     rmCallCount = 0
@@ -335,9 +335,9 @@ describe('loadAndCacheMarketplace — rename failure fallback (EXDEV)', () => {
   afterEach(() => {
     setFsImplementation(originalFs)
     if (originalCacheDir === undefined) {
-      delete process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR
+      delete process.env.NYXCLAUDE_PLUGIN_CACHE_DIR
     } else {
-      process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR = originalCacheDir
+      process.env.NYXCLAUDE_PLUGIN_CACHE_DIR = originalCacheDir
     }
     rmSync(tempDir, { recursive: true, force: true })
   })

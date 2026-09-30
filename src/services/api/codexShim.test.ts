@@ -18,7 +18,7 @@ const originalFetch = globalThis.fetch
 const originalEnv = {
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   OPENAI_API_BASE: process.env.OPENAI_API_BASE,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
 }
 
@@ -35,8 +35,8 @@ afterEach(() => {
     if (originalEnv.OPENAI_API_BASE === undefined) delete process.env.OPENAI_API_BASE
     else process.env.OPENAI_API_BASE = originalEnv.OPENAI_API_BASE
 
-    if (originalEnv.CLAUDE_CODE_USE_GITHUB === undefined) delete process.env.CLAUDE_CODE_USE_GITHUB
-    else process.env.CLAUDE_CODE_USE_GITHUB = originalEnv.CLAUDE_CODE_USE_GITHUB
+    if (originalEnv.NYXCLAUDE_USE_GITHUB === undefined) delete process.env.NYXCLAUDE_USE_GITHUB
+    else process.env.NYXCLAUDE_USE_GITHUB = originalEnv.NYXCLAUDE_USE_GITHUB
 
     if (originalEnv.OPENAI_MODEL === undefined) delete process.env.OPENAI_MODEL
     else process.env.OPENAI_MODEL = originalEnv.OPENAI_MODEL
@@ -155,7 +155,7 @@ describe('Codex provider config', () => {
     const { resolveProviderRequest } = await importFreshProviderConfigModule()
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_API_BASE
-    delete process.env.CLAUDE_CODE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_GITHUB
 
     const resolved = resolveProviderRequest({ model: 'codexplan' })
     expect(resolved.transport).toBe('codex_responses')
@@ -168,7 +168,7 @@ describe('Codex provider config', () => {
     const { resolveProviderRequest } = await importFreshProviderConfigModule()
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_API_BASE
-    delete process.env.CLAUDE_CODE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_GITHUB
 
     const resolved = resolveProviderRequest({ model: 'codexspark' })
     expect(resolved.transport).toBe('codex_responses')
@@ -215,7 +215,7 @@ describe('Codex provider config', () => {
   test('default gpt-4o uses OpenAI base URL (no regression)', async () => {
     const { resolveProviderRequest } = await importFreshProviderConfigModule()
     delete process.env.OPENAI_BASE_URL
-    delete process.env.CLAUDE_CODE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_GITHUB
 
     const resolved = resolveProviderRequest({ model: 'gpt-4o' })
     expect(resolved.transport).toBe('chat_completions')
@@ -227,7 +227,7 @@ describe('Codex provider config', () => {
     const { resolveProviderRequest } = await importFreshProviderConfigModule()
     process.env.OPENAI_MODEL = 'codexplan'
     delete process.env.OPENAI_BASE_URL
-    delete process.env.CLAUDE_CODE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_GITHUB
 
     const resolved = resolveProviderRequest()
     expect(resolved.transport).toBe('codex_responses')
@@ -239,7 +239,7 @@ describe('Codex provider config', () => {
     const { resolveProviderRequest } = await importFreshProviderConfigModule()
     process.env.OPENAI_MODEL = 'codexplan'
     process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
-    delete process.env.CLAUDE_CODE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_GITHUB
 
     const resolved = resolveProviderRequest()
     expect(resolved.transport).toBe('chat_completions')
@@ -1446,13 +1446,13 @@ describe('convertSystemPrompt', () => {
           'x-anthropic-billing-header: cc_version=0.8.0.abc123; ' +
           'cc_entrypoint=cli;',
       },
-      { type: 'text', text: 'You are Claude Code.' },
+      { type: 'text', text: 'You are Nyxclaude.' },
       { type: 'text', text: 'Project context: bun + react.' },
     ])
 
     expect(result).not.toContain('x-anthropic-billing-header')
     expect(result).not.toContain('cc_version=')
-    expect(result).toContain('You are Claude Code.')
+    expect(result).toContain('You are Nyxclaude.')
     expect(result).toContain('Project context: bun + react.')
   })
 
@@ -1468,8 +1468,8 @@ describe('convertSystemPrompt', () => {
   })
 
   test('passes plain string system prompts through untouched', () => {
-    expect(convertSystemPrompt('You are Claude Code.')).toBe(
-      'You are Claude Code.',
+    expect(convertSystemPrompt('You are Nyxclaude.')).toBe(
+      'You are Nyxclaude.',
     )
   })
 })

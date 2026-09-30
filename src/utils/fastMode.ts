@@ -12,7 +12,7 @@ import {
 } from '../services/analytics/index.js'
 import {
   getAnthropicApiKey,
-  getClaudeAIOAuthTokens,
+  getRemoteOAuthTokens,
   handleOAuth401Error,
   hasProfileScope,
 } from './auth.js'
@@ -39,7 +39,7 @@ export function isFastModeEnabled(): boolean {
   if (!isFirstPartyAnthropicProvider()) {
     return false
   }
-  return !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_FAST_MODE)
+  return !isEnvTruthy(process.env.NYXCLAUDE_DISABLE_FAST_MODE)
 }
 
 export function isFastModeAvailable(): boolean {
@@ -82,7 +82,7 @@ export function getFastModeUnavailableReason(): string | null {
   }
 
   const statsigReason = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_penguins_off',
+    'nyxclaude_penguins_off',
     null,
   )
   // Statsig reason has priority over other reasons.
@@ -95,7 +95,7 @@ export function getFastModeUnavailableReason(): string | null {
   // longer necessary, but we keep this option behind a flag just in case.
   if (
     !isInBundledMode() &&
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_marble_sandcastle', false)
+    getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_marble_sandcastle', false)
   ) {
     return 'Fast mode requires the native binary · Install from: https://claude.com/product/claude-code'
   }
@@ -122,15 +122,15 @@ export function getFastModeUnavailableReason(): string | null {
       orgStatus.reason === 'unknown'
     ) {
       // The org check can fail behind corporate proxies that block the
-      // endpoint. We add CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS=1 to
+      // endpoint. We add NYXCLAUDE_SKIP_FAST_MODE_NETWORK_ERRORS=1 to
       // bypass this check in the CC binary. This is OK since we have
       // another check in the API to error out when disabled by org.
-      if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS)) {
+      if (isEnvTruthy(process.env.NYXCLAUDE_SKIP_FAST_MODE_NETWORK_ERRORS)) {
         return null
       }
     }
     const authType: AuthType =
-      getClaudeAIOAuthTokens() !== null ? 'oauth' : 'api-key'
+      getRemoteOAuthTokens() !== null ? 'oauth' : 'api-key'
     const reason = getDisabledReasonMessage(orgStatus.reason, authType)
     logForDebugging(`Fast mode unavailable: ${reason}`)
     return reason
@@ -231,7 +231,7 @@ export function triggerFastModeCooldown(
   logForDebugging(
     `Fast mode cooldown triggered (${reason}), duration ${Math.round(cooldownDurationMs / 1000)}s`,
   )
-  logEvent('tengu_fast_mode_fallback_triggered', {
+  logEvent('nyxclaude_fast_mode_fallback_triggered', {
     cooldown_duration_ms: cooldownDurationMs,
     cooldown_reason:
       reason as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -304,7 +304,7 @@ export function handleFastModeOverageRejection(reason: string | null): void {
   logForDebugging(
     `Fast mode overage rejection: ${reason ?? 'unknown'} — ${message}`,
   )
-  logEvent('tengu_fast_mode_overage_rejected', {
+  logEvent('nyxclaude_fast_mode_overage_rejected', {
     overage_disabled_reason: (reason ??
       'unknown') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   })
@@ -432,7 +432,7 @@ export async function prefetchFastModeStatus(): Promise<void> {
   // API key auth is unaffected.
   const apiKey = getAnthropicApiKey()
   const hasUsableOAuth =
-    getClaudeAIOAuthTokens()?.accessToken && hasProfileScope()
+    getRemoteOAuthTokens()?.accessToken && hasProfileScope()
   if (!hasUsableOAuth && !apiKey) {
     const cachedEnabled = getGlobalConfig().penguinModeOrgEnabled === true
     orgStatus =
@@ -450,7 +450,7 @@ export async function prefetchFastModeStatus(): Promise<void> {
   lastPrefetchAt = now
 
   const fetchWithCurrentAuth = async (): Promise<FastModeResponse> => {
-    const currentTokens = getClaudeAIOAuthTokens()
+    const currentTokens = getRemoteOAuthTokens()
     const auth =
       currentTokens?.accessToken && hasProfileScope()
         ? { accessToken: currentTokens.accessToken }
@@ -476,7 +476,7 @@ export async function prefetchFastModeStatus(): Promise<void> {
               typeof err.response?.data === 'string' &&
               err.response.data.includes('OAuth token has been revoked')))
         if (isAuthError) {
-          const failedAccessToken = getClaudeAIOAuthTokens()?.accessToken
+          const failedAccessToken = getRemoteOAuthTokens()?.accessToken
           if (failedAccessToken) {
             await handleOAuth401Error(failedAccessToken)
             status = await fetchWithCurrentAuth()
@@ -525,7 +525,7 @@ export async function prefetchFastModeStatus(): Promise<void> {
         `Failed to fetch org fast mode status, defaulting to ${orgStatus.status === 'enabled' ? 'enabled (cached)' : 'disabled (network_error)'}: ${err}`,
         { level: 'error' },
       )
-      logEvent('tengu_org_penguin_mode_fetch_failed', {})
+      logEvent('nyxclaude_org_penguin_mode_fetch_failed', {})
     } finally {
       inflightPrefetch = null
     }

@@ -126,7 +126,7 @@ test('resolveModelRuntimeLimits lets an env override win over settings modelLimi
   const limits = resolveModelRuntimeLimits({
     model: 'my-custom-deployment',
     processEnv: {
-      CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS: JSON.stringify({
+      NYXCLAUDE_OPENAI_CONTEXT_WINDOWS: JSON.stringify({
         'my-custom-deployment': 111_111,
       }),
     },
@@ -150,10 +150,10 @@ test('resolveModelRuntimeLimits lets a broad env-prefix override win over an exa
   const limits = resolveModelRuntimeLimits({
     model: 'my-custom-deployment',
     processEnv: {
-      CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS: JSON.stringify({
+      NYXCLAUDE_OPENAI_CONTEXT_WINDOWS: JSON.stringify({
         'my-custom': 111_111,
       }),
-      CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS: JSON.stringify({
+      NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS: JSON.stringify({
         'my-custom': 4_096,
       }),
     },

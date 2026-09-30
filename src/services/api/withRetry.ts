@@ -1,10 +1,10 @@
 import { feature } from 'bun:bundle'
-import type Anthropic from '@anthropic-ai/sdk'
+import { type Anthropic } from 'src/types/api.js'
 import {
   APIConnectionError,
   APIError,
   APIUserAbortError,
-} from '@anthropic-ai/sdk'
+} from 'src/types/api.js'
 import type { QuerySource } from 'src/constants/querySource.js'
 import type { SystemAPIErrorMessage } from 'src/types/message.js'
 import {
@@ -20,9 +20,9 @@ import {
   clearApiKeyHelperCache,
   clearAwsCredentialsCache,
   clearGcpCredentialsCache,
-  getClaudeAIOAuthTokens,
+  getRemoteOAuthTokens,
   handleOAuth401Error,
-  isClaudeAISubscriber,
+  isSubscriber,
   isEnterpriseSubscriber,
 } from '../../utils/auth.js'
 import { isEnvTruthy } from '../../utils/envUtils.js'
@@ -101,7 +101,7 @@ function shouldRetry529(querySource: QuerySource | undefined): boolean {
   )
 }
 
-// CLAUDE_CODE_UNATTENDED_RETRY: for unattended sessions (internal-only). Retries 429/529
+// NYXCLAUDE_UNATTENDED_RETRY: for unattended sessions (internal-only). Retries 429/529
 // indefinitely with higher backoff and periodic keep-alive yields so the host
 // environment does not mark the session idle mid-wait.
 // TODO(ANT-344): the keep-alive via SystemAPIErrorMessage yields is a stopgap
@@ -113,12 +113,12 @@ const PERSISTENT_MAX_ATTEMPTS = 100
 // Exposed for unit-test assertion only. The persistent retry cap itself is
 // driven by isPersistentRetryEnabled() — there is no runtime override seam
 // (tests must enable UNATTENDED_RETRY via `bun test --feature=UNATTENDED_RETRY`
-// and set CLAUDE_CODE_UNATTENDED_RETRY to exercise this path).
+// and set NYXCLAUDE_UNATTENDED_RETRY to exercise this path).
 export { PERSISTENT_MAX_ATTEMPTS as _PERSISTENT_MAX_ATTEMPTS_FOR_TEST, isPersistentRetryEnabled }
 
 function isPersistentRetryEnabled(): boolean {
   return feature('UNATTENDED_RETRY')
-    ? isEnvTruthy(process.env.CLAUDE_CODE_UNATTENDED_RETRY)
+    ? isEnvTruthy(process.env.NYXCLAUDE_UNATTENDED_RETRY)
     : false
 }
 
@@ -263,7 +263,7 @@ export async function* withRetry<T>(
       if (
         isStaleConnection &&
         getFeatureValue_CACHED_MAY_BE_STALE(
-          'tengu_disable_keepalive_on_econnreset',
+          'nyxclaude_disable_keepalive_on_econnreset',
           false,
         )
       ) {
@@ -286,7 +286,7 @@ export async function* withRetry<T>(
           (lastError instanceof APIError && lastError.status === 401) ||
           isOAuthTokenRevokedError(lastError)
         ) {
-          const failedAccessToken = getClaudeAIOAuthTokens()?.accessToken
+          const failedAccessToken = getRemoteOAuthTokens()?.accessToken
           if (failedAccessToken) {
             await handleOAuth401Error(failedAccessToken)
           }
@@ -395,7 +395,7 @@ export async function* withRetry<T>(
       // Non-foreground sources bail immediately on 529 — no retry amplification
       // during capacity cascades. User never sees these fail.
       if (is529Error(error) && !shouldRetry529(options.querySource)) {
-        logEvent('tengu_api_529_background_dropped', {
+        logEvent('nyxclaude_api_529_background_dropped', {
           query_source:
             options.querySource as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         })
@@ -408,13 +408,13 @@ export async function* withRetry<T>(
         // If FALLBACK_FOR_ALL_PRIMARY_MODELS is not set, fall through only if the primary model is a non-custom Opus model.
         // TODO: Revisit if the isNonCustomOpusModel check should still exist, or if isNonCustomOpusModel is a stale artifact of when Nyxclaude was hardcoded on Opus.
         (process.env.FALLBACK_FOR_ALL_PRIMARY_MODELS ||
-          (!isClaudeAISubscriber() && isNonCustomOpusModel(options.model)))
+          (!isSubscriber() && isNonCustomOpusModel(options.model)))
       ) {
         consecutive529Errors++
         if (consecutive529Errors >= MAX_529_RETRIES) {
           // Check if fallback model is specified
           if (options.fallbackModel) {
-            logEvent('tengu_api_opus_fallback_triggered', {
+            logEvent('nyxclaude_api_opus_fallback_triggered', {
               original_model:
                 options.model as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
               fallback_model:
@@ -434,7 +434,7 @@ export async function* withRetry<T>(
             !process.env.IS_SANDBOX &&
             !persistentRetryEnabled
           ) {
-            logEvent('tengu_api_custom_529_overloaded_error', {})
+            logEvent('nyxclaude_api_custom_529_overloaded_error', {})
             throw new CannotRetryError(
               new Error(REPEATED_529_ERROR_MESSAGE),
               retryContext,
@@ -454,7 +454,7 @@ export async function* withRetry<T>(
       // reset-delay path can wait up to PERSISTENT_RESET_CAP_MS (6 hours) per attempt, so
       // exhausting 100 attempts can take far longer.
       if (persistent && persistentAttempt >= PERSISTENT_MAX_ATTEMPTS) {
-        logEvent('tengu_api_persistent_retry_cap_reached', {
+        logEvent('nyxclaude_api_persistent_retry_cap_reached', {
           error: (error as APIError).message as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           status: (error as APIError).status,
           model: retryContext.model as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -486,7 +486,7 @@ export async function* withRetry<T>(
         const affordData = parseOpenRouterAffordableMaxTokensError(error)
         if (affordData && retryContext.maxTokensOverride === undefined) {
           retryContext.maxTokensOverride = affordData.affordableMaxTokens
-          logEvent('tengu_openrouter_402_max_tokens_adjustment', {
+          logEvent('nyxclaude_openrouter_402_max_tokens_adjustment', {
             requestedMaxTokens: affordData.requestedMaxTokens,
             affordableMaxTokens: affordData.affordableMaxTokens,
             attempt,
@@ -537,7 +537,7 @@ export async function* withRetry<T>(
           )
           retryContext.maxTokensOverride = adjustedMaxTokens
 
-          logEvent('tengu_max_tokens_context_overflow_adjustment', {
+          logEvent('nyxclaude_max_tokens_context_overflow_adjustment', {
             inputTokens,
             contextLimit,
             adjustedMaxTokens,
@@ -587,7 +587,7 @@ export async function* withRetry<T>(
       // In persistent mode the for-loop `attempt` is clamped at maxRetries+1;
       // use persistentAttempt for telemetry/yields so they show the true count.
       const reportedAttempt = persistent ? persistentAttempt : attempt
-      logEvent('tengu_api_retry', {
+      logEvent('nyxclaude_api_retry', {
         attempt: reportedAttempt,
         delayMs: delayMs,
         error: (error as APIError)
@@ -598,7 +598,7 @@ export async function* withRetry<T>(
 
       if (persistent) {
         if (delayMs > 60_000) {
-          logEvent('tengu_api_persistent_retry_wait', {
+          logEvent('nyxclaude_api_persistent_retry_wait', {
             status: (error as APIError).status,
             delayMs,
             attempt: reportedAttempt,
@@ -787,7 +787,7 @@ function isOAuthTokenRevokedError(error: unknown): boolean {
 }
 
 function isBedrockAuthError(error: unknown): boolean {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_USE_BEDROCK)) {
     // AWS libs reject without an API call if .aws holds a past Expiration value
     // otherwise, API calls that receive expired tokens give generic 403
     // "The security token included in the request is invalid"
@@ -826,7 +826,7 @@ function isGoogleAuthLibraryCredentialError(error: unknown): boolean {
 }
 
 function isVertexAuthError(error: unknown): boolean {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_USE_VERTEX)) {
     // SDK-level: google-auth-library fails in prepareOptions() before the HTTP call
     if (isGoogleAuthLibraryCredentialError(error)) {
       return true
@@ -898,7 +898,7 @@ function shouldRetry(error: APIError, persistentRetryEnabled: boolean): boolean 
   // credentials. Bypass x-should-retry:false — the server assumes we'd retry
   // the same bad key, but our key is fine.
   if (
-    isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) &&
+    isEnvTruthy(process.env.NYXCLAUDE_REMOTE) &&
     (error.status === 401 || error.status === 403)
   ) {
     return true
@@ -919,7 +919,7 @@ function shouldRetry(error: APIError, persistentRetryEnabled: boolean): boolean 
   // Enterprise users can retry because they typically use PAYG instead of rate limits.
   if (
     shouldRetryHeader === 'true' &&
-    (!isClaudeAISubscriber() || isEnterpriseSubscriber())
+    (!isSubscriber() || isEnterpriseSubscriber())
   ) {
     return true
   }
@@ -945,11 +945,11 @@ function shouldRetry(error: APIError, persistentRetryEnabled: boolean): boolean 
   // Retry on lock timeouts.
   if (error.status === 409) return true
 
-  // Retry on rate limits, but not for ClaudeAI Subscription users
+  // Retry on rate limits, but not for Subscription users
   // Enterprise users can retry because they typically use PAYG instead of rate limits
   if (error.status === 429) {
     if (isQuotaExhausted(error)) return false
-    return !isClaudeAISubscriber() || isEnterpriseSubscriber()
+    return !isSubscriber() || isEnterpriseSubscriber()
   }
 
   // Clear API key cache on 401. Only retry when the token can be refreshed:
@@ -959,8 +959,8 @@ function shouldRetry(error: APIError, persistentRetryEnabled: boolean): boolean 
   // so the user sees the error immediately instead of 10 retries with backoff.
   if (error.status === 401) {
     clearApiKeyHelperCache()
-    if (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)) return true
-    return !!getClaudeAIOAuthTokens()?.accessToken
+    if (isEnvTruthy(process.env.NYXCLAUDE_REMOTE)) return true
+    return !!getRemoteOAuthTokens()?.accessToken
   }
 
   // Retry on 403 "token revoked" (same refresh logic as 401, see above)
@@ -983,13 +983,13 @@ export function getDefaultMaxRetries(): number {
     )
   }
 
-  const legacyMaxRetries = process.env.CLAUDE_CODE_MAX_RETRIES
+  const legacyMaxRetries = process.env.NYXCLAUDE_MAX_RETRIES
   if (legacyMaxRetries) {
     logForDebugging(
-      'CLAUDE_CODE_MAX_RETRIES is deprecated; use NYXCLAUDE_MAX_RETRIES instead',
+      'NYXCLAUDE_MAX_RETRIES is deprecated; use NYXCLAUDE_MAX_RETRIES instead',
     )
     return validateRetryAttemptsEnvVar(
-      'CLAUDE_CODE_MAX_RETRIES',
+      'NYXCLAUDE_MAX_RETRIES',
       legacyMaxRetries,
     )
   }

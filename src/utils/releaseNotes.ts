@@ -4,7 +4,7 @@ import { dirname, join } from 'path'
 import { coerce } from 'semver'
 import { getIsNonInteractiveSession } from '../bootstrap/state.js'
 import { getGlobalConfig, saveGlobalConfig } from './config.js'
-import { getClaudeConfigHomeDir } from './envUtils.js'
+import { getNyxclaudeConfigHomeDir } from './envUtils.js'
 import { toError, getErrnoCode } from './errors.js'
 import { logError } from './log.js'
 import { isEssentialTrafficOnly } from './privacyLevel.js'
@@ -47,7 +47,7 @@ export const RELEASES_URL = NYXCLAUDE_RELEASES_URL
  * The changelog is stored at ~/.nyxclaude/cache/changelog.md
  */
 function getChangelogCachePath(): string {
-  return join(getClaudeConfigHomeDir(), 'cache', 'changelog.md')
+  return join(getNyxclaudeConfigHomeDir(), 'cache', 'changelog.md')
 }
 
 // In-memory cache populated by async reads. Sync callers (React render, sync

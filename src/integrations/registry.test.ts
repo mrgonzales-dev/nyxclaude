@@ -91,7 +91,7 @@ function makeModel(id: string, overrides?: Partial<import('./descriptors.js').Mo
   }
 }
 
-function makeAnthropicProxy(id: string, overrides?: Partial<import('./descriptors.js').AnthropicProxyDescriptor>): import('./descriptors.js').AnthropicProxyDescriptor {
+function makeAnthropicProxy(id: string, overrides?: Partial<import('./descriptors.js').ProviderProxyDescriptor>): import('./descriptors.js').ProviderProxyDescriptor {
   return {
     id,
     label: id,

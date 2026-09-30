@@ -21,7 +21,7 @@ export function getDefaultUdsSocketPath(): string {
 
 /**
  * Start the UDS messaging server. Inert: resolves immediately without
- * binding a socket or exporting $CLAUDE_CODE_MESSAGING_SOCKET.
+ * binding a socket or exporting $NYXCLAUDE_MESSAGING_SOCKET.
  */
 export async function startUdsMessaging(
   _socketPath: string,

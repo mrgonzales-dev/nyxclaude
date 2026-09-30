@@ -1,5 +1,5 @@
-import type Anthropic from '@anthropic-ai/sdk'
-import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages.js'
+import { type Anthropic } from 'src/types/api.js'
+import type { BetaToolUnion } from 'src/types/api.js'
 import {
   getLastApiCompletionTimestamp,
   setLastApiCompletionTimestamp,
@@ -12,7 +12,7 @@ import {
 } from '../constants/system.js'
 import { logEvent } from '../services/analytics/index.js'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../services/analytics/metadata.js'
-import { getAPIMetadata } from '../services/api/claude.js'
+import { getAPIMetadata } from '../services/api/modelApi.js'
 import { getAnthropicClient } from '../services/api/client.js'
 import { getModelBetas, modelSupportsStructuredOutputs } from './betas.js'
 import { computeFingerprint } from './fingerprint.js'
@@ -59,7 +59,7 @@ export type SideQueryOptions = {
   thinking?: number | false
   /** Stop sequences — generation stops when any of these strings is emitted */
   stop_sequences?: string[]
-  /** Attributes this call in tengu_api_success for COGS joining against reporting.sampling_calls. */
+  /** Attributes this call in nyxclaude_api_success for COGS joining against reporting.sampling_calls. */
   querySource: QuerySource
 }
 
@@ -201,7 +201,7 @@ export async function sideQuery(opts: SideQueryOptions): Promise<BetaMessage> {
     (response as { _request_id?: string | null })._request_id ?? undefined
   const now = Date.now()
   const lastCompletion = getLastApiCompletionTimestamp()
-  logEvent('tengu_api_success', {
+  logEvent('nyxclaude_api_success', {
     requestId:
       requestId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     querySource:

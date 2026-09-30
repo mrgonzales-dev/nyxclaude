@@ -13,8 +13,8 @@ import { createCombinedAbortSignal } from './combinedAbortSignal.js'
 import { getAPIProvider } from './model/providers.js'
 import { logForDebugging } from './debug.js'
 import { env } from './env.js'
-import { getClaudeConfigHomeDir } from './envUtils.js'
-import { ClaudeError, getErrnoCode, isENOENT } from './errors.js'
+import { getNyxclaudeConfigHomeDir } from './envUtils.js'
+import { SDKErrorBase, getErrnoCode, isENOENT } from './errors.js'
 import { execFileNoThrowWithCwd } from './execFileNoThrow.js'
 import {
   detectGlobalPackageManager,
@@ -36,7 +36,7 @@ import { jsonParse } from './slowOperations.js'
 const GCS_BUCKET_URL =
   'https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases'
 
-class AutoUpdaterError extends ClaudeError {}
+class AutoUpdaterError extends SDKErrorBase {}
 
 async function withTimeoutSignal<T>(
   timeoutMs: number,
@@ -105,7 +105,7 @@ export async function assertMinVersion(): Promise<void> {
   try {
     const versionConfig = await getDynamicConfig_BLOCKS_ON_INIT<{
       minVersion: string
-    }>('tengu_version_config', { minVersion: '0.0.0' })
+    }>('nyxclaude_version_config', { minVersion: '0.0.0' })
 
     if (
       versionConfig.minVersion &&
@@ -158,7 +158,7 @@ export async function getMaxVersionMessage(): Promise<string | undefined> {
 async function getMaxVersionConfig(): Promise<MaxVersionConfig> {
   try {
     return await getDynamicConfig_BLOCKS_ON_INIT<MaxVersionConfig>(
-      'tengu_max_version_config',
+      'nyxclaude_max_version_config',
       {},
     )
   } catch (error) {
@@ -196,7 +196,7 @@ const LOCK_TIMEOUT_MS = 5 * 60 * 1000 // 5 minute timeout for locks
  * This is a function to ensure it's evaluated at runtime after test setup
  */
 export function getLockFilePath(): string {
-  return join(getClaudeConfigHomeDir(), '.update.lock')
+  return join(getNyxclaudeConfigHomeDir(), '.update.lock')
 }
 
 /**
@@ -259,7 +259,7 @@ async function acquireLock(): Promise<boolean> {
         // fs.mkdir from getFsImplementation() is always recursive:true and
         // swallows EEXIST internally, so a dir-creation race cannot reach the
         // catch below — only writeFile's EEXIST (true lock contention) can.
-        await fs.mkdir(getClaudeConfigHomeDir())
+        await fs.mkdir(getNyxclaudeConfigHomeDir())
         await writeFile(lockPath, `${process.pid}`, {
           encoding: 'utf8',
           flag: 'wx',
@@ -524,7 +524,7 @@ export async function installGlobalPackage(
       new AutoUpdaterError('Another process is currently installing an update'),
     )
     // Log the lock contention
-    logEvent('tengu_auto_updater_lock_contention', {
+    logEvent('nyxclaude_auto_updater_lock_contention', {
       pid: process.pid,
       currentVersion:
         MACRO.VERSION as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -545,7 +545,7 @@ export async function installGlobalPackage(
     // Check if we're using npm from Windows path in WSL
     if (packageManager === 'npm' && env.isNpmFromWindowsPath()) {
       logError(new Error('Windows NPM detected in WSL environment'))
-      logEvent('tengu_auto_updater_windows_npm_in_wsl', {
+      logEvent('nyxclaude_auto_updater_windows_npm_in_wsl', {
         currentVersion:
           MACRO.VERSION as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })

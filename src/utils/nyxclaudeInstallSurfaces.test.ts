@@ -310,7 +310,7 @@ test('cleanupNpmInstallations removes only nyxclaude local install dir', async (
   process.env.HOME = testHome
   process.env.USERPROFILE = testHome
   process.env.NYXCLAUDE_CONFIG_DIR = join(testHome, '.nyxclaude')
-  delete process.env.CLAUDE_CONFIG_DIR
+  delete process.env.NYXCLAUDE_CONFIG_DIR
   await fsPromises.mkdir(nyxClaudeLocalDir, { recursive: true })
   await fsPromises.mkdir(claudeLocalDir, { recursive: true })
 
@@ -342,7 +342,7 @@ test('cleanupNpmInstallations manual fallback removes nyxclaude npm shim', async
   process.env.HOME = testHome
   process.env.USERPROFILE = testHome
   process.env.NYXCLAUDE_CONFIG_DIR = join(testHome, '.nyxclaude')
-  delete process.env.CLAUDE_CONFIG_DIR
+  delete process.env.NYXCLAUDE_CONFIG_DIR
   fakeNpmPrefix = npmPrefix
   simulateNpmUninstallEnotempty = true
 
@@ -362,7 +362,7 @@ test('cleanupNpmInstallations manual fallback removes nyxclaude npm shim', async
 // ---------------------------------------------------------------------------
 // npm-only builds (NATIVE_PACKAGE_URL unset): every native-installer surface
 // must stay inert. Without these gates, `nyxclaude install` downloads the
-// first-party Claude Code binary from the GCS bucket, symlinks
+// first-party Nyxclaude binary from the GCS bucket, symlinks
 // ~/.local/bin/nyxclaude to it, and uninstalls the npm package the user is
 // actually running.
 // ---------------------------------------------------------------------------
@@ -443,7 +443,7 @@ test('cleanupOldVersions leaves the shared versions directory alone without a na
   }
 
   // The versions store under XDG data home is shared with the first-party
-  // native Claude Code install. Redirect all XDG roots to a temp dir and
+  // native Nyxclaude install. Redirect all XDG roots to a temp dir and
   // plant more unprotected version binaries than VERSION_RETENTION_COUNT:
   // an ungated cleanup would delete all but the newest two.
   const xdgRoot = await fsPromises.mkdtemp(join(tmpdir(), 'nyxclaude-xdg-'))

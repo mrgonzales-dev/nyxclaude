@@ -69,10 +69,10 @@ export async function analyzeBashCommand(
   command: string,
 ): Promise<BashCommandAnalysis> {
   const injectionCheckDisabled = isEnvTruthy(
-    process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK,
+    process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK,
   )
   const shadowEnabled = feature('TREE_SITTER_BASH_SHADOW')
-    ? getFeatureValue_CACHED_MAY_BE_STALE('tengu_birch_trellis', true)
+    ? getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_birch_trellis', true)
     : false
 
   let astRoot: Node | null | typeof PARSE_ABORTED = injectionCheckDisabled
@@ -109,7 +109,7 @@ export async function analyzeBashCommand(
         (tsSubs.length !== legacySubs.length ||
           tsSubs.some((s, i) => s !== legacySubs[i]))
     }
-    logEvent('tengu_tree_sitter_shadow', {
+    logEvent('nyxclaude_tree_sitter_shadow', {
       available,
       astTooComplex: tooComplex,
       astSemanticFail: semanticFail,

@@ -6,7 +6,7 @@ import {
   PROVIDER_PRESET_MANIFEST,
   VENDOR_DESCRIPTORS,
 } from '../integrations/generated/integrationArtifacts.generated.js'
-import type { AnthropicProxyDescriptor, ProviderPresetManifestEntry } from '../integrations/descriptors.js'
+import type { ProviderProxyDescriptor, ProviderPresetManifestEntry } from '../integrations/descriptors.js'
 
 import {
   getKnownProviderSecretEnvKeys,
@@ -75,7 +75,7 @@ describe('getKnownProviderSecretEnvKeys', () => {
   test('derives setup.credentialEnvVars from every anthropic proxy descriptor', () => {
     const known = new Set(getKnownProviderSecretEnvKeys())
     const declared = new Set<string>()
-    const proxies: readonly AnthropicProxyDescriptor[] = ANTHROPIC_PROXY_DESCRIPTORS
+    const proxies: readonly ProviderProxyDescriptor[] = ANTHROPIC_PROXY_DESCRIPTORS
     for (const proxy of proxies) {
       for (const key of proxy.setup?.credentialEnvVars ?? []) {
         declared.add(key)

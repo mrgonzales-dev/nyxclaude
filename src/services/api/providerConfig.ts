@@ -927,9 +927,9 @@ export function resolveProviderRequest(options?: {
   processEnv?: NodeJS.ProcessEnv
 }): ResolvedProviderRequest {
   const processEnv = options?.processEnv ?? process.env
-  const isGithubMode = isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB)
-  const isMistralMode = isEnvTruthy(processEnv.CLAUDE_CODE_USE_MISTRAL)
-  const isGeminiMode = isEnvTruthy(processEnv.CLAUDE_CODE_USE_GEMINI)
+  const isGithubMode = isEnvTruthy(processEnv.NYXCLAUDE_USE_GITHUB)
+  const isMistralMode = isEnvTruthy(processEnv.NYXCLAUDE_USE_MISTRAL)
+  const isGeminiMode = isEnvTruthy(processEnv.NYXCLAUDE_USE_GEMINI)
   const isClinePassMode = Boolean(processEnv.CLINE_API_KEY?.trim())
   const explicitBaseUrl = asEnvUrl(options?.baseUrl)
 
@@ -1210,13 +1210,13 @@ export function getAdditionalModelOptionsCacheScope(): string | null {
 }
 
 function _getAdditionalModelOptionsCacheScopeUncached(): string | null {
-  if (!isEnvTruthy(process.env.CLAUDE_CODE_USE_OPENAI)) {
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_USE_GEMINI) &&
-        !isEnvTruthy(process.env.CLAUDE_CODE_USE_MISTRAL) &&
-        !isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB) &&
-        !isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) &&
-        !isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX) &&
-        !isEnvTruthy(process.env.CLAUDE_CODE_USE_FOUNDRY)) {
+  if (!isEnvTruthy(process.env.NYXCLAUDE_USE_OPENAI)) {
+    if (!isEnvTruthy(process.env.NYXCLAUDE_USE_GEMINI) &&
+        !isEnvTruthy(process.env.NYXCLAUDE_USE_MISTRAL) &&
+        !isEnvTruthy(process.env.NYXCLAUDE_USE_GITHUB) &&
+        !isEnvTruthy(process.env.NYXCLAUDE_USE_BEDROCK) &&
+        !isEnvTruthy(process.env.NYXCLAUDE_USE_VERTEX) &&
+        !isEnvTruthy(process.env.NYXCLAUDE_USE_FOUNDRY)) {
       return 'firstParty'
     }
     return null
@@ -1237,7 +1237,7 @@ function _getAdditionalModelOptionsCacheScopeUncached(): string | null {
     authHeader: normalizeCacheScopeHeaderValue(process.env.OPENAI_AUTH_HEADER).toLowerCase(),
     authScheme: normalizeCacheScopeHeaderValue(process.env.OPENAI_AUTH_SCHEME).toLowerCase(),
     authHeaderValue: normalizeCacheScopeHeaderValue(process.env.OPENAI_AUTH_HEADER_VALUE),
-    customHeaders: normalizeCacheScopeHeaderValue(process.env.ANTHROPIC_CUSTOM_HEADERS),
+    customHeaders: normalizeCacheScopeHeaderValue(process.env.NYXCLAUDE_CUSTOM_HEADERS),
   })
 
   return `openai:${request.baseUrl.toLowerCase()}:${partition}`

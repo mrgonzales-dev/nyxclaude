@@ -6,7 +6,7 @@
  * (services/api/logging.ts, services/api/emptyUsage.ts).
  */
 
-import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { BetaUsage as Usage } from 'src/types/api.js'
 
 /**
  * API usage with every nullable field made required and non-null.

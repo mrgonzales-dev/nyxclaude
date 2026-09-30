@@ -40,9 +40,9 @@ import {
  * Execute file persistence for modified files in the outputs directory.
  *
  * Assembles all config internally:
- * - Checks environment kind (CLAUDE_CODE_ENVIRONMENT_KIND)
+ * - Checks environment kind (NYXCLAUDE_ENVIRONMENT_KIND)
  * - Retrieves session access token
- * - Requires CLAUDE_CODE_REMOTE_SESSION_ID for session ID
+ * - Requires NYXCLAUDE_REMOTE_SESSION_ID for session ID
  *
  * @param turnStartTime - The timestamp when the turn started
  * @param signal - Optional abort signal for cancellation
@@ -62,11 +62,11 @@ export async function runFilePersistence(
     return null
   }
 
-  const sessionId = process.env.CLAUDE_CODE_REMOTE_SESSION_ID
+  const sessionId = process.env.NYXCLAUDE_REMOTE_SESSION_ID
   if (!sessionId) {
     logError(
       new Error(
-        'File persistence enabled but CLAUDE_CODE_REMOTE_SESSION_ID is not set',
+        'File persistence enabled but NYXCLAUDE_REMOTE_SESSION_ID is not set',
       ),
     )
     return null
@@ -86,7 +86,7 @@ export async function runFilePersistence(
   }
 
   const startTime = Date.now()
-  logEvent('tengu_file_persistence_started', {
+  logEvent('nyxclaude_file_persistence_started', {
     mode: environmentKind as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   })
 
@@ -109,7 +109,7 @@ export async function runFilePersistence(
     }
 
     const durationMs = Date.now() - startTime
-    logEvent('tengu_file_persistence_completed', {
+    logEvent('nyxclaude_file_persistence_completed', {
       success_count: result.files.length,
       failure_count: result.failed.length,
       duration_ms: durationMs,
@@ -122,7 +122,7 @@ export async function runFilePersistence(
     logDebug(`File persistence failed: ${error}`)
 
     const durationMs = Date.now() - startTime
-    logEvent('tengu_file_persistence_completed', {
+    logEvent('nyxclaude_file_persistence_completed', {
       success_count: 0,
       failure_count: 0,
       duration_ms: durationMs,
@@ -173,7 +173,7 @@ async function executeBYOCPersistence(
     logDebug(
       `File count limit exceeded: ${modifiedFiles.length} > ${FILE_COUNT_LIMIT}`,
     )
-    logEvent('tengu_file_persistence_limit_exceeded', {
+    logEvent('nyxclaude_file_persistence_limit_exceeded', {
       file_count: modifiedFiles.length,
       limit: FILE_COUNT_LIMIT,
     })
@@ -271,7 +271,7 @@ export async function executeFilePersistence(
 /**
  * Check if file persistence is enabled.
  * Requires: feature flag ON, valid environment kind, session access token,
- * and CLAUDE_CODE_REMOTE_SESSION_ID.
+ * and NYXCLAUDE_REMOTE_SESSION_ID.
  * This ensures only public-api/sessions users trigger file persistence,
  * not normal Nyxclaude CLI users.
  */
@@ -280,7 +280,7 @@ export function isFilePersistenceEnabled(): boolean {
     return (
       getEnvironmentKind() === 'byoc' &&
       !!getSessionIngressAuthToken() &&
-      !!process.env.CLAUDE_CODE_REMOTE_SESSION_ID
+      !!process.env.NYXCLAUDE_REMOTE_SESSION_ID
     )
   }
   return false

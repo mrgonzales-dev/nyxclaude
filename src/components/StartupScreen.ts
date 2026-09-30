@@ -71,10 +71,10 @@ export function detectProvider(modelOverride?: string): { name: string; model: s
       isLocal: true,
     }
   }
-  const useGemini = process.env.CLAUDE_CODE_USE_GEMINI === '1' || process.env.CLAUDE_CODE_USE_GEMINI === 'true'
-  const useGithub = process.env.CLAUDE_CODE_USE_GITHUB === '1' || process.env.CLAUDE_CODE_USE_GITHUB === 'true'
-  const useOpenAI = process.env.CLAUDE_CODE_USE_OPENAI === '1' || process.env.CLAUDE_CODE_USE_OPENAI === 'true'
-  const useMistral = process.env.CLAUDE_CODE_USE_MISTRAL === '1' || process.env.CLAUDE_CODE_USE_MISTRAL === 'true'
+  const useGemini = process.env.NYXCLAUDE_USE_GEMINI === '1' || process.env.NYXCLAUDE_USE_GEMINI === 'true'
+  const useGithub = process.env.NYXCLAUDE_USE_GITHUB === '1' || process.env.NYXCLAUDE_USE_GITHUB === 'true'
+  const useOpenAI = process.env.NYXCLAUDE_USE_OPENAI === '1' || process.env.NYXCLAUDE_USE_OPENAI === 'true'
+  const useMistral = process.env.NYXCLAUDE_USE_MISTRAL === '1' || process.env.NYXCLAUDE_USE_MISTRAL === 'true'
 
   if (useGemini) {
     const model = modelOverride || process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL
@@ -155,13 +155,13 @@ export function detectProvider(modelOverride?: string): { name: string; model: s
 
   // No provider configured — don't fall back to Anthropic (nyxclaude has no
   // Anthropic auth). Prompt the user to run /provider instead.
-  if (hasNoProviderConfigured() && !modelOverride && !process.env.ANTHROPIC_MODEL && !process.env.CLAUDE_MODEL) {
+  if (hasNoProviderConfigured() && !modelOverride && !process.env.ANTHROPIC_MODEL && !process.env.NYXCLAUDE_MODEL) {
     return { name: 'No provider', model: '', baseUrl: '', isLocal: false }
   }
 
   // Default: Anthropic - check settings.model first, then env vars
   const settings = getSettings_DEPRECATED() || {}
-  const modelSetting = modelOverride || process.env.ANTHROPIC_MODEL || process.env.CLAUDE_MODEL || settings.model || 'claude-sonnet-4-6'
+  const modelSetting = modelOverride || process.env.ANTHROPIC_MODEL || process.env.NYXCLAUDE_MODEL || settings.model || 'claude-sonnet-4-6'
   const resolvedModel = parseUserSpecifiedModel(modelSetting)
   const baseUrl = process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com'
   const isLocal = isLocalProviderUrl(baseUrl)

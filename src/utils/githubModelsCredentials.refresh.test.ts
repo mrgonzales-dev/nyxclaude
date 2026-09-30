@@ -17,8 +17,8 @@ function getGithubTokenEnv(): string | undefined {
 
 describe('refreshGithubModelsTokenIfNeeded', () => {
   const orig = {
-    CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
-    CLAUDE_CODE_SIMPLE: process.env.CLAUDE_CODE_SIMPLE,
+    NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
+    NYXCLAUDE_SIMPLE: process.env.NYXCLAUDE_SIMPLE,
     GITHUB_TOKEN: process.env.GITHUB_TOKEN,
     GH_TOKEN: process.env.GH_TOKEN,
   }
@@ -46,8 +46,8 @@ describe('refreshGithubModelsTokenIfNeeded', () => {
   })
 
   test('refreshes expired Copilot token using stored OAuth token', async () => {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
-    delete process.env.CLAUDE_CODE_SIMPLE
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
+    delete process.env.NYXCLAUDE_SIMPLE
     delete process.env.GITHUB_TOKEN
     delete process.env.GH_TOKEN
 
@@ -96,8 +96,8 @@ describe('refreshGithubModelsTokenIfNeeded', () => {
   })
 
   test('does not refresh when current Copilot token is valid', async () => {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
-    delete process.env.CLAUDE_CODE_SIMPLE
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
+    delete process.env.NYXCLAUDE_SIMPLE
     delete process.env.GITHUB_TOKEN
     delete process.env.GH_TOKEN
 
@@ -160,7 +160,7 @@ describe('refreshCopilotTokenOn401', () => {
     GITHUB_TOKEN: process.env.GITHUB_TOKEN,
     GITHUB_ENTERPRISE_URL: process.env.GITHUB_ENTERPRISE_URL,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    CLAUDE_CODE_SIMPLE: process.env.CLAUDE_CODE_SIMPLE,
+    NYXCLAUDE_SIMPLE: process.env.NYXCLAUDE_SIMPLE,
   }
 
   beforeEach(async () => {
@@ -168,7 +168,7 @@ describe('refreshCopilotTokenOn401', () => {
     // Clear early-exit guards so each test starts from a clean baseline
     // regardless of prior test failures or CI environment.
     delete process.env.GITHUB_COPILOT_KEY
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
   })
 
   afterEach(() => {
@@ -187,7 +187,7 @@ describe('refreshCopilotTokenOn401', () => {
   })
 
   test('returns false in bare mode', async () => {
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.NYXCLAUDE_SIMPLE = '1'
 
     const { refreshCopilotTokenOn401 } =
       await importFreshGithubModelsCredentials('refresh=bare-mode')

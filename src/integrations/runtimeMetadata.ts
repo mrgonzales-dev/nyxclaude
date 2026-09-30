@@ -463,7 +463,7 @@ function findCachedCatalogEntryForApiName(
         processEnv: runtimeEnv,
       }),
     ),
-    headers: parseCustomHeadersEnv(runtimeEnv.ANTHROPIC_CUSTOM_HEADERS),
+    headers: parseCustomHeadersEnv(runtimeEnv.NYXCLAUDE_CUSTOM_HEADERS),
   })
   const cached = getCachedModelsSync(cacheKey, getDiscoveryCacheTtlMs(routeId))
 

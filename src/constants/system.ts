@@ -10,14 +10,14 @@ import { PRODUCT_DISPLAY_NAME } from './product.js'
 
 const DEFAULT_PREFIX =
   `You are ${PRODUCT_DISPLAY_NAME}, an open-source coding agent and CLI.`
-const AGENT_SDK_CLAUDE_CODE_PRESET_PREFIX =
-  `You are ${PRODUCT_DISPLAY_NAME}, an open-source coding agent and CLI running within the Claude Agent SDK.`
+const AGENT_SDK_NYXCLAUDE_PRESET_PREFIX =
+  `You are ${PRODUCT_DISPLAY_NAME}, an open-source coding agent and CLI running within the Nyxclaude Agent SDK.`
 const AGENT_SDK_PREFIX =
-  `You are ${PRODUCT_DISPLAY_NAME}, built on the Claude Agent SDK.`
+  `You are ${PRODUCT_DISPLAY_NAME}, built on the Nyxclaude Agent SDK.`
 
 const CLI_SYSPROMPT_PREFIX_VALUES = [
   DEFAULT_PREFIX,
-  AGENT_SDK_CLAUDE_CODE_PRESET_PREFIX,
+  AGENT_SDK_NYXCLAUDE_PRESET_PREFIX,
   AGENT_SDK_PREFIX,
 ] as const
 
@@ -42,7 +42,7 @@ export function getCLISyspromptPrefix(options?: {
 
   if (options?.isNonInteractive) {
     if (options.hasAppendSystemPrompt) {
-      return AGENT_SDK_CLAUDE_CODE_PRESET_PREFIX
+      return AGENT_SDK_NYXCLAUDE_PRESET_PREFIX
     }
     return AGENT_SDK_PREFIX
   }
@@ -54,10 +54,10 @@ export function getCLISyspromptPrefix(options?: {
  * Enabled by default, can be disabled via env var or GrowthBook killswitch.
  */
 function isAttributionHeaderEnabled(): boolean {
-  if (isEnvDefinedFalsy(process.env.CLAUDE_CODE_ATTRIBUTION_HEADER)) {
+  if (isEnvDefinedFalsy(process.env.NYXCLAUDE_ATTRIBUTION_HEADER)) {
     return false
   }
-  return getFeatureValue_CACHED_MAY_BE_STALE('tengu_attribution_header', true)
+  return getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_attribution_header', true)
 }
 
 /**
@@ -80,7 +80,7 @@ export function getAttributionHeader(fingerprint: string): string {
   }
 
   const version = `${MACRO.VERSION}.${fingerprint}`
-  const entrypoint = process.env.CLAUDE_CODE_ENTRYPOINT ?? 'unknown'
+  const entrypoint = process.env.NYXCLAUDE_ENTRYPOINT ?? 'unknown'
 
   // cch=00000 placeholder is overwritten by Bun's HTTP stack with attestation token
   const cch = feature('NATIVE_CLIENT_ATTESTATION') ? ' cch=00000;' : ''

@@ -18,17 +18,17 @@ import { parseCustomHeadersEnv } from '../providerCustomHeaders.js'
 
 const ROUTE = 'nvidia-nim'
 const originalEnv = {
-  ANTHROPIC_CUSTOM_HEADERS: process.env.ANTHROPIC_CUSTOM_HEADERS,
-  CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
+  NYXCLAUDE_CUSTOM_HEADERS: process.env.NYXCLAUDE_CUSTOM_HEADERS,
   NYXCLAUDE_CONFIG_DIR: process.env.NYXCLAUDE_CONFIG_DIR,
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
-  CLAUDE_CODE_USE_MISTRAL: process.env.CLAUDE_CODE_USE_MISTRAL,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+  NYXCLAUDE_CONFIG_DIR: process.env.NYXCLAUDE_CONFIG_DIR,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
+  NYXCLAUDE_USE_MISTRAL: process.env.NYXCLAUDE_USE_MISTRAL,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
   NVIDIA_API_KEY: process.env.NVIDIA_API_KEY,
   NVIDIA_NIM: process.env.NVIDIA_NIM,
   OPENAI_API_BASE: process.env.OPENAI_API_BASE,
@@ -82,9 +82,9 @@ describe('nvidia-nim discovery cache key parity', () => {
     await acquireSharedMutationLock('nvidiaNimModels.test.ts')
     mock.restore()
     tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-nvidia-nim-cache-test-'))
-    process.env.CLAUDE_CONFIG_DIR = tempDir
     process.env.NYXCLAUDE_CONFIG_DIR = tempDir
-    delete process.env.ANTHROPIC_CUSTOM_HEADERS
+    process.env.NYXCLAUDE_CONFIG_DIR = tempDir
+    delete process.env.NYXCLAUDE_CUSTOM_HEADERS
   })
 
   afterEach(() => {
@@ -118,14 +118,14 @@ describe('nvidia-nim discovery cache key parity', () => {
 
     withEnv(
       {
-        ANTHROPIC_CUSTOM_HEADERS: 'x-tenant=acme,x-env=prod',
+        NYXCLAUDE_CUSTOM_HEADERS: 'x-tenant=acme,x-env=prod',
       },
       () => {
         const pickerKey = getDiscoveryCacheKey(ROUTE, {
           baseUrl,
           apiKey,
           headers: parseCustomHeadersEnv(
-            process.env.ANTHROPIC_CUSTOM_HEADERS,
+            process.env.NYXCLAUDE_CUSTOM_HEADERS,
           ),
         })
 
@@ -133,7 +133,7 @@ describe('nvidia-nim discovery cache key parity', () => {
           baseUrl,
           apiKey,
           headers: parseCustomHeadersEnv(
-            process.env.ANTHROPIC_CUSTOM_HEADERS,
+            process.env.NYXCLAUDE_CUSTOM_HEADERS,
           ),
         })
 
@@ -150,7 +150,7 @@ describe('nvidia-nim discovery cache key parity', () => {
 
     const baseUrl = 'https://integrate.api.nvidia.com/v1'
     const processEnv: NodeJS.ProcessEnv = {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: baseUrl,
       OPENAI_MODEL: 'nvidia/test-chat',
       OPENAI_API_KEYS: 'key-a,key-b',
@@ -158,27 +158,27 @@ describe('nvidia-nim discovery cache key parity', () => {
     const pickerKey = getDiscoveryCacheKey(ROUTE, {
       baseUrl,
       apiKey: 'key-a',
-      headers: parseCustomHeadersEnv(processEnv.ANTHROPIC_CUSTOM_HEADERS),
+      headers: parseCustomHeadersEnv(processEnv.NYXCLAUDE_CUSTOM_HEADERS),
     })
 
     expect(getNvidiaNimDiscoveryCacheKeyForEnv(processEnv)).toBe(pickerKey)
   })
 
-  test('absent ANTHROPIC_CUSTOM_HEADERS leaves picker and inline keys identical', () => {
+  test('absent NYXCLAUDE_CUSTOM_HEADERS leaves picker and inline keys identical', () => {
     const baseUrl = 'https://integrate.api.nvidia.com/v1'
     const apiKey = 'nvapi-test'
 
-    delete process.env.ANTHROPIC_CUSTOM_HEADERS
+    delete process.env.NYXCLAUDE_CUSTOM_HEADERS
 
     const pickerKey = getDiscoveryCacheKey(ROUTE, {
       baseUrl,
       apiKey,
-      headers: parseCustomHeadersEnv(process.env.ANTHROPIC_CUSTOM_HEADERS),
+      headers: parseCustomHeadersEnv(process.env.NYXCLAUDE_CUSTOM_HEADERS),
     })
     const inlineKey = getDiscoveryCacheKey(ROUTE, {
       baseUrl,
       apiKey,
-      headers: parseCustomHeadersEnv(process.env.ANTHROPIC_CUSTOM_HEADERS),
+      headers: parseCustomHeadersEnv(process.env.NYXCLAUDE_CUSTOM_HEADERS),
     })
 
     expect(inlineKey).toBe(pickerKey)

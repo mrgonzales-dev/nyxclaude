@@ -1,7 +1,6 @@
 import { dirname, isAbsolute, sep } from 'path'
 import { logEvent } from 'src/services/analytics/index.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
-import { diagnosticTracker } from '../../services/diagnosticTracking.js'
 import { clearDeliveredDiagnosticsForFile } from '../../services/lsp/LSPDiagnosticRegistry.js'
 import { getLspServerManager } from '../../services/lsp/manager.js'
 import { notifyVscodeFileUpdated } from '../../services/mcp/vscodeSdkMcp.js'
@@ -404,7 +403,7 @@ export const FileEditTool = buildTool({
     // Discover skills from this file's path (fire-and-forget, non-blocking)
     // Skip in simple mode - no skills available
     const cwd = getCwd()
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+    if (!isEnvTruthy(process.env.NYXCLAUDE_SIMPLE)) {
       const newSkillDirs = await discoverSkillDirsForPaths(
         [absoluteFilePath],
         cwd,
@@ -421,8 +420,6 @@ export const FileEditTool = buildTool({
       // Activate conditional skills whose path patterns match this file
       activateConditionalSkillsForPaths([absoluteFilePath], cwd)
     }
-
-    await diagnosticTracker.beforeFileEditedCompat(absoluteFilePath)
 
     // Ensure parent directory exists before the atomic read-modify-write section.
     // These awaits must stay OUTSIDE the critical section below — a yield between
@@ -528,7 +525,7 @@ export const FileEditTool = buildTool({
     if (
       absoluteFilePath.endsWith(`${sep}AGENTS.md`)
     ) {
-      logEvent('tengu_write_agentsmd', {})
+      logEvent('nyxclaude_write_agentsmd', {})
     }
     countLinesChanged(patch)
 
@@ -538,7 +535,7 @@ export const FileEditTool = buildTool({
       filePath: absoluteFilePath,
     })
 
-    logEvent('tengu_edit_string_lengths', {
+    logEvent('nyxclaude_edit_string_lengths', {
       oldStringBytes: Buffer.byteLength(old_string, 'utf8'),
       newStringBytes: Buffer.byteLength(new_string, 'utf8'),
       replaceAll: replace_all,
@@ -546,13 +543,13 @@ export const FileEditTool = buildTool({
 
     let gitDiff: ToolUseDiff | undefined
     if (
-      isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) &&
-      getFeatureValue_CACHED_MAY_BE_STALE('tengu_quartz_lantern', false)
+      isEnvTruthy(process.env.NYXCLAUDE_REMOTE) &&
+      getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_quartz_lantern', false)
     ) {
       const startTime = Date.now()
       const diff = await fetchSingleFileGitDiff(absoluteFilePath)
       if (diff) gitDiff = diff
-      logEvent('tengu_tool_use_diff_computed', {
+      logEvent('nyxclaude_tool_use_diff_computed', {
         isEditTool: true,
         durationMs: Date.now() - startTime,
         hasDiff: !!diff,

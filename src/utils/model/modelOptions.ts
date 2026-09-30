@@ -11,7 +11,7 @@ import {
   resolveProviderRequest,
 } from '../../services/api/providerConfig.js'
 import {
-  isClaudeAISubscriber,
+  isSubscriber,
   isMaxSubscriber,
   isTeamPremiumSubscriber,
 } from '../auth.js'
@@ -33,7 +33,7 @@ import {
 import { isModelAllowed } from './modelAllowlist.js'
 import {
   getCanonicalName,
-  getClaudeAiUserDefaultModelDescription,
+  getUserDefaultModelDescription,
   getDefaultSonnetModel,
   getDefaultOpusModel,
   getDefaultHaikuModel,
@@ -175,11 +175,11 @@ export function getDefaultOptionForUser(fastMode = false): ModelOption {
   }
 
   // Subscribers
-  if (isClaudeAISubscriber()) {
+  if (isSubscriber()) {
     return {
       value: null,
       label: 'Default (recommended)',
-      description: getClaudeAiUserDefaultModelDescription(fastMode),
+      description: getUserDefaultModelDescription(fastMode),
     }
   }
 
@@ -358,7 +358,7 @@ function getMaxOpusOption(fastMode = false): ModelOption {
 
 export function getMaxSonnet46_1MOption(): ModelOption {
   const is3P = getAPIProvider() !== 'firstParty'
-  const billingInfo = isClaudeAISubscriber() ? ' · Billed as extra usage' : ''
+  const billingInfo = isSubscriber() ? ' · Billed as extra usage' : ''
   return {
     value: 'sonnet[1m]',
     label: 'Sonnet (1M context)',
@@ -367,7 +367,7 @@ export function getMaxSonnet46_1MOption(): ModelOption {
 }
 
 export function getMaxOpus46_1MOption(fastMode = false): ModelOption {
-  const billingInfo = isClaudeAISubscriber() ? ' · Billed as extra usage' : ''
+  const billingInfo = isSubscriber() ? ' · Billed as extra usage' : ''
   return {
     value: 'opus[1m]',
     label: 'Opus (1M context)',
@@ -515,7 +515,7 @@ function getModelOptionsBase(fastMode = false): ModelOption[] {
   // route-catalog scope) because users with a local profile active still need
   // the unified `/model` switcher to surface every other configured profile —
   // otherwise they have to round-trip through `/provider` (issue #1119).
-  const profileEnvApplied = process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED === '1'
+  const profileEnvApplied = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED === '1'
   const profileModelOptions: ModelOption[] = []
   let activeProfileId: string | undefined
   if (profileEnvApplied) {
@@ -545,14 +545,14 @@ function getModelOptionsBase(fastMode = false): ModelOption[] {
     ]
   }
 
-  // When using Ollama, show models from the Ollama server instead of Claude models
+  // When using Ollama, show models from the Ollama server instead of Models
   if (getAPIProvider() === 'openai' && isOllamaProvider()) {
     const defaultOption = getDefaultOptionForUser(fastMode)
     const ollamaModels = getCachedOllamaModelOptions()
     if (ollamaModels.length > 0) {
       return [defaultOption, ...ollamaModels, ...inactiveProfileOptions]
     }
-    // Fallback: if models not yet fetched, show current model instead of Claude models
+    // Fallback: if models not yet fetched, show current model instead of Models
     const currentModel = getUserSpecifiedModelSetting() ?? getInitialMainLoopModel()
     if (currentModel != null) {
       return [
@@ -639,7 +639,7 @@ function getModelOptionsBase(fastMode = false): ModelOption[] {
     ]
   }
 
-  if (isClaudeAISubscriber()) {
+  if (isSubscriber()) {
     if (isMaxSubscriber() || isTeamPremiumSubscriber()) {
       // Max and Team Premium users: Opus is default, show Sonnet as alternative
       const premiumOptions = [getDefaultOptionForUser(fastMode)]
@@ -893,7 +893,7 @@ function normalizeRouteModelOptionKey(model: string): string {
 }
 
 function getActiveOpenAIRouteId(): string | null {
-  const openAIFlag = process.env.CLAUDE_CODE_USE_OPENAI?.trim().toLowerCase()
+  const openAIFlag = process.env.NYXCLAUDE_USE_OPENAI?.trim().toLowerCase()
   if (!openAIFlag || ['0', 'false', 'no', 'off'].includes(openAIFlag)) {
     return null
   }

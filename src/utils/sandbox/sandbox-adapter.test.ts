@@ -26,7 +26,7 @@ describe('convertToSandboxRuntimeConfig', () => {
   beforeEach(async () => {
     await acquireSharedMutationLock('utils/sandbox/sandbox-adapter.test.ts')
 
-    previousConfigDir = process.env.CLAUDE_CONFIG_DIR
+    previousConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
     previousOriginalCwd = getOriginalCwd()
     previousCwd = getCwdState()
 
@@ -34,7 +34,7 @@ describe('convertToSandboxRuntimeConfig', () => {
     const originalCwd = join(tempRoot, 'original-project')
     activeCwd = join(tempRoot, 'active-project')
 
-    process.env.CLAUDE_CONFIG_DIR = join(tempRoot, 'config')
+    process.env.NYXCLAUDE_CONFIG_DIR = join(tempRoot, 'config')
     resetSettingsCache()
     setOriginalCwd(originalCwd)
     setCwdState(activeCwd)
@@ -43,9 +43,9 @@ describe('convertToSandboxRuntimeConfig', () => {
   afterEach(async () => {
     try {
       if (previousConfigDir === undefined) {
-        delete process.env.CLAUDE_CONFIG_DIR
+        delete process.env.NYXCLAUDE_CONFIG_DIR
       } else {
-        process.env.CLAUDE_CONFIG_DIR = previousConfigDir
+        process.env.NYXCLAUDE_CONFIG_DIR = previousConfigDir
       }
       setOriginalCwd(previousOriginalCwd)
       setCwdState(previousCwd)
@@ -77,9 +77,9 @@ describe('convertToSandboxRuntimeConfig', () => {
     }
   })
 
-  test('denies legacy Claude config surfaces from CLAUDE_CONFIG_DIR', () => {
+  test('denies legacy Claude config surfaces from NYXCLAUDE_CONFIG_DIR', () => {
     const config = convertToSandboxRuntimeConfig({} as SettingsJson)
-    const configDir = process.env.CLAUDE_CONFIG_DIR!
+    const configDir = process.env.NYXCLAUDE_CONFIG_DIR!
 
     expect(config.filesystem.denyWrite).toContain(resolve(configDir))
   })
@@ -90,8 +90,8 @@ describe('convertToSandboxRuntimeConfig', () => {
     const representativeLegacyPaths = [
       resolve(getOriginalCwd(), '.claude', 'AGENTS.md'),
       resolve(activeCwd, '.claude', 'credentials.json'),
-      resolve(process.env.CLAUDE_CONFIG_DIR!, 'plugins', 'plugin.json'),
-      resolve(process.env.CLAUDE_CONFIG_DIR!, 'scheduled-tasks', 'task.json'),
+      resolve(process.env.NYXCLAUDE_CONFIG_DIR!, 'plugins', 'plugin.json'),
+      resolve(process.env.NYXCLAUDE_CONFIG_DIR!, 'scheduled-tasks', 'task.json'),
     ]
 
     for (const legacyPath of representativeLegacyPaths) {

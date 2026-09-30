@@ -10,7 +10,7 @@ import {
   type Command,
 } from '../../commands.js'
 import { getCwd } from '../../utils/cwd.js'
-import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../../utils/envUtils.js'
 import { getDisplayPath } from '../../utils/file.js'
 import { getFsImplementation } from '../../utils/fsOperations.js'
 import { PROJECT_CONFIG_DIR_NAMES } from '../../utils/markdownConfigLoader.js'
@@ -81,7 +81,7 @@ function isContainedInRoot(root: string, child: string): boolean {
 
 function localSkillRoots(options: RemoveOptions): string[] {
   return options.global
-    ? [join(getClaudeConfigHomeDir(), 'skills')]
+    ? [join(getNyxclaudeConfigHomeDir(), 'skills')]
     : PROJECT_CONFIG_DIR_NAMES.map(configDirName =>
         join(options.projectDir ?? getCwd(), configDirName, 'skills'),
       )

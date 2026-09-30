@@ -7,7 +7,7 @@ const sessionTranscriptModule = feature('KAIROS')
   ? (require('../sessionTranscript/sessionTranscript.js') as typeof import('../sessionTranscript/sessionTranscript.js'))
   : null
 
-import { APIUserAbortError } from '@anthropic-ai/sdk'
+import { APIUserAbortError } from 'src/types/api.js'
 import { markPostCompaction } from 'src/bootstrap/state.js'
 import {
   getInvokedSkillsForAgent,
@@ -107,7 +107,7 @@ import {
 import {
   getMaxOutputTokensForModel,
   queryModelWithStreaming,
-} from '../api/claude.js'
+} from '../api/modelApi.js'
 import {
   getPromptTooLongTokenGap,
   PROMPT_TOO_LONG_ERROR_MESSAGE,
@@ -361,7 +361,7 @@ export interface CompactionResult {
 
 /**
  * Diagnosis context passed from autoCompactIfNeeded into compactConversation.
- * Lets the tengu_compact event disambiguate same-chain loops (H2) from
+ * Lets the nyxclaude_compact event disambiguate same-chain loops (H2) from
  * cross-agent (H1/H5) and manual-vs-auto (H3) compactions without joins.
  */
 export type RecompactionInfo = {
@@ -433,8 +433,8 @@ export function mergeHookInstructions(
 /**
  * Whether the active provider can share the main conversation's prompt cache
  * during compaction. True for Anthropic-capable providers (firstParty/Bedrock/
- * Vertex/Foundry) AND GitHub Native Anthropic mode (CLAUDE_CODE_USE_GITHUB=1
- * with a Claude model): the latter routes through the native Anthropic client
+ * Vertex/Foundry) AND GitHub Native Anthropic mode (NYXCLAUDE_USE_GITHUB=1
+ * with a Model): the latter routes through the native Anthropic client
  * where cache_control / prompt caching works. Mirrors the beta-header gate in
  * betas.ts so compaction cache-sharing and request shaping stay aligned —
  * otherwise GitHub Native Anthropic sessions would always take the cold-cache
@@ -492,7 +492,7 @@ export async function compactConversation(
     context.onCompactProgress?.({ type: 'compact_start' })
 
     // Cache-sharing is enabled only for Anthropic-capable providers (incl.
-    // GitHub Native Anthropic mode) when the tengu_compact_cache_prefix flag is
+    // GitHub Native Anthropic mode) when the nyxclaude_compact_cache_prefix flag is
     // on. Other (3P) providers remain incompatible: they don't share the main
     // conversation's prompt cache, and the forked-agent path would send
     // Anthropic-only params (betas, context_management) that they reject.
@@ -505,7 +505,7 @@ export async function compactConversation(
     const promptCacheSharingEnabled =
       isCompactionCacheSharingCompatible(context.options.mainLoopModel) &&
       getFeatureValue_CACHED_MAY_BE_STALE(
-        'tengu_compact_cache_prefix',
+        'nyxclaude_compact_cache_prefix',
         true,
       )
 
@@ -544,7 +544,7 @@ export async function compactConversation(
         } as unknown as AssistantMessage,
       )
       if (proactivelyTruncated && proactivelyTruncated.length < messagesToSummarize.length) {
-        logEvent('tengu_compact_ptl_retry', {
+        logEvent('nyxclaude_compact_ptl_retry', {
           attempt: 0,
           droppedMessages: messagesToSummarize.length - proactivelyTruncated.length,
           remainingMessages: proactivelyTruncated.length,
@@ -578,7 +578,7 @@ export async function compactConversation(
           ? truncateHeadForPTLRetry(messagesToSummarize, summaryResponse)
           : null
       if (!truncated) {
-        logEvent('tengu_compact_failed', {
+        logEvent('nyxclaude_compact_failed', {
           reason:
             'prompt_too_long' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           preCompactTokenCount,
@@ -587,7 +587,7 @@ export async function compactConversation(
         })
         throw new Error(ERROR_MESSAGE_PROMPT_TOO_LONG)
       }
-      logEvent('tengu_compact_ptl_retry', {
+      logEvent('nyxclaude_compact_ptl_retry', {
         attempt: ptlAttempts,
         droppedMessages: messagesToSummarize.length - truncated.length,
         remainingMessages: truncated.length,
@@ -606,7 +606,7 @@ export async function compactConversation(
         `Compact failed: no summary text in response. Response: ${jsonStringify(summaryResponse)}`,
         { level: 'error' },
       )
-      logEvent('tengu_compact_failed', {
+      logEvent('nyxclaude_compact_failed', {
         reason:
           'no_summary' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         preCompactTokenCount,
@@ -616,7 +616,7 @@ export async function compactConversation(
         `Failed to generate conversation summary - response did not contain valid text content`,
       )
     } else if (startsWithApiErrorPrefix(summary)) {
-      logEvent('tengu_compact_failed', {
+      logEvent('nyxclaude_compact_failed', {
         reason:
           'api_error' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         preCompactTokenCount,
@@ -687,7 +687,7 @@ export async function compactConversation(
       context.options.agentDefinitions,
     )
     if (postCompactDeltaSignature === lastPostCompactDeltaSignature) {
-      logEvent('tengu_compact_delta_cache_hit', {
+      logEvent('nyxclaude_compact_delta_cache_hit', {
         signature: postCompactDeltaSignature,
       })
     } else {
@@ -776,7 +776,7 @@ export async function compactConversation(
     const querySourceForEvent =
       recompactionInfo?.querySource ?? context.options.querySource ?? 'unknown'
 
-    logEvent('tengu_compact', {
+    logEvent('nyxclaude_compact', {
       preCompactTokenCount,
       // Kept for continuity — semantically the compact API call's total usage
       postCompactTokenCount: compactionCallTotalTokens,
@@ -1017,7 +1017,7 @@ export async function partialCompactConversation(
           ? truncateHeadForPTLRetry(apiMessages, summaryResponse)
           : null
       if (!truncated) {
-        logEvent('tengu_partial_compact_failed', {
+        logEvent('nyxclaude_partial_compact_failed', {
           reason:
             'prompt_too_long' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           ...failureMetadata,
@@ -1025,7 +1025,7 @@ export async function partialCompactConversation(
         })
         throw new Error(ERROR_MESSAGE_PROMPT_TOO_LONG)
       }
-      logEvent('tengu_compact_ptl_retry', {
+      logEvent('nyxclaude_compact_ptl_retry', {
         attempt: ptlAttempts,
         droppedMessages: apiMessages.length - truncated.length,
         remainingMessages: truncated.length,
@@ -1038,7 +1038,7 @@ export async function partialCompactConversation(
       }
     }
     if (!summary) {
-      logEvent('tengu_partial_compact_failed', {
+      logEvent('nyxclaude_partial_compact_failed', {
         reason:
           'no_summary' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         ...failureMetadata,
@@ -1047,7 +1047,7 @@ export async function partialCompactConversation(
         'Failed to generate conversation summary - response did not contain valid text content',
       )
     } else if (startsWithApiErrorPrefix(summary)) {
-      logEvent('tengu_partial_compact_failed', {
+      logEvent('nyxclaude_partial_compact_failed', {
         reason:
           'api_error' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         ...failureMetadata,
@@ -1127,7 +1127,7 @@ export async function partialCompactConversation(
     ])
     const compactionUsage = getTokenUsage(summaryResponse)
 
-    logEvent('tengu_partial_compact', {
+    logEvent('nyxclaude_partial_compact', {
       preCompactTokenCount,
       postCompactTokenCount,
       messagesKept: messagesToKeep.length,
@@ -1304,7 +1304,7 @@ async function streamCompactSummary({
   const promptCacheSharingEnabled =
     cacheSharingAvailable &&
     getFeatureValue_CACHED_MAY_BE_STALE(
-      'tengu_compact_cache_prefix',
+      'nyxclaude_compact_cache_prefix',
       true,
     )
   // Send keep-alive signals during compaction to prevent remote session
@@ -1332,7 +1332,7 @@ async function streamCompactSummary({
         // DO NOT set maxOutputTokens here. The fork piggybacks on the main thread's
         // prompt cache by sending identical cache-key params (system, tools, model,
         // messages prefix, thinking config). Setting maxOutputTokens would clamp
-        // budget_tokens via Math.min(budget, maxOutputTokens-1) in claude.ts,
+        // budget_tokens via Math.min(budget, maxOutputTokens-1) in modelApi.ts,
         // creating a thinking config mismatch that invalidates the cache.
         // The streaming fallback path (below) can safely set maxOutputTokensOverride
         // since it doesn't share cache with the main thread.
@@ -1403,7 +1403,7 @@ async function streamCompactSummary({
           // Skip success logging for PTL error text — it's returned so the
           // caller's retry loop catches it, but it's not a successful summary.
           if (!assistantText.startsWith(PROMPT_TOO_LONG_ERROR_MESSAGE)) {
-            logEvent('tengu_compact_cache_sharing_success', {
+            logEvent('nyxclaude_compact_cache_sharing_success', {
               preCompactTokenCount,
               outputTokens: result.totalUsage.output_tokens,
               cacheReadInputTokens: result.totalUsage.cache_read_input_tokens,
@@ -1424,14 +1424,14 @@ async function streamCompactSummary({
           `Compact cache sharing: no text in response, falling back. Response: ${jsonStringify(assistantMsg)}`,
           { level: 'warn' },
         )
-        logEvent('tengu_compact_cache_sharing_fallback', {
+        logEvent('nyxclaude_compact_cache_sharing_fallback', {
           reason:
             'no_text_response' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           preCompactTokenCount,
         })
       } catch (error) {
         logError(error)
-        logEvent('tengu_compact_cache_sharing_fallback', {
+        logEvent('nyxclaude_compact_cache_sharing_fallback', {
           reason:
             'error' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           preCompactTokenCount,
@@ -1441,7 +1441,7 @@ async function streamCompactSummary({
 
     // Regular streaming path (fallback when cache sharing fails or is disabled)
     const retryEnabled = getFeatureValue_CACHED_MAY_BE_STALE(
-      'tengu_compact_streaming_retry',
+      'nyxclaude_compact_streaming_retry',
       false,
     )
     const maxAttempts = retryEnabled ? MAX_COMPACT_STREAMING_RETRIES : 1
@@ -1574,7 +1574,7 @@ async function streamCompactSummary({
       }
 
       if (attempt < maxAttempts) {
-        logEvent('tengu_compact_streaming_retry', {
+        logEvent('nyxclaude_compact_streaming_retry', {
           attempt,
           preCompactTokenCount,
           hasStartedStreaming,
@@ -1589,7 +1589,7 @@ async function streamCompactSummary({
         `Compact streaming failed after ${attempt} attempts. hasStartedStreaming=${hasStartedStreaming}`,
         { level: 'error' },
       )
-      logEvent('tengu_compact_failed', {
+      logEvent('nyxclaude_compact_failed', {
         reason:
           'no_streaming_response' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         preCompactTokenCount,
@@ -1654,8 +1654,8 @@ export async function createPostCompactFileAttachments(
             maxTokens: POST_COMPACT_MAX_TOKENS_PER_FILE,
           },
         },
-        'tengu_post_compact_file_restore_success',
-        'tengu_post_compact_file_restore_error',
+        'nyxclaude_post_compact_file_restore_success',
+        'nyxclaude_post_compact_file_restore_error',
         'compact',
       )
       return attachment ? createAttachmentMessage(attachment) : null

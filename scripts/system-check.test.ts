@@ -18,18 +18,18 @@ import { DEFAULT_MAX_ACTIVE_MESSAGES_HARD_CAP } from '../src/utils/maxActiveMess
 import { resetSettingsCache } from '../src/utils/settings/settingsCache.ts'
 
 const ENV_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
-  'CLAUDE_CODE_PROVIDER_ROUTE_ID',
-  'CLAUDE_CODE_DEFAULT_STARTUP_PROVIDER',
-  'CLAUDE_CODE_SIMPLE',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+  'NYXCLAUDE_PROVIDER_ROUTE_ID',
+  'NYXCLAUDE_DEFAULT_STARTUP_PROVIDER',
+  'NYXCLAUDE_SIMPLE',
   'ANTHROPIC_BASE_URL',
   'ANTHROPIC_MODEL',
   'ANTHROPIC_API_KEY',
@@ -236,7 +236,7 @@ describe('formatReachabilityFailureDetail', () => {
 describe('system-check provider diagnostics', () => {
   test('redacts descriptor-declared provider secret values in displayed model fields', () => {
     const providerSecret = 'ogw-provider-secret'
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://opengateway.gitlawb.com/v1'
     process.env.OPENAI_MODEL = providerSecret
     process.env.OPENGATEWAY_API_KEY = providerSecret
@@ -250,7 +250,7 @@ describe('system-check provider diagnostics', () => {
 
   test('summarizes descriptor-declared provider credentials without exposing values', () => {
     const providerSecret = 'ogw-provider-secret'
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://opengateway.gitlawb.com/v1'
     process.env.OPENAI_MODEL = providerSecret
     process.env.OPENGATEWAY_API_KEY = providerSecret
@@ -263,8 +263,8 @@ describe('system-check provider diagnostics', () => {
   })
 
   test('does not use active GitHub credentials for a default OpenAI base URL', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
     process.env.GITHUB_TOKEN = 'ghp_FAKEgithubToken0123456789'
     delete process.env.OPENAI_API_KEY
@@ -285,7 +285,7 @@ describe('system-check provider diagnostics', () => {
   })
 
   test('falls back to OPENAI_API_KEY when OPENAI_API_KEYS is delimiter-only', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
     process.env.OPENAI_MODEL = 'gpt-4o'
     process.env.OPENAI_API_KEYS = ', ,'
@@ -306,7 +306,7 @@ describe('system-check provider diagnostics', () => {
   })
 
   test('accepts valid OPENAI_API_KEYS before placeholder OPENAI_API_KEY fallback', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
     process.env.OPENAI_MODEL = 'gpt-4o'
     process.env.OPENAI_API_KEYS = 'sk-openai-a,sk-openai-b'
@@ -327,7 +327,7 @@ describe('system-check provider diagnostics', () => {
   })
 
   test('rejects placeholder values inside OPENAI_API_KEYS pools', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
     process.env.OPENAI_MODEL = 'gpt-4o'
     process.env.OPENAI_API_KEYS = 'sk-openai-a,SUA_CHAVE'
@@ -367,13 +367,13 @@ describe('system-check WebSearch diagnostics', () => {
   }
 
   function useOpenAICompatibleProvider() {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_MODEL = 'gpt-4o'
     process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   }
 
   function useOpenAICompatibleProviderWithoutModel() {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   }
 
@@ -396,7 +396,7 @@ describe('system-check WebSearch diagnostics', () => {
   })
 
   test('fails auto mode for unsupported Vertex native model instead of claiming DuckDuckGo fallback', () => {
-    process.env.CLAUDE_CODE_USE_VERTEX = '1'
+    process.env.NYXCLAUDE_USE_VERTEX = '1'
     process.env.ANTHROPIC_DEFAULT_SONNET_MODEL = 'claude-3-7-sonnet@20250219'
 
     expectWebSearchBackend(
@@ -407,7 +407,7 @@ describe('system-check WebSearch diagnostics', () => {
   })
 
   test('fails auto mode for unsupported Vertex native model even when adapter keys are configured', () => {
-    process.env.CLAUDE_CODE_USE_VERTEX = '1'
+    process.env.NYXCLAUDE_USE_VERTEX = '1'
     process.env.ANTHROPIC_DEFAULT_SONNET_MODEL = 'claude-3-7-sonnet@20250219'
     process.env.BRAVE_API_KEY = 'brave-secret-value-123'
 
@@ -543,7 +543,7 @@ describe('system-check WebSearch diagnostics', () => {
 
   test('fails native mode for Codex aliases when the runtime tool gate rejects that provider', () => {
     process.env.WEB_SEARCH_PROVIDER = 'native'
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_MODEL = 'codexspark'
 
     expectWebSearchBackend(

@@ -60,7 +60,7 @@ mock.module('./channelAllowlist.js', () => ({
 // mutate the corresponding `_mock*` variable.
 mock.module('../../utils/auth.js', () => ({
   ..._realAuth,
-  getClaudeAIOAuthTokens: () => _mockOAuthTokens,
+  getRemoteOAuthTokens: () => _mockOAuthTokens,
   getSubscriptionType: () => _mockSubscriptionType,
 }))
 
@@ -73,7 +73,7 @@ afterAll(() => {
 function cap(extra: Record<string, unknown> = {}): ServerCapabilities {
   return {
     experimental: {
-      'claude/channel': {},
+      'nyxclaude/channel': {},
       ...extra,
     },
   } as ServerCapabilities
@@ -96,7 +96,7 @@ afterEach(() => {
 describe('gateChannelServer', () => {
   // 1. Capability gate — channel path requires the experimental
   // capability; absent/undefined/false skips.
-  test('skips when server has no claude/channel capability', () => {
+  test('skips when server has no nyxclaude/channel capability', () => {
     const result = gateChannelServer(
       'slack',
       {} as ServerCapabilities,
@@ -112,7 +112,7 @@ describe('gateChannelServer', () => {
     const result = gateChannelServer(
       'slack',
       {
-        experimental: { 'claude/channel': false },
+        experimental: { 'nyxclaude/channel': false },
       } as unknown as ServerCapabilities,
       undefined,
     )
@@ -307,8 +307,8 @@ describe('gateChannelServer', () => {
         name: 'slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': {},
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': {},
           },
         },
         config: {},
@@ -318,8 +318,8 @@ describe('gateChannelServer', () => {
         name: 'plugin:slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': {},
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': {},
           },
         },
         config: { pluginSource: 'plugin:slack@anthropic' },
@@ -360,8 +360,8 @@ describe('filterPermissionRelayClients', () => {
         name: 'slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': {},
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': {},
           },
         },
         config: {},
@@ -384,8 +384,8 @@ describe('filterPermissionRelayClients', () => {
         name: 'slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': {},
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': {},
           },
         },
         config: {},
@@ -410,8 +410,8 @@ describe('filterPermissionRelayClients', () => {
         name: 'plugin:slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': {},
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': {},
           },
         },
         config: {},
@@ -438,8 +438,8 @@ describe('filterPermissionRelayClients', () => {
         name: 'plugin:slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': {},
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': {},
           },
         },
         config: { pluginSource: 'plugin:slack@evilcorp' },
@@ -466,8 +466,8 @@ describe('filterPermissionRelayClients', () => {
         name: 'plugin:slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': {},
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': {},
           },
         },
         config: { pluginSource: 'plugin:slack@anthropic' },
@@ -495,8 +495,8 @@ describe('filterPermissionRelayClients', () => {
         name: 'plugin:slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': {},
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': {},
           },
         },
         config: { pluginSource: 'plugin:slack@anthropic' },
@@ -550,8 +550,8 @@ describe('filterPermissionRelayClients', () => {
         name: 'plugin:slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': {},
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': {},
           },
         },
         config: { pluginSource: 'plugin:slack@anthropic' },
@@ -569,7 +569,7 @@ describe('filterPermissionRelayClients', () => {
   // Regression: the relay capability check must use truthiness like
   // gateChannelServer does, not !== undefined, so an explicit false
   // capability is treated as a miss and the client is not selected.
-  test('rejects client with explicit false claude/channel capability', () => {
+  test('rejects client with explicit false nyxclaude/channel capability', () => {
     setAllowedChannels([{ kind: 'server', name: 'slack', dev: true }])
     const clients = [
       {
@@ -577,8 +577,8 @@ describe('filterPermissionRelayClients', () => {
         name: 'slack',
         capabilities: {
           experimental: {
-            'claude/channel': false,
-            'claude/channel/permission': {},
+            'nyxclaude/channel': false,
+            'nyxclaude/channel/permission': {},
           },
         },
         config: {},
@@ -588,10 +588,10 @@ describe('filterPermissionRelayClients', () => {
     expect(filtered).toHaveLength(0)
   })
 
-  // Regression: claude/channel/permission: false must also be treated as
+  // Regression: nyxclaude/channel/permission: false must also be treated as
   // a miss (truthiness check, not !== undefined) so a channel server that
   // explicitly disables permission relay is not selected.
-  test('rejects client with explicit false claude/channel/permission capability', () => {
+  test('rejects client with explicit false nyxclaude/channel/permission capability', () => {
     setAllowedChannels([{ kind: 'server', name: 'slack', dev: true }])
     const clients = [
       {
@@ -599,8 +599,8 @@ describe('filterPermissionRelayClients', () => {
         name: 'slack',
         capabilities: {
           experimental: {
-            'claude/channel': {},
-            'claude/channel/permission': false,
+            'nyxclaude/channel': {},
+            'nyxclaude/channel/permission': false,
           },
         },
         config: {},

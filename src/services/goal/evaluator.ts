@@ -1,6 +1,6 @@
 import type { SystemPrompt } from '../../utils/systemPromptType.js'
 import { asSystemPrompt } from '../../utils/systemPromptType.js'
-import { queryHaiku } from '../api/claude.js'
+import { querySmallModel } from '../api/modelApi.js'
 import type { GoalEvaluatorDecision, GoalState } from './types.js'
 
 const GOAL_EVALUATOR_SYSTEM_PROMPT = `You evaluate whether a coding agent has completed a session goal.
@@ -54,7 +54,7 @@ export type GoalModelCaller = (
 ) => Promise<string>
 
 const defaultModelCaller: GoalModelCaller = async request => {
-  const response = await queryHaiku({
+  const response = await querySmallModel({
     systemPrompt: request.systemPrompt,
     userPrompt: request.userPrompt,
     outputFormat: GOAL_EVALUATOR_OUTPUT_FORMAT,

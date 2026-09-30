@@ -5,7 +5,7 @@ import { fileSuffixForOauthConfig } from '../constants/oauth.js'
 import { isRunningWithBun } from './bundledMode.js'
 import { createCombinedAbortSignal } from './combinedAbortSignal.js'
 import {
-  getClaudeConfigHomeDir,
+  getNyxclaudeConfigHomeDir,
   isEnvTruthy,
   resolveConfigDirEnv,
 } from './envUtils.js'
@@ -15,7 +15,7 @@ import { which } from './which.js'
 
 type Platform = 'win32' | 'darwin' | 'linux'
 
-export function resolveGlobalClaudeFile(options: {
+export function resolveGlobalConfigFile(options: {
   configDirEnv?: string
   homeDir?: string
   oauthSuffix?: string
@@ -28,14 +28,14 @@ export function resolveGlobalClaudeFile(options: {
 }
 
 // Config and data paths
-export const getGlobalClaudeFile = memoize((): string => {
+export const getGlobalConfigFile = memoize((): string => {
   // Legacy fallback for backwards compatibility
   if (
     getFsImplementation().existsSync(
-      join(getClaudeConfigHomeDir(), '.config.json'),
+      join(getNyxclaudeConfigHomeDir(), '.config.json'),
     )
   ) {
-    return join(getClaudeConfigHomeDir(), '.config.json')
+    return join(getNyxclaudeConfigHomeDir(), '.config.json')
   }
 
   const oauthSuffix = fileSuffixForOauthConfig()
@@ -44,7 +44,7 @@ export const getGlobalClaudeFile = memoize((): string => {
   })
   const configDir = configDirEnv || homedir()
 
-  return resolveGlobalClaudeFile({
+  return resolveGlobalConfigFile({
     configDirEnv,
     homeDir: configDir,
     oauthSuffix,
@@ -372,12 +372,12 @@ export const env = {
 
 /**
  * Returns the host platform for analytics reporting.
- * If CLAUDE_CODE_HOST_PLATFORM is set to a valid platform value, that overrides
+ * If NYXCLAUDE_HOST_PLATFORM is set to a valid platform value, that overrides
  * the detected platform. This is useful for container/remote environments where
  * process.platform reports the container OS but the actual host platform differs.
  */
 export function getHostPlatformForAnalytics(): Platform {
-  const override = process.env.CLAUDE_CODE_HOST_PLATFORM
+  const override = process.env.NYXCLAUDE_HOST_PLATFORM
   if (override === 'win32' || override === 'darwin' || override === 'linux') {
     return override
   }

@@ -4,9 +4,9 @@ import { withMockMacro } from '../test/mockMacro.js'
 import { renderToString } from '../utils/staticRender.js'
 
 const forbiddenCommands = [
-  'brew upgrade claude-code',
-  'Anthropic.ClaudeCode',
-  'apk upgrade claude-code',
+  'brew upgrade nyxclaude',
+  'nyxclaude',
+  'apk upgrade nyxclaude',
 ]
 
 describe('package-manager update surfaces', () => {
@@ -57,15 +57,15 @@ describe('package-manager update surfaces', () => {
   )
 
   test.each([
-    ['homebrew', 'brew upgrade claude-code'],
-    ['winget', 'winget upgrade Anthropic.ClaudeCode'],
-    ['apk', 'apk upgrade claude-code'],
+    ['homebrew', 'brew upgrade nyxclaude'],
+    ['winget', 'winget upgrade nyxclaude'],
+    ['apk', 'apk upgrade nyxclaude'],
   ] as const)(
     'slash and passive %s surfaces preserve the upstream command',
     async (manager, command) => {
       const { slash, passive } = await renderSurfaces(
         manager,
-        '@anthropic-ai/claude-code',
+        'nyxclaude',
       )
 
       expect(slash).toContain(command)

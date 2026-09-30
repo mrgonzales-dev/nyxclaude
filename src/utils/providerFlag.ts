@@ -238,7 +238,7 @@ function applyOpenAIBaseUrlDefault(provider: string, baseUrl?: string): void {
  * provider-specific *_MODEL env var directly.
  *
  * Routes the value to the env var matching the already-active provider
- * (detected from CLAUDE_CODE_USE_* vars set by saved profile or env). Returns
+ * (detected from NYXCLAUDE_USE_* vars set by saved profile or env). Returns
  * undefined when --model is absent or --provider is present (that path is
  * handled by applyProviderFlagFromArgs).
  */
@@ -248,17 +248,17 @@ export function applyModelFlagFromArgs(args: string[]): void {
   if (!model) return
 
   const useGemini =
-    process.env.CLAUDE_CODE_USE_GEMINI === '1' ||
-    process.env.CLAUDE_CODE_USE_GEMINI === 'true'
+    process.env.NYXCLAUDE_USE_GEMINI === '1' ||
+    process.env.NYXCLAUDE_USE_GEMINI === 'true'
   const useMistral =
-    process.env.CLAUDE_CODE_USE_MISTRAL === '1' ||
-    process.env.CLAUDE_CODE_USE_MISTRAL === 'true'
+    process.env.NYXCLAUDE_USE_MISTRAL === '1' ||
+    process.env.NYXCLAUDE_USE_MISTRAL === 'true'
   const useOpenAI =
-    process.env.CLAUDE_CODE_USE_OPENAI === '1' ||
-    process.env.CLAUDE_CODE_USE_OPENAI === 'true'
+    process.env.NYXCLAUDE_USE_OPENAI === '1' ||
+    process.env.NYXCLAUDE_USE_OPENAI === 'true'
   const useGithub =
-    process.env.CLAUDE_CODE_USE_GITHUB === '1' ||
-    process.env.CLAUDE_CODE_USE_GITHUB === 'true'
+    process.env.NYXCLAUDE_USE_GITHUB === '1' ||
+    process.env.NYXCLAUDE_USE_GITHUB === 'true'
 
   if (useGemini) {
     process.env.GEMINI_MODEL = model
@@ -273,7 +273,7 @@ export function applyModelFlagFromArgs(args: string[]): void {
 
 /**
  * Apply a provider name to process.env.
- * Sets the required CLAUDE_CODE_USE_* flag and any provider-specific
+ * Sets the required NYXCLAUDE_USE_* flag and any provider-specific
  * defaults (Ollama base URL, model routing). Preserves explicit custom
  * endpoint env vars for descriptor-backed defaults, while replacing stale
  * known provider endpoints when the user explicitly chooses a different
@@ -334,13 +334,13 @@ export function applyProviderFlag(
                       ? 'cloudflare'
                       : null
 
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.NVIDIA_NIM
   if (copiedOpenAIKeyProvider && provider !== copiedOpenAIKeyProvider) {
     delete process.env.OPENAI_API_KEY
@@ -370,7 +370,7 @@ export function applyProviderFlag(
         delete process.env.ANTHROPIC_API_KEY
       }
       delete process.env.ANTHROPIC_AUTH_TOKEN
-      delete process.env.ANTHROPIC_CUSTOM_HEADERS
+      delete process.env.NYXCLAUDE_CUSTOM_HEADERS
       break
     }
 
@@ -410,35 +410,35 @@ export function applyProviderFlag(
       break
 
     case 'openai':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       if (model) process.env.OPENAI_MODEL = model
       break
 
     case 'gemini':
-      process.env.CLAUDE_CODE_USE_GEMINI = '1'
+      process.env.NYXCLAUDE_USE_GEMINI = '1'
       if (model) process.env.GEMINI_MODEL = model
       break
 
     case 'mistral':
-      process.env.CLAUDE_CODE_USE_MISTRAL = '1'
+      process.env.NYXCLAUDE_USE_MISTRAL = '1'
       if (model) process.env.MISTRAL_MODEL = model
       break
 
     case 'github':
-      process.env.CLAUDE_CODE_USE_GITHUB = '1'
+      process.env.NYXCLAUDE_USE_GITHUB = '1'
       if (model) process.env.OPENAI_MODEL = model
       break
 
     case 'bedrock':
-      process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+      process.env.NYXCLAUDE_USE_BEDROCK = '1'
       break
 
     case 'vertex':
-      process.env.CLAUDE_CODE_USE_VERTEX = '1'
+      process.env.NYXCLAUDE_USE_VERTEX = '1'
       break
 
     case 'ollama':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       process.env.OPENAI_BASE_URL ??= defaultBaseUrl ?? 'http://localhost:11434/v1'
       if (!process.env.OPENAI_API_KEY) {
         process.env.OPENAI_API_KEY = 'ollama'
@@ -447,7 +447,7 @@ export function applyProviderFlag(
       break
 
     case 'nvidia-nim':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       process.env.OPENAI_BASE_URL ??= defaultBaseUrl ?? 'https://integrate.api.nvidia.com/v1'
       process.env.NVIDIA_NIM = '1'
       if (process.env.NVIDIA_API_KEY && !process.env.OPENAI_API_KEY) {
@@ -458,7 +458,7 @@ export function applyProviderFlag(
       break
 
     case 'bankr':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       process.env.OPENAI_BASE_URL ??= defaultBaseUrl ?? 'https://llm.bankr.bot/v1'
       process.env.OPENAI_MODEL ??= 'claude-opus-4.6'
       if (model) process.env.OPENAI_MODEL = model
@@ -488,7 +488,7 @@ export function applyProviderFlag(
       break
 
     case 'opengateway':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       if (process.env.OPENGATEWAY_BASE_URL?.trim()) {
         process.env.OPENAI_BASE_URL = process.env.OPENGATEWAY_BASE_URL.trim()
       } else {
@@ -505,7 +505,7 @@ export function applyProviderFlag(
       break
 
     case 'nearai':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       applyOpenAIBaseUrlDefault(provider, defaultBaseUrl)
       if (defaultModel) {
         process.env.OPENAI_MODEL ??= defaultModel
@@ -519,7 +519,7 @@ export function applyProviderFlag(
       break
 
     case 'xai':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       process.env.OPENAI_BASE_URL ??= 'https://api.x.ai/v1'
       process.env.OPENAI_MODEL ??= defaultModel ?? 'grok-4.3'
       if (model) process.env.OPENAI_MODEL = model
@@ -529,7 +529,7 @@ export function applyProviderFlag(
       break
 
     case 'xiaomi-mimo':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       process.env.OPENAI_BASE_URL ??= defaultBaseUrl ?? 'https://api.xiaomimimo.com/v1'
       process.env.OPENAI_MODEL ??= defaultModel ?? 'mimo-v2.5-pro'
       if (model) process.env.OPENAI_MODEL = model
@@ -539,7 +539,7 @@ export function applyProviderFlag(
       break
 
     case 'xiaomi-mimo-token':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       applyOpenAIBaseUrlDefault(
         provider,
         defaultBaseUrl ?? 'https://token-plan-sgp.xiaomimimo.com/v1',
@@ -552,7 +552,7 @@ export function applyProviderFlag(
       break
 
     case 'venice':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       process.env.OPENAI_BASE_URL ??= defaultBaseUrl ?? 'https://api.venice.ai/api/v1'
       process.env.OPENAI_MODEL ??= defaultModel ?? 'venice-uncensored'
       if (model) process.env.OPENAI_MODEL = model
@@ -562,7 +562,7 @@ export function applyProviderFlag(
       break
 
     case 'atlas-cloud':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       applyOpenAIBaseUrlDefault(
         provider,
         defaultBaseUrl ?? 'https://api.atlascloud.ai/v1',
@@ -581,7 +581,7 @@ export function applyProviderFlag(
       break
 
     case 'fireworks':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       applyOpenAIBaseUrlDefault(provider, defaultBaseUrl)
       if (defaultModel) {
         process.env.OPENAI_MODEL ??= defaultModel
@@ -595,7 +595,7 @@ export function applyProviderFlag(
       break
 
     case 'longcat':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       // LongCat only implements its documented chat-completions endpoint and
       // Bearer authentication. Do not let stale OpenAI-compatible settings
       // from a previously selected provider change that wire contract.
@@ -623,7 +623,7 @@ export function applyProviderFlag(
       break
 
     case 'cloudflare':
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       // applyOpenAIBaseUrlDefault skips unresolved `<...>` placeholder
       // endpoints (the Cloudflare default carries `<ACCOUNT_ID>`), so the
       // user must export a real account-scoped base URL.
@@ -661,7 +661,7 @@ export function applyProviderFlag(
       break
 
     default:
-      process.env.CLAUDE_CODE_USE_OPENAI = '1'
+      process.env.NYXCLAUDE_USE_OPENAI = '1'
       applyOpenAIBaseUrlDefault(provider, defaultBaseUrl)
       if (defaultModel) {
         process.env.OPENAI_MODEL ??= defaultModel

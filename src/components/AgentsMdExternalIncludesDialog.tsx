@@ -5,7 +5,7 @@ import { logEvent } from 'src/services/analytics/index.js';
 import { Box, Link, Text } from '../ink.js';
 import type { ExternalAgentsMdInclude } from '../utils/agentsmd.js';
 import { saveCurrentProjectConfig } from '../utils/config.js';
-import { getClaudeConfigHomeDir } from '../utils/envUtils.js';
+import { getNyxclaudeConfigHomeDir } from '../utils/envUtils.js';
 import { getDisplayPath } from '../utils/file.js';
 import { Select } from './CustomSelect/index.js';
 import { Dialog } from './design-system/Dialog.js';
@@ -28,7 +28,7 @@ function declineUser(current: any) {
   return { ...current, hasAgentsMdExternalIncludesApprovedForUser: false, hasAgentsMdExternalIncludesWarningShownForUser: true };
 }
 function getUserAgentsMdDisplayPath(): string {
-  return getDisplayPath(join(getClaudeConfigHomeDir(), 'AGENTS.md'));
+  return getDisplayPath(join(getNyxclaudeConfigHomeDir(), 'AGENTS.md'));
 }
 export function AgentsMdExternalIncludesDialog(t0: Props) {
   const $ = _c(18);
@@ -36,10 +36,10 @@ export function AgentsMdExternalIncludesDialog(t0: Props) {
   React.useEffect(_temp, []);
   const handleSelection = React.useCallback((value: 'yes' | 'no') => {
     if (value === "no") {
-      logEvent("tengu_agents_md_external_includes_dialog_declined", {});
+      logEvent("nyxclaude_agents_md_external_includes_dialog_declined", {});
       saveCurrentProjectConfig(scope === 'User' ? declineUser : declineProject);
     } else {
-      logEvent("tengu_agents_md_external_includes_dialog_accepted", {});
+      logEvent("nyxclaude_agents_md_external_includes_dialog_accepted", {});
       saveCurrentProjectConfig(scope === 'User' ? acceptUser : acceptProject);
     }
     onDone();
@@ -62,7 +62,7 @@ export function AgentsMdExternalIncludesDialog(t0: Props) {
           ))}
         </Box>
       )}
-      <Text dimColor={true}>Important: Only use Claude Code with files you trust. Accessing untrusted files may pose security risks{" "}<Link url="https://code.claude.com/docs/en/security" />{" "}</Text>
+      <Text dimColor={true}>Important: Only use Nyxclaude with files you trust. Accessing untrusted files may pose security risks{" "}<Link url="https://docs.nyxclaude.dev/" />{" "}</Text>
       <Select options={[
         { label: "Yes, allow external imports", value: "yes" },
         { label: "No, disable external imports", value: "no" },
@@ -71,5 +71,5 @@ export function AgentsMdExternalIncludesDialog(t0: Props) {
   );
 }
 function _temp() {
-  logEvent("tengu_agents_md_includes_dialog_shown", {});
+  logEvent("nyxclaude_agents_md_includes_dialog_shown", {});
 }

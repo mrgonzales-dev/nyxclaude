@@ -1,4 +1,4 @@
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ContentBlockParam } from 'src/types/api.js'
 import type { DeepImmutable } from '../../types/utils.js'
 import type { Message, NormalizedMessage, UserMessage } from '../../types/message.js'
 import { COMMAND_ARGS_TAG, COMMAND_NAME_TAG } from '../../constants/xml.js'

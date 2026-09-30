@@ -419,7 +419,7 @@ function legacyModelSupportsEffort(
   context?: ReasoningControlContext,
 ): boolean {
   const m = model.toLowerCase()
-  if (isEnvTruthy(process.env.CLAUDE_CODE_ALWAYS_ENABLE_EFFORT)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_ALWAYS_ENABLE_EFFORT)) {
     return true
   }
   const supported3P = get3PModelCapabilityOverride(model, 'effort')
@@ -456,7 +456,7 @@ function legacyModelSupportsEffort(
 
   // Default to true for unknown model strings on 1P.
   // Do not default to true for 3P as they have different formats for their
-  // model strings (ex. anthropics/claude-code#30795)
+  // model strings (ex. nyxclaude/nyxclaude#30795)
   return getReasoningApiProvider(context) === 'firstParty'
 }
 
@@ -507,7 +507,7 @@ export function resolveModelReasoningControl(
 
 // @[MODEL LAUNCH]: Add the new model to the allowlist if it supports the effort parameter.
 export function modelSupportsEffort(model: string, context?: ReasoningControlContext): boolean {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_ALWAYS_ENABLE_EFFORT)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_ALWAYS_ENABLE_EFFORT)) {
     return true
   }
   const supported3P = get3PModelCapabilityOverride(model, 'effort')
@@ -523,7 +523,7 @@ export function modelSupportsShimReasoningEffort(
   removeBodyFields?: string[],
   context?: ReasoningControlContext,
 ): boolean {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_ALWAYS_ENABLE_EFFORT)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_ALWAYS_ENABLE_EFFORT)) {
     return true
   }
   const supported3P = get3PModelCapabilityOverride(model, 'effort')
@@ -573,7 +573,7 @@ export function modelSupportsShimReasoningEffort(
 }
 
 export function modelSupportsWireEffort(model: string, context?: ReasoningControlContext): boolean {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_ALWAYS_ENABLE_EFFORT)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_ALWAYS_ENABLE_EFFORT)) {
     return true
   }
   const supported3P = get3PModelCapabilityOverride(model, 'effort')
@@ -946,7 +946,7 @@ export function clampUltracodeEffort(
     // Mirror resolveAppliedEffort's ultracode mapping (xhigh when supported,
     // else high) so the startup/display clamp and the env/app-state resolution
     // send the SAME effort to the API. Hardcoding 'max' here meant
-    // `--effort ultracode` (clamped to app state) and `CLAUDE_CODE_EFFORT_LEVEL=ultracode`
+    // `--effort ultracode` (clamped to app state) and `NYXCLAUDE_EFFORT_LEVEL=ultracode`
     // (resolved live) diverged on max-capable-but-not-xhigh models like opus-4-6.
     return modelSupportsXHighEffort(model, context) ? 'xhigh' : 'high'
   }
@@ -954,7 +954,7 @@ export function clampUltracodeEffort(
 }
 
 export function getEffortEnvOverride(): EffortValue | null | undefined {
-  const envOverride = process.env.CLAUDE_CODE_EFFORT_LEVEL
+  const envOverride = process.env.NYXCLAUDE_EFFORT_LEVEL
   return envOverride?.toLowerCase() === 'unset' ||
     envOverride?.toLowerCase() === 'auto'
     ? null
@@ -964,7 +964,7 @@ export function getEffortEnvOverride(): EffortValue | null | undefined {
 /**
  * Resolve the effort value that will actually be sent to the API for a given
  * model, following the full precedence chain:
- *   env CLAUDE_CODE_EFFORT_LEVEL → appState.effortValue → model default
+ *   env NYXCLAUDE_EFFORT_LEVEL → appState.effortValue → model default
  *
  * Returns undefined when no effort parameter should be sent (env set to
  * 'unset', or no default exists for the model).
@@ -1056,9 +1056,9 @@ export function getDisplayedEffortLevel(
   // `ultracode` is a meta-mode (the standing multi-agent permission), not just
   // an API effort alias, so surface it as the current level rather than the
   // `xhigh`/`high` it maps to at the API boundary — but only when it is the
-  // EFFECTIVE effort. CLAUDE_CODE_EFFORT_LEVEL takes precedence over app state
+  // EFFECTIVE effort. NYXCLAUDE_EFFORT_LEVEL takes precedence over app state
   // (see resolveAppliedEffort), so `--effort ultracode` with
-  // CLAUDE_CODE_EFFORT_LEVEL=high must show high, matching the API and the
+  // NYXCLAUDE_EFFORT_LEVEL=high must show high, matching the API and the
   // permission gate rather than the stale session value.
   const envOverride = getEffortEnvOverride()
   const effectiveEffort =
@@ -1084,7 +1084,7 @@ export function getEffortSuffix(
   if (effortValue === undefined) return ''
   // Surface the ultracode meta-mode here too (Logo/Spinner), consistent with
   // getDisplayedEffortLevel — but only when it is the EFFECTIVE effort, so a
-  // CLAUDE_CODE_EFFORT_LEVEL override wins over the session value rather than
+  // NYXCLAUDE_EFFORT_LEVEL override wins over the session value rather than
   // showing ultracode for a turn the API runs at a different effort.
   const envOverride = getEffortEnvOverride()
   const effectiveEffort =
@@ -1182,7 +1182,7 @@ const OPUS_DEFAULT_EFFORT_CONFIG_DEFAULT: OpusDefaultEffortConfig = {
 
 export function getOpusDefaultEffortConfig(): OpusDefaultEffortConfig {
   const config = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_grey_step2',
+    'nyxclaude_grey_step2',
     OPUS_DEFAULT_EFFORT_CONFIG_DEFAULT,
   )
   return {
@@ -1222,7 +1222,7 @@ function getLegacyDefaultEffortForModel(
   // that can greatly affect model quality and bashing.
 
   // Default effort on the recent Opus models (4.8/4.7/4.6) to medium for Pro.
-  // Max/Team also get medium when the tengu_grey_step2 config is enabled.
+  // Max/Team also get medium when the nyxclaude_grey_step2 config is enabled.
   // getDefaultOpusModel() now returns opus48 for first-party users.
   const lowerModel = model.toLowerCase()
   if (

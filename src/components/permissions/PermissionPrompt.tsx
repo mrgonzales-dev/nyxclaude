@@ -145,22 +145,22 @@ export function PermissionPrompt<T extends string>({
     if (option.feedbackConfig.type === 'accept') {
       if (acceptInputMode) {
         setAcceptInputMode(false)
-        logEvent('tengu_accept_feedback_mode_collapsed', analyticsProps)
+        logEvent('nyxclaude_accept_feedback_mode_collapsed', analyticsProps)
       } else {
         setAcceptInputMode(true)
         setAcceptFeedbackModeEntered(true)
-        logEvent('tengu_accept_feedback_mode_entered', analyticsProps)
+        logEvent('nyxclaude_accept_feedback_mode_entered', analyticsProps)
       }
       return
     }
 
     if (rejectInputMode) {
       setRejectInputMode(false)
-      logEvent('tengu_reject_feedback_mode_collapsed', analyticsProps)
+      logEvent('nyxclaude_reject_feedback_mode_collapsed', analyticsProps)
     } else {
       setRejectInputMode(true)
       setRejectFeedbackModeEntered(true)
-      logEvent('tengu_reject_feedback_mode_entered', analyticsProps)
+      logEvent('nyxclaude_reject_feedback_mode_entered', analyticsProps)
     }
   }
 
@@ -197,9 +197,9 @@ export function PermissionPrompt<T extends string>({
 
       const runSelection = () => {
         if (option.feedbackConfig?.type === 'accept') {
-          logEvent('tengu_accept_submitted', analyticsProps)
+          logEvent('nyxclaude_accept_submitted', analyticsProps)
         } else {
-          logEvent('tengu_reject_submitted', analyticsProps)
+          logEvent('nyxclaude_reject_submitted', analyticsProps)
         }
         onSelect(value, feedback)
       }
@@ -238,7 +238,7 @@ export function PermissionPrompt<T extends string>({
   })
 
   const handleCancel = () => {
-    logEvent('tengu_permission_request_escape', {})
+    logEvent('nyxclaude_permission_request_escape', {})
     setAppState(prev => ({
       ...prev,
       attribution: {

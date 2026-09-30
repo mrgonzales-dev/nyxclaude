@@ -129,7 +129,7 @@ export function onChangeAppState({
 
     // Keep active provider profiles in sync with /model choices so restarts
     // keep using the last selected model instead of the profile's old default.
-    // Check for an active profile rather than CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+    // Check for an active profile rather than NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
     // because the flag is only set by the managed profile path, not when the
     // startup file loads the env directly — without this, /model picks never
     // persist when the startup file is the source of the provider env.

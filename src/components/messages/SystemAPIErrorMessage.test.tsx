@@ -3,7 +3,7 @@ import { PassThrough } from 'node:stream'
 import { expect, test } from 'bun:test'
 import React from 'react'
 import stripAnsi from 'strip-ansi'
-import type { APIError } from '@anthropic-ai/sdk'
+import type { APIError } from 'src/types/api.js'
 
 import { render } from '../../ink.js'
 import { briefAPIErrorReason } from '../../services/api/errorUtils.js'

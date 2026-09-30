@@ -10,9 +10,9 @@ function isAgentMemoryPath(_path: string): boolean {
   return false
 }
 import {
-  CLAUDE_FOLDER_PERMISSION_PATTERN,
+  NYXCLAUDE_FOLDER_PERMISSION_PATTERN,
   FILE_EDIT_TOOL_NAME,
-  GLOBAL_CLAUDE_FOLDER_PERMISSION_PATTERN,
+  GLOBAL_NYXNYXCLAUDE_FOLDER_PERMISSION_PATTERN,
 } from 'src/tools/FileEditTool/constants.js'
 import type { z } from 'zod/v4'
 import { getOriginalCwd, getSessionId } from '../../bootstrap/state.js'
@@ -27,7 +27,7 @@ import type {
 import { FILE_READ_TOOL_NAME } from '../../tools/FileReadTool/prompt.js'
 import { getCwd } from '../cwd.js'
 import { logForDebugging } from '../debug.js'
-import { getClaudeConfigHomeDir } from '../envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../envUtils.js'
 import { isENOENT, isFsInaccessible } from '../errors.js'
 import { isMemoryWriteApprovalRequired } from '../governancePolicy.js'
 import {
@@ -313,10 +313,10 @@ function isProjectDirPath(absolutePath: string): boolean {
 /**
  * Checks if the scratchpad directory feature is enabled.
  * The scratchpad is a per-session directory for Nyxclaude to write temporary files.
- * Controlled by the tengu_scratch Statsig gate.
+ * Controlled by the nyxclaude_scratch Statsig gate.
  */
 export function isScratchpadEnabled(): boolean {
-  return checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_scratch')
+  return checkStatsigFeatureGate_CACHED_MAY_BE_STALE('nyxclaude_scratch')
 }
 
 /**
@@ -361,11 +361,11 @@ function ensureUsableTempDir(
  * resolution, paths like /tmp/claude-{uid}/... wouldn't match /private/tmp/claude-{uid}/...
  */
 // Memoized: called per-tool from permission checks (yoloClassifier, sandbox-adapter)
-// and per-turn from BashTool prompt. Inputs (CLAUDE_CODE_TMPDIR env + platform) are
+// and per-turn from BashTool prompt. Inputs (NYXCLAUDE_TMPDIR env + platform) are
 // fixed at startup, and the realpath of the system tmp dir does not change mid-session.
 export const getClaudeTempDir = memoize(function getClaudeTempDir(): string {
   const baseTmpDir =
-    process.env.CLAUDE_CODE_TMPDIR ||
+    process.env.NYXCLAUDE_TMPDIR ||
     (getPlatform() === 'windows' ? tmpdir() : '/tmp')
 
   // Resolve symlinks in the base temp directory (e.g., /tmp -> /private/tmp on macOS)
@@ -389,7 +389,7 @@ export const getClaudeTempDir = memoize(function getClaudeTempDir(): string {
     if (isFsInaccessible(e)) {
       const fallbackDirs = [
         join(tmpdir(), 'nyxclaude', getClaudeTempDirName()) + sep,
-        join(getClaudeConfigHomeDir(), 'tmp', getClaudeTempDirName()) + sep,
+        join(getNyxclaudeConfigHomeDir(), 'tmp', getClaudeTempDirName()) + sep,
       ]
       for (const fallbackDir of fallbackDirs) {
         try {
@@ -1432,9 +1432,9 @@ export function checkWritePermissionForTool<Input extends AnyObject>(
     const ruleContent = claudeFolderAllowRule.ruleValue.ruleContent
     if (
       ruleContent &&
-      (ruleContent.startsWith(CLAUDE_FOLDER_PERMISSION_PATTERN.slice(0, -2)) ||
+      (ruleContent.startsWith(NYXCLAUDE_FOLDER_PERMISSION_PATTERN.slice(0, -2)) ||
         ruleContent.startsWith(
-          GLOBAL_CLAUDE_FOLDER_PERMISSION_PATTERN.slice(0, -2),
+          GLOBAL_NYXNYXCLAUDE_FOLDER_PERMISSION_PATTERN.slice(0, -2),
         )) &&
       !ruleContent.includes('..') &&
       ruleContent.endsWith('/**')
@@ -1670,9 +1670,9 @@ export function checkEditableInternalPath(
   // sides handles the macOS /tmp → /private/tmp case where the config dir
   // lives under a symlinked root.
   if (feature('TEMPLATES')) {
-    const jobDir = process.env.CLAUDE_JOB_DIR
+    const jobDir = process.env.NYXCLAUDE_JOB_DIR
     if (jobDir) {
-      const jobsRoot = join(getClaudeConfigHomeDir(), 'jobs')
+      const jobsRoot = join(getNyxclaudeConfigHomeDir(), 'jobs')
       const jobDirForms = getPathsForPermissionCheck(jobDir).map(normalize)
       const jobsRootForms = getPathsForPermissionCheck(jobsRoot).map(normalize)
       // Hijack guard: every resolved form of the job dir must sit under
@@ -1905,7 +1905,7 @@ export function checkReadableInternalPath(
   }
 
   // Tasks directory (~/.nyxclaude/tasks/) for swarm task coordination
-  const tasksDir = join(getClaudeConfigHomeDir(), 'tasks') + sep
+  const tasksDir = join(getNyxclaudeConfigHomeDir(), 'tasks') + sep
   if (
     normalizedPath === tasksDir.slice(0, -1) ||
     normalizedPath.startsWith(tasksDir)
@@ -1921,7 +1921,7 @@ export function checkReadableInternalPath(
   }
 
   // Teams directory (~/.nyxclaude/teams/) for swarm coordination
-  const teamsReadDir = join(getClaudeConfigHomeDir(), 'teams') + sep
+  const teamsReadDir = join(getNyxclaudeConfigHomeDir(), 'teams') + sep
   if (
     normalizedPath === teamsReadDir.slice(0, -1) ||
     normalizedPath.startsWith(teamsReadDir)

@@ -3,7 +3,7 @@ import type {
   Base64ImageSource,
   ContentBlockParam,
   ImageBlockParam,
-} from '@anthropic-ai/sdk/resources/messages.mjs'
+} from 'src/types/api.js'
 import { randomUUID } from 'crypto'
 import type { QuerySource } from 'src/constants/querySource.js'
 import { logEvent } from 'src/services/analytics/index.js'
@@ -16,7 +16,6 @@ import {
   type LocalJSXCommandContext,
 } from '../../commands.js'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
-import type { IDESelection } from '../../hooks/useIdeSelection.js'
 import type { SetToolJSXFn, ToolUseContext } from '../../Tool.js'
 import type {
   AssistantMessage,
@@ -90,7 +89,6 @@ export async function processUserInput({
   setToolJSX,
   context,
   pastedContents,
-  ideSelection,
   messages,
   setUserInputOnProcessing,
   uuid,
@@ -114,7 +112,6 @@ export async function processUserInput({
   setToolJSX: SetToolJSXFn
   context: ProcessUserInputContext
   pastedContents?: Record<number, PastedContent>
-  ideSelection?: IDESelection
   messages?: Message[]
   setUserInputOnProcessing?: (prompt?: string) => void
   uuid?: string
@@ -159,7 +156,6 @@ export async function processUserInput({
     setToolJSX,
     context,
     pastedContents,
-    ideSelection,
     messages,
     uuid,
     isAlreadyProcessing,
@@ -288,7 +284,6 @@ async function processUserInputBase(
   setToolJSX: SetToolJSXFn,
   context: ProcessUserInputContext,
   pastedContents?: Record<number, PastedContent>,
-  ideSelection?: IDESelection,
   messages?: Message[],
   uuid?: string,
   isAlreadyProcessing?: boolean,
@@ -379,7 +374,7 @@ async function processUserInputBase(
           data: pastedImage.content,
         },
       }
-      logEvent('tengu_pasted_image_resize_attempt', {
+      logEvent('nyxclaude_pasted_image_resize_attempt', {
         original_size_bytes: pastedImage.content.length,
       })
       const resized = await maybeResizeAndDownsampleImageBlock(imageBlock)
@@ -480,7 +475,7 @@ async function processUserInputBase(
     !context.getAppState().ultraplanLaunching &&
     hasUltraplanKeyword(preExpansionInput ?? inputString)
   ) {
-    logEvent('tengu_ultraplan_keyword', {})
+    logEvent('nyxclaude_ultraplan_keyword', {})
     const rewritten = replaceUltraplanKeyword(inputString).trim()
     const { processSlashCommand } = await import('./processSlashCommand.js')
     const slashResult = await processSlashCommand(
@@ -509,7 +504,6 @@ async function processUserInputBase(
         getAttachmentMessages(
           inputString,
           context,
-          ideSelection ?? null,
           [], // queuedCommands - handled by query.ts for mid-turn attachments
           messages,
           querySource,
@@ -572,7 +566,7 @@ async function processUserInputBase(
         trimmedInput.startsWith(agentMentionString) && !isSubagentOnly
 
       // Log whenever users use @agent-<name> syntax
-      logEvent('tengu_subagent_at_mention', {
+      logEvent('nyxclaude_subagent_at_mention', {
         is_subagent_only: isSubagentOnly,
         is_prefix: isPrefix,
       })

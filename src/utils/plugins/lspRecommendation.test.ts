@@ -101,12 +101,12 @@ mock.module('../config.js', () => ({
   getGlobalConfigWriteCount: () => 0,
   getAutoUpdaterDisabledReason: () => null,
   formatAutoUpdaterDisabledReason: () => 'enabled',
-  getManagedClaudeRulesDir: () => '/tmp/nyxclaude-managed-rules',
+  getManagedRulesDir: () => '/tmp/nyxclaude-managed-rules',
   getMemoryPath: () => '/tmp/nyxclaude-memory.md',
   getOrCreateUserID: () => 'test-user-id',
   getProjectPathForConfig: () => '/tmp/nyxclaude-project-config.json',
   getRemoteControlAtStartup: () => false,
-  getUserClaudeRulesDir: () => '/tmp/nyxclaude-user-rules',
+  getUserRulesDir: () => '/tmp/nyxclaude-user-rules',
   isAutoUpdaterDisabled: () => false,
   recordFirstStartTime: mock(() => {}),
   getCustomApiKeyStatus: () => ({ hasCustomApiKey: false }),
@@ -126,7 +126,7 @@ let listLspPluginCandidates: typeof import('./lspRecommendation.js').listLspPlug
 
 function resetTestState(): void {
   marketplaces = {
-    'claude-plugins-official': [
+    'nyxclaude-plugins-official': [
       lspPlugin('typescript-lsp', 'typescript-language-server', [
         '.ts',
         '.tsx',
@@ -192,8 +192,8 @@ describe('listLspPluginCandidates', () => {
     })
 
     expect(candidates.map(candidate => candidate.pluginId)).toEqual([
-      'typescript-lsp@claude-plugins-official',
-      'pyright-lsp@claude-plugins-official',
+      'typescript-lsp@nyxclaude-plugins-official',
+      'pyright-lsp@nyxclaude-plugins-official',
     ])
     expect(candidates[0]).toMatchObject({
       command: 'typescript-language-server',
@@ -209,7 +209,7 @@ describe('listLspPluginCandidates', () => {
   })
 
   test('filters installed and missing-binary candidates unless requested', async () => {
-    installedPlugins = new Set(['typescript-lsp@claude-plugins-official'])
+    installedPlugins = new Set(['typescript-lsp@nyxclaude-plugins-official'])
 
     const candidates = await listLspPluginCandidates({
       extensions: ['.ts', '.py', '.rs'],
@@ -219,7 +219,7 @@ describe('listLspPluginCandidates', () => {
   })
 
   test('includes installed candidates when requested', async () => {
-    installedPlugins = new Set(['typescript-lsp@claude-plugins-official'])
+    installedPlugins = new Set(['typescript-lsp@nyxclaude-plugins-official'])
 
     const candidates = await listLspPluginCandidates({
       extensions: ['.ts'],
@@ -228,7 +228,7 @@ describe('listLspPluginCandidates', () => {
 
     expect(candidates).toHaveLength(1)
     expect(candidates[0]).toMatchObject({
-      pluginId: 'typescript-lsp@claude-plugins-official',
+      pluginId: 'typescript-lsp@nyxclaude-plugins-official',
       installed: true,
       binaryInstalled: true,
     })
@@ -241,7 +241,7 @@ describe('getMatchingLspPlugins', () => {
       'typescript-language-server',
       'rust-analyzer',
     ])
-    installedPlugins = new Set(['typescript-lsp@claude-plugins-official'])
+    installedPlugins = new Set(['typescript-lsp@nyxclaude-plugins-official'])
 
     const matches = await getMatchingLspPlugins('src/main.rs')
 

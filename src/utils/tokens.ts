@@ -1,4 +1,4 @@
-import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { BetaUsage as Usage } from 'src/types/api.js'
 import {
   roughTokenCountEstimation,
   roughTokenCountEstimationForMessage,

@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle'
-import type Anthropic from '@anthropic-ai/sdk'
-import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages.js'
+import { type Anthropic } from 'src/types/api.js'
+import type { BetaToolUnion } from 'src/types/api.js'
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
 import { z } from 'zod/v4'
@@ -13,7 +13,7 @@ import {
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
 import { logEvent } from '../../services/analytics/index.js'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../../services/analytics/metadata.js'
-import { getCacheControl } from '../../services/api/claude.js'
+import { getCacheControl } from '../../services/api/modelApi.js'
 import { parsePromptTooLongTokenCounts } from '../../services/api/errors.js'
 import { getDefaultMaxRetries } from '../../services/api/withRetry.js'
 import type { Tool, ToolPermissionContext, Tools } from '../../Tool.js'
@@ -56,7 +56,7 @@ const BASE_PROMPT: string = feature('TRANSCRIPT_CLASSIFIER')
   : ''
 
 // External template is loaded separately so it's available for
-// `claude auto-mode defaults` even in ant builds. Ant builds use
+// `nyxnyxclaude auto-mode defaults` even in ant builds. Ant builds use
 // permissions_anthropic.txt at runtime but should dump external defaults.
 const EXTERNAL_PERMISSIONS_TEMPLATE: string = feature('TRANSCRIPT_CLASSIFIER')
   ? txtRequire(require('./yolo-classifier-prompts/permissions_external.txt'))
@@ -74,7 +74,7 @@ const MAX_CLASSIFIER_BLOCK_VALUE_CHARS = 32_000
 function isUsingExternalPermissions(): boolean {
   if (process.env.USER_TYPE !== 'ant') return true
   const config = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_auto_mode_config',
+    'nyxclaude_auto_mode_config',
     {} as AutoModeConfig,
   )
   return config?.forceExternalPermissions === true
@@ -97,7 +97,7 @@ export type AutoModeRules = {
  * <user_*_to_replace> tags (user settings REPLACE these defaults), so the
  * captured tag contents ARE the defaults. Bullet items are single-line in the
  * template; each line starting with `- ` becomes one array entry.
- * Used by `claude auto-mode defaults`. Always returns external defaults,
+ * Used by `nyxnyxclaude auto-mode defaults`. Always returns external defaults,
  * never the internal-only template.
  */
 export function getDefaultExternalAutoModeRules(): AutoModeRules {
@@ -122,7 +122,7 @@ function extractTaggedBullets(tagName: string): string[] {
 
 /**
  * Returns the full external classifier system prompt with default rules (no user
- * overrides). Used by `claude auto-mode critique` to show the model how the
+ * overrides). Used by `nyxnyxclaude auto-mode critique` to show the model how the
  * classifier sees its instructions.
  */
 export function buildDefaultExternalSystemPrompt(): string {
@@ -150,7 +150,7 @@ function getAutoModeDumpDir(): string {
 
 /**
  * Dump the auto mode classifier request and response bodies to the per-user
- * claude temp directory when CLAUDE_CODE_DUMP_AUTO_MODE is set. Files are
+ * claude temp directory when NYXCLAUDE_DUMP_AUTO_MODE is set. Files are
  * named by unix timestamp: {timestamp}[.{suffix}].req.json and .res.json
  */
 async function maybeDumpAutoMode(
@@ -160,7 +160,7 @@ async function maybeDumpAutoMode(
   suffix?: string,
 ): Promise<void> {
   if (process.env.USER_TYPE !== 'ant') return
-  if (!isEnvTruthy(process.env.CLAUDE_CODE_DUMP_AUTO_MODE)) return
+  if (!isEnvTruthy(process.env.NYXCLAUDE_DUMP_AUTO_MODE)) return
   const base = suffix ? `${timestamp}.${suffix}` : `${timestamp}`
   try {
     await mkdir(getAutoModeDumpDir(), { recursive: true })
@@ -425,7 +425,7 @@ function toCompactBlock(
       logForDebugging(
         `toAutoClassifierInput failed for ${block.name}: ${errorMessage(e)}`,
       )
-      logEvent('tengu_auto_mode_malformed_tool_input', {
+      logEvent('nyxclaude_auto_mode_malformed_tool_input', {
         toolName:
           block.name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
@@ -572,7 +572,7 @@ export function buildTranscriptForClassifier(
  * Reads from bootstrap/state.ts cache (populated by context.ts) instead of
  * importing agentsmd.ts directly — agentsmd → permissions/filesystem →
  * permissions → yoloClassifier is a cycle. context.ts already gates on
- * CLAUDE_CODE_DISABLE_AGENTS_MDS and normalizes '' to null before caching.
+ * NYXCLAUDE_DISABLE_AGENTS_MDS and normalizes '' to null before caching.
  * If the cache is unpopulated (tests, or an entrypoint that never calls
  * getUserContext), the classifier proceeds without AGENTS.md — same as
  * pre-PR behavior.
@@ -789,7 +789,7 @@ function replaceOutputFormatWithXml(systemPrompt: string): string {
  *
  * For most models: send { type: 'disabled' } via sideQuery's `thinking: false`.
  *
- * Models with alwaysOnThinking (declared in tengu_ant_model_override) default
+ * Models with alwaysOnThinking (declared in nyxclaude_ant_model_override) default
  * to adaptive thinking server-side and reject `disabled` with a 400. For those:
  * don't pass `thinking: false`, instead pad max_tokens so adaptive thinking
  * (observed 0–1114 tokens replaying go/ccshare/shawnm-20260310-202833) doesn't
@@ -1441,11 +1441,11 @@ type AutoModeConfig = {
  */
 function getClassifierModel(): string {
   if (process.env.USER_TYPE === 'ant') {
-    const envModel = process.env.CLAUDE_CODE_AUTO_MODE_MODEL
+    const envModel = process.env.NYXCLAUDE_AUTO_MODE_MODEL
     if (envModel) return envModel
   }
   const config = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_auto_mode_config',
+    'nyxclaude_auto_mode_config',
     {} as AutoModeConfig,
   )
   if (config?.model) {
@@ -1464,13 +1464,13 @@ function resolveTwoStageClassifier():
   | 'thinking'
   | undefined {
   if (process.env.USER_TYPE === 'ant') {
-    const env = process.env.CLAUDE_CODE_TWO_STAGE_CLASSIFIER
+    const env = process.env.NYXCLAUDE_TWO_STAGE_CLASSIFIER
     if (env === 'fast' || env === 'thinking') return env
     if (isEnvTruthy(env)) return true
     if (isEnvDefinedFalsy(env)) return false
   }
   const config = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_auto_mode_config',
+    'nyxclaude_auto_mode_config',
     {} as AutoModeConfig,
   )
   return config?.twoStageClassifier
@@ -1486,12 +1486,12 @@ function isTwoStageClassifierEnabled(): boolean {
 
 function isJsonlTranscriptEnabled(): boolean {
   if (process.env.USER_TYPE === 'ant') {
-    const env = process.env.CLAUDE_CODE_JSONL_TRANSCRIPT
+    const env = process.env.NYXCLAUDE_JSONL_TRANSCRIPT
     if (isEnvTruthy(env)) return true
     if (isEnvDefinedFalsy(env)) return false
   }
   const config = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_auto_mode_config',
+    'nyxclaude_auto_mode_config',
     {} as AutoModeConfig,
   )
   return config?.jsonlTranscript === true
@@ -1526,7 +1526,7 @@ type AutoModeOutcome =
   | 'transcript_too_long'
 
 /**
- * Telemetry helper for tengu_auto_mode_outcome. All string fields are
+ * Telemetry helper for nyxclaude_auto_mode_outcome. All string fields are
  * enum-like values (outcome, model name, classifier type, failure kind) —
  * never code or file paths, so the AnalyticsMetadata casts are safe.
  */
@@ -1545,7 +1545,7 @@ function logAutoModeOutcome(
   },
 ): void {
   const { classifierType, failureKind, ...rest } = extra ?? {}
-  logEvent('tengu_auto_mode_outcome', {
+  logEvent('nyxclaude_auto_mode_outcome', {
     outcome:
       outcome as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     classifierModel:

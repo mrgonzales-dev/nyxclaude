@@ -477,9 +477,9 @@ describe('background session CLI parsing', () => {
     ])
     expect(config.env.NYXCLAUDE_HEAP_RELAUNCHED).toBeUndefined()
     expect(config.env.NYXCLAUDE_NODE_MAX_OLD_SPACE_SIZE_MB).toBe('8192')
-    expect(config.env.CLAUDE_CODE_SESSION_KIND).toBe('bg')
-    expect(config.env.CLAUDE_CODE_SESSION_LOG).toBe('/tmp/bg.out.log')
-    expect(config.env.CLAUDE_CODE_SESSION_NAME).toBe('tests')
+    expect(config.env.NYXCLAUDE_SESSION_KIND).toBe('bg')
+    expect(config.env.NYXCLAUDE_SESSION_LOG).toBe('/tmp/bg.out.log')
+    expect(config.env.NYXCLAUDE_SESSION_NAME).toBe('tests')
   })
 
   it('escalates process-tree termination and waits for exit before returning', async () => {

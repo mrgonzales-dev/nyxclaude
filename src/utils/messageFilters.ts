@@ -1,4 +1,4 @@
-import type { ContentBlockParam, TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ContentBlockParam, TextBlockParam } from 'src/types/api.js'
 import type { Message, UserMessage } from '../types/message.js'
 import {
   BASH_STDERR_TAG,

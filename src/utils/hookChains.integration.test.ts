@@ -22,7 +22,7 @@ type ImportHarnessOptions = {
 }
 
 const tempDirs: string[] = []
-const originalHookChainsEnabled = process.env.CLAUDE_CODE_ENABLE_HOOK_CHAINS
+const originalHookChainsEnabled = process.env.NYXCLAUDE_ENABLE_HOOK_CHAINS
 
 async function createConfigFile(config: unknown): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-hook-chains-int-'))
@@ -139,7 +139,7 @@ async function importHookChainsHarness(
 
 beforeEach(async () => {
   await acquireSharedMutationLock('utils/hookChains.integration.test.ts')
-  process.env.CLAUDE_CODE_ENABLE_HOOK_CHAINS = '1'
+  process.env.NYXCLAUDE_ENABLE_HOOK_CHAINS = '1'
 })
 
 afterEach(async () => {
@@ -148,9 +148,9 @@ afterEach(async () => {
     await restorePersistentModuleMocks()
 
     if (originalHookChainsEnabled === undefined) {
-      delete process.env.CLAUDE_CODE_ENABLE_HOOK_CHAINS
+      delete process.env.NYXCLAUDE_ENABLE_HOOK_CHAINS
     } else {
-      process.env.CLAUDE_CODE_ENABLE_HOOK_CHAINS = originalHookChainsEnabled
+      process.env.NYXCLAUDE_ENABLE_HOOK_CHAINS = originalHookChainsEnabled
     }
 
     await Promise.all(

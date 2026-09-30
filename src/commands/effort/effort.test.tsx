@@ -16,20 +16,20 @@ import * as actualSettings from '../../utils/settings/settings.js'
 import * as actualThinking from '../../utils/thinking.js'
 import * as actualGrowthbook from '../../services/analytics/growthbook.js'
 
-const originalEffortEnv = process.env.CLAUDE_CODE_EFFORT_LEVEL
+const originalEffortEnv = process.env.NYXCLAUDE_EFFORT_LEVEL
 
 beforeEach(async () => {
   await acquireSharedMutationLock('commands/effort/effort.test.tsx')
-  delete process.env.CLAUDE_CODE_EFFORT_LEVEL
+  delete process.env.NYXCLAUDE_EFFORT_LEVEL
 })
 
 afterEach(() => {
   try {
     mock.restore()
     if (originalEffortEnv === undefined) {
-      delete process.env.CLAUDE_CODE_EFFORT_LEVEL
+      delete process.env.NYXCLAUDE_EFFORT_LEVEL
     } else {
-      process.env.CLAUDE_CODE_EFFORT_LEVEL = originalEffortEnv
+      process.env.NYXCLAUDE_EFFORT_LEVEL = originalEffortEnv
     }
   } finally {
     releaseSharedMutationLock()
@@ -200,7 +200,7 @@ test('/effort picker reports env override when selecting ultracode', async () =>
     messages.push(result)
   }
 
-  process.env.CLAUDE_CODE_EFFORT_LEVEL = 'high'
+  process.env.NYXCLAUDE_EFFORT_LEVEL = 'high'
   const element = await call(onDone, {}, '')
   const { stdout, stdin } = createTestStreams()
 
@@ -230,7 +230,7 @@ test('/effort picker reports env override when selecting ultracode', async () =>
   stdout.end()
 
   expect(messages).toEqual([
-    'Not applied: CLAUDE_CODE_EFFORT_LEVEL=high overrides effort this session, and ultracode is session-only (nothing saved)',
+    'Not applied: NYXCLAUDE_EFFORT_LEVEL=high overrides effort this session, and ultracode is session-only (nothing saved)',
   ])
   expect(finalEffortValue).toBe('ultracode')
 })

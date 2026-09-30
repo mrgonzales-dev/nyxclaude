@@ -19,15 +19,15 @@ describe('HybridTransport close', () => {
   let originalSessionAccessToken: string | undefined
 
   beforeEach(() => {
-    originalSessionAccessToken = process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN
-    process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN = 'test-token'
+    originalSessionAccessToken = process.env.NYXCLAUDE_SESSION_ACCESS_TOKEN
+    process.env.NYXCLAUDE_SESSION_ACCESS_TOKEN = 'test-token'
   })
 
   afterEach(() => {
     if (originalSessionAccessToken === undefined) {
-      delete process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN
+      delete process.env.NYXCLAUDE_SESSION_ACCESS_TOKEN
     } else {
-      process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN = originalSessionAccessToken
+      process.env.NYXCLAUDE_SESSION_ACCESS_TOKEN = originalSessionAccessToken
     }
     postImpl = async () => ({ status: 200 })
     jest.restoreAllMocks()

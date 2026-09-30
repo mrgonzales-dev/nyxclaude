@@ -1,6 +1,6 @@
 import { execaSync } from 'execa'
 import { join } from 'path'
-import { getClaudeConfigHomeDir } from '../envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../envUtils.js'
 import { jsonParse, jsonStringify } from '../slowOperations.js'
 import {
   CREDENTIALS_SERVICE_SUFFIX,
@@ -27,7 +27,7 @@ function getWindowsSecureStorageEntropy(): string {
 
 function getWindowsSecureStorageFilePath(): string {
   const resourceName = getLegacyResourceName().replace(/[^a-zA-Z0-9._-]/g, '_')
-  return join(getClaudeConfigHomeDir(), `${resourceName}.secure.dpapi`)
+  return join(getNyxclaudeConfigHomeDir(), `${resourceName}.secure.dpapi`)
 }
 
 function shouldUseLegacyPasswordVault(): boolean {

@@ -18,7 +18,7 @@ import {
 import { firstUsableCredential, hasInvalidCredentialPlaceholder } from './credentialPool.js'
 import {
   getAnthropicApiKey,
-  getClaudeAIOAuthTokens,
+  getRemoteOAuthTokens,
   hasProfileScope,
 } from 'src/utils/auth.js'
 import { z } from 'zod'
@@ -38,7 +38,7 @@ import {
   getLocalOpenAICompatibleProviderLabel,
   listOpenAICompatibleModels,
 } from '../../utils/providerDiscovery.js'
-import { getClaudeCodeUserAgent } from '../../utils/userAgent.js'
+import { getNyxclaudeUserAgent } from '../../utils/userAgent.js'
 import { parseCustomHeadersEnv } from '../../utils/providerCustomHeaders.js'
 import {
   getAdditionalModelOptionsCacheScope,
@@ -145,7 +145,7 @@ async function fetchBootstrapAPI(): Promise<BootstrapResponse | null> {
   // lack it and would 403). Fall back to API key auth for console users.
   const apiKey = getAnthropicApiKey()
   const hasUsableOAuth =
-    getClaudeAIOAuthTokens()?.accessToken && hasProfileScope()
+    getRemoteOAuthTokens()?.accessToken && hasProfileScope()
   if (!hasUsableOAuth && !apiKey) {
     logForDebugging('[Bootstrap] Skipped: no usable OAuth or API key')
     return null
@@ -158,7 +158,7 @@ async function fetchBootstrapAPI(): Promise<BootstrapResponse | null> {
   try {
     return await withOAuth401Retry(async () => {
       // Re-read OAuth each call so the retry picks up the refreshed token.
-      const token = getClaudeAIOAuthTokens()?.accessToken
+      const token = getRemoteOAuthTokens()?.accessToken
       let authHeaders: Record<string, string>
       if (token && hasProfileScope()) {
         authHeaders = {
@@ -176,7 +176,7 @@ async function fetchBootstrapAPI(): Promise<BootstrapResponse | null> {
       const response = await axios.get<unknown>(endpoint, {
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': getClaudeCodeUserAgent(),
+          'User-Agent': getNyxclaudeUserAgent(),
           ...authHeaders,
         },
         timeout: 5000,
@@ -270,7 +270,7 @@ export async function fetchLocalOpenAIModelOptions(
     getRouteDescriptor(routeId)?.catalog?.discovery?.requiresAuth !== false
   const discoveryApiKey = discoveryRequiresAuth ? apiKey : undefined
   const discoveryHeaders = discoveryRequiresAuth
-    ? parseCustomHeadersEnv(process.env.ANTHROPIC_CUSTOM_HEADERS)
+    ? parseCustomHeadersEnv(process.env.NYXCLAUDE_CUSTOM_HEADERS)
     : undefined
   const fallbackHeaders = routeId
     ? getRouteDiscoveryHeaders(routeId, { baseUrl, headers: discoveryHeaders })

@@ -14,7 +14,7 @@ import {
 import { logForDebugging } from '../../utils/debug.js'
 import { errorMessage } from '../../utils/errors.js'
 import { detectGlobalPackageManager } from '../../utils/globalPackageManager.js'
-import { installOrUpdateClaudePackage } from '../../utils/localInstaller.js'
+import { installOrUpdatePackage } from '../../utils/localInstaller.js'
 import { hasNativeDistribution } from '../../utils/nativeDistribution.js'
 import {
   installLatest as installLatestNative,
@@ -181,7 +181,7 @@ function Update({ onDone, force, target }: UpdateProps): React.ReactNode {
         // permissions, cleans up old aliases, and records installMethod.
         const status =
           strategy.method === 'local'
-            ? await installOrUpdateClaudePackage(
+            ? await installOrUpdatePackage(
                 channel,
                 isChannel ? null : target,
               )

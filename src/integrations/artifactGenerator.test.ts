@@ -35,7 +35,7 @@ function splitGeneratedArtifacts(
 const FIXTURE_DIRS = [
   'src/integrations/vendors',
   'src/integrations/gateways',
-  'src/integrations/anthropicProxies',
+  'src/integrations/providerProxies',
   'src/integrations/brands',
   'src/integrations/models',
 ] as const

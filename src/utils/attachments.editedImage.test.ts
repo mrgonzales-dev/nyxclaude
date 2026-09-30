@@ -61,7 +61,7 @@ describe('tryReadEditedImageAttachment', () => {
     // Analytics payload carries only `ext`, never the path or the raw error.
     expect(tracked).toHaveLength(1)
     const [eventName, meta] = tracked[0]!
-    expect(eventName).toBe('tengu_watched_file_compression_failed')
+    expect(eventName).toBe('nyxclaude_watched_file_compression_failed')
     expect(meta).toEqual({ ext: 'png' })
     expect(JSON.stringify(meta)).not.toContain('jane.doe')
   })

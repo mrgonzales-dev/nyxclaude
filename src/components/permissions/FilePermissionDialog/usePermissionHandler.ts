@@ -5,9 +5,9 @@ import {
 import { sanitizeToolNameForAnalytics } from '../../../services/analytics/metadata.js'
 import type { ToolPermissionContext } from '../../../Tool.js'
 import {
-  CLAUDE_FOLDER_PERMISSION_PATTERN,
+  NYXCLAUDE_FOLDER_PERMISSION_PATTERN,
   FILE_EDIT_TOOL_NAME,
-  GLOBAL_CLAUDE_FOLDER_PERMISSION_PATTERN,
+  GLOBAL_NYXNYXCLAUDE_FOLDER_PERMISSION_PATTERN,
 } from '../../../tools/FileEditTool/constants.js'
 import { env } from '../../../utils/env.js'
 import { generateSuggestions } from '../../../utils/permissions/filesystem.js'
@@ -48,7 +48,7 @@ function logSubmissionEvent(
   options?: PermissionHandlerOptions,
 ): void {
   logEvent(
-    event === 'accept' ? 'tengu_accept_submitted' : 'tengu_reject_submitted',
+    event === 'accept' ? 'nyxclaude_accept_submitted' : 'nyxclaude_reject_submitted',
     {
       toolName: sanitizeToolNameForAnalytics(
         toolUseConfirm.tool.name,
@@ -65,9 +65,9 @@ function buildSessionPermissionUpdates(
   path: string | null,
   operationType: FileOperationType,
   toolPermissionContext: ToolPermissionContext,
-  scope?: 'claude-folder' | 'global-claude-folder',
+  scope?: 'nyxclaude-folder' | 'global-nyxnyxclaude-folder',
 ): PermissionUpdate[] {
-  if (scope === 'claude-folder' || scope === 'global-claude-folder') {
+  if (scope === 'nyxclaude-folder' || scope === 'global-nyxnyxclaude-folder') {
     return [
       {
         type: 'addRules',
@@ -75,9 +75,9 @@ function buildSessionPermissionUpdates(
           {
             toolName: FILE_EDIT_TOOL_NAME,
             ruleContent:
-              scope === 'global-claude-folder'
-                ? GLOBAL_CLAUDE_FOLDER_PERMISSION_PATTERN
-                : CLAUDE_FOLDER_PERMISSION_PATTERN,
+              scope === 'global-nyxnyxclaude-folder'
+                ? GLOBAL_NYXNYXCLAUDE_FOLDER_PERMISSION_PATTERN
+                : NYXCLAUDE_FOLDER_PERMISSION_PATTERN,
           },
         ],
         behavior: 'allow',
@@ -107,7 +107,7 @@ export type PermissionHandlerOptions = {
   hasFeedback?: boolean
   feedback?: string
   enteredFeedbackMode?: boolean
-  scope?: 'claude-folder' | 'global-claude-folder'
+  scope?: 'nyxclaude-folder' | 'global-nyxnyxclaude-folder'
   input?: unknown
 }
 

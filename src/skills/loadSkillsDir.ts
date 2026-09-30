@@ -30,7 +30,7 @@ import {
   parseFrontmatterEffortValue,
 } from '../utils/effort.js'
 import {
-  getClaudeConfigHomeDir,
+  getNyxclaudeConfigHomeDir,
   isBareMode,
   isEnvTruthy,
 } from '../utils/envUtils.js'
@@ -84,7 +84,7 @@ export function getSkillsPath(
     case 'policySettings':
       return join(getManagedFilePath(), '.nyxclaude', dir)
     case 'userSettings':
-      return join(getClaudeConfigHomeDir(), dir)
+      return join(getNyxclaudeConfigHomeDir(), dir)
     case 'projectSettings':
       return `.nyxclaude/${dir}`
     case 'plugin':
@@ -132,7 +132,7 @@ export function estimateSkillFrontmatterTokens(skill: Command): number {
  * Uses realpath to resolve symlinks, which is filesystem-agnostic and avoids
  * issues with filesystems that report unreliable inode values (e.g., inode 0 on
  * some virtual/container/NFS filesystems, or precision loss on ExFAT).
- * See: https://github.com/anthropics/claude-code/issues/13893
+ * See: https://github.com/nyxclaude/nyxclaude/issues/13893
  */
 async function getFileIdentity(filePath: string): Promise<string | null> {
   try {
@@ -775,7 +775,7 @@ async function loadSkillsFromCommandsDir(
  */
 export const getSkillDirCommands = memoize(
   async (cwd: string): Promise<Command[]> => {
-    const userSkillsDir = join(getClaudeConfigHomeDir(), 'skills')
+    const userSkillsDir = join(getNyxclaudeConfigHomeDir(), 'skills')
     const managedSkillsDir = join(getManagedFilePath(), '.nyxclaude', 'skills')
     const projectSkillsDirs = getProjectDirsUpToHome(
       'skills',
@@ -822,7 +822,7 @@ export const getSkillDirCommands = memoize(
       additionalSkillsNested,
       legacyCommands,
     ] = await Promise.all([
-      isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_POLICY_SKILLS)
+      isEnvTruthy(process.env.NYXCLAUDE_DISABLE_POLICY_SKILLS)
         ? Promise.resolve([])
         : loadSkillsFromSkillsDir(managedSkillsDir, 'policySettings'),
       isSettingSourceEnabled('userSettings') && !skillsLocked
@@ -1094,7 +1094,7 @@ export async function addSkillDirectories(dirs: string[]): Promise<void> {
       `[skills] Dynamically discovered ${newSkillCount} skills from ${dirs.length} directories`,
     )
     if (addedSkills.length > 0) {
-      logEvent('tengu_dynamic_skills_changed', {
+      logEvent('nyxclaude_dynamic_skills_changed', {
         source:
           'file_operation' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         previousCount: previousSkillNamesForLogging.size,
@@ -1176,7 +1176,7 @@ export function activateConditionalSkillsForPaths(
   }
 
   if (activated.length > 0) {
-    logEvent('tengu_dynamic_skills_changed', {
+    logEvent('nyxclaude_dynamic_skills_changed', {
       source:
         'conditional_paths' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       previousCount: dynamicSkills.size - activated.length,

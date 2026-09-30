@@ -1,4 +1,4 @@
-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { TextBlockParam } from 'src/types/api.js'
 import * as React from 'react'
 import { Box, Text } from '../../ink.js'
 import { FORK_DIRECTIVE_PREFIX } from '../../constants/xml.js'

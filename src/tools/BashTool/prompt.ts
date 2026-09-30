@@ -38,7 +38,7 @@ export function getEffectiveTimeoutMs(timeout: unknown): number {
 }
 
 function getBackgroundUsageNote(): string | null {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS)) {
+  if (isEnvTruthy(process.env.NYXCLAUDE_DISABLE_BACKGROUND_TASKS)) {
     return null
   }
   return "Use `run_in_background` for long-running commands. You'll be notified when done."

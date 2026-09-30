@@ -15,8 +15,8 @@ const PROVIDER_ENV_PREFIXES = [
   'AWS_',
   'BEDROCK_',
   'BNKR_',
-  'CLAUDE_CODE_PROVIDER_PROFILE_',
-  'CLAUDE_CODE_USE_',
+  'NYXCLAUDE_PROVIDER_PROFILE_',
+  'NYXCLAUDE_USE_',
   'DASHSCOPE_',
   'DEEPSEEK_',
   'FIREWORKS_',
@@ -113,7 +113,7 @@ afterEach(async () => {
 })
 
 test('OpenAI route resolves to the OpenAI route label', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-4o'
   process.env.OPENAI_API_KEY = 'sk-test-openai-key'
@@ -130,7 +130,7 @@ test('OpenAI route resolves to the OpenAI route label', async () => {
 })
 
 test('Ollama route shows local route details', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
   process.env.OPENAI_MODEL = 'llama3.2'
 
@@ -141,7 +141,7 @@ test('Ollama route shows local route details', async () => {
 })
 
 test('OpenRouter route shows its route label instead of OpenAI-compatible', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
   process.env.OPENROUTER_API_KEY = 'sk-or-test-key'
@@ -157,7 +157,7 @@ test('OpenRouter route shows its route label instead of OpenAI-compatible', asyn
 })
 
 test('OpenRouter route displays OPENAI_API_BASE when it selected the route', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_BASE = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
   process.env.OPENROUTER_API_KEY = 'sk-or-test-key'
@@ -170,7 +170,7 @@ test('OpenRouter route displays OPENAI_API_BASE when it selected the route', asy
 })
 
 test('OPENAI_API_BASE query credentials are redacted from status display', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_BASE =
     'https://openrouter.ai/api/v1?api_key=sk-or-query-secret&timeout=30'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
@@ -184,7 +184,7 @@ test('OPENAI_API_BASE query credentials are redacted from status display', async
 })
 
 test('OPENAI_API_BASE fragments are removed from status display', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_BASE =
     'https://openrouter.ai/api/v1?api_key=querysecret#access_token=fragsecret'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
@@ -198,7 +198,7 @@ test('OPENAI_API_BASE fragments are removed from status display', async () => {
 })
 
 test('configured route secrets inside base URL query values are redacted', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_BASE =
     'https://openrouter.ai/api/v1?credential=sk-or-query-secret&timeout=30'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
@@ -212,7 +212,7 @@ test('configured route secrets inside base URL query values are redacted', async
 })
 
 test('URL-encoded configured route secrets inside base URL query values are redacted', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_BASE =
     'https://openrouter.ai/api/v1?credential=abc%2Fdef%2Bghi%3D&timeout=30'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
@@ -228,7 +228,7 @@ test('URL-encoded configured route secrets inside base URL query values are reda
 })
 
 test('form-encoded configured route secrets inside base URL query values are redacted', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_BASE =
     'https://openrouter.ai/api/v1?auth=Bearer+abc&credential=abc%27def&timeout=30'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
@@ -245,7 +245,7 @@ test('form-encoded configured route secrets inside base URL query values are red
 })
 
 test('double-encoded configured route secrets inside base URL query values are redacted', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_BASE =
     'https://openrouter.ai/api/v1?debug=abc%252FdefSecret987&header=Bearer%2520abc&form=Bearer%2Babc&plus=longplussecret%252Bvalue&timeout=30'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
@@ -265,7 +265,7 @@ test('double-encoded configured route secrets inside base URL query values are r
 })
 
 test('blank OPENAI_BASE_URL falls back to OPENAI_API_BASE for route display', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = '   '
   process.env.OPENAI_API_BASE = ' https://openrouter.ai/api/v1 '
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
@@ -279,7 +279,7 @@ test('blank OPENAI_BASE_URL falls back to OPENAI_API_BASE for route display', as
 })
 
 test('Groq route shows its route label instead of OpenAI-compatible', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.groq.com/openai/v1'
   process.env.OPENAI_MODEL = 'llama-3.3-70b-versatile'
   process.env.GROQ_API_KEY = 'gsk_test-key'
@@ -295,7 +295,7 @@ test('Groq route shows its route label instead of OpenAI-compatible', async () =
 })
 
 test('route-specific credential values are redacted from displayed fields', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.groq.com/openai/v1'
   process.env.OPENAI_MODEL = 'gsk-route-secret-value-123'
   process.env.GROQ_API_KEY = 'gsk-route-secret-value-123'
@@ -307,7 +307,7 @@ test('route-specific credential values are redacted from displayed fields', asyn
 })
 
 test('route-specific credential substrings are redacted from displayed model fields', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'prefix-sk-or-SECRET-VALUE-123-suffix'
   process.env.OPENROUTER_API_KEY = 'sk-or-SECRET-VALUE-123'
@@ -335,7 +335,7 @@ test('env-only Fireworks route displays descriptor defaults', async () => {
 })
 
 test('Gemini route remains clear', async () => {
-  process.env.CLAUDE_CODE_USE_GEMINI = '1'
+  process.env.NYXCLAUDE_USE_GEMINI = '1'
   process.env.GEMINI_MODEL = 'gemini-2.0-flash'
   process.env.GEMINI_API_KEY = 'gem-test-key'
 
@@ -347,7 +347,7 @@ test('Gemini route remains clear', async () => {
 })
 
 test('GitHub route remains clear', async () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_BASE_URL = 'https://models.inference.ai.azure.com'
   process.env.OPENAI_MODEL = 'gpt-4o'
 
@@ -358,7 +358,7 @@ test('GitHub route remains clear', async () => {
 })
 
 test('unknown custom route falls back gracefully', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://my-internal-proxy.example.com/v1'
   process.env.OPENAI_MODEL = 'internal-model'
   process.env.OPENAI_API_KEY = 'sk-internal-key'
@@ -371,7 +371,7 @@ test('unknown custom route falls back gracefully', async () => {
 })
 
 test('secrets are never leaked in status properties', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
   process.env.OPENROUTER_API_KEY = 'sk-or-SECRET-VALUE-123'
@@ -386,7 +386,7 @@ test('secrets are never leaked in status properties', async () => {
 test('end-to-end: real getAPIProvider resolves OpenRouter without mocking', async () => {
   // Do NOT mock getAPIProvider. Verify the full chain: env -> getAPIProvider
   // collapses to 'openai' -> route resolution surfaces 'OpenRouter'.
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
   process.env.OPENROUTER_API_KEY = 'sk-or-test-key'
@@ -399,7 +399,7 @@ test('end-to-end: real getAPIProvider resolves OpenRouter without mocking', asyn
 
 test('credential summary lists only configured env vars when multiple are known', async () => {
   // OpenRouter knows OPENROUTER_API_KEY and OPENAI_API_KEY. Configure only one.
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'anthropic/claude-sonnet-4.5'
   process.env.OPENROUTER_API_KEY = 'sk-or-test-key'
@@ -415,7 +415,7 @@ test('credential summary lists only configured env vars when multiple are known'
 
 test('route-aware label is omitted when no credential env var is configured', async () => {
   // Ollama is a local route with no required credential env var.
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
   process.env.OPENAI_MODEL = 'llama3.2'
 

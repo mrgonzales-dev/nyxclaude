@@ -1,4 +1,4 @@
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ContentBlockParam } from 'src/types/api.js'
 import { describe, expect, test } from 'bun:test'
 import {
   stripEmptyLines,

@@ -1,4 +1,4 @@
-import { APIError } from '@anthropic-ai/sdk'
+import { APIError } from 'src/types/api.js'
 import { afterEach, expect, test } from 'bun:test'
 
 import {

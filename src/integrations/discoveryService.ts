@@ -56,7 +56,7 @@ export type RouteReadinessResult =
 function shouldSkipNonessentialDiscoveryTraffic(): boolean {
   return (
     isEssentialTrafficOnly() ||
-    Boolean(process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC)
+    Boolean(process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC)
   )
 }
 
@@ -493,7 +493,7 @@ export async function refreshStartupDiscoveryForActiveRoute(
     baseUrl,
     headers:
       options?.headers ??
-      parseCustomHeadersEnv(processEnv.ANTHROPIC_CUSTOM_HEADERS),
+      parseCustomHeadersEnv(processEnv.NYXCLAUDE_CUSTOM_HEADERS),
     apiKey: hasInvalidCredentialPlaceholder(options?.apiKey)
       ? undefined
       : firstUsableCredential(options?.apiKey) ??

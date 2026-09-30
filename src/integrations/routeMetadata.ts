@@ -18,7 +18,7 @@ import { hasUsableOpenAICredential } from '../services/api/credentialPool.js'
 import { isEnvTruthy } from '../utils/envUtils.js'
 import { isFirstPartyAnthropicBaseUrlForEnv } from '../utils/anthropicBaseUrl.js'
 
-export type RouteDescriptor = GatewayDescriptor | VendorDescriptor | import('./descriptors.js').AnthropicProxyDescriptor
+export type RouteDescriptor = GatewayDescriptor | VendorDescriptor | import('./descriptors.js').ProviderProxyDescriptor
 
 const TRANSPORT_KIND_PROVIDER_TYPE_LABELS: Partial<
   Record<TransportKind, string>
@@ -618,13 +618,13 @@ function hasNoExplicitNonOpenAICompatibleProvider(
   processEnv: NodeJS.ProcessEnv,
 ): boolean {
   return (
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_OPENAI) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_GEMINI) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_MISTRAL) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_BEDROCK) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_VERTEX) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_FOUNDRY)
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_OPENAI) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_GITHUB) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_GEMINI) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_MISTRAL) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_BEDROCK) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_VERTEX) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_FOUNDRY)
   )
 }
 
@@ -632,12 +632,12 @@ function hasNoExplicitNonOpenAIProvider(
   processEnv: NodeJS.ProcessEnv,
 ): boolean {
   return (
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_GEMINI) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_MISTRAL) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_BEDROCK) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_VERTEX) &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_FOUNDRY)
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_GITHUB) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_GEMINI) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_MISTRAL) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_BEDROCK) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_VERTEX) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_FOUNDRY)
   )
 }
 
@@ -1131,12 +1131,12 @@ export function resolveActiveRouteIdFromEnv(
   const cacheKey = [
     options?.activeProfileProvider ?? '',
     options?.activeProfileBaseUrl ?? '',
-    processEnv.CLAUDE_CODE_USE_GEMINI,
-    processEnv.CLAUDE_CODE_USE_MISTRAL,
-    processEnv.CLAUDE_CODE_USE_GITHUB,
-    processEnv.CLAUDE_CODE_USE_BEDROCK,
-    processEnv.CLAUDE_CODE_USE_VERTEX,
-    processEnv.CLAUDE_CODE_USE_OPENAI,
+    processEnv.NYXCLAUDE_USE_GEMINI,
+    processEnv.NYXCLAUDE_USE_MISTRAL,
+    processEnv.NYXCLAUDE_USE_GITHUB,
+    processEnv.NYXCLAUDE_USE_BEDROCK,
+    processEnv.NYXCLAUDE_USE_VERTEX,
+    processEnv.NYXCLAUDE_USE_OPENAI,
     processEnv.ANTHROPIC_BASE_URL,
     processEnv.ANTHROPIC_MODEL,
     processEnv.ANTHROPIC_AUTH_TOKEN,
@@ -1162,19 +1162,19 @@ function _resolveActiveRouteIdFromEnvUncached(
     activeProfileBaseUrl?: string
   },
 ): string | null {
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GEMINI)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_GEMINI)) {
     return 'gemini'
   }
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_MISTRAL)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_MISTRAL)) {
     return 'mistral'
   }
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_GITHUB)) {
     return 'github'
   }
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_BEDROCK)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_BEDROCK)) {
     return 'bedrock'
   }
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_VERTEX)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_VERTEX)) {
     return 'vertex'
   }
 
@@ -1185,7 +1185,7 @@ function _resolveActiveRouteIdFromEnvUncached(
     processEnv.ANTHROPIC_BASE_URL,
   )
   if (
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_OPENAI) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_OPENAI) &&
     hasNonEmptyEnvValue(processEnv.ANTHROPIC_BASE_URL) &&
     hasNonEmptyEnvValue(processEnv.ANTHROPIC_MODEL) &&
     (hasNonEmptyEnvValue(processEnv.ANTHROPIC_AUTH_TOKEN) ||
@@ -1201,7 +1201,7 @@ function _resolveActiveRouteIdFromEnvUncached(
   const envOnlyRouteId = resolveEnvOnlyProviderRouteId(processEnv)
   if (envOnlyRouteId) return envOnlyRouteId
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_OPENAI)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_OPENAI)) {
     const baseUrl =
       processEnv.OPENAI_BASE_URL ?? processEnv.OPENAI_API_BASE
     const matchedRoute = resolveRouteIdFromBaseUrl(baseUrl)

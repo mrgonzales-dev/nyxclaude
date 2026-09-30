@@ -216,7 +216,7 @@ export function getNvidiaNimDiscoveryCacheKeyForEnv(
   return getDiscoveryCacheKey('nvidia-nim', {
     baseUrl: request.baseUrl,
     apiKey,
-    headers: parseCustomHeadersEnv(processEnv.ANTHROPIC_CUSTOM_HEADERS),
+    headers: parseCustomHeadersEnv(processEnv.NYXCLAUDE_CUSTOM_HEADERS),
   })
 }
 

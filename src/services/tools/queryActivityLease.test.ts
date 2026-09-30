@@ -1,4 +1,4 @@
-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ToolUseBlock } from 'src/types/api.js'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { z } from 'zod/v4'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'

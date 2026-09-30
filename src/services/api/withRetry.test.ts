@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-import type Anthropic from '@anthropic-ai/sdk'
-import { APIError, APIUserAbortError } from '@anthropic-ai/sdk'
+import { type Anthropic } from 'src/types/api.js'
+import { APIError, APIUserAbortError } from 'src/types/api.js'
 import { acquireSharedMutationLock, releaseSharedMutationLock } from '../../test/sharedMutationLock.js'
 import * as debugNs from '../../utils/debug.js'
 import { markOpenAIRequestNonReplayable } from './openaiErrorClassification.js'
@@ -23,14 +23,14 @@ const originalDebugModule = { ...debugNs }
 let originalProvidersModule: ProvidersModule | undefined
 
 const envKeys = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_UNATTENDED_RETRY',
-  'CLAUDE_CODE_MAX_RETRIES',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
+  'NYXCLAUDE_UNATTENDED_RETRY',
+  'NYXCLAUDE_MAX_RETRIES',
   'NYXCLAUDE_MAX_RETRIES',
   'NYXCLAUDE_RETRY_DELAY_MS',
   'OPENAI_MODEL',
@@ -136,15 +136,15 @@ describe('retry configuration', () => {
     expect(getDefaultMaxRetries()).toBe(0)
   })
 
-  test('falls back to legacy CLAUDE_CODE_MAX_RETRIES when new env var is absent', async () => {
-    process.env.CLAUDE_CODE_MAX_RETRIES = '0'
+  test('falls back to legacy NYXCLAUDE_MAX_RETRIES when new env var is absent', async () => {
+    process.env.NYXCLAUDE_MAX_RETRIES = '0'
     const { getDefaultMaxRetries } = await importFreshWithRetryModule()
     expect(getDefaultMaxRetries()).toBe(0)
   })
 
-  test('prefers NYXCLAUDE_MAX_RETRIES over legacy CLAUDE_CODE_MAX_RETRIES', async () => {
+  test('prefers NYXCLAUDE_MAX_RETRIES over legacy NYXCLAUDE_MAX_RETRIES', async () => {
     process.env.NYXCLAUDE_MAX_RETRIES = '3'
-    process.env.CLAUDE_CODE_MAX_RETRIES = '0'
+    process.env.NYXCLAUDE_MAX_RETRIES = '0'
     const { getDefaultMaxRetries } = await importFreshWithRetryModule()
     expect(getDefaultMaxRetries()).toBe(3)
   })
@@ -708,7 +708,7 @@ describe('getRateLimitResetDelayMs - Anthropic (firstParty)', () => {
 
 describe('getRateLimitResetDelayMs - OpenAI provider', () => {
   test('reads x-ratelimit-reset-requests duration string', async () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     const { getRateLimitResetDelayMs } =
       await importFreshWithRetryModule('openai')
     const error = makeError({ 'x-ratelimit-reset-requests': '30s' })
@@ -717,7 +717,7 @@ describe('getRateLimitResetDelayMs - OpenAI provider', () => {
   })
 
   test('reads x-ratelimit-reset-tokens and picks the larger delay', async () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     const { getRateLimitResetDelayMs } =
       await importFreshWithRetryModule('openai')
     const error = makeError({
@@ -730,7 +730,7 @@ describe('getRateLimitResetDelayMs - OpenAI provider', () => {
   })
 
   test('returns null when no openai rate limit headers present', async () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     const { getRateLimitResetDelayMs } =
       await importFreshWithRetryModule('openai')
     const error = makeError({})
@@ -738,7 +738,7 @@ describe('getRateLimitResetDelayMs - OpenAI provider', () => {
   })
 
   test('works for github provider too', async () => {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     const { getRateLimitResetDelayMs } =
       await importFreshWithRetryModule('github')
     const error = makeError({ 'x-ratelimit-reset-requests': '5s' })
@@ -748,7 +748,7 @@ describe('getRateLimitResetDelayMs - OpenAI provider', () => {
 
 describe('getRateLimitResetDelayMs - providers without reset headers', () => {
   test('returns null for bedrock', async () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+    process.env.NYXCLAUDE_USE_BEDROCK = '1'
     const { getRateLimitResetDelayMs } =
       await importFreshWithRetryModule('bedrock')
     const error = makeError({ 'anthropic-ratelimit-unified-reset': String(Math.floor(Date.now() / 1000) + 60) })
@@ -757,7 +757,7 @@ describe('getRateLimitResetDelayMs - providers without reset headers', () => {
   })
 
   test('returns null for vertex', async () => {
-    process.env.CLAUDE_CODE_USE_VERTEX = '1'
+    process.env.NYXCLAUDE_USE_VERTEX = '1'
     const { getRateLimitResetDelayMs } =
       await importFreshWithRetryModule('vertex')
     const error = makeError({})
@@ -838,7 +838,7 @@ describe('persistent retry cap', () => {
     // UNATTENDED_RETRY feature must be enabled via `bun test --feature=UNATTENDED_RETRY`
     // (see package.json), and the env var must be truthy, otherwise
     // isPersistentRetryEnabled() returns false and the cap never triggers.
-    process.env.CLAUDE_CODE_UNATTENDED_RETRY = '1'
+    process.env.NYXCLAUDE_UNATTENDED_RETRY = '1'
     const retryModule = await importFreshWithRetryModule('firstParty')
         const { CannotRetryError, withRetry, _PERSISTENT_MAX_ATTEMPTS_FOR_TEST, isPersistentRetryEnabled } = retryModule
     expect(_PERSISTENT_MAX_ATTEMPTS_FOR_TEST).toBe(100)
@@ -865,7 +865,7 @@ describe('persistent retry cap', () => {
     await expect(runRetries()).rejects.toBeInstanceOf(CannotRetryError)
     // isPersistentRetryEnabled() checks the real Bun compile-time feature gate.
     // Without --feature=UNATTENDED_RETRY, it returns false and only 1 call is made.
-    // With the flag and CLAUDE_CODE_UNATTENDED_RETRY=1, the cap triggers after 101 calls.
+    // With the flag and NYXCLAUDE_UNATTENDED_RETRY=1, the cap triggers after 101 calls.
     const expectedCalls = isPersistentRetryEnabled() ? 101 : 1
     expect(operation).toHaveBeenCalledTimes(expectedCalls)
   })

@@ -11,10 +11,10 @@ import {
 } from './compressToolHistory.js'
 
 const originalEnv = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_AUTO_COMPACT_WINDOW:
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW,
-  CLAUDE_CODE_MAX_OUTPUT_TOKENS: process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_AUTO_COMPACT_WINDOW:
+    process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW,
+  NYXCLAUDE_MAX_OUTPUT_TOKENS: process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS,
 }
 
 const originalConfig = {
@@ -38,9 +38,9 @@ function restoreEnv(key: keyof typeof originalEnv): void {
 
 function setEffectiveWindowForTest(effectiveWindow: number): void {
   mockState.effectiveWindow = effectiveWindow
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '8000'
-  process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = String(effectiveWindow + 8_000)
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '8000'
+  process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW = String(effectiveWindow + 8_000)
 }
 
 function setCompressionEnabledForTest(enabled: boolean): void {
@@ -856,7 +856,7 @@ test('idempotent: a second pass over compressed output is a no-op', () => {
   const twice = compressToolHistoryForTest(once)
 
   // Stubs must not be re-stubbed (would corrupt the omitted-chars count) and
-  // truncations must not lose their marker — layered call sites (claude.ts +
+  // truncations must not lose their marker — layered call sites (modelApi.ts +
   // shim) rely on this.
   expect(JSON.parse(JSON.stringify(twice))).toEqual(
     JSON.parse(JSON.stringify(once)),

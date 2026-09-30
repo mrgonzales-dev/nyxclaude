@@ -12,13 +12,13 @@ import { getOauthConfig } from '../constants/oauth.js';
 import type { SDKMessage } from '../entrypoints/agentSdkTypes.js';
 import type { Root } from '../ink.js';
 import { KeybindingSetup } from '../keybindings/KeybindingProviderSetup.js';
-import { queryHaiku } from '../services/api/claude.js';
+import { querySmallModel } from '../services/api/modelApi.js';
 import { getSessionLogsViaOAuth, getTeleportEvents } from '../services/api/sessionIngress.js';
 import { getOrganizationUUID } from '../services/oauth/client.js';
 import { AppStateProvider } from '../state/AppState.js';
 import type { Message, SystemMessage } from '../types/message.js';
 import type { PermissionMode } from '../types/permissions.js';
-import { checkAndRefreshOAuthTokenIfNeeded, getClaudeAIOAuthTokens } from './auth.js';
+import { checkAndRefreshOAuthTokenIfNeeded, getRemoteOAuthTokens } from './auth.js';
 import { checkGithubAppInstalled } from './background/remote/preconditions.js';
 import { deserializeMessages, type TeleportRemoteResponse } from './conversationRecovery.js';
 import { getCwd } from './cwd.js';
@@ -104,7 +104,7 @@ async function generateTitleAndBranch(description: string, signal: AbortSignal):
   const fallbackBranch = 'claude/task';
   try {
     const userPrompt = SESSION_TITLE_AND_BRANCH_PROMPT.replace('{description}', description);
-    const response = await queryHaiku({
+    const response = await querySmallModel({
       systemPrompt: asSystemPrompt([]),
       userPrompt,
       outputFormat: {
@@ -174,7 +174,7 @@ export async function validateGitState(): Promise<void> {
     ignoreUntracked: true
   });
   if (!isClean) {
-    logEvent('tengu_teleport_error_git_not_clean', {});
+    logEvent('nyxclaude_teleport_error_git_not_clean', {});
     const error = new TeleportOperationError('Git working directory is not clean. Please commit or stash your changes before using --teleport.', chalk.red('Error: Git working directory is not clean. Please commit or stash your changes before using --teleport.\n'));
     throw error;
   }
@@ -273,7 +273,7 @@ async function checkoutBranch(branchName: string): Promise<void> {
     }
   }
   if (checkoutCode !== 0) {
-    logEvent('tengu_teleport_error_branch_checkout_failed', {});
+    logEvent('nyxclaude_teleport_error_branch_checkout_failed', {});
     throw new TeleportOperationError(`Failed to checkout branch '${branchName}': ${checkoutStderr}`, chalk.red(`Failed to checkout branch '${branchName}'\n`));
   }
 
@@ -433,18 +433,18 @@ export async function teleportResumeCodeSession(sessionId: string, onProgress?: 
   }
   logForDebugging(`Resuming code session ID: ${sessionId}`);
   try {
-    const accessToken = getClaudeAIOAuthTokens()?.accessToken;
+    const accessToken = getRemoteOAuthTokens()?.accessToken;
     if (!accessToken) {
-      logEvent('tengu_teleport_resume_error', {
+      logEvent('nyxclaude_teleport_resume_error', {
         error_type: 'no_access_token' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
-      throw new Error('Nyxclaude web sessions require authentication with a Claude.ai account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.');
+      throw new Error('Nyxclaude web sessions require authentication with a remote account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.');
     }
 
     // Get organization UUID
     const orgUUID = await getOrganizationUUID();
     if (!orgUUID) {
-      logEvent('tengu_teleport_resume_error', {
+      logEvent('nyxclaude_teleport_resume_error', {
         error_type: 'no_org_uuid' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
       throw new Error('Unable to get organization UUID for constructing session URL');
@@ -461,7 +461,7 @@ export async function teleportResumeCodeSession(sessionId: string, onProgress?: 
         break;
       case 'not_in_repo':
         {
-          logEvent('tengu_teleport_error_repo_not_in_git_dir_sessions_api', {
+          logEvent('nyxclaude_teleport_error_repo_not_in_git_dir_sessions_api', {
             sessionId: sessionId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
           });
           // Include host for GHE users so they know which instance the repo is on
@@ -470,7 +470,7 @@ export async function teleportResumeCodeSession(sessionId: string, onProgress?: 
         }
       case 'mismatch':
         {
-          logEvent('tengu_teleport_error_repo_mismatch_sessions_api', {
+          logEvent('nyxclaude_teleport_error_repo_mismatch_sessions_api', {
             sessionId: sessionId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
           });
           // Only include host prefix when hosts actually differ to disambiguate
@@ -495,7 +495,7 @@ export async function teleportResumeCodeSession(sessionId: string, onProgress?: 
     }
     const err = toError(error);
     logError(err);
-    logEvent('tengu_teleport_resume_error', {
+    logEvent('nyxclaude_teleport_resume_error', {
       error_type: 'resume_session_id_catch' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
     });
     throw new TeleportOperationError(err.message, chalk.red(`Error: ${err.message}\n`));
@@ -510,7 +510,7 @@ async function handleTeleportPrerequisites(root: Root, errorsToIgnore?: Set<Tele
   const errors = await getTeleportErrors();
   if (errors.size > 0) {
     // Log teleport errors detected
-    logEvent('tengu_teleport_errors_detected', {
+    logEvent('nyxclaude_teleport_errors_detected', {
       error_types: Array.from(errors).join(',') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       errors_ignored: Array.from(errorsToIgnore || []).join(',') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
     });
@@ -521,7 +521,7 @@ async function handleTeleportPrerequisites(root: Root, errorsToIgnore?: Set<Tele
           <KeybindingSetup>
             <TeleportError errorsToIgnore={errorsToIgnore} onComplete={() => {
             // Log when errors are resolved
-            logEvent('tengu_teleport_errors_resolved', {
+            logEvent('nyxclaude_teleport_errors_resolved', {
               error_types: Array.from(errors).join(',') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
             });
             void resolve();
@@ -605,7 +605,7 @@ export async function teleportFromSessionsAPI(sessionId: string, orgUUID: string
 
     // Handle 404 specifically
     if (axios.isAxiosError(error) && error.response?.status === 404) {
-      logEvent('tengu_teleport_error_session_not_found_404', {
+      logEvent('nyxclaude_teleport_error_session_not_found_404', {
         sessionId: sessionId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
       throw new TeleportOperationError(`${sessionId} not found.`, `${sessionId} not found.\n${chalk.dim('Run /status in Nyxclaude to check your account.')}`);
@@ -633,7 +633,7 @@ export type PollRemoteSessionResponse = {
 export async function pollRemoteSessionEvents(sessionId: string, afterId: string | null = null, opts?: {
   skipMetadata?: boolean;
 }): Promise<PollRemoteSessionResponse> {
-  const accessToken = getClaudeAIOAuthTokens()?.accessToken;
+  const accessToken = getRemoteOAuthTokens()?.accessToken;
   if (!accessToken) {
     throw new Error('No access token for polling');
   }
@@ -751,7 +751,7 @@ export async function teleportToRemote(options: {
   /**
    * Per-session env vars merged into session_context.environment_variables.
    * Write-only at the API layer (stripped from Get/List responses). When
-   * environmentId is set, CLAUDE_CODE_OAUTH_TOKEN is auto-injected from the
+   * environmentId is set, NYXCLAUDE_OAUTH_TOKEN is auto-injected from the
    * caller's accessToken so the container's hook can hit inference (the
    * server only passes through what the caller sends; bughunter.go mints
    * its own, user sessions don't get one automatically).
@@ -800,7 +800,7 @@ export async function teleportToRemote(options: {
   try {
     // Check authentication
     await checkAndRefreshOAuthTokenIfNeeded();
-    const accessToken = getClaudeAIOAuthTokens()?.accessToken;
+    const accessToken = getRemoteOAuthTokens()?.accessToken;
     if (!accessToken) {
       logError(new Error('No access token found for remote session creation'));
       return null;
@@ -826,7 +826,7 @@ export async function teleportToRemote(options: {
         'x-organization-uuid': orgUUID
       };
       const envVars = {
-        CLAUDE_CODE_OAUTH_TOKEN: accessToken,
+        NYXCLAUDE_OAUTH_TOKEN: accessToken,
         ...(options.environmentVariables ?? {})
       };
 
@@ -848,7 +848,7 @@ export async function teleportToRemote(options: {
           return null;
         }
         seedBundleFileId = bundle.fileId;
-        logEvent('tengu_teleport_bundle_mode', {
+        logEvent('nyxclaude_teleport_bundle_mode', {
           size_bytes: bundle.bundleSizeBytes,
           scope: bundle.scope as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           has_wip: bundle.hasWip,
@@ -941,7 +941,7 @@ export async function teleportToRemote(options: {
     // point awaiting GrowthBook when there's nothing to bundle.
     const gitRoot = findGitRoot(getCwd());
     const forceBundle = !options.skipBundle && isEnvTruthy(process.env.CCR_FORCE_BUNDLE);
-    const bundleSeedGateOn = !options.skipBundle && gitRoot !== null && (isEnvTruthy(process.env.CCR_ENABLE_BUNDLE) || (await checkGate_CACHED_OR_BLOCKING('tengu_ccr_bundle_seed_enabled')));
+    const bundleSeedGateOn = !options.skipBundle && gitRoot !== null && (isEnvTruthy(process.env.CCR_ENABLE_BUNDLE) || (await checkGate_CACHED_OR_BLOCKING('nyxclaude_ccr_bundle_seed_enabled')));
     if (repoInfo && !forceBundle) {
       if (repoInfo.host === 'github.com') {
         ghViable = await checkGithubAppInstalled(repoInfo.owner, repoInfo.name, signal);
@@ -1010,7 +1010,7 @@ export async function teleportToRemote(options: {
       if (!bundle.success) {
         logError(new Error(`Bundle upload failed: ${bundle.error}`));
         // Only steer users to GitHub setup when there's a remote to clone from.
-        const setup = repoInfo ? '. Please setup GitHub on https://claude.ai/code' : '';
+        const setup = repoInfo ? '. Please setup GitHub on https://web console/code' : '';
         let msg: string;
         switch (bundle.failReason) {
           case 'empty_repo':
@@ -1036,14 +1036,14 @@ export async function teleportToRemote(options: {
         return null;
       }
       seedBundleFileId = bundle.fileId;
-      logEvent('tengu_teleport_bundle_mode', {
+      logEvent('nyxclaude_teleport_bundle_mode', {
         size_bytes: bundle.bundleSizeBytes,
         scope: bundle.scope as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         has_wip: bundle.hasWip,
         reason: sourceReason as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
     }
-    logEvent('tengu_teleport_source_decision', {
+    logEvent('nyxclaude_teleport_source_decision', {
       reason: sourceReason as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       path: (gitSource ? 'github' : seedBundleFileId ? 'bundle' : 'empty') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
     });
@@ -1198,7 +1198,7 @@ export async function teleportToRemote(options: {
  * reaper collects it.
  */
 export async function archiveRemoteSession(sessionId: string): Promise<void> {
-  const accessToken = getClaudeAIOAuthTokens()?.accessToken;
+  const accessToken = getRemoteOAuthTokens()?.accessToken;
   if (!accessToken) return;
   const orgUUID = await getOrganizationUUID();
   if (!orgUUID) return;

@@ -131,16 +131,16 @@ describe('BashTool error output (#1231)', () => {
     expect(formatted.toLowerCase()).toContain('not found')
   })
 
-  test('strips Claude Code hints from non-zero output when no persisted preview is available', async () => {
+  test('strips Nyxclaude hints from non-zero output when no persisted preview is available', async () => {
     const hint =
-      '<claude-code-hint v="1" type="plugin" value="example@claude-plugins-official" />'
+      '<code-hint v="1" type="plugin" value="example@nyxclaude-plugins-official" />'
     const err = await expectShellError(
       `printf '%s\\n' '${hint}'; printf 'FAILURE ROOT\\n'; exit 1`,
     )
     const formatted = formatError(err)
 
     expect(formatted).toContain('FAILURE ROOT')
-    expect(formatted).not.toContain('<claude-code-hint')
+    expect(formatted).not.toContain('<code-hint')
   })
 
   test('captured output is carried on the stdout slot (semantic mapping)', async () => {
@@ -389,11 +389,11 @@ describe('BashTool error output (#1231)', () => {
     }
   })
 
-  test('strips and reports a retained-tail Claude Code hint without changing the saved file', async () => {
+  test('strips and reports a retained-tail Nyxclaude hint without changing the saved file', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'bash-persist-hint-'))
     const source = join(dir, 'roll.txt')
     const hint =
-      '<claude-code-hint v="1" type="plugin" value="example@claude-plugins-official" />'
+      '<code-hint v="1" type="plugin" value="example@nyxclaude-plugins-official" />'
     const body = `COMMAND CONTEXT\n${'routine output\n'.repeat(300)}${hint}\nFAILURE ROOT\n`
     writeFileSync(source, body)
     let dest: string | undefined
@@ -408,7 +408,7 @@ describe('BashTool error output (#1231)', () => {
       expect(persisted).not.toBeNull()
       dest = persisted!.path
       expect(persisted!.preview).toContain('FAILURE ROOT')
-      expect(persisted!.preview).not.toContain('<claude-code-hint')
+      expect(persisted!.preview).not.toContain('<code-hint')
       const marker = persisted!.preview!.match(/… (\d+) bytes omitted …/)
       expect(marker).toBeDefined()
       const displayedOutput = persisted!.preview!.replace(marker![0], '')
@@ -420,7 +420,7 @@ describe('BashTool error output (#1231)', () => {
         {
           v: 1,
           type: 'plugin',
-          value: 'example@claude-plugins-official',
+          value: 'example@nyxclaude-plugins-official',
           sourceCommand: 'example-cli',
         },
       ])
@@ -435,7 +435,7 @@ describe('BashTool error output (#1231)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'bash-persist-complete-hint-'))
     const source = join(dir, 'roll.txt')
     const hint =
-      '<claude-code-hint v="1" type="plugin" value="example@claude-plugins-official" />'
+      '<code-hint v="1" type="plugin" value="example@nyxclaude-plugins-official" />'
     const body = `COMMAND CONTEXT\n${hint}\nFAILURE ROOT\n`
     writeFileSync(source, body)
     let dest: string | undefined
@@ -450,7 +450,7 @@ describe('BashTool error output (#1231)', () => {
       expect(persisted).not.toBeNull()
       dest = persisted!.path
       expect(persisted!.previewStrategy).toBe('head-only')
-      expect(persisted!.preview).not.toContain('<claude-code-hint')
+      expect(persisted!.preview).not.toContain('<code-hint')
 
       const mapped = BashTool.mapToolResultToToolResultBlockParam(
         {
@@ -482,9 +482,9 @@ describe('BashTool error output (#1231)', () => {
     const source = join(dir, 'roll.txt')
     const body = Buffer.concat([
       Buffer.from(`COMMAND CONTEXT\n${'routine output\n'.repeat(300)}`),
-      Buffer.from('<claude-code-hint v="1" type="plugin" value="example'),
+      Buffer.from('<code-hint v="1" type="plugin" value="example'),
       Buffer.from([0xff]),
-      Buffer.from('@claude-plugins-official" />\nFAILURE ROOT\n'),
+      Buffer.from('@nyxclaude-plugins-official" />\nFAILURE ROOT\n'),
     ])
     writeFileSync(source, body)
     let dest: string | undefined
@@ -501,7 +501,7 @@ describe('BashTool error output (#1231)', () => {
       expect(persisted!.previewStrategy).toBe('head-only')
       expect(persisted!.preview).toContain('COMMAND CONTEXT')
       expect(persisted!.preview).not.toContain('FAILURE ROOT')
-      expect(persisted!.preview).not.toContain('<claude-code-hint')
+      expect(persisted!.preview).not.toContain('<code-hint')
       expect(persisted!.preview).not.toMatch(/… \d+ bytes omitted …/)
       expect(readFileSync(dest)).toEqual(body)
     } finally {

@@ -313,7 +313,7 @@ export async function performHeapDump(
     logForDebugging(`[HeapDump] Heap dump written to ${heapPath}`)
 
     logEvent(
-      'tengu_heap_dump',
+      'nyxclaude_heap_dump',
       getHeapDumpAnalyticsMetadata(trigger, effectiveDumpNumber, true),
     )
 
@@ -322,7 +322,7 @@ export async function performHeapDump(
     const error = toError(err)
     logError(error)
     logEvent(
-      'tengu_heap_dump',
+      'nyxclaude_heap_dump',
       getHeapDumpAnalyticsMetadata(trigger, effectiveDumpNumber, false),
     )
     return { success: false, error: error.message }

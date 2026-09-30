@@ -1,7 +1,7 @@
 import { homedir } from 'os'
 import { join } from 'path'
 import {
-  getClaudeConfigHomeDir,
+  getNyxclaudeConfigHomeDir,
   resolveClaudeConfigHomeDir,
   resolveConfigDirEnv,
 } from './envUtils.js'
@@ -19,7 +19,7 @@ function getUserConfigHomeForDisplay(): string {
     })
   }
 
-  return getClaudeConfigHomeDir()
+  return getNyxclaudeConfigHomeDir()
 }
 
 export function getUserSettingsDisplayPath(): string {

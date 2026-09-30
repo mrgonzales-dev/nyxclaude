@@ -3,7 +3,7 @@
 // Contributors import these instead of registry functions or descriptor types.
 
 import type {
-  AnthropicProxyDescriptor,
+  ProviderProxyDescriptor,
   BrandDescriptor,
   GatewayDescriptor,
   ModelCatalogConfig,
@@ -19,7 +19,7 @@ export function defineGateway(d: GatewayDescriptor): GatewayDescriptor {
   return d
 }
 
-export function defineAnthropicProxy(d: AnthropicProxyDescriptor): AnthropicProxyDescriptor {
+export function defineAnthropicProxy(d: ProviderProxyDescriptor): ProviderProxyDescriptor {
   return d
 }
 

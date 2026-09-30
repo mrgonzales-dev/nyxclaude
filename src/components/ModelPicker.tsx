@@ -153,7 +153,7 @@ function getDefaultEffortLevelForOption(value?: string): EffortLevel {
 }
 
 function EffortLevelIndicator({ effort }: { effort: EffortLevel | undefined }) {
-  const color = effort ? 'claude' : 'subtle';
+  const color = effort ? 'primary' : 'subtle';
   const level = effort ?? 'low';
   const symbol = effortLevelToSymbol(level);
   return <Text color={color}>{symbol}</Text>;
@@ -325,7 +325,7 @@ export function ModelPicker(props: Props) {
       const clampedEffort = focusedAvailableLevels.includes(effort as EffortLevel)
         ? effort
         : focusedDefaultEffort;
-      logEvent('tengu_model_command_menu_effort', {
+      logEvent('nyxclaude_model_command_menu_effort', {
         effort: clampedEffort as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       });
       if (!skipSettingsWrite) {
@@ -394,7 +394,7 @@ export function ModelPicker(props: Props) {
   );
 
   const headerLine = headerText ??
-    'Switch between Claude models. Applies to this session and future Nyxclaude sessions. For other/previous model names, specify with --model.';
+    'Switch between Models. Applies to this session and future Nyxclaude sessions. For other/previous model names, specify with --model.';
 
   const refreshHint = onRefresh ? (
     <ConfigurableShortcutHint

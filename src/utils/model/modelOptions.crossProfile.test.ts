@@ -185,10 +185,10 @@ mock.module('./providers.js', () => ({
 
 mock.module('../auth.js', () => ({
   ...realAuth,
-  isClaudeAISubscriber: (...args: Parameters<typeof realAuth.isClaudeAISubscriber>) =>
+  isSubscriber: (...args: Parameters<typeof realAuth.isSubscriber>) =>
     activeSubscriberOverride
       ? true
-      : activeProfilesOverride ? false : realAuth.isClaudeAISubscriber(...args),
+      : activeProfilesOverride ? false : realAuth.isSubscriber(...args),
   isMaxSubscriber: (...args: Parameters<typeof realAuth.isMaxSubscriber>) =>
     activeSubscriberOverride
       ? !!activeSubscriberOverride.max
@@ -403,8 +403,8 @@ test('getModelOptionsBase: 3P path includes inactive profile options when env ap
     model: 'glm-5.1',
   })
 
-  const previousFlag = process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  const previousFlag = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
   try {
     const { getModelOptions, parseSwitchProfileValue } =
       await importFreshModelOptionsModule({
@@ -426,9 +426,9 @@ test('getModelOptionsBase: 3P path includes inactive profile options when env ap
     })
   } finally {
     if (previousFlag === undefined) {
-      delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+      delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
     } else {
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
     }
   }
 })
@@ -452,8 +452,8 @@ test('getModelOptionsBase: local OpenAI-compatible scope still appends inactive 
     model: 'glm-5.1',
   })
 
-  const previousFlag = process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  const previousFlag = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
   // Force the local OpenAI-compatible branch by pinning the scope getter to
   // an `openai:` value (via the gated override installed at module load, which
   // keeps the rest of providerConfig real so it can't leak into other suites).
@@ -479,9 +479,9 @@ test('getModelOptionsBase: local OpenAI-compatible scope still appends inactive 
     })
   } finally {
     if (previousFlag === undefined) {
-      delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+      delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
     } else {
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
     }
   }
 })
@@ -505,8 +505,8 @@ test('getModelOptionsBase: active Ollama profile still surfaces inactive profile
     model: 'glm-5.1',
   })
 
-  const previousFlag = process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  const previousFlag = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
   // Force the Ollama branch with a non-empty cached-model list so it takes the
   // `[default, ...ollamaModels, ...inactiveProfileOptions]` return path.
   activeOllamaOverride = {
@@ -535,9 +535,9 @@ test('getModelOptionsBase: active Ollama profile still surfaces inactive profile
     expect(parsed).toEqual({ profileId: 'profile_remote', model: 'glm-5.1' })
   } finally {
     if (previousFlag === undefined) {
-      delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+      delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
     } else {
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
     }
   }
 })
@@ -551,8 +551,8 @@ test('getModelOptionsBase: 3P path omits inactive profile options when env NOT a
     name: 'GLM',
     model: 'glm-5.1',
   })
-  const previousFlag = process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+  const previousFlag = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
   try {
     const { getModelOptions } = await importFreshModelOptionsModule({
       getProviderProfiles: () => [inactive],
@@ -565,7 +565,7 @@ test('getModelOptionsBase: 3P path omits inactive profile options when env NOT a
     expect(options.every(o => o.switchToProfileId === undefined)).toBe(true)
   } finally {
     if (previousFlag !== undefined) {
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
     }
   }
 })
@@ -603,8 +603,8 @@ test('getModelOptions: allowlist filters cross-profile options by the decoded ta
     availableModels: ['kimi-k2.6', 'glm-5.1'],
   } as SettingsJson
 
-  const previousFlag = process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  const previousFlag = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
   try {
     const { getModelOptions } = await importFreshModelOptionsModule({
       getProviderProfiles: () => [active, allowedInactive, deniedInactive],
@@ -624,9 +624,9 @@ test('getModelOptions: allowlist filters cross-profile options by the decoded ta
     expect(switchTargets).not.toContain('profile_denied')
   } finally {
     if (previousFlag === undefined) {
-      delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+      delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
     } else {
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
     }
   }
 })
@@ -650,15 +650,15 @@ function activeAndInactivePair() {
 }
 
 async function withProfileEnvApplied(run: () => Promise<void>) {
-  const previousFlag = process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  const previousFlag = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
   try {
     await run()
   } finally {
     if (previousFlag === undefined) {
-      delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
+      delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
     } else {
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = previousFlag
     }
   }
 }

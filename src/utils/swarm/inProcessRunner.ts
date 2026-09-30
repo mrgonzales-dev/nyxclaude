@@ -10,7 +10,7 @@
  */
 
 import { feature } from 'bun:bundle'
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+import type { ContentBlockParam } from 'src/types/api.js'
 import { getSystemPrompt } from '../../constants/prompts.js'
 import { TEAMMATE_MESSAGE_TAG } from '../../constants/xml.js'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
@@ -592,7 +592,7 @@ export type InProcessRunnerConfig = {
   /** Short description of the task (used as summary for the initial prompt header) */
   description?: string
   /** request_id of the API call that spawned this teammate, for lineage
-   *  tracing on tengu_api_* events. */
+   *  tracing on nyxclaude_api_* events. */
   invokingRequestId?: string
 }
 
@@ -1043,7 +1043,7 @@ export async function runInProcessTeammate(
 
       // Log agent memory loaded event for in-process teammates
       if (agentDefinition.memory) {
-        logEvent('tengu_agent_memory_loaded', {
+        logEvent('nyxclaude_agent_memory_loaded', {
           ...(process.env.USER_TYPE === 'ant'
             ? {
                 agent_type:
@@ -1148,7 +1148,7 @@ export async function runInProcessTeammate(
     // Resetting per prompt iteration dropped prior prompts' output tokens and
     // tool-use counts from `task.progress`, so the leader's pill + spinner
     // aggregate read zero/low values between turns even after long sessions
-    // (#475). The Claude API returns `input_tokens` as cumulative for that
+    // (#475). The API returns `input_tokens` as cumulative for that
     // request (includes prior history sent via `forkContextMessages`), so
     // `latestInputTokens` already represents the running context cost — we
     // just need `cumulativeOutputTokens` and `toolUseCount` to keep their

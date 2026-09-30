@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, test } from 'bun:test'
 import { acquireSharedMutationLock, releaseSharedMutationLock } from '../../../test/sharedMutationLock.js'
 import { createOpenAIShimClient } from '../openaiShim.js'
 import {
-  anthropicSsePassthrough,
+  ssePassthrough,
   createReaderCanceller,
   getStreamIdleTimeoutMs,
   readWithIdleTimeout,
@@ -181,7 +181,7 @@ test('reader cancellation is idempotent and abort checks throw AbortError', () =
 test('Anthropic-compatible passthrough stream rejects with idle timeout when it stalls', async () => {
   process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS = '20'
   const stalled = makeStallingResponse([{ type: 'message_start' }])
-  const stream = anthropicSsePassthrough<{ type: string }>(
+  const stream = ssePassthrough<{ type: string }>(
     stalled.response,
     undefined,
     () => {},
@@ -198,7 +198,7 @@ test('Anthropic passthrough emits a final unterminated SSE data frame at EOF', a
     { headers: { 'Content-Type': 'text/event-stream' } },
   )
   const events: Array<{ type: string }> = []
-  for await (const event of anthropicSsePassthrough<{ type: string }>(response, undefined, () => {})) {
+  for await (const event of ssePassthrough<{ type: string }>(response, undefined, () => {})) {
     events.push(event)
   }
   expect(events).toEqual([{ type: 'message_stop' }])
@@ -219,7 +219,7 @@ test('Anthropic passthrough cancels a source that stays open after [DONE]', asyn
   )
 
   const events: Array<{ type: string }> = []
-  for await (const event of anthropicSsePassthrough<{ type: string }>(response, undefined, () => {})) {
+  for await (const event of ssePassthrough<{ type: string }>(response, undefined, () => {})) {
     events.push(event)
   }
 
@@ -233,7 +233,7 @@ test('Anthropic passthrough accepts CRLF frames and data fields without a space'
     { headers: { 'Content-Type': 'text/event-stream' } },
   )
   const events: Array<{ type: string }> = []
-  for await (const event of anthropicSsePassthrough<{ type: string }>(response, undefined, () => {})) {
+  for await (const event of ssePassthrough<{ type: string }>(response, undefined, () => {})) {
     events.push(event)
   }
   expect(events).toEqual([{ type: 'message_start' }, { type: 'message_stop' }])
@@ -243,7 +243,7 @@ test('controller abort reaches Anthropic messages SSE passthrough', async () => 
   const controller = new AbortController()
   const stalled = makeStallingResponse([{ type: 'message_start' }])
   const events: Array<{ type: string }> = []
-  const stream = anthropicSsePassthrough<{ type: string }>(
+  const stream = ssePassthrough<{ type: string }>(
     stalled.response,
     controller.signal,
     () => {},
@@ -293,7 +293,7 @@ test('the returned stream controller cancels an Anthropic messages response', as
 
 test('Anthropic passthrough preserves errors thrown by its consumer', async () => {
   const stalled = makeStallingResponse([{ type: 'message_start' }])
-  const stream = anthropicSsePassthrough<{ type: string }>(
+  const stream = ssePassthrough<{ type: string }>(
     stalled.response,
     undefined,
     () => {},
@@ -309,7 +309,7 @@ test('Anthropic passthrough preserves errors thrown by its consumer', async () =
 test('controller abort cancels Anthropic messages SSE when paused after event', async () => {
   const controller = new AbortController()
   const stalled = makeStallingResponse([{ type: 'message_start' }])
-  const stream = anthropicSsePassthrough<{ type: string }>(
+  const stream = ssePassthrough<{ type: string }>(
     stalled.response,
     controller.signal,
     () => {},
@@ -337,7 +337,7 @@ test('controller abort stops buffered Anthropic messages SSE events', async () =
     { type: 'message_start' },
     { type: 'content_block_start' },
   ])
-  const stream = anthropicSsePassthrough<{ type: string }>(
+  const stream = ssePassthrough<{ type: string }>(
     stalled.response,
     controller.signal,
     () => {},

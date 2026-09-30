@@ -7,7 +7,7 @@ import {
   isAutoMemPath,
 } from '../utils/memoryStubs.js'
 import { isAgentMemoryPath } from '../tools/AgentTool/agentMemory.js'
-import { getClaudeConfigHomeDir } from './envUtils.js'
+import { getNyxclaudeConfigHomeDir } from './envUtils.js'
 import {
   posixPathToWindowsPath,
   windowsPathToPosixPath,
@@ -40,7 +40,7 @@ function toComparable(p: string): string {
 export function detectSessionFileType(
   filePath: string,
 ): 'session_memory' | 'session_transcript' | null {
-  const configDir = getClaudeConfigHomeDir()
+  const configDir = getNyxclaudeConfigHomeDir()
   // Compare in forward-slash form; on Windows also case-fold. The caller
   // (isShellCommandTargetingMemory) converts MinGW /c/... → native before
   // reaching here, so we only need separator + case normalization.
@@ -100,7 +100,7 @@ export type MemoryScope = 'personal' | 'team'
  * so a team path matches both isTeamMemFile and isAutoMemFile. Check team first.
  *
  * Use this for scope-keyed telemetry where a single event name distinguishes
- * by scope field — the existing tengu_memdir_* / tengu_team_mem_* event-name
+ * by scope field — the existing nyxclaude_memdir_* / nyxclaude_team_mem_* event-name
  * hierarchy handles the overlap differently (team writes intentionally fire both).
  */
 export function memoryScopeForPath(filePath: string): MemoryScope | null {
@@ -186,7 +186,7 @@ export function isMemoryDirectory(dirPath: string): boolean {
     }
   }
 
-  const configDirCmp = toComparable(getClaudeConfigHomeDir())
+  const configDirCmp = toComparable(getNyxclaudeConfigHomeDir())
   const memoryBaseCmp = toComparable(getMemoryBaseDir())
   const underConfig = normalizedCmp.startsWith(configDirCmp)
   const underMemoryBase = normalizedCmp.startsWith(memoryBaseCmp)
@@ -213,7 +213,7 @@ export function isMemoryDirectory(dirPath: string): boolean {
  * collapse logic.
  */
 export function isShellCommandTargetingMemory(command: string): boolean {
-  const configDir = getClaudeConfigHomeDir()
+  const configDir = getNyxclaudeConfigHomeDir()
   const memoryBase = getMemoryBaseDir()
   const autoMemDir = isAutoMemoryEnabled()
     ? getAutoMemPath().replace(/[/\\]+$/, '')

@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+import type { ContentBlockParam } from 'src/types/api.js'
 import { randomUUID } from 'crypto'
 import last from 'lodash-es/last.js'
 import {
@@ -15,7 +15,7 @@ import type {
   SDKUserMessageReplay,
 } from 'src/entrypoints/agentSdkTypes.js'
 import { EXTERNAL_PERMISSION_MODES } from 'src/types/permissions.js'
-import { accumulateUsage, updateUsage } from 'src/services/api/claude.js'
+import { accumulateUsage, updateUsage } from 'src/services/api/modelApi.js'
 import type { NonNullableUsage } from 'src/services/api/logging.js'
 import { EMPTY_USAGE } from 'src/services/api/logging.js'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
@@ -194,7 +194,7 @@ export class QueryEngine {
   private readFileState: FileStateCache
   private autoCompactTracking: AutoCompactTrackingState | undefined
   // Turn-scoped skill discovery tracking (feeds was_discovered on
-  // tengu_skill_tool_invocation). Must persist across the two
+  // nyxclaude_skill_tool_invocation). Must persist across the two
   // processUserInputContext rebuilds inside submitMessage, but is cleared
   // at the start of each submitMessage to avoid unbounded growth across
   // many turns in SDK mode.
@@ -359,7 +359,6 @@ export class QueryEngine {
         thinkingConfig: initialThinkingConfig,
         mcpClients,
         mcpResources: {},
-        ideInstallationStatus: null,
         isNonInteractiveSession: true,
         customSystemPrompt,
         appendSystemPrompt,
@@ -465,8 +464,8 @@ export class QueryEngine {
       } else {
         await transcriptPromise
         if (
-          isEnvTruthy(process.env.CLAUDE_CODE_EAGER_FLUSH) ||
-          isEnvTruthy(process.env.CLAUDE_CODE_IS_COWORK)
+          isEnvTruthy(process.env.NYXCLAUDE_EAGER_FLUSH) ||
+          isEnvTruthy(process.env.NYXCLAUDE_IS_COWORK)
         ) {
           await flushSessionStorage()
         }
@@ -514,7 +513,6 @@ export class QueryEngine {
         thinkingConfig: initialThinkingConfig,
         mcpClients,
         mcpResources: {},
-        ideInstallationStatus: null,
         isNonInteractiveSession: true,
         customSystemPrompt,
         appendSystemPrompt,
@@ -539,8 +537,8 @@ export class QueryEngine {
 
     headlessProfilerCheckpoint('before_skills_plugins')
     // Cache-only: headless/SDK/CCR startup must not block on network for
-    // ref-tracked plugins. CCR populates the cache via CLAUDE_CODE_SYNC_PLUGIN_INSTALL
-    // (headlessPluginInstall) or CLAUDE_CODE_PLUGIN_SEED_DIR before this runs;
+    // ref-tracked plugins. CCR populates the cache via NYXCLAUDE_SYNC_PLUGIN_INSTALL
+    // (headlessPluginInstall) or NYXCLAUDE_PLUGIN_SEED_DIR before this runs;
     // SDK callers that need fresh source can call /reload-plugins.
     const [skills, { enabled: enabledPlugins }] = await Promise.all([
       getSlashCommandToolSkills(getCwd()),
@@ -625,8 +623,8 @@ export class QueryEngine {
       if (persistSession) {
         await recordTranscript(messages)
         if (
-          isEnvTruthy(process.env.CLAUDE_CODE_EAGER_FLUSH) ||
-          isEnvTruthy(process.env.CLAUDE_CODE_IS_COWORK)
+          isEnvTruthy(process.env.NYXCLAUDE_EAGER_FLUSH) ||
+          isEnvTruthy(process.env.NYXCLAUDE_IS_COWORK)
         ) {
           await flushSessionStorage()
         }
@@ -750,7 +748,7 @@ export class QueryEngine {
         }
         messages.push(transcriptMessage)
         if (persistSession) {
-          // Fire-and-forget for assistant messages. claude.ts yields one
+          // Fire-and-forget for assistant messages. modelApi.ts yields one
           // assistant message per content block, then mutates the last
           // one's message.usage/stop_reason on message_delta — relying on
           // the write queue's 100ms lazy jsonStringify. Awaiting here
@@ -836,7 +834,7 @@ export class QueryEngine {
             )
             // Capture stop_reason from message_delta. The assistant message
             // is yielded at content_block_stop with stop_reason=null; the
-            // real value only arrives here (see claude.ts message_delta
+            // real value only arrives here (see modelApi.ts message_delta
             // handler). Without this, result.stop_reason is always null.
             if (message.event.delta.stop_reason != null) {
               lastStopReason = message.event.delta.stop_reason
@@ -880,8 +878,8 @@ export class QueryEngine {
           else if (message.attachment.type === 'max_turns_reached') {
             if (persistSession) {
               if (
-                isEnvTruthy(process.env.CLAUDE_CODE_EAGER_FLUSH) ||
-                isEnvTruthy(process.env.CLAUDE_CODE_IS_COWORK)
+                isEnvTruthy(process.env.NYXCLAUDE_EAGER_FLUSH) ||
+                isEnvTruthy(process.env.NYXCLAUDE_IS_COWORK)
               ) {
                 await flushSessionStorage()
               }
@@ -1028,8 +1026,8 @@ export class QueryEngine {
       if (maxBudgetUsd !== undefined && getTotalCost() >= maxBudgetUsd) {
         if (persistSession) {
           if (
-            isEnvTruthy(process.env.CLAUDE_CODE_EAGER_FLUSH) ||
-            isEnvTruthy(process.env.CLAUDE_CODE_IS_COWORK)
+            isEnvTruthy(process.env.NYXCLAUDE_EAGER_FLUSH) ||
+            isEnvTruthy(process.env.NYXCLAUDE_IS_COWORK)
           ) {
             await flushSessionStorage()
           }
@@ -1072,8 +1070,8 @@ export class QueryEngine {
         if (callsThisQuery >= maxRetries) {
           if (persistSession) {
             if (
-              isEnvTruthy(process.env.CLAUDE_CODE_EAGER_FLUSH) ||
-              isEnvTruthy(process.env.CLAUDE_CODE_IS_COWORK)
+              isEnvTruthy(process.env.NYXCLAUDE_EAGER_FLUSH) ||
+              isEnvTruthy(process.env.NYXCLAUDE_IS_COWORK)
             ) {
               await flushSessionStorage()
             }
@@ -1129,8 +1127,8 @@ export class QueryEngine {
     // result message, so any unflushed writes would be lost.
     if (persistSession) {
       if (
-        isEnvTruthy(process.env.CLAUDE_CODE_EAGER_FLUSH) ||
-        isEnvTruthy(process.env.CLAUDE_CODE_IS_COWORK)
+        isEnvTruthy(process.env.NYXCLAUDE_EAGER_FLUSH) ||
+        isEnvTruthy(process.env.NYXCLAUDE_IS_COWORK)
       ) {
         await flushSessionStorage()
       }
@@ -1361,7 +1359,7 @@ export class QueryEngine {
 }
 
 /**
- * Sends a single prompt to the Claude API and returns the response.
+ * Sends a single prompt to the API and returns the response.
  * Assumes that claude is being used non-interactively -- will not
  * ask the user for permissions or further input.
  *

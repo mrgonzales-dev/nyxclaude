@@ -2,7 +2,6 @@ import { dirname, sep } from 'path'
 import { logEvent } from 'src/services/analytics/index.js'
 import { z } from 'zod/v4'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
-import { diagnosticTracker } from '../../services/diagnosticTracking.js'
 import { clearDeliveredDiagnosticsForFile } from '../../services/lsp/LSPDiagnosticRegistry.js'
 import { getLspServerManager } from '../../services/lsp/manager.js'
 import { notifyVscodeFileUpdated } from '../../services/mcp/vscodeSdkMcp.js'
@@ -259,12 +258,10 @@ export const FileWriteTool = buildTool({
     // Activate conditional skills whose path patterns match this file
     activateConditionalSkillsForPaths([fullFilePath], cwd)
 
-    await diagnosticTracker.beforeFileEditedCompat(fullFilePath)
-
     // Ensure parent directory exists before the atomic read-modify-write section.
     // Must stay OUTSIDE the critical section below (a yield between the staleness
     // check and writeTextContent lets concurrent edits interleave), and BEFORE the
-    // write (lazy-mkdir-on-ENOENT would fire a spurious tengu_atomic_write_error
+    // write (lazy-mkdir-on-ENOENT would fire a spurious nyxclaude_atomic_write_error
     // inside writeFileSyncAndFlush_DEPRECATED before ENOENT propagates back).
     await getFsImplementation().mkdir(dir)
     if (fileHistoryEnabled()) {
@@ -328,7 +325,7 @@ export const FileWriteTool = buildTool({
       })
 
       if (fullFilePath.endsWith(`${sep}AGENTS.md`)) {
-        logEvent('tengu_write_agentsmd', {})
+        logEvent('nyxclaude_write_agentsmd', {})
       }
 
       countLinesChanged([], content)
@@ -417,18 +414,18 @@ export const FileWriteTool = buildTool({
     if (
       fullFilePath.endsWith(`${sep}AGENTS.md`)
     ) {
-      logEvent('tengu_write_agentsmd', {})
+      logEvent('nyxclaude_write_agentsmd', {})
     }
 
     let gitDiff: ToolUseDiff | undefined
     if (
-      isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) &&
-      getFeatureValue_CACHED_MAY_BE_STALE('tengu_quartz_lantern', false)
+      isEnvTruthy(process.env.NYXCLAUDE_REMOTE) &&
+      getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_quartz_lantern', false)
     ) {
       const startTime = Date.now()
       const diff = await fetchSingleFileGitDiff(fullFilePath)
       if (diff) gitDiff = diff
-      logEvent('tengu_tool_use_diff_computed', {
+      logEvent('nyxclaude_tool_use_diff_computed', {
         isWriteTool: true,
         durationMs: Date.now() - startTime,
         hasDiff: !!diff,

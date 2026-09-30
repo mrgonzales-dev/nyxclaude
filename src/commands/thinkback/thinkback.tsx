@@ -24,7 +24,7 @@ import { OFFICIAL_MARKETPLACE_NAME } from '../../utils/plugins/officialMarketpla
 import { loadAllPlugins } from '../../utils/plugins/pluginLoader.js';
 import { installSelectedPlugins } from '../../utils/plugins/pluginStartupCheck.js';
 
-const OFFICIAL_MARKETPLACE_REPO = 'anthropics/claude-plugins-official';
+const OFFICIAL_MARKETPLACE_REPO = 'anthropics/nyxclaude-plugins-official';
 function getMarketplaceName(): string {
   return OFFICIAL_MARKETPLACE_NAME;
 }

@@ -156,7 +156,7 @@ describe('/cache-stats — model label rendering', () => {
 
 describe('/cache-stats — timestamp rendering', () => {
   test('renders each row with full date and time (YYYY-MM-DD HH:MM:SS)', async () => {
-    recordRequest(supported({ read: 5, total: 10, hitRate: 0.5 }), 'claude-x')
+    recordRequest(supported({ read: 5, total: 10, hitRate: 0.5 }), 'model-x')
     const value = await runCommand()
     // Match the full ISO-ish date + time the row uses. We assert the shape,
     // not a specific timestamp — real clock is used, so a regex on the

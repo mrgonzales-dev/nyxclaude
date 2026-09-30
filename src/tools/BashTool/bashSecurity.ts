@@ -254,7 +254,7 @@ function validateIncompleteCommands(
   const trimmed = originalCommand.trim()
 
   if (/^\s*\t/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.INCOMPLETE_COMMANDS,
       subId: 1,
     })
@@ -265,7 +265,7 @@ function validateIncompleteCommands(
   }
 
   if (trimmed.startsWith('-')) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.INCOMPLETE_COMMANDS,
       subId: 2,
     })
@@ -277,7 +277,7 @@ function validateIncompleteCommands(
   }
 
   if (/^\s*(&&|\|\||;|>>?|<)/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.INCOMPLETE_COMMANDS,
       subId: 3,
     })
@@ -978,7 +978,7 @@ function validateGitCommit(context: ValidationContext): PermissionResult {
     const [, quote, messageContent, remainder] = messageMatch
 
     if (quote === '"' && messageContent && /\$\(|`|\$\{/.test(messageContent)) {
-      logEvent('tengu_bash_security_check_triggered', {
+      logEvent('nyxclaude_bash_security_check_triggered', {
         checkId: BASH_SECURITY_CHECK_IDS.GIT_COMMIT_SUBSTITUTION,
         subId: 1,
       })
@@ -1045,7 +1045,7 @@ function validateGitCommit(context: ValidationContext): PermissionResult {
     // Security hardening: block messages starting with dash
     // This catches potential obfuscation patterns like git commit -m "---"
     if (messageContent && messageContent.startsWith('-')) {
-      logEvent('tengu_bash_security_check_triggered', {
+      logEvent('nyxclaude_bash_security_check_triggered', {
         checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
         subId: 5,
       })
@@ -1076,7 +1076,7 @@ function validateJqCommand(context: ValidationContext): PermissionResult {
   }
 
   if (/\bsystem\s*\(/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.JQ_SYSTEM_FUNCTION,
       subId: 1,
     })
@@ -1095,7 +1095,7 @@ function validateJqCommand(context: ValidationContext): PermissionResult {
       afterJq,
     )
   ) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.JQ_FILE_ARGUMENTS,
       subId: 1,
     })
@@ -1117,7 +1117,7 @@ function validateShellMetacharacters(
     'Command contains shell metacharacters (;, |, or &) in arguments'
 
   if (/(?:^|\s)["'][^"']*[;&][^"']*["'](?:\s|$)/.test(unquotedContent)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.SHELL_METACHARACTERS,
       subId: 1,
     })
@@ -1131,7 +1131,7 @@ function validateShellMetacharacters(
   ]
 
   if (globPatterns.some(p => p.test(unquotedContent))) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.SHELL_METACHARACTERS,
       subId: 2,
     })
@@ -1139,7 +1139,7 @@ function validateShellMetacharacters(
   }
 
   if (/-regex\s+["'][^"']*[;&][^"']*["']/.test(unquotedContent)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.SHELL_METACHARACTERS,
       subId: 3,
     })
@@ -1158,7 +1158,7 @@ function validateDangerousVariables(
     /[<>|]\s*\$[A-Za-z_]/.test(fullyUnquotedContent) ||
     /\$[A-Za-z_][A-Za-z0-9_]*\s*[|<>]/.test(fullyUnquotedContent)
   ) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.DANGEROUS_VARIABLES,
       subId: 1,
     })
@@ -1189,7 +1189,7 @@ function validateDangerousPatterns(
   // Other command substitution checks (include double-quoted content)
   for (const { pattern, message } of COMMAND_SUBSTITUTION_PATTERNS) {
     if (pattern.test(unquotedContent)) {
-      logEvent('tengu_bash_security_check_triggered', {
+      logEvent('nyxclaude_bash_security_check_triggered', {
         checkId:
           BASH_SECURITY_CHECK_IDS.DANGEROUS_PATTERNS_COMMAND_SUBSTITUTION,
         subId: 1,
@@ -1205,7 +1205,7 @@ function validateRedirections(context: ValidationContext): PermissionResult {
   const { fullyUnquotedContent } = context
 
   if (/</.test(fullyUnquotedContent)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.DANGEROUS_PATTERNS_INPUT_REDIRECTION,
       subId: 1,
     })
@@ -1217,7 +1217,7 @@ function validateRedirections(context: ValidationContext): PermissionResult {
   }
 
   if (/>/.test(fullyUnquotedContent)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.DANGEROUS_PATTERNS_OUTPUT_REDIRECTION,
       subId: 1,
     })
@@ -1252,7 +1252,7 @@ function validateNewlines(context: ValidationContext): PermissionResult {
   // eslint-disable-next-line custom-rules/no-lookbehind-regex -- .test() + gated by /[\n\r]/.test() above
   const looksLikeCommand = /(?<![\s]\\)[\n\r]\s*\S/.test(fullyUnquotedPreStrip)
   if (looksLikeCommand) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.NEWLINES,
       subId: 1,
     })
@@ -1328,7 +1328,7 @@ function validateCarriageReturn(context: ValidationContext): PermissionResult {
       continue
     }
     if (c === '\r' && !inDoubleQuote) {
-      logEvent('tengu_bash_security_check_triggered', {
+      logEvent('nyxclaude_bash_security_check_triggered', {
         checkId: BASH_SECURITY_CHECK_IDS.NEWLINES,
         subId: 2,
       })
@@ -1350,7 +1350,7 @@ function validateIFSInjection(context: ValidationContext): PermissionResult {
   // Check for $IFS and ${...IFS...} patterns (including parameter expansions like ${IFS:0:1}, ${#IFS}, etc.)
   // Using ${[^}]*IFS to catch all parameter expansion variations with IFS
   if (/\$IFS|\$\{[^}]*IFS/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.IFS_INJECTION,
       subId: 1,
     })
@@ -1378,7 +1378,7 @@ function validateProcEnvironAccess(
   // - /proc/1/environ
   // - /proc/*/environ (with any PID)
   if (/\/proc\/.*\/environ/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.PROC_ENVIRON_ACCESS,
       subId: 1,
     })
@@ -1439,7 +1439,7 @@ function validateMalformedTokenInjection(
 
   // Check for malformed tokens (unbalanced delimiters)
   if (hasMalformedTokens(originalCommand, parsed)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.MALFORMED_TOKEN_INJECTION,
       subId: 1,
     })
@@ -1482,7 +1482,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
   // - Zero-width space and other invisible chars => match
   // The pattern requires $' followed by content (can be empty) followed by closing '
   if (/\$'[^']*'/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
       subId: 5,
     })
@@ -1495,7 +1495,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
   // 2. Block locale quoting ($"...")  - can also use escape sequences
   // Same simple pattern as ANSI-C quoting above
   if (/\$"[^"]*"/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
       subId: 6,
     })
@@ -1508,7 +1508,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
   // 3. Block empty ANSI-C or locale quotes followed by dash
   // $''-exec or $""-exec
   if (/\$['"]{2}\s*-/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
       subId: 9,
     })
@@ -1523,7 +1523,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
   // This catches: ''-  ""-  ''""-  ""''-  ''""''-  etc.
   // The pattern looks for one or more empty quote pairs followed by optional whitespace and dash
   if (/(?:^|\s)(?:''|"")+\s*-/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
       subId: 7,
     })
@@ -1564,7 +1564,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
   // FALSE POSITIVE: Matches `echo '"""-f" text'` (pattern inside single-quoted
   // string). Extremely rare (requires echoing the literal attack). Acceptable.
   if (/(?:""|'')+['"]-/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
       subId: 10,
     })
@@ -1580,7 +1580,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
   // not enumerated above (e.g., `"""x"-f` where content between quotes shifts
   // the dash position). Legitimate commands never need `"""x"` when `"x"` works.
   if (/(?:^|\s)['"]{3,}/.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
       subId: 11,
     })
@@ -1767,7 +1767,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
           hasFlagCharsContinuing ||
           hasFlagCharsInNextQuote)
       ) {
-        logEvent('tengu_bash_security_check_triggered', {
+        logEvent('nyxclaude_bash_security_check_triggered', {
           checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
           subId: 4,
         })
@@ -1824,7 +1824,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
       }
 
       if (flagContent.includes('"') || flagContent.includes("'")) {
-        logEvent('tengu_bash_security_check_triggered', {
+        logEvent('nyxclaude_bash_security_check_triggered', {
           checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
           subId: 1,
         })
@@ -1839,7 +1839,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
   // Also handle flags that start with quotes: "--"output, '-'-output, etc.
   // Use fullyUnquotedContent to avoid false positives from legitimate quoted content like echo "---"
   if (/\s['"`]-/.test(context.fullyUnquotedContent)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
       subId: 2,
     })
@@ -1852,7 +1852,7 @@ function validateObfuscatedFlags(context: ValidationContext): PermissionResult {
   // Also handles cases like ""--output
   // Use fullyUnquotedContent to avoid false positives from legitimate quoted content
   if (/['"`]{2}-/.test(context.fullyUnquotedContent)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.OBFUSCATED_FLAGS,
       subId: 3,
     })
@@ -1913,7 +1913,7 @@ function validateBackslashEscapedWhitespace(
   context: ValidationContext,
 ): PermissionResult {
   if (hasBackslashEscapedWhitespace(context.originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.BACKSLASH_ESCAPED_WHITESPACE,
     })
     return {
@@ -2033,7 +2033,7 @@ function validateBackslashEscapedOperators(
   }
 
   if (hasBackslashEscapedOperator(context.originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.BACKSLASH_ESCAPED_OPERATORS,
     })
     return {
@@ -2117,7 +2117,7 @@ function validateBraceExpansion(context: ValidationContext): PermissionResult {
   // (more `{` than `}`) is usually legitimate unclosed/escaped braces like
   // `{foo` or `{a,b\}` where bash doesn't expand anyway.
   if (unescapedOpenBraces > 0 && unescapedCloseBraces > unescapedOpenBraces) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.BRACE_EXPANSION,
       subId: 2,
     })
@@ -2144,7 +2144,7 @@ function validateBraceExpansion(context: ValidationContext): PermissionResult {
     // Look for quoted single-brace patterns: '{', '}', "{",  "}"
     // These are the attack primitive — a brace char wrapped in quotes.
     if (/['"][{}]['"]/.test(orig)) {
-      logEvent('tengu_bash_security_check_triggered', {
+      logEvent('nyxclaude_bash_security_check_triggered', {
         checkId: BASH_SECURITY_CHECK_IDS.BRACE_EXPANSION,
         subId: 3,
       })
@@ -2198,7 +2198,7 @@ function validateBraceExpansion(context: ValidationContext): PermissionResult {
           ch === ',' ||
           (ch === '.' && k + 1 < matchingClose && content[k + 1] === '.')
         ) {
-          logEvent('tengu_bash_security_check_triggered', {
+          logEvent('nyxclaude_bash_security_check_triggered', {
             checkId: BASH_SECURITY_CHECK_IDS.BRACE_EXPANSION,
             subId: 1,
           })
@@ -2233,7 +2233,7 @@ function validateUnicodeWhitespace(
 ): PermissionResult {
   const { originalCommand } = context
   if (UNICODE_WS_RE.test(originalCommand)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.UNICODE_WHITESPACE,
     })
     return {
@@ -2278,7 +2278,7 @@ function validateMidWordHash(context: ValidationContext): PermissionResult {
     // eslint-disable-next-line custom-rules/no-lookbehind-regex -- same as above
     /\S(?<!\$\{)#/.test(joined)
   ) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.MID_WORD_HASH,
     })
     return {
@@ -2384,7 +2384,7 @@ function validateCommentQuoteDesync(
         lineEnd === -1 ? originalCommand.length : lineEnd,
       )
       if (/['"]/.test(commentText)) {
-        logEvent('tengu_bash_security_check_triggered', {
+        logEvent('nyxclaude_bash_security_check_triggered', {
           checkId: BASH_SECURITY_CHECK_IDS.COMMENT_QUOTE_DESYNC,
         })
         return {
@@ -2488,7 +2488,7 @@ function validateQuotedNewline(context: ValidationContext): PermissionResult {
       const lineEnd = nextNewline === -1 ? originalCommand.length : nextNewline
       const nextLine = originalCommand.slice(lineStart, lineEnd)
       if (nextLine.trim().startsWith('#')) {
-        logEvent('tengu_bash_security_check_triggered', {
+        logEvent('nyxclaude_bash_security_check_triggered', {
           checkId: BASH_SECURITY_CHECK_IDS.QUOTED_NEWLINE,
         })
         return {
@@ -2539,7 +2539,7 @@ function validateZshDangerousCommands(
   }
 
   if (ZSH_DANGEROUS_COMMANDS.has(baseCmd)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.ZSH_DANGEROUS_COMMANDS,
       subId: 1,
     })
@@ -2557,7 +2557,7 @@ function validateZshDangerousCommands(
   // long-style flags like `-reset`, `-reverse`, or `-message` do not
   // false-positive on `e` appearing mid-flag or at the end of a long word.
   if (baseCmd === 'fc' && /\s-[a-zA-Z]{0,3}e(?:\s|$)/.test(trimmed)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.ZSH_DANGEROUS_COMMANDS,
       subId: 2,
     })
@@ -2601,7 +2601,7 @@ export function bashCommandIsSafe_DEPRECATED(
   // and other non-printable chars are silently dropped by bash but confuse our
   // validators, allowing metacharacters adjacent to them to slip through.
   if (CONTROL_CHAR_RE.test(command)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.CONTROL_CHARACTERS,
     })
     return {
@@ -2788,7 +2788,7 @@ export async function bashCommandIsSafeAsync_DEPRECATED(
   // The early checks (control chars, shell-quote bug) don't benefit from
   // tree-sitter, so we run them identically.
   if (CONTROL_CHAR_RE.test(command)) {
-    logEvent('tengu_bash_security_check_triggered', {
+    logEvent('nyxclaude_bash_security_check_triggered', {
       checkId: BASH_SECURITY_CHECK_IDS.CONTROL_CHARACTERS,
     })
     return {
@@ -2856,7 +2856,7 @@ export async function bashCommandIsSafeAsync_DEPRECATED(
       if (onDivergence) {
         onDivergence()
       } else {
-        logEvent('tengu_tree_sitter_security_divergence', {
+        logEvent('nyxclaude_tree_sitter_security_divergence', {
           quoteContextDivergence: true,
         })
       }

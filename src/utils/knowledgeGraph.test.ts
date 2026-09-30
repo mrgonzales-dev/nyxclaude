@@ -13,11 +13,11 @@ import { mkdtempSync, rmSync, existsSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { acquireEnvMutex, releaseEnvMutex } from '../entrypoints/sdk/shared.js'
-import { getProjectsDir, setClaudeConfigHomeDirForTesting } from './envUtils.js'
+import { getProjectsDir, setNyxclaudeConfigHomeDirForTesting } from './envUtils.js'
 import { sanitizePath } from './sessionStoragePortable.js'
 
 describe('KnowledgeGraph Global Persistence & RAG', () => {
-  const originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const originalConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const cwd = process.cwd()
   let configDir: string | undefined
 
@@ -48,8 +48,8 @@ describe('KnowledgeGraph Global Persistence & RAG', () => {
   beforeEach(async () => {
     await acquireEnvMutex()
     configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-test-'))
-    process.env.CLAUDE_CONFIG_DIR = configDir
-    setClaudeConfigHomeDirForTesting(configDir)
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
+    setNyxclaudeConfigHomeDirForTesting(configDir)
     resetGlobalGraph()
   })
 
@@ -58,11 +58,11 @@ describe('KnowledgeGraph Global Persistence & RAG', () => {
       resetGlobalGraph()
       clearMemoryOnly()
       if (originalConfigDir === undefined) {
-        delete process.env.CLAUDE_CONFIG_DIR
+        delete process.env.NYXCLAUDE_CONFIG_DIR
       } else {
-        process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+        process.env.NYXCLAUDE_CONFIG_DIR = originalConfigDir
       }
-      setClaudeConfigHomeDirForTesting(undefined)
+      setNyxclaudeConfigHomeDirForTesting(undefined)
     } finally {
       const dirToRemove = configDir
       configDir = undefined

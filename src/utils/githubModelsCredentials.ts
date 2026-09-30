@@ -6,7 +6,7 @@ import { logForDebugging } from './debug.js'
 /** JSON key in the shared Nyxclaude secure storage blob. */
 export const GITHUB_MODELS_STORAGE_KEY = 'githubModels' as const
 export const GITHUB_MODELS_HYDRATED_ENV_MARKER =
-  'CLAUDE_CODE_GITHUB_TOKEN_HYDRATED' as const
+  'NYXCLAUDE_GITHUB_TOKEN_HYDRATED' as const
 
 export type GithubModelsCredentialBlob = {
   accessToken: string
@@ -86,7 +86,7 @@ export async function readGithubModelsTokenAsync(): Promise<string | undefined> 
  * stored token into process.env so the OpenAI shim and validation see it.
  */
 export function hydrateGithubModelsTokenFromSecureStorage(): void {
-  if (!isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)) {
+  if (!isEnvTruthy(process.env.NYXCLAUDE_USE_GITHUB)) {
     delete process.env[GITHUB_MODELS_HYDRATED_ENV_MARKER]
     return
   }
@@ -163,7 +163,7 @@ export function clearHydratedGithubModelsTokenFromEnv(storedToken?: string): voi
  * For GHE instances, the token exchange is routed through the GHE endpoint.
  */
 export async function refreshGithubModelsTokenIfNeeded(): Promise<boolean> {
-  if (!isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)) {
+  if (!isEnvTruthy(process.env.NYXCLAUDE_USE_GITHUB)) {
     return false
   }
   if (isBareMode()) {

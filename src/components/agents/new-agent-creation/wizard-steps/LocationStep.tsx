@@ -2,7 +2,7 @@ import { c as _c } from "react-compiler-runtime";
 import { join } from 'path';
 import React, { type ReactNode } from 'react';
 import { Box } from '../../../../ink.js';
-import { getClaudeConfigHomeDir } from '../../../../utils/envUtils.js';
+import { getNyxclaudeConfigHomeDir } from '../../../../utils/envUtils.js';
 import type { SettingSource } from '../../../../utils/settings/constants.js';
 import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js';
 import { Select } from '../../../CustomSelect/select.js';
@@ -29,7 +29,7 @@ export function LocationStep() {
     t0 = $[0];
   }
   const locationOptions = [t0, {
-    label: `Personal (${join(getClaudeConfigHomeDir(), 'agents')})`,
+    label: `Personal (${join(getNyxclaudeConfigHomeDir(), 'agents')})`,
     value: "userSettings" as SettingSource
   }];
   let t2;

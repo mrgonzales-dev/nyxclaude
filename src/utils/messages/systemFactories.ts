@@ -1,5 +1,5 @@
 import { feature } from "bun:bundle"
-import type { APIError } from "@anthropic-ai/sdk"
+import type { APIError } from "src/types/api.js"
 import { randomUUID, type UUID } from "crypto"
 import type { Message, NormalizedMessage, StopHookInfo, SystemAgentsKilledMessage, SystemAPIErrorMessage, SystemApiMetricsMessage, SystemAwaySummaryMessage, SystemBridgeStatusMessage, SystemCompactBoundaryMessage, SystemInformationalMessage, SystemLocalCommandMessage, SystemMemorySavedMessage, SystemMicrocompactBoundaryMessage, SystemPermissionRetryMessage, SystemScheduledTaskFireMessage, SystemStopHookSummaryMessage, SystemTurnDurationMessage, SystemMessageLevel } from "../../types/message.js"
 import { formatTokens } from "../format.js"

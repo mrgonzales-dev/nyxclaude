@@ -13,10 +13,10 @@ import {
 import * as realSettingsModule from '../settings/settings.js?openaiContextWindowsRealSettings'
 
 const originalEnv = {
-  CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS:
-    process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS,
-  CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS:
-    process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS,
+  NYXCLAUDE_OPENAI_CONTEXT_WINDOWS:
+    process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS,
+  NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS:
+    process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
 }
 
@@ -39,8 +39,8 @@ beforeEach(async () => {
   await acquireSharedMutationLock('openaiContextWindows.test.ts')
   mock.restore()
   mockSettings = {}
-  delete process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS
-  delete process.env.CLAUDE_CODE_OPENAI_MAX_OUTPUT_TOKENS
+  delete process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS
+  delete process.env.NYXCLAUDE_OPENAI_MAX_OUTPUT_TOKENS
   delete process.env.OPENAI_BASE_URL
   mock.module('../settings/settings.js', () => ({
     ...realSettingsModule,
@@ -86,7 +86,7 @@ test('settings modelLimits resolves context window when no env override is set',
 })
 
 test('env override takes precedence over settings modelLimits', async () => {
-  process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
+  process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = JSON.stringify({
     'qwen3.6-plus': 524_288,
   })
   mockSettings = {

@@ -4,7 +4,7 @@ import { join } from 'path'
 import { logEvent } from '../services/analytics/index.js'
 import { CACHE_PATHS } from './cachePaths.js'
 import { logForDebugging } from './debug.js'
-import { getClaudeConfigHomeDir, getProjectsDir } from './envUtils.js'
+import { getNyxclaudeConfigHomeDir, getProjectsDir } from './envUtils.js'
 import { type FsOperations, getFsImplementation } from './fsOperations.js'
 import { cleanupOldImageCaches } from './imageStore.js'
 import * as lockfile from './lockfile.js'
@@ -320,7 +320,7 @@ export async function cleanupOldFileHistoryBackups(): Promise<CleanupResult> {
   const fsImpl = getFsImplementation()
 
   try {
-    const configDir = getClaudeConfigHomeDir()
+    const configDir = getNyxclaudeConfigHomeDir()
     const fileHistoryStorageDir = join(configDir, 'file-history')
 
     let dirents
@@ -365,7 +365,7 @@ export async function cleanupOldSessionEnvDirs(): Promise<CleanupResult> {
   const fsImpl = getFsImplementation()
 
   try {
-    const configDir = getClaudeConfigHomeDir()
+    const configDir = getNyxclaudeConfigHomeDir()
     const sessionEnvBaseDir = join(configDir, 'session-env')
 
     let dirents
@@ -409,7 +409,7 @@ export async function cleanupOldDebugLogs(): Promise<CleanupResult> {
   const cutoffDate = getCutoffDate()
   const result: CleanupResult = { messages: 0, errors: 0 }
   const fsImpl = getFsImplementation()
-  const debugDir = join(getClaudeConfigHomeDir(), 'debug')
+  const debugDir = join(getNyxclaudeConfigHomeDir(), 'debug')
 
   let dirents
   try {
@@ -448,7 +448,7 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000
  * Only runs once per day for Ant users.
  */
 export async function cleanupNpmCacheForAnthropicPackages(): Promise<void> {
-  const markerPath = join(getClaudeConfigHomeDir(), '.npm-cache-cleanup')
+  const markerPath = join(getNyxclaudeConfigHomeDir(), '.npm-cache-cleanup')
 
   try {
     const stat = await fs.stat(markerPath)
@@ -530,14 +530,14 @@ export async function cleanupNpmCacheForAnthropicPackages(): Promise<void> {
     } else {
       logForDebugging(`npm cache cleanup: completed in ${durationMs}ms`)
     }
-    logEvent('tengu_npm_cache_cleanup', {
+    logEvent('nyxclaude_npm_cache_cleanup', {
       success: true,
       durationMs,
       entriesRemoved: keysToRemove.length,
     })
   } catch (error) {
     logError(error as Error)
-    logEvent('tengu_npm_cache_cleanup', {
+    logEvent('nyxclaude_npm_cache_cleanup', {
       success: false,
       durationMs: Date.now() - startTime,
     })
@@ -553,7 +553,7 @@ export async function cleanupNpmCacheForAnthropicPackages(): Promise<void> {
  * The regular cleanupOldVersions() should still be used for installer flows.
  */
 export async function cleanupOldVersionsThrottled(): Promise<void> {
-  const markerPath = join(getClaudeConfigHomeDir(), '.version-cleanup')
+  const markerPath = join(getNyxclaudeConfigHomeDir(), '.version-cleanup')
 
   try {
     const stat = await fs.stat(markerPath)
@@ -606,7 +606,7 @@ export async function cleanupOldMessageFilesInBackground(): Promise<void> {
   await cleanupOldPastes(getCutoffDate())
   const removedWorktrees = await cleanupStaleAgentWorktrees(getCutoffDate())
   if (removedWorktrees > 0) {
-    logEvent('tengu_worktree_cleanup', { removed: removedWorktrees })
+    logEvent('nyxclaude_worktree_cleanup', { removed: removedWorktrees })
   }
   if (process.env.USER_TYPE === 'ant') {
     await cleanupNpmCacheForAnthropicPackages()

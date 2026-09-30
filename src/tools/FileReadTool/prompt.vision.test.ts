@@ -64,7 +64,7 @@ describe('renderPromptTemplate — vision sentence (issue #1421)', () => {
       '',
     )
 
-    expect(rendered).toContain('This tool allows Claude Code to read images')
+    expect(rendered).toContain('This tool allows Nyxclaude to read images')
   })
 
   test('always includes the Jupyter notebook sentence and the directory-listing hint', () => {

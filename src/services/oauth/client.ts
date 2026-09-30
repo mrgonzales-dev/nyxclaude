@@ -9,7 +9,7 @@ export async function refreshOAuthToken(_tokens: OAuthTokens): Promise<OAuthToke
   return null
 }
 
-export function shouldUseClaudeAIAuth(): boolean {
+export function shouldUseRemoteAuth(): boolean {
   return false
 }
 

@@ -6,7 +6,7 @@ import { PRODUCT_DISPLAY_NAME } from '../constants/product.js';
 import { useExitOnCtrlCDWithKeybindings } from '../hooks/useExitOnCtrlCDWithKeybindings.js';
 import { Box, Newline, Text, useTheme } from '../ink.js';
 import { useKeybindings } from '../keybindings/useKeybinding.js';
-import { isAnthropicAuthEnabled } from '../utils/auth.js';
+import { isRemoteAuthEnabled } from '../utils/auth.js';
 import { normalizeApiKeyForConfig } from '../utils/authPortable.js';
 import { getCustomApiKeyStatus } from '../utils/config.js';
 import { env } from '../utils/env.js';
@@ -33,10 +33,10 @@ export function Onboarding({
 }: Props): React.ReactNode {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [skipOAuth, setSkipOAuth] = useState(false);
-  const [oauthEnabled] = useState(() => isAnthropicAuthEnabled());
+  const [oauthEnabled] = useState(() => isRemoteAuthEnabled());
   const [theme, setTheme] = useTheme();
   useEffect(() => {
-    logEvent('tengu_began_setup', {
+    logEvent('nyxclaude_began_setup', {
       oauthEnabled
     });
   }, [oauthEnabled]);
@@ -44,7 +44,7 @@ export function Onboarding({
     if (currentStepIndex < steps.length - 1) {
       const nextIndex = currentStepIndex + 1;
       setCurrentStepIndex(nextIndex);
-      logEvent('tengu_onboarding_step', {
+      logEvent('nyxclaude_onboarding_step', {
         oauthEnabled,
         stepId: steps[nextIndex]?.id as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -100,7 +100,7 @@ export function Onboarding({
     // Add API key step if needed
     // On homespace, ANTHROPIC_API_KEY is preserved in process.env for child
     // processes but ignored by Nyxclaude itself (see auth.ts).
-    if (!process.env.ANTHROPIC_API_KEY || isRunningOnHomespace() || !isAnthropicAuthEnabled()) {
+    if (!process.env.ANTHROPIC_API_KEY || isRunningOnHomespace() || !isRemoteAuthEnabled()) {
       return '';
     }
     const customApiKeyTruncated = normalizeApiKeyForConfig(process.env.ANTHROPIC_API_KEY);

@@ -5,25 +5,25 @@
 import { access, chmod, writeFile } from 'fs/promises'
 import { join } from 'path'
 import { type ReleaseChannel, saveGlobalConfig } from './config.js'
-import { getClaudeConfigHomeDir } from './envUtils.js'
+import { getNyxclaudeConfigHomeDir } from './envUtils.js'
 import { getErrnoCode } from './errors.js'
 import { execFileNoThrowWithCwd } from './execFileNoThrow.js'
 import { getFsImplementation } from './fsOperations.js'
 import { logError } from './log.js'
 import { jsonStringify } from './slowOperations.js'
 
-// Lazy getters: getClaudeConfigHomeDir() is memoized and reads process.env.
+// Lazy getters: getNyxclaudeConfigHomeDir() is memoized and reads process.env.
 // Evaluating at module scope would capture the value before entrypoints like
-// hfi.tsx get a chance to set CLAUDE_CONFIG_DIR in main(), and would also
+// hfi.tsx get a chance to set NYXCLAUDE_CONFIG_DIR in main(), and would also
 // populate the memoize cache with that stale value for all 150+ other callers.
 function getLocalInstallDir(): string {
-  return join(getClaudeConfigHomeDir(), 'local')
+  return join(getNyxclaudeConfigHomeDir(), 'local')
 }
 
 export function getCandidateLocalInstallDirs(options?: {
   configHomeDir?: string
 }): string[] {
-  const configHomeDir = options?.configHomeDir ?? getClaudeConfigHomeDir()
+  const configHomeDir = options?.configHomeDir ?? getNyxclaudeConfigHomeDir()
   return [join(configHomeDir, 'local')]
 }
 
@@ -113,7 +113,7 @@ export async function ensureLocalPackageEnvironment(): Promise<boolean> {
  * @param channel - Release channel to use (latest or stable)
  * @param specificVersion - Optional specific version to install (overrides channel)
  */
-export async function installOrUpdateClaudePackage(
+export async function installOrUpdatePackage(
   channel: ReleaseChannel,
   specificVersion?: string | null,
 ): Promise<'in_progress' | 'success' | 'install_failed'> {

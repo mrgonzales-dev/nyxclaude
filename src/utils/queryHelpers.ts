@@ -1,4 +1,4 @@
-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ToolUseBlock } from 'src/types/api.js'
 import last from 'lodash-es/last.js'
 import {
   getSessionId,
@@ -86,7 +86,7 @@ export function isResultSuccessful(
 
   // Carve-out: API completed (message_delta set stop_reason) but yielded
   // no assistant content — last(messages) is still this turn's prompt.
-  // claude.ts:2026 recognizes end_turn-with-zero-content-blocks as
+  // modelApi.ts:2026 recognizes end_turn-with-zero-content-blocks as
   // legitimate and passes through without throwing. Observed on
   // task_notification drain turns: model returns stop_reason=end_turn,
   // outputTokens=4, textContentLength=0 — it saw the subagent result
@@ -169,8 +169,8 @@ export function* normalizeMessage(message: Message): Generator<SDKMessage> {
         // Filter bash progress to send only one per minute
         // Only emit for Nyxclaude Remote for now
         if (
-          !isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) &&
-          !process.env.CLAUDE_CODE_CONTAINER_ID
+          !isEnvTruthy(process.env.NYXCLAUDE_REMOTE) &&
+          !process.env.NYXCLAUDE_CONTAINER_ID
         ) {
           break
         }

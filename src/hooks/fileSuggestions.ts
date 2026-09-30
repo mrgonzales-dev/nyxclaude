@@ -3,7 +3,7 @@ import { spawn } from 'cross-spawn'
 import ignore from 'ignore'
 import * as path from 'path'
 import {
-  CLAUDE_CONFIG_DIRECTORIES,
+  CONFIG_DIRECTORIES,
   loadMarkdownFilesForSubdir,
 } from 'src/utils/markdownConfigLoader.js'
 import type { SuggestionItem } from '../components/PromptInput/PromptInputFooterSuggestions.js'
@@ -657,7 +657,7 @@ async function getFilesUsingGit(
       )
     }
 
-    logEvent('tengu_file_suggestions_git_ls_files', {
+    logEvent('nyxclaude_file_suggestions_git_ls_files', {
       file_count: normalizedTracked.length,
       tracked_count: normalizedTracked.length,
       untracked_count: 0,
@@ -792,9 +792,9 @@ function collectDirectoryNames(
 /**
  * Gets additional files from Nyxclaude config directories
  */
-async function getClaudeConfigFiles(cwd: string): Promise<string[]> {
+async function getConfigFiles(cwd: string): Promise<string[]> {
   const markdownFileArrays = await Promise.all(
-    CLAUDE_CONFIG_DIRECTORIES.map(subdir =>
+    CONFIG_DIRECTORIES.map(subdir =>
       loadMarkdownFilesForSubdir(subdir, cwd),
     ),
   )
@@ -866,7 +866,7 @@ async function getProjectFiles(
     )
   }
 
-  logEvent('tengu_file_suggestions_ripgrep', {
+  logEvent('nyxclaude_file_suggestions_ripgrep', {
     file_count: relativePaths.length,
     duration_ms: duration,
   })
@@ -895,7 +895,7 @@ export async function getPathsForSuggestions(): Promise<FileIndex> {
     const cwd = getCwd()
     const [projectFiles, configFiles] = await Promise.all([
       getProjectFiles(signal, respectGitignore),
-      getClaudeConfigFiles(cwd),
+      getConfigFiles(cwd),
     ])
 
     // Cache for mergeUntrackedIntoNormalizedCache
@@ -1138,7 +1138,7 @@ export async function generateFileSuggestions(
     logForDebugging(
       `[FileIndex] generateFileSuggestions: ${matches.length} results in ${duration}ms (${wasBuilding ? 'partial' : 'full'} index)`,
     )
-    logEvent('tengu_file_suggestions_query', {
+    logEvent('nyxclaude_file_suggestions_query', {
       duration_ms: duration,
       cache_hit: !wasBuilding,
       result_count: matches.length,

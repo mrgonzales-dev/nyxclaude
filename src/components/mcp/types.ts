@@ -1,7 +1,7 @@
 import type {
   ConfigScope,
   MCPServerConnection,
-  McpClaudeAIProxyServerConfig,
+  McpRemoteProxyServerConfig,
   McpHTTPServerConfig,
   McpSSEServerConfig,
   McpStdioServerConfig,
@@ -30,9 +30,9 @@ export type HTTPServerInfo = BaseServerInfo & {
   isAuthenticated?: boolean
 }
 
-export type ClaudeAIServerInfo = BaseServerInfo & {
-  transport: 'claudeai-proxy'
-  config: McpClaudeAIProxyServerConfig
+export type RemoteServerInfo = BaseServerInfo & {
+  transport: 'remote-proxy'
+  config: McpRemoteProxyServerConfig
   isAuthenticated?: boolean
 }
 
@@ -40,7 +40,7 @@ export type ServerInfo =
   | StdioServerInfo
   | SSEServerInfo
   | HTTPServerInfo
-  | ClaudeAIServerInfo
+  | RemoteServerInfo
 
 export type AgentMcpServerInfo = {
   name: string

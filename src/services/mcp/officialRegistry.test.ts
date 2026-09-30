@@ -49,7 +49,7 @@ async function mockApiProvider(provider: string): Promise<void> {
 
 describe('prefetchOfficialMcpUrls', () => {
   test('does not fetch registry when using OpenAI mode', async () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     await mockApiProvider('openai')
     const getSpy = mock(() => Promise.resolve({ data: { servers: [] } }))
     axios.get = getSpy as typeof axios.get
@@ -61,7 +61,7 @@ describe('prefetchOfficialMcpUrls', () => {
   })
 
   test('does not fetch registry when using Gemini mode', async () => {
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
     await mockApiProvider('gemini')
     const getSpy = mock(() => Promise.resolve({ data: { servers: [] } }))
     axios.get = getSpy as typeof axios.get
@@ -73,9 +73,9 @@ describe('prefetchOfficialMcpUrls', () => {
   })
 
   test('fetches registry in first-party mode', async () => {
-    delete process.env.CLAUDE_CODE_USE_OPENAI
-    delete process.env.CLAUDE_CODE_USE_GEMINI
-    delete process.env.CLAUDE_CODE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_OPENAI
+    delete process.env.NYXCLAUDE_USE_GEMINI
+    delete process.env.NYXCLAUDE_USE_GITHUB
 
     await mockApiProvider('firstParty')
     const getSpy = mock(() =>

@@ -73,7 +73,7 @@ export function FastModePicker(t0) {
         return;
       }
       applyFastMode(enableFastMode, setAppState);
-      logEvent("tengu_fast_mode_toggled", {
+      logEvent("nyxclaude_fast_mode_toggled", {
         enabled: enableFastMode,
         source: "picker" as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -191,7 +191,7 @@ export function FastModePicker(t0) {
   }
   let t11;
   if ($[25] === Symbol.for("react.memo_cache_sentinel")) {
-    t11 = <Text dimColor={true}>Learn more:{" "}<Link url="https://code.claude.com/docs/en/fast-mode">https://code.claude.com/docs/en/fast-mode</Link></Text>;
+    t11 = <Text dimColor={true}>Learn more:{" "}<Link url="https://docs.nyxclaude.dev/fast-mode">https://docs.nyxclaude.dev/fast-mode</Link></Text>;
     $[25] = t11;
   } else {
     t11 = $[25];
@@ -232,7 +232,7 @@ async function handleFastModeShortcut(enable: boolean, getAppState: () => AppSta
     mainLoopModel
   } = getAppState();
   applyFastMode(enable, setAppState);
-  logEvent('tengu_fast_mode_toggled', {
+  logEvent('nyxclaude_fast_mode_toggled', {
     enabled: enable,
     source: 'shortcut' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
   });
@@ -261,7 +261,7 @@ export async function call(onDone: LocalJSXCommandOnDone, context: LocalJSXComma
     return null;
   }
   const unavailableReason = getFastModeUnavailableReason();
-  logEvent('tengu_fast_mode_picker_shown', {
+  logEvent('nyxclaude_fast_mode_picker_shown', {
     unavailable_reason: (unavailableReason ?? '') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
   });
   return <FastModePicker onDone={onDone} unavailableReason={unavailableReason} />;

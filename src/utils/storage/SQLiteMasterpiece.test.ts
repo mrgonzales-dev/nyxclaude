@@ -12,12 +12,12 @@ import { mkdtempSync, rmSync, existsSync, writeFileSync, mkdirSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { acquireEnvMutex, releaseEnvMutex } from '../../entrypoints/sdk/shared.js'
-import { getProjectsDir, setClaudeConfigHomeDirForTesting } from '../envUtils.js'
+import { getProjectsDir, setNyxclaudeConfigHomeDirForTesting } from '../envUtils.js'
 import { sanitizePath } from '../sessionStoragePortable.js'
 import { getFsImplementation } from '../fsOperations.js'
 
 describe('SQLite Masterpiece: Edge Cases & Multi-Project Isolation', () => {
-  const originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const originalConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const originalConsoleError = console.error
   const originalConsoleWarn = console.warn
   const rootTestDir = mkdtempSync(join(tmpdir(), 'nyxclaude-masterpiece-'))
@@ -62,8 +62,8 @@ describe('SQLite Masterpiece: Edge Cases & Multi-Project Isolation', () => {
     console.warn = (...args: unknown[]) => {
       capturedConsoleWarnings.push(args)
     }
-    process.env.CLAUDE_CONFIG_DIR = rootTestDir
-    setClaudeConfigHomeDirForTesting(rootTestDir)
+    process.env.NYXCLAUDE_CONFIG_DIR = rootTestDir
+    setNyxclaudeConfigHomeDirForTesting(rootTestDir)
     const fs = getFsImplementation()
     originalFsCwd = fs.cwd
     testCwd = join(
@@ -91,11 +91,11 @@ describe('SQLite Masterpiece: Edge Cases & Multi-Project Isolation', () => {
         removeDirWithRetry(testCwd)
       }
       if (originalConfigDir === undefined) {
-        delete process.env.CLAUDE_CONFIG_DIR
+        delete process.env.NYXCLAUDE_CONFIG_DIR
       } else {
-        process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+        process.env.NYXCLAUDE_CONFIG_DIR = originalConfigDir
       }
-      setClaudeConfigHomeDirForTesting(undefined)
+      setNyxclaudeConfigHomeDirForTesting(undefined)
       if (expectRecoveryLogsForCurrentTest) {
         expect(
           capturedConsoleErrors.some(call =>

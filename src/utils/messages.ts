@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle'
 import { getAPIProvider } from './model/providers.js'
-import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { BetaUsage as Usage } from 'src/types/api.js'
 import type {
   ContentBlock,
   ContentBlockParam,
@@ -12,7 +12,7 @@ import type {
   ToolResultBlockParam,
   ToolUseBlock,
   ToolUseBlockParam,
-} from '@anthropic-ai/sdk/resources/index.mjs'
+} from 'src/types/api.js'
 import { randomUUID, type UUID } from 'crypto'
 import isObject from 'lodash-es/isObject.js'
 import last from 'lodash-es/last.js'
@@ -94,14 +94,14 @@ type HookAttachmentWithName = Exclude<
   HookPermissionDecisionAttachment
 >
 
-import type { APIError } from '@anthropic-ai/sdk'
+import type { APIError } from 'src/types/api.js'
 import type {
   BetaContentBlock,
   BetaMessage,
   BetaRedactedThinkingBlock,
   BetaThinkingBlock,
   BetaToolUseBlock,
-} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+} from 'src/types/api.js'
 import type {
   HookEvent,
   SDKAssistantMessageError,
@@ -206,7 +206,7 @@ const TOOL_REFERENCE_TURN_BOUNDARY = 'Tool loaded.'
 export function withMemoryCorrectionHint(message: string): string {
   if (
     isAutoMemoryEnabled() &&
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_amber_prism', false)
+    getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_amber_prism', false)
   ) {
     return message + MEMORY_CORRECTION_HINT
   }
@@ -1658,11 +1658,11 @@ export function normalizeMessagesForAPI(
           // Must be a sibling, NOT inside tool_result.content — mixing text with
           // tool_reference inside the block is a server ValueError.
           // Idempotent: query.ts calls this per-tool-result; the output flows
-          // back through here via claude.ts on the next API request. The first
+          // back through here via modelApi.ts on the next API request. The first
           // pass's sibling gets an internal snip marker from appendMessageTag
           // below, so startsWith matches both bare and marked forms.
           //
-          // Gated OFF when tengu_toolref_defer_j8m is active — that gate
+          // Gated OFF when nyxclaude_toolref_defer_j8m is active — that gate
           // enables relocateToolReferenceSiblings in post-processing below,
           // which moves existing siblings to a later non-ref message instead
           // of adding one here. This injection is itself one of the patterns
@@ -1670,7 +1670,7 @@ export function normalizeMessagesForAPI(
           // off, this is the fallback (same as pre-#21049 main).
           if (
             !checkStatsigFeatureGate_CACHED_MAY_BE_STALE(
-              'tengu_toolref_defer_j8m',
+              'nyxclaude_toolref_defer_j8m',
             )
           ) {
             const contentAfterStrip = normalizedMessage.message.content
@@ -1811,7 +1811,7 @@ export function normalizeMessagesForAPI(
               })
             : rawAttachmentMessage
           const attachmentMessage = checkStatsigFeatureGate_CACHED_MAY_BE_STALE(
-            'tengu_chair_sermon',
+            'nyxclaude_chair_sermon',
           )
             ? strippedAttachmentMessage.map(ensureSystemReminderWrap)
             : strippedAttachmentMessage
@@ -1839,7 +1839,7 @@ export function normalizeMessagesForAPI(
   // tags reflect final positions). When gate is OFF, this is a noop and
   // the TOOL_REFERENCE_TURN_BOUNDARY injection above serves as fallback.
   const relocated = checkStatsigFeatureGate_CACHED_MAY_BE_STALE(
-    'tengu_toolref_defer_j8m',
+    'nyxclaude_toolref_defer_j8m',
   )
     ? relocateToolReferenceSiblings(result)
     : result
@@ -1872,7 +1872,7 @@ export function normalizeMessagesForAPI(
   // ungated changes VCR fixture hashes for @-mention scenarios (adjacent
   // [prompt, attachment] users) without any benefit when the smoosh is off.
   const smooshed = checkStatsigFeatureGate_CACHED_MAY_BE_STALE(
-    'tengu_chair_sermon',
+    'nyxclaude_chair_sermon',
   )
     ? smooshSystemReminderSiblings(mergeAdjacentUserMessages(withNonEmpty))
     : withNonEmpty
@@ -2176,7 +2176,7 @@ export function mergeUserContentBlocks(
     return [...a, ...b]
   }
 
-  if (!checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_chair_sermon')) {
+  if (!checkStatsigFeatureGate_CACHED_MAY_BE_STALE('nyxclaude_chair_sermon')) {
     // Legacy (ungated) smoosh: only string-content tool_result + all-text
     // siblings → joined string. Matches pre-universal-smoosh behavior on main.
     // The precondition guarantees smooshIntoToolResult hits its string path
@@ -2245,7 +2245,7 @@ export function normalizeContentFromAPI(
             // parse. We fall back to {} which means downstream validation
             // sees empty input. The raw prefix goes to debug log only — no
             // PII-tagged proto column exists for it yet.
-            logEvent('tengu_tool_input_json_parse_fail', {
+            logEvent('nyxclaude_tool_input_json_parse_fail', {
               toolName: sanitizeToolNameForAnalytics(contentBlock.name),
               inputLen: contentBlock.input.length,
             })
@@ -2285,7 +2285,7 @@ export function normalizeContentFromAPI(
       }
       case 'text':
         if (contentBlock.text.trim().length === 0) {
-          logEvent('tengu_model_whitespace_response', {
+          logEvent('nyxclaude_model_whitespace_response', {
             length: contentBlock.text.length,
           })
         }
@@ -3223,10 +3223,10 @@ You have exited auto mode. The user may now want to interact more directly. You 
       ])
     }
     case 'verify_plan_reminder': {
-      // Dead code elimination: CLAUDE_CODE_VERIFY_PLAN='false' in external builds, so === 'true' check allows Bun to eliminate the string
+      // Dead code elimination: NYXCLAUDE_VERIFY_PLAN='false' in external builds, so === 'true' check allows Bun to eliminate the string
       /* eslint-disable-next-line custom-rules/no-process-env-top-level */
       const toolName =
-        process.env.CLAUDE_CODE_VERIFY_PLAN === 'true'
+        process.env.NYXCLAUDE_VERIFY_PLAN === 'true'
           ? 'VerifyPlanExecution'
           : ''
       const content = `You have completed implementing the plan. Please call the "${toolName}" tool directly (NOT the ${AGENT_TOOL_NAME} tool or an agent) to verify that all plan items were completed correctly.`
@@ -3486,7 +3486,7 @@ function filterTrailingThinkingFromLastAssistant(
     lastValidIndex--
   }
 
-  logEvent('tengu_filtered_trailing_thinking_block', {
+  logEvent('nyxclaude_filtered_trailing_thinking_block', {
     messageUUID:
       lastMessage.uuid as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     blocksRemoved: content.length - lastValidIndex - 1,
@@ -3573,7 +3573,7 @@ export function filterWhitespaceOnlyAssistantMessages(
 
     if (hasOnlyWhitespaceTextContent(content)) {
       hasChanges = true
-      logEvent('tengu_filtered_whitespace_only_assistant', {
+      logEvent('nyxclaude_filtered_whitespace_only_assistant', {
         messageUUID:
           message.uuid as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
@@ -3636,7 +3636,7 @@ function ensureNonEmptyAssistantContent(
     const content = message.message.content
     if (Array.isArray(content) && content.length === 0) {
       hasChanges = true
-      logEvent('tengu_fixed_empty_assistant_content', {
+      logEvent('nyxclaude_fixed_empty_assistant_content', {
         messageUUID:
           message.uuid as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         messageIndex: index,
@@ -3727,7 +3727,7 @@ export function filterOrphanedThinkingOnlyMessages(
     }
 
     // Truly orphaned - no other message with same id has content to merge with
-    logEvent('tengu_filtered_orphaned_thinking_message', {
+    logEvent('nyxclaude_filtered_orphaned_thinking_message', {
       messageUUID:
         msg.uuid as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       messageId: msg.message
@@ -3764,7 +3764,7 @@ export function stripSignatureBlocks(messages: Message[]): Message[] {
     if (filtered.length === content.length) return msg
 
     // Strip to [] even for thinking-only messages. Streaming yields each
-    // content block as a separate same-id AssistantMessage (claude.ts:2150),
+    // content block as a separate same-id AssistantMessage (modelApi.ts:2150),
     // so a thinking-only singleton here is usually a split sibling that
     // mergeAssistantMessages (2232) rejoins with its text/tool_use partner.
     // If we returned the original message, the stale signature would survive
@@ -4067,7 +4067,7 @@ export function ensureToolResultPairing(
         // [tool_result, text] sibling the smoosh inside normalize never saw
         // (pairing runs after normalize). Re-smoosh just this one message.
         result.push(
-          checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_chair_sermon')
+          checkStatsigFeatureGate_CACHED_MAY_BE_STALE('nyxclaude_chair_sermon')
             ? smooshSystemReminderSiblings([patchedNext])[0]!
             : patchedNext,
         )
@@ -4155,7 +4155,7 @@ export function ensureToolResultPairing(
       `Provider: ${validation.context.provider ?? 'unknown'}. ` +
       `Model: ${validation.context.model ?? 'unknown'}. ` +
       `Issues: ${issueSummary}.`
-    logEvent('tengu_tool_result_pairing_repaired', {
+    logEvent('nyxclaude_tool_result_pairing_repaired', {
       messageCount: messages.length,
       repairedMessageCount: result.length,
       issueCount: validation.issues.length,

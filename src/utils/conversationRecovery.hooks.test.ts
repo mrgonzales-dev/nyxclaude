@@ -77,7 +77,7 @@ afterEach(async () => {
 })
 
 test('loadConversationForResume rejects oversized transcripts before resume hooks run', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
+  delete process.env.NYXCLAUDE_SIMPLE
   const hugeContent = 'x'.repeat(8 * 1024 * 1024 + 32 * 1024)
   const path = await writeJsonl(user(id(3), hugeContent))
   const hookSpy = mock(() => Promise.resolve([{ type: 'hook' }]))
@@ -133,7 +133,7 @@ test('deserializeMessagesWithInterruptDetection strips thinking blocks only for 
   ]
 
   providerForTest = 'openai'
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5-mini'
 
@@ -176,7 +176,7 @@ test('deserializeMessagesWithInterruptDetection strips thinking blocks only for 
   delete process.env.OPENAI_MODEL
 
   providerForTest = 'bedrock'
-  delete process.env.CLAUDE_CODE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_OPENAI
   delete process.env.OPENAI_BASE_URL
   delete process.env.OPENAI_MODEL
 

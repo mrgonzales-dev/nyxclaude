@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto'
 import { open } from 'fs/promises'
 import { join } from 'path'
 import type { ModelCatalogEntry } from './descriptors.js'
-import { getClaudeConfigHomeDir } from '../utils/envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../utils/envUtils.js'
 import { errorMessage } from '../utils/errors.js'
 import { getFsImplementation } from '../utils/fsOperations.js'
 import { logForDebugging } from '../utils/debug.js'
@@ -59,7 +59,7 @@ export async function withDiscoveryCacheLock<T>(
 }
 
 export function getDiscoveryCachePath(): string {
-  return join(getClaudeConfigHomeDir(), DISCOVERY_CACHE_FILENAME)
+  return join(getNyxclaudeConfigHomeDir(), DISCOVERY_CACHE_FILENAME)
 }
 
 function getEmptyDiscoveryCache(): PersistedDiscoveryCache {
@@ -247,7 +247,7 @@ async function saveDiscoveryCache(
   const tempPath = `${cachePath}.${randomBytes(8).toString('hex')}.tmp`
 
   try {
-    await fs.mkdir(getClaudeConfigHomeDir())
+    await fs.mkdir(getNyxclaudeConfigHomeDir())
 
     const content = jsonStringify(cache, null, 2)
     const handle = await open(tempPath, 'w', 0o600)

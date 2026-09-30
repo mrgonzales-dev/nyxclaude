@@ -31,7 +31,7 @@ async function importFreshModelOptionsModule(provider: string) {
 }
 
 const ENV_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
+  'NYXCLAUDE_USE_OPENAI',
   'OPENAI_BASE_URL',
   'OPENAI_MODEL',
   'OPENAI_API_KEY',
@@ -69,7 +69,7 @@ afterEach(() => {
 })
 
 test('persisted [1m]-tagged Codex model surfaces its curated option under a non-Codex provider', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_MODEL = 'gpt-5.6-terra[1m]'
   const { getModelOptions } = await importFreshModelOptionsModule('xai')
 
@@ -91,7 +91,7 @@ test('persisted untagged Codex model never degrades to a "Custom model" entry', 
   // route catalog supplies its own labeled option) rather than the Codex
   // recovery branch — either way the user must see a real label, never the
   // generic custom-model fallback.
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_MODEL = 'gpt-5.6-luna'
   const { getModelOptions } = await importFreshModelOptionsModule('xai')
 

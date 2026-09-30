@@ -26,7 +26,7 @@ function makeJwt(payload: Record<string, unknown>): string {
 }
 
 describe('codexCredentials', () => {
-  const originalSimple = process.env.CLAUDE_CODE_SIMPLE
+  const originalSimple = process.env.NYXCLAUDE_SIMPLE
   const originalCodeKey = process.env.CODEX_API_KEY
   const originalFetch = globalThis.fetch
   let mockedPlainTextStorageState: Record<string, unknown> | null = null
@@ -77,9 +77,9 @@ describe('codexCredentials', () => {
       globalThis.fetch = originalFetch
 
       if (originalSimple === undefined) {
-        delete process.env.CLAUDE_CODE_SIMPLE
+        delete process.env.NYXCLAUDE_SIMPLE
       } else {
-        process.env.CLAUDE_CODE_SIMPLE = originalSimple
+        process.env.NYXCLAUDE_SIMPLE = originalSimple
       }
 
       if (originalCodeKey === undefined) {
@@ -93,7 +93,7 @@ describe('codexCredentials', () => {
   })
 
   test('save returns failure in bare mode', async () => {
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.NYXCLAUDE_SIMPLE = '1'
 
     const { saveCodexCredentials } =
       await importFreshCodexCredentials('save-bare-mode')
@@ -108,7 +108,7 @@ describe('codexCredentials', () => {
   })
 
   test('saveCodexCredentials allows plaintext fallback when native secure storage is unavailable', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     let nativeStorageState: Record<string, unknown> | null = null
     const getSecureStorage = mock(
@@ -151,7 +151,7 @@ describe('codexCredentials', () => {
   })
 
   test('saveCodexCredentials keeps plaintext fallback scoped to Codex credentials', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     const nativeStorageState: Record<string, unknown> = {
       mcpOAuth: {
@@ -222,7 +222,7 @@ describe('codexCredentials', () => {
   })
 
   test('saveCodexCredentials fails closed when native Codex would shadow scoped fallback', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     const nativeStorageState: Record<string, unknown> = {
       codex: {
@@ -270,7 +270,7 @@ describe('codexCredentials', () => {
   })
 
   test('saveCodexCredentials fails when stale native Codex cannot be removed after fallback write', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     const nativeStorageState: Record<string, unknown> = {
       codex: {
@@ -321,7 +321,7 @@ describe('codexCredentials', () => {
   })
 
   test('saveCodexCredentials warns when native save succeeds but plaintext fallback cleanup fails', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     let nativeStorageState: Record<string, unknown> | null = null
     mockedPlainTextStorageState = {
@@ -372,7 +372,7 @@ describe('codexCredentials', () => {
   })
 
   test('saveCodexCredentials rejects incomplete credential blobs', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     const getSecureStorage = mock(() => ({
       read: () => null,
@@ -400,7 +400,7 @@ describe('codexCredentials', () => {
   })
 
   test('refreshCodexAccessTokenIfNeeded refreshes expired stored credentials', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
     delete process.env.CODEX_API_KEY
 
     const expiredToken = makeJwt({
@@ -493,7 +493,7 @@ describe('codexCredentials', () => {
   })
 
   test('refreshCodexAccessTokenIfNeeded backs off after a failed refresh attempt', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
     delete process.env.CODEX_API_KEY
 
     const expiredToken = makeJwt({
@@ -556,7 +556,7 @@ describe('codexCredentials', () => {
   })
 
   test('refreshCodexAccessTokenIfNeeded drops a stale api key when id-token exchange fails', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
     delete process.env.CODEX_API_KEY
 
     const expiredToken = makeJwt({
@@ -639,7 +639,7 @@ describe('codexCredentials', () => {
   })
 
   test('refreshCodexAccessTokenIfNeeded deduplicates concurrent refresh attempts', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
     delete process.env.CODEX_API_KEY
 
     const expiredToken = makeJwt({
@@ -740,7 +740,7 @@ describe('codexCredentials', () => {
   })
 
   test('saveCodexCredentials preserves an existing linked profile id', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     let storageState: Record<string, unknown> = {
       codex: {
@@ -776,7 +776,7 @@ describe('codexCredentials', () => {
   })
 
   test('attachCodexProfileIdToStoredCredentials links the saved profile id', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     let storageState: Record<string, unknown> = {
       codex: {
@@ -810,7 +810,7 @@ describe('codexCredentials', () => {
   })
 
   test('clearCodexCredentials does not copy unrelated native secrets to plaintext when native update fails', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     const nativeStorageState: Record<string, unknown> = {
       codex: {
@@ -855,7 +855,7 @@ describe('codexCredentials', () => {
   })
 
   test('refreshCodexAccessTokenIfNeeded uses async secure-storage reads in its request path', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
     delete process.env.CODEX_API_KEY
 
     const freshToken = makeJwt({
@@ -895,7 +895,7 @@ describe('codexCredentials', () => {
   })
 
   test('refreshCodexAccessTokenIfNeeded keeps a cooldown in memory when secure storage cannot persist it', async () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
     delete process.env.CODEX_API_KEY
     mockedPlainTextStorageUpdateResult = { success: false }
 

@@ -8,7 +8,7 @@ import {
   writeFileSync,
 } from 'fs'
 import { join } from 'path'
-import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../../utils/envUtils.js'
 import type {
   CacheData,
   CacheStats,
@@ -21,7 +21,7 @@ const CACHE_VERSION = 2
 const MAX_RENDERED_ENTRIES = 20
 
 function getCacheDir(): string {
-  return join(getClaudeConfigHomeDir(), 'repomap-cache')
+  return join(getNyxclaudeConfigHomeDir(), 'repomap-cache')
 }
 
 function getCacheFilePath(root: string): string {

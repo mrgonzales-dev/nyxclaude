@@ -14,9 +14,9 @@ const originalSandboxMethods = {
   areUnsandboxedCommandsAllowed: SandboxManager.areUnsandboxedCommandsAllowed,
 }
 const originalInjectionFlag =
-  process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK
+  process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK
 const originalSandboxIndicatorFlag =
-  process.env.CLAUDE_CODE_BASH_SANDBOX_SHOW_INDICATOR
+  process.env.NYXCLAUDE_BASH_SANDBOX_SHOW_INDICATOR
 
 let importCounter = 0
 let capturedExecOptions: { shouldUseSandbox?: boolean } | undefined
@@ -34,15 +34,15 @@ afterEach(() => {
     SandboxManager.areUnsandboxedCommandsAllowed =
       originalSandboxMethods.areUnsandboxedCommandsAllowed
     if (originalInjectionFlag === undefined) {
-      delete process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK
+      delete process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK
     } else {
-      process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK =
+      process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK =
         originalInjectionFlag
     }
     if (originalSandboxIndicatorFlag === undefined) {
-      delete process.env.CLAUDE_CODE_BASH_SANDBOX_SHOW_INDICATOR
+      delete process.env.NYXCLAUDE_BASH_SANDBOX_SHOW_INDICATOR
     } else {
-      process.env.CLAUDE_CODE_BASH_SANDBOX_SHOW_INDICATOR =
+      process.env.NYXCLAUDE_BASH_SANDBOX_SHOW_INDICATOR =
         originalSandboxIndicatorFlag
     }
   } finally {
@@ -99,7 +99,7 @@ async function importBashToolWithExecutionMocks() {
 
   const getFeatureValue_CACHED_MAY_BE_STALE = mock(
     <T,>(key: string, fallback: T): T => {
-      if (key === 'tengu_sandbox_disabled_commands') {
+      if (key === 'nyxclaude_sandbox_disabled_commands') {
         return { commands: [], substrings: ['echo'] } as T
       }
       return fallback
@@ -129,7 +129,7 @@ async function importBashToolWithExecutionMocks() {
 async function importSandboxPresentationWithMocks() {
   const getFeatureValue_CACHED_MAY_BE_STALE = mock(
     <T,>(key: string, fallback: T): T => {
-      if (key === 'tengu_sandbox_disabled_commands') {
+      if (key === 'nyxclaude_sandbox_disabled_commands') {
         return { commands: [], substrings: ['echo'] } as T
       }
       return fallback
@@ -149,7 +149,7 @@ async function importSandboxPresentationWithMocks() {
 }
 
 test('execution sandbox decision uses parser analysis for parser-limited commands', async () => {
-  process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK = '1'
+  process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK = '1'
   SandboxManager.isSandboxingEnabled = () => true
   SandboxManager.areUnsandboxedCommandsAllowed = () => true
 
@@ -177,7 +177,7 @@ test('presentation sandbox decision fails closed for parser-limited excluded com
 })
 
 test('sandbox indicator label matches parser-limited execution decision', async () => {
-  process.env.CLAUDE_CODE_BASH_SANDBOX_SHOW_INDICATOR = '1'
+  process.env.NYXCLAUDE_BASH_SANDBOX_SHOW_INDICATOR = '1'
   SandboxManager.isSandboxingEnabled = () => true
   SandboxManager.areUnsandboxedCommandsAllowed = () => true
 

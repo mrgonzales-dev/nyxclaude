@@ -216,7 +216,7 @@ test('github-enterprise launch does not derive Enterprise URL from public Copilo
     processEnv: {},
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_GITHUB, '1')
+  assert.equal(env.NYXCLAUDE_USE_GITHUB, '1')
   assert.equal(env.OPENAI_BASE_URL, 'https://api.githubcopilot.com')
   assert.equal(env.GITHUB_ENTERPRISE_URL, undefined)
 })
@@ -233,7 +233,7 @@ test('github-enterprise launch preserves persisted direct Copilot key', async ()
     processEnv: {},
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_GITHUB, '1')
+  assert.equal(env.NYXCLAUDE_USE_GITHUB, '1')
   assert.equal(env.GITHUB_ENTERPRISE_URL, 'https://github.mycompany.com')
   assert.equal(env.GITHUB_COPILOT_KEY, 'enterprise-profile-key')
 })
@@ -360,7 +360,7 @@ test('openai launch lets live base URL override persisted AIMLAPI route marker',
   const env = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://proxy.example.com/v1',
       OPENAI_MODEL: 'gpt-4o',
       OPENAI_API_KEY: 'persisted-aimlapi-key',
@@ -379,7 +379,7 @@ test('openai launch lets live base URL override persisted AIMLAPI route marker',
   assert.equal(env.AIMLAPI_API_KEY, undefined)
   // The stale aimlapi route marker must be cleared entirely, not just
   // swapped to a different route value.
-  assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, undefined)
+  assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, undefined)
 })
 
 test('openai launch withholds the ambient AIMLAPI key from a keyless proxy profile on restart', async () => {
@@ -389,7 +389,7 @@ test('openai launch withholds the ambient AIMLAPI key from a keyless proxy profi
   const env = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://proxy.example.com/v1',
       OPENAI_MODEL: 'gpt-4o',
     }),
@@ -401,7 +401,7 @@ test('openai launch withholds the ambient AIMLAPI key from a keyless proxy profi
   })
 
   // Still recognized as the aimlapi route...
-  assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, 'aimlapi')
+  assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, 'aimlapi')
   // ...but the ambient canonical credential is withheld from the proxy host.
   assert.equal(env.AIMLAPI_API_KEY, undefined)
 
@@ -409,7 +409,7 @@ test('openai launch withholds the ambient AIMLAPI key from a keyless proxy profi
   const canonical = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://api.aimlapi.com/v1',
       OPENAI_MODEL: 'gpt-4o',
     }),
@@ -433,7 +433,7 @@ test('openai launch withholds the ambient generic OpenAI credential from a keyle
     const env = await buildLaunchEnv({
       profile: 'openai',
       persisted: profile('openai', {
-        CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+        NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
         OPENAI_BASE_URL: 'https://proxy.example.com/v1',
         OPENAI_MODEL: 'gpt-4o',
       }),
@@ -443,7 +443,7 @@ test('openai launch withholds the ambient generic OpenAI credential from a keyle
         ...ambient,
       },
     })
-    assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, 'aimlapi')
+    assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, 'aimlapi')
     assert.equal(env.OPENAI_API_KEY, undefined)
     assert.equal(env.OPENAI_API_KEYS, undefined)
   }
@@ -452,7 +452,7 @@ test('openai launch withholds the ambient generic OpenAI credential from a keyle
   const canonical = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://api.aimlapi.com/v1',
       OPENAI_MODEL: 'gpt-4o',
     }),
@@ -471,7 +471,7 @@ test('openai launch keeps a keyed proxy aimlapi profile own OpenAI credential', 
   const env = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://proxy.example.com/v1',
       OPENAI_MODEL: 'gpt-4o',
       OPENAI_API_KEY: 'profile-own-key',
@@ -497,7 +497,7 @@ test('openai launch keeps the proxy aimlapi guard across equivalent base URL spe
     const env = await buildLaunchEnv({
       profile: 'openai',
       persisted: profile('openai', {
-        CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+        NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
         OPENAI_BASE_URL: 'https://proxy.example.com/v1',
         OPENAI_MODEL: 'gpt-4o',
       }),
@@ -509,7 +509,7 @@ test('openai launch keeps the proxy aimlapi guard across equivalent base URL spe
       },
     })
 
-    assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, 'aimlapi')
+    assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, 'aimlapi')
     assert.equal(env.OPENAI_API_KEY, undefined)
     assert.equal(env.AIMLAPI_API_KEY, undefined)
   }
@@ -527,7 +527,7 @@ test('openai launch does not let a distinct proxy target inherit the saved aimla
     const env = await buildLaunchEnv({
       profile: 'openai',
       persisted: profile('openai', {
-        CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+        NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
         OPENAI_BASE_URL: persistedBaseUrl,
         OPENAI_MODEL: 'gpt-4o',
         OPENAI_API_KEY: 'profile-own-tenant-key',
@@ -543,7 +543,7 @@ test('openai launch does not let a distinct proxy target inherit the saved aimla
       },
     })
 
-    assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, undefined)
+    assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, undefined)
     // The dedicated aimlapi credential rides on the route identity, so a target
     // that cannot inherit the identity never receives it.
     assert.equal(env.AIMLAPI_API_KEY, undefined)
@@ -557,44 +557,44 @@ test('openai launch does not let a distinct proxy target inherit the saved aimla
 })
 
 test('openai launch withholds ambient custom headers from a keyless proxy aimlapi profile', async () => {
-  // ANTHROPIC_CUSTOM_HEADERS reaches the proxy: client.ts merges it into the
+  // NYXCLAUDE_CUSTOM_HEADERS reaches the proxy: client.ts merges it into the
   // defaultHeaders passed to the OpenAI shim client, and its filter only drops
   // the three standard auth header names — a custom-named secret rides through.
   const env = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://proxy.example.com/v1',
       OPENAI_MODEL: 'gpt-4o',
     }),
     goal: 'coding',
     processEnv: {
       OPENAI_BASE_URL: 'https://proxy.example.com/v1',
-      ANTHROPIC_CUSTOM_HEADERS: 'X-Proxy-Auth: ambient-canonical-secret',
+      NYXCLAUDE_CUSTOM_HEADERS: 'X-Proxy-Auth: ambient-canonical-secret',
     },
   })
 
-  assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, 'aimlapi')
-  assert.equal(env.ANTHROPIC_CUSTOM_HEADERS, undefined)
+  assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, 'aimlapi')
+  assert.equal(env.NYXCLAUDE_CUSTOM_HEADERS, undefined)
 
   // Headers the profile itself persisted are the user's own configuration for
   // that proxy, so they survive — and an ambient value cannot override them.
   const owned = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://proxy.example.com/v1',
       OPENAI_MODEL: 'gpt-4o',
-      ANTHROPIC_CUSTOM_HEADERS: 'X-Proxy-Auth: profile-own-proxy-secret',
+      NYXCLAUDE_CUSTOM_HEADERS: 'X-Proxy-Auth: profile-own-proxy-secret',
     }),
     goal: 'coding',
     processEnv: {
       OPENAI_BASE_URL: 'https://proxy.example.com/v1',
-      ANTHROPIC_CUSTOM_HEADERS: 'X-Proxy-Auth: ambient-canonical-secret',
+      NYXCLAUDE_CUSTOM_HEADERS: 'X-Proxy-Auth: ambient-canonical-secret',
     },
   })
   assert.equal(
-    owned.ANTHROPIC_CUSTOM_HEADERS,
+    owned.NYXCLAUDE_CUSTOM_HEADERS,
     'X-Proxy-Auth: profile-own-proxy-secret',
   )
 
@@ -602,17 +602,17 @@ test('openai launch withholds ambient custom headers from a keyless proxy aimlap
   const canonical = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://api.aimlapi.com/v1',
       OPENAI_MODEL: 'gpt-4o',
     }),
     goal: 'coding',
     processEnv: {
       OPENAI_BASE_URL: 'https://api.aimlapi.com/v1',
-      ANTHROPIC_CUSTOM_HEADERS: 'X-Trace: ambient-value',
+      NYXCLAUDE_CUSTOM_HEADERS: 'X-Trace: ambient-value',
     },
   })
-  assert.equal(canonical.ANTHROPIC_CUSTOM_HEADERS, 'X-Trace: ambient-value')
+  assert.equal(canonical.NYXCLAUDE_CUSTOM_HEADERS, 'X-Trace: ambient-value')
 })
 
 test('openai launch withholds ambient credentials from a look-alike canonical path', async () => {
@@ -622,7 +622,7 @@ test('openai launch withholds ambient credentials from a look-alike canonical pa
   const env = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://api.aimlapi.com/v1',
       OPENAI_MODEL: 'gpt-4o',
     }),
@@ -647,7 +647,7 @@ test('openai launch withholds ambient custom auth from a keyless proxy aimlapi p
   const env = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://proxy.example.com/v1',
       OPENAI_MODEL: 'gpt-4o',
     }),
@@ -660,7 +660,7 @@ test('openai launch withholds ambient custom auth from a keyless proxy aimlapi p
     },
   })
 
-  assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, 'aimlapi')
+  assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, 'aimlapi')
   assert.equal(env.OPENAI_AUTH_HEADER, undefined)
   assert.equal(env.OPENAI_AUTH_SCHEME, undefined)
   assert.equal(env.OPENAI_AUTH_HEADER_VALUE, undefined)
@@ -670,7 +670,7 @@ test('openai launch withholds ambient custom auth from a keyless proxy aimlapi p
   const owned = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://proxy.example.com/v1',
       OPENAI_MODEL: 'gpt-4o',
       OPENAI_AUTH_HEADER: 'X-Proxy-Auth',
@@ -691,7 +691,7 @@ test('openai launch withholds ambient custom auth from a keyless proxy aimlapi p
   const canonical = await buildLaunchEnv({
     profile: 'openai',
     persisted: profile('openai', {
-      CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+      NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
       OPENAI_BASE_URL: 'https://api.aimlapi.com/v1',
       OPENAI_MODEL: 'gpt-4o',
     }),
@@ -715,7 +715,7 @@ test('xai launch uses descriptor defaults and persisted xAI key', async () => {
     processEnv: {},
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(env.OPENAI_BASE_URL, 'https://api.x.ai/v1')
   assert.equal(env.OPENAI_MODEL, 'grok-4.3')
   assert.equal(env.OPENAI_API_KEY, 'xai-persisted-key')
@@ -735,7 +735,7 @@ test('xai launch lets shell xAI key override persisted xAI key', async () => {
     },
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(env.OPENAI_BASE_URL, 'https://api.x.ai/v1')
   assert.equal(env.OPENAI_MODEL, 'grok-3')
   assert.equal(env.OPENAI_API_KEY, 'xai-shell-key')
@@ -784,7 +784,7 @@ test('buildStartupEnvFromProfile defaults fresh installs to Gitlawb Opengateway'
     processEnv: {},
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(env.OPENAI_BASE_URL, 'https://opengateway.gitlawb.com/v1')
   assert.equal(env.OPENAI_MODEL, 'mimo-v2.5-pro')
   assert.equal(isDefaultStartupProviderEnv(env), true)
@@ -843,7 +843,7 @@ test('applyStartupEnvFromProfile still warns when a genuinely saved profile fail
 
 test('applyStartupEnvFromProfile warns for a saved Opengateway-shaped profile even when the default-startup marker leaks in from a parent process', async () => {
   // Collision guard: a persisted profile's launch env spreads processEnv, so
-  // a CLAUDE_CODE_DEFAULT_STARTUP_PROVIDER marker inherited from a parent CLI
+  // a NYXCLAUDE_DEFAULT_STARTUP_PROVIDER marker inherited from a parent CLI
   // process can make the saved profile's env indistinguishable from the
   // injected fresh-install default by marker-sniffing alone. Provenance
   // (persisted !== null) must win: this saved-but-invalid profile warns.
@@ -886,7 +886,7 @@ test('applyStartupEnvFromProfile applies valid startup env (issue #1651)', async
 
   assert.equal(error, null)
   assert.deepEqual(warnings, [])
-  assert.equal(processEnv.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(processEnv.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(processEnv.OPENAI_BASE_URL, 'https://opengateway.gitlawb.com/v1')
   assert.equal(processEnv.OPENAI_MODEL, 'mimo-v2.5-pro')
   assert.equal(processEnv.OPENGATEWAY_API_KEY, 'test-key')
@@ -896,14 +896,14 @@ test('buildStartupEnvFromProfile preserves explicit OpenAI-compatible env withou
   const env = await buildStartupEnvFromProfile({
     persisted: null,
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_API_KEY: 'sk-live',
       OPENAI_BASE_URL: 'http://common.example.com/v1',
       OPENAI_MODEL: 'gemma-4-31B-it',
     },
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(env.OPENAI_API_KEY, 'sk-live')
   assert.equal(env.OPENAI_BASE_URL, 'http://common.example.com/v1')
   assert.equal(env.OPENAI_MODEL, 'gemma-4-31B-it')
@@ -930,8 +930,8 @@ test('buildStartupEnvFromProfile preserves concrete env-only NIM setup over stal
   })
 
   assert.notEqual(env, processEnv)
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
-  assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, 'nvidia-nim')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, 'nvidia-nim')
   assert.equal(env.OPENAI_MODEL, 'qwen/qwen3.5-397b-a17b')
   assert.equal(env.OPENAI_BASE_URL, 'https://integrate.api.nvidia.com/v1')
   assert.equal(env.NVIDIA_API_KEY, 'nvapi-live')
@@ -949,8 +949,8 @@ test('buildStartupEnvFromProfile does not activate non-NIM env-only OpenAI-compa
     },
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
-  assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, undefined)
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, undefined)
   assert.equal(env.OPENAI_BASE_URL, 'https://opengateway.gitlawb.com/v1')
   assert.equal(env.OPENAI_MODEL, 'mimo-v2.5-pro')
   assert.equal(env.OPENAI_API_KEY, undefined)
@@ -974,9 +974,9 @@ test('buildStartupEnvFromProfile documents no-flag Gemini env does not beat conc
   })
 
   assert.notEqual(env, processEnv)
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
-  assert.equal(env.CLAUDE_CODE_USE_GEMINI, undefined)
-  assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, 'nvidia-nim')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_USE_GEMINI, undefined)
+  assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, 'nvidia-nim')
   assert.equal(env.GEMINI_API_KEY, undefined)
   assert.equal(env.OPENAI_MODEL, 'qwen/qwen3.5-397b-a17b')
   assert.equal(resolveActiveRouteIdFromEnv(env), 'nvidia-nim')
@@ -984,7 +984,7 @@ test('buildStartupEnvFromProfile documents no-flag Gemini env does not beat conc
 
 test('buildStartupEnvFromProfile preserves explicit OpenAI opt-out over concrete env-only NIM setup', async () => {
   const processEnv: NodeJS.ProcessEnv = {
-    CLAUDE_CODE_USE_OPENAI: '0',
+    NYXCLAUDE_USE_OPENAI: '0',
     OPENAI_BASE_URL: 'https://integrate.api.nvidia.com/v1',
     OPENAI_MODEL: 'qwen/qwen3.5-397b-a17b',
     NVIDIA_API_KEY: 'nvapi-live',
@@ -997,14 +997,14 @@ test('buildStartupEnvFromProfile preserves explicit OpenAI opt-out over concrete
   })
 
   assert.equal(env, processEnv)
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '0')
-  assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, undefined)
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '0')
+  assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, undefined)
   assert.equal(isDefaultStartupProviderEnv(env), false)
 })
 
 test('buildStartupEnvFromProfile preserves explicit Gemini selection over concrete env-only NIM setup', async () => {
   const processEnv: NodeJS.ProcessEnv = {
-    CLAUDE_CODE_USE_GEMINI: '1',
+    NYXCLAUDE_USE_GEMINI: '1',
     GEMINI_API_KEY: 'gemini-live',
     GEMINI_MODEL: 'gemini-2.5-flash',
     OPENAI_BASE_URL: 'https://integrate.api.nvidia.com/v1',
@@ -1019,24 +1019,24 @@ test('buildStartupEnvFromProfile preserves explicit Gemini selection over concre
   })
 
   assert.equal(env, processEnv)
-  assert.equal(env.CLAUDE_CODE_USE_GEMINI, '1')
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
-  assert.equal(env.CLAUDE_CODE_PROVIDER_ROUTE_ID, undefined)
+  assert.equal(env.NYXCLAUDE_USE_GEMINI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
+  assert.equal(env.NYXCLAUDE_PROVIDER_ROUTE_ID, undefined)
   assert.equal(resolveActiveRouteIdFromEnv(env), 'gemini')
   assert.equal(isDefaultStartupProviderEnv(env), false)
 })
 
-test('buildStartupEnvFromProfile respects an explicit CLAUDE_CODE_USE_OPENAI=0 opt-out (issue #1245)', async () => {
+test('buildStartupEnvFromProfile respects an explicit NYXCLAUDE_USE_OPENAI=0 opt-out (issue #1245)', async () => {
   const env = await buildStartupEnvFromProfile({
     persisted: null,
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '0',
+      NYXCLAUDE_USE_OPENAI: '0',
     },
   })
 
   // The explicit opt-out must be preserved and the default Opengateway
   // profile must NOT be injected over it.
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '0')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '0')
   assert.equal(env.OPENAI_BASE_URL, undefined)
   assert.equal(env.OPENAI_MODEL, undefined)
   assert.equal(isDefaultStartupProviderEnv(env), false)
@@ -1056,7 +1056,7 @@ test('buildStartupEnvFromProfile preserves env-only Fireworks setup without a sa
 
   // Must NOT fall through to Gitlawb Opengateway default
   assert.equal(env.FIREWORKS_API_KEY, 'fw-key')
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
   assert.equal(
     env.OPENAI_BASE_URL,
     undefined,
@@ -1146,8 +1146,8 @@ test('matching persisted gemini env is reused for gemini launch', async () => {
     processEnv: {},
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_GEMINI, '1')
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
+  assert.equal(env.NYXCLAUDE_USE_GEMINI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
   assert.equal(env.GEMINI_MODEL, 'gemini-2.5-flash')
   assert.equal(env.GEMINI_API_KEY, 'gem-persisted')
   assert.equal(env.GEMINI_BASE_URL, 'https://example.test/v1beta/openai')
@@ -1170,12 +1170,12 @@ test('openai env variables take precedence over gemini', async () => {
       OPENAI_MODEL: 'gpt-4o-mini',
       CODEX_API_KEY: 'codex-live',
       CHATGPT_ACCOUNT_ID: 'acct_live',
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
     },
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_GEMINI, undefined) 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_USE_GEMINI, undefined) 
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(env.GEMINI_MODEL, undefined)
   assert.equal(env.GEMINI_API_KEY, undefined)
   assert.equal(
@@ -1561,11 +1561,11 @@ test('saveProfileFile defaults to user config instead of the working directory',
   const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-workspace-profile-'))
   const configRoot = mkdtempSync(join(tmpdir(), 'nyxclaude-config-profile-'))
   const configDir = join(configRoot, 'config')
-  const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const previousConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
   try {
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
     process.chdir(cwd)
 
     const persisted = createProfileFile('openai', {
@@ -1587,9 +1587,9 @@ test('saveProfileFile defaults to user config instead of the working directory',
   } finally {
     process.chdir(previousCwd)
     if (previousConfigDir === undefined) {
-      delete process.env.CLAUDE_CONFIG_DIR
+      delete process.env.NYXCLAUDE_CONFIG_DIR
     } else {
-      process.env.CLAUDE_CONFIG_DIR = previousConfigDir
+      process.env.NYXCLAUDE_CONFIG_DIR = previousConfigDir
     }
     rmSync(cwd, { recursive: true, force: true })
     rmSync(configRoot, { recursive: true, force: true })
@@ -1599,11 +1599,11 @@ test('saveProfileFile defaults to user config instead of the working directory',
 test('loadProfileFile keeps project-local files as a legacy fallback', async () => {
   const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-legacy-profile-'))
   const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-empty-config-profile-'))
-  const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const previousConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
   try {
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
     process.chdir(cwd)
 
     const legacyProfile = createProfileFile('gemini', {
@@ -1620,9 +1620,9 @@ test('loadProfileFile keeps project-local files as a legacy fallback', async () 
   } finally {
     process.chdir(previousCwd)
     if (previousConfigDir === undefined) {
-      delete process.env.CLAUDE_CONFIG_DIR
+      delete process.env.NYXCLAUDE_CONFIG_DIR
     } else {
-      process.env.CLAUDE_CONFIG_DIR = previousConfigDir
+      process.env.NYXCLAUDE_CONFIG_DIR = previousConfigDir
     }
     rmSync(cwd, { recursive: true, force: true })
     rmSync(configDir, { recursive: true, force: true })
@@ -1632,11 +1632,11 @@ test('loadProfileFile keeps project-local files as a legacy fallback', async () 
 test('loadProfileFile does not fall back when user config profile is invalid', async () => {
   const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-invalid-profile-'))
   const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-invalid-config-profile-'))
-  const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const previousConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
   try {
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
     process.chdir(cwd)
 
     const legacyProfile = createProfileFile('gemini', {
@@ -1654,9 +1654,9 @@ test('loadProfileFile does not fall back when user config profile is invalid', a
   } finally {
     process.chdir(previousCwd)
     if (previousConfigDir === undefined) {
-      delete process.env.CLAUDE_CONFIG_DIR
+      delete process.env.NYXCLAUDE_CONFIG_DIR
     } else {
-      process.env.CLAUDE_CONFIG_DIR = previousConfigDir
+      process.env.NYXCLAUDE_CONFIG_DIR = previousConfigDir
     }
     rmSync(cwd, { recursive: true, force: true })
     rmSync(configDir, { recursive: true, force: true })
@@ -1666,11 +1666,11 @@ test('loadProfileFile does not fall back when user config profile is invalid', a
 test('deleteProfileFile clears the default profile and legacy workspace fallback', async () => {
   const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-delete-profile-'))
   const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-delete-config-profile-'))
-  const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const previousConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
   try {
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
     process.chdir(cwd)
 
     const configProfile = createProfileFile('openai', {
@@ -1696,9 +1696,9 @@ test('deleteProfileFile clears the default profile and legacy workspace fallback
   } finally {
     process.chdir(previousCwd)
     if (previousConfigDir === undefined) {
-      delete process.env.CLAUDE_CONFIG_DIR
+      delete process.env.NYXCLAUDE_CONFIG_DIR
     } else {
-      process.env.CLAUDE_CONFIG_DIR = previousConfigDir
+      process.env.NYXCLAUDE_CONFIG_DIR = previousConfigDir
     }
     rmSync(cwd, { recursive: true, force: true })
     rmSync(configDir, { recursive: true, force: true })
@@ -1708,11 +1708,11 @@ test('deleteProfileFile clears the default profile and legacy workspace fallback
 test('deleteProfileFile with configDir and cwd clears both user config and legacy fallback', () => {
   const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-delete-mixed-profile-'))
   const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-delete-mixed-config-profile-'))
-  const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const previousConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
   try {
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
     process.chdir(cwd)
 
     const configProfile = createProfileFile('openai', {
@@ -1738,9 +1738,9 @@ test('deleteProfileFile with configDir and cwd clears both user config and legac
   } finally {
     process.chdir(previousCwd)
     if (previousConfigDir === undefined) {
-      delete process.env.CLAUDE_CONFIG_DIR
+      delete process.env.NYXCLAUDE_CONFIG_DIR
     } else {
-      process.env.CLAUDE_CONFIG_DIR = previousConfigDir
+      process.env.NYXCLAUDE_CONFIG_DIR = previousConfigDir
     }
     rmSync(cwd, { recursive: true, force: true })
     rmSync(configDir, { recursive: true, force: true })
@@ -1820,11 +1820,11 @@ test('clearPersistedCodexOAuthProfile removes only persisted Codex OAuth profile
 test('clearPersistedCodexOAuthProfile clears both default and legacy OAuth profiles', async () => {
   const cwd = mkdtempSync(join(tmpdir(), 'nyxclaude-clear-oauth-profile-'))
   const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-clear-oauth-config-'))
-  const previousConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const previousConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const previousCwd = process.cwd()
 
   try {
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
     process.chdir(cwd)
 
     const {
@@ -1860,9 +1860,9 @@ test('clearPersistedCodexOAuthProfile clears both default and legacy OAuth profi
   } finally {
     process.chdir(previousCwd)
     if (previousConfigDir === undefined) {
-      delete process.env.CLAUDE_CONFIG_DIR
+      delete process.env.NYXCLAUDE_CONFIG_DIR
     } else {
-      process.env.CLAUDE_CONFIG_DIR = previousConfigDir
+      process.env.NYXCLAUDE_CONFIG_DIR = previousConfigDir
     }
     rmSync(cwd, { recursive: true, force: true })
     rmSync(configDir, { recursive: true, force: true })
@@ -1878,8 +1878,8 @@ test('buildStartupEnvFromProfile applies persisted gemini settings when no provi
     processEnv: {},
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_GEMINI, '1')
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
+  assert.equal(env.NYXCLAUDE_USE_GEMINI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
   assert.equal(env.GEMINI_API_KEY, 'gem-test')
   assert.equal(env.GEMINI_MODEL, 'gemini-2.5-flash')
 })
@@ -1890,7 +1890,7 @@ test('buildStartupEnvFromProfile restores a persisted custom Anthropic Bearer to
       ANTHROPIC_BASE_URL: 'https://anthropic-proxy.example/v1',
       ANTHROPIC_MODEL: 'claude-proxy-model',
       ANTHROPIC_AUTH_TOKEN: 'persisted-proxy-token',
-      ANTHROPIC_CUSTOM_HEADERS: 'X-Tenant: example',
+      NYXCLAUDE_CUSTOM_HEADERS: 'X-Tenant: example',
     }),
     processEnv: {},
   })
@@ -1899,7 +1899,7 @@ test('buildStartupEnvFromProfile restores a persisted custom Anthropic Bearer to
   assert.equal(env.ANTHROPIC_MODEL, 'claude-proxy-model')
   assert.equal(env.ANTHROPIC_AUTH_TOKEN, 'persisted-proxy-token')
   assert.equal(env.ANTHROPIC_API_KEY, undefined)
-  assert.equal(env.ANTHROPIC_CUSTOM_HEADERS, 'X-Tenant: example')
+  assert.equal(env.NYXCLAUDE_CUSTOM_HEADERS, 'X-Tenant: example')
 })
 
 test('buildStartupEnvFromProfile does not leak a stray API key into a persisted custom Anthropic Bearer profile', async () => {
@@ -1925,7 +1925,7 @@ test('buildStartupEnvFromProfile preserves explicit custom Anthropic environment
   const env = await buildStartupEnvFromProfile({ persisted: null, processEnv })
 
   assert.equal(env, processEnv)
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
   assert.equal(env.ANTHROPIC_AUTH_TOKEN, 'env-proxy-token')
 })
 
@@ -1938,7 +1938,7 @@ test('buildStartupEnvFromProfile preserves custom Anthropic x-api-key setup', as
   const env = await buildStartupEnvFromProfile({ persisted: null, processEnv })
 
   assert.equal(env, processEnv)
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
   assert.equal(env.ANTHROPIC_API_KEY, 'env-proxy-key')
 })
 
@@ -1952,7 +1952,7 @@ test('buildStartupEnvFromProfile rehydrates stored Gemini access token for acces
     readGeminiAccessToken: () => 'token-live',
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_GEMINI, '1')
+  assert.equal(env.NYXCLAUDE_USE_GEMINI, '1')
   assert.equal(env.GEMINI_AUTH_MODE, 'access-token')
   assert.equal(env.GEMINI_ACCESS_TOKEN, 'token-live')
   assert.equal(env.GEMINI_API_KEY, undefined)
@@ -1969,7 +1969,7 @@ test('buildStartupEnvFromProfile does not inject stored access token for adc pro
     readGeminiAccessToken: () => 'token-live',
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_GEMINI, '1')
+  assert.equal(env.NYXCLAUDE_USE_GEMINI, '1')
   assert.equal(env.GEMINI_AUTH_MODE, 'adc')
   assert.equal(env.GEMINI_ACCESS_TOKEN, undefined)
   assert.equal(env.GEMINI_API_KEY, undefined)
@@ -1977,7 +1977,7 @@ test('buildStartupEnvFromProfile does not inject stored access token for adc pro
 
 test('buildStartupEnvFromProfile leaves explicit provider selections untouched', async () => {
   const processEnv: NodeJS.ProcessEnv = {
-    CLAUDE_CODE_USE_GEMINI: '1',
+    NYXCLAUDE_USE_GEMINI: '1',
     GEMINI_API_KEY: 'gem-live',
     GEMINI_MODEL: 'gemini-2.0-flash',
   }
@@ -1990,7 +1990,7 @@ test('buildStartupEnvFromProfile leaves explicit provider selections untouched',
     processEnv,
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_GEMINI, '1')
+  assert.equal(env.NYXCLAUDE_USE_GEMINI, '1')
   assert.equal(env.GEMINI_API_KEY, 'gem-live')
   assert.equal(env.GEMINI_MODEL, 'gemini-2.0-flash')
   assert.equal(env.GEMINI_BASE_URL, undefined)
@@ -2020,7 +2020,7 @@ test('legacy openai saved profiles still deserialize and rebuild startup env', a
       processEnv: {},
     })
 
-    assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+    assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
     assert.equal(env.OPENAI_BASE_URL, 'https://api.openai.com/v1')
     assert.equal(env.OPENAI_MODEL, 'gpt-4o')
     assert.equal(env.OPENAI_API_KEY, 'sk-legacy-live')
@@ -2051,7 +2051,7 @@ test('legacy openai saved profiles preserve OPENAI_API_KEYS during startup rebui
       processEnv: {},
     })
 
-    assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+    assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
     assert.equal(env.OPENAI_BASE_URL, 'https://api.openai.com/v1')
     assert.equal(env.OPENAI_MODEL, 'gpt-4o')
     assert.equal(env.OPENAI_API_KEYS, 'key-a,key-b')
@@ -2136,7 +2136,7 @@ test('legacy anthropic saved profiles still deserialize and rebuild startup env'
       processEnv: {},
     })
 
-    assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
+    assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
     assert.equal(env.ANTHROPIC_BASE_URL, 'https://api.anthropic.com')
     assert.equal(env.ANTHROPIC_MODEL, 'claude-sonnet-4-6')
     assert.equal(env.ANTHROPIC_API_KEY, 'sk-ant-live')
@@ -2166,13 +2166,13 @@ test('bedrock persisted profiles load and rebuild the dedicated startup env', as
       processEnv: {},
     })
 
-    assert.equal(env.CLAUDE_CODE_USE_BEDROCK, '1')
+    assert.equal(env.NYXCLAUDE_USE_BEDROCK, '1')
     assert.equal(env.ANTHROPIC_MODEL, 'claude-sonnet-4-6')
     assert.equal(
       env.ANTHROPIC_BEDROCK_BASE_URL,
       'https://bedrock-proxy.example',
     )
-    assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
+    assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
   } finally {
     rmSync(tempDir, { recursive: true, force: true })
   }
@@ -2180,7 +2180,7 @@ test('bedrock persisted profiles load and rebuild the dedicated startup env', as
 
 test('buildStartupEnvFromProfile preserves explicit GitHub provider settings when the legacy file is stale', async () => {
   const processEnv: NodeJS.ProcessEnv = {
-    CLAUDE_CODE_USE_GITHUB: '1',
+    NYXCLAUDE_USE_GITHUB: '1',
     OPENAI_MODEL: 'github:copilot',
   }
 
@@ -2194,9 +2194,9 @@ test('buildStartupEnvFromProfile preserves explicit GitHub provider settings whe
   })
 
   assert.equal(env, processEnv)
-  assert.equal(env.CLAUDE_CODE_USE_GITHUB, '1')
+  assert.equal(env.NYXCLAUDE_USE_GITHUB, '1')
   assert.equal(env.OPENAI_MODEL, 'github:copilot')
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
   assert.equal(env.OPENAI_API_KEY, undefined)
   assert.equal(env.OPENAI_BASE_URL, undefined)
 })
@@ -2204,7 +2204,7 @@ test('buildStartupEnvFromProfile preserves explicit GitHub provider settings whe
 test('applySavedProfileToCurrentSession can switch away from GitHub provider env', async () => {
   const { applySavedProfileToCurrentSession } = await importFreshProviderProfileModule()
   const processEnv: NodeJS.ProcessEnv = {
-    CLAUDE_CODE_USE_GITHUB: '1',
+    NYXCLAUDE_USE_GITHUB: '1',
     OPENAI_MODEL: 'github:copilot',
   }
 
@@ -2217,8 +2217,8 @@ test('applySavedProfileToCurrentSession can switch away from GitHub provider env
   })
 
   assert.equal(error, null)
-  assert.equal(processEnv.CLAUDE_CODE_USE_GITHUB, undefined)
-  assert.equal(processEnv.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(processEnv.NYXCLAUDE_USE_GITHUB, undefined)
+  assert.equal(processEnv.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(processEnv.OPENAI_BASE_URL, 'http://localhost:11434/v1')
   assert.equal(processEnv.OPENAI_MODEL, 'llama3.1:8b')
   assert.equal(Object.hasOwn(processEnv, 'OPENAI_API_KEY'), false)
@@ -2227,9 +2227,9 @@ test('applySavedProfileToCurrentSession can switch away from GitHub provider env
 test('applySavedProfileToCurrentSession replaces empty active OpenAI key for Codex OAuth', async () => {
   const { applySavedProfileToCurrentSession } = await importFreshProviderProfileModule()
   const processEnv: NodeJS.ProcessEnv = {
-    CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED: '1',
-    CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID: 'provider_codex_oauth',
-    CLAUDE_CODE_USE_OPENAI: '1',
+    NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED: '1',
+    NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID: 'provider_codex_oauth',
+    NYXCLAUDE_USE_OPENAI: '1',
     OPENAI_BASE_URL: DEFAULT_CODEX_BASE_URL,
     OPENAI_MODEL: 'codexplan',
     OPENAI_API_KEY: '',
@@ -2246,7 +2246,7 @@ test('applySavedProfileToCurrentSession replaces empty active OpenAI key for Cod
   })
 
   assert.equal(error, null)
-  assert.equal(processEnv.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(processEnv.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(processEnv.OPENAI_BASE_URL, DEFAULT_CODEX_BASE_URL)
   assert.equal(processEnv.OPENAI_MODEL, 'codexplan')
   assert.equal(Object.hasOwn(processEnv, 'OPENAI_API_KEY'), false)
@@ -2260,13 +2260,13 @@ test('buildStartupEnvFromProfile preserves plural-profile env when the legacy fi
   // so the legacy file retains whatever it had from an earlier setup (e.g.
   // OpenAI defaults). At startup, applyActiveProviderProfileFromConfig()
   // correctly applies the active plural profile (Moonshot) first, marking
-  // env with CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED=1. The legacy-file
+  // env with NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED=1. The legacy-file
   // load must NOT overwrite that env — it previously did, surfacing as
   // "banner shows the wrong provider / model".
   const processEnv = {
-    CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED: '1',
-    CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID: 'saved_moonshot',
-    CLAUDE_CODE_USE_OPENAI: '1',
+    NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED: '1',
+    NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID: 'saved_moonshot',
+    NYXCLAUDE_USE_OPENAI: '1',
     OPENAI_BASE_URL: 'https://api.moonshot.ai/v1',
     OPENAI_MODEL: 'kimi-k2.6',
   }
@@ -2287,13 +2287,13 @@ test('buildStartupEnvFromProfile preserves plural-profile env when the legacy fi
   assert.equal(env.OPENAI_MODEL, 'kimi-k2.6')
   // Plural markers are retained — downstream code uses them to verify the
   // env still belongs to the profile it was applied from.
-  assert.equal(env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED, '1')
-  assert.equal(env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID, 'saved_moonshot')
+  assert.equal(env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED, '1')
+  assert.equal(env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID, 'saved_moonshot')
 })
 
 test('buildStartupEnvFromProfile ignores the legacy file when startup already has concrete env', async () => {
   const processEnv: NodeJS.ProcessEnv = {
-    CLAUDE_CODE_USE_OPENAI: '1',
+    NYXCLAUDE_USE_OPENAI: '1',
     OPENAI_BASE_URL: 'https://api.moonshot.ai/v1',
     OPENAI_MODEL: 'kimi-k2.6',
   }
@@ -2318,7 +2318,7 @@ test('buildStartupEnvFromProfile falls back to legacy file when plural system ha
   // active profile yet). The legacy file is the correct source, so the
   // load must proceed as before.
   const processEnv = {
-    CLAUDE_CODE_USE_OPENAI: '1',
+    NYXCLAUDE_USE_OPENAI: '1',
   }
 
   const env = await buildStartupEnvFromProfile({
@@ -2338,7 +2338,7 @@ test('buildStartupEnvFromProfile falls back to legacy file when plural system ha
 
 test('buildStartupEnvFromProfile falls back to the legacy file when startup env is incomplete', async () => {
   const processEnv = {
-    CLAUDE_CODE_USE_OPENAI: '1',
+    NYXCLAUDE_USE_OPENAI: '1',
   }
 
   const env = await buildStartupEnvFromProfile({
@@ -2358,7 +2358,7 @@ test('buildStartupEnvFromProfile falls back to the legacy file when startup env 
 
 test('buildStartupEnvFromProfile ignores falsey provider flags when deciding whether startup env is concrete', async () => {
   const processEnv = {
-    CLAUDE_CODE_USE_OPENAI: '0',
+    NYXCLAUDE_USE_OPENAI: '0',
     OPENAI_BASE_URL: 'https://api.stale.example/v1',
     OPENAI_MODEL: 'stale-model',
   }
@@ -2378,7 +2378,7 @@ test('buildStartupEnvFromProfile ignores falsey provider flags when deciding whe
 
 test('buildStartupEnvFromProfile treats explicit falsey provider flags as user intent', async () => {
   const processEnv = {
-    CLAUDE_CODE_USE_OPENAI: '0',
+    NYXCLAUDE_USE_OPENAI: '0',
   }
 
   const env = await buildStartupEnvFromProfile({
@@ -2389,8 +2389,8 @@ test('buildStartupEnvFromProfile treats explicit falsey provider flags as user i
     processEnv,
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, undefined)
-  assert.equal(env.CLAUDE_CODE_USE_GEMINI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, undefined)
+  assert.equal(env.NYXCLAUDE_USE_GEMINI, '1')
   assert.equal(env.GEMINI_API_KEY, 'gem-persisted')
   assert.equal(env.GEMINI_MODEL, 'gemini-2.5-flash')
   assert.equal(env.GEMINI_BASE_URL, 'https://generativelanguage.googleapis.com/v1beta/openai')
@@ -2681,7 +2681,7 @@ test('startup env ignores poisoned persisted openai model and base url', async (
     processEnv: {},
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(env.OPENAI_API_KEY, 'sk-live')
   assert.equal(env.OPENAI_MODEL, 'gpt-5.5')
   assert.equal(env.OPENAI_BASE_URL, 'https://api.openai.com/v1')
@@ -2697,7 +2697,7 @@ test('startup env normalizes a semicolon-separated persisted openai model list',
     processEnv: {},
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(env.OPENAI_API_KEY, 'sk-live')
   assert.equal(env.OPENAI_MODEL, 'gpt-5.4')
   assert.equal(env.OPENAI_BASE_URL, 'https://api.openai.com/v1')
@@ -2710,15 +2710,15 @@ test('startup env preserves persisted openai context-window override', async () 
       OPENAI_API_KEY: 'sk-live',
       OPENAI_MODEL: 'gpt-4o',
       OPENAI_BASE_URL: 'https://api.openai.com/v1',
-      CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS: override,
+      NYXCLAUDE_OPENAI_CONTEXT_WINDOWS: override,
     }),
     processEnv: {},
   })
 
-  assert.equal(env.CLAUDE_CODE_USE_OPENAI, '1')
+  assert.equal(env.NYXCLAUDE_USE_OPENAI, '1')
   assert.equal(env.OPENAI_MODEL, 'gpt-4o')
   assert.equal(env.OPENAI_BASE_URL, 'https://api.openai.com/v1')
-  assert.equal(env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS, override)
+  assert.equal(env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS, override)
 })
 
 test('auto profile falls back to openai when no viable ollama model exists', () => {

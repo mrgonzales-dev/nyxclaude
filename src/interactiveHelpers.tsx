@@ -255,7 +255,7 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
   // check runs. This flag only skips the allowlist gate for development
   // entries, not the auth or policy gates.
   if (feature('KAIROS') || feature('KAIROS_CHANNELS')) {
-    // gateChannelServer and ChannelsNotice read tengu_harbor after this
+    // gateChannelServer and ChannelsNotice read nyxclaude_harbor after this
     // function returns. A cold disk cache (fresh install, or first run after
     // the flag was added server-side) defaults to false and silently drops
     // channel notifications for the whole session — gh#37026.
@@ -264,7 +264,7 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
     // initializeGrowthBook promise fired earlier). Also warms the
     // isChannelsEnabled() check in the dev-channels dialog below.
     if (getAllowedChannels().length > 0 || (devChannels?.length ?? 0) > 0) {
-      await checkGate_CACHED_OR_BLOCKING('tengu_harbor');
+      await checkGate_CACHED_OR_BLOCKING('nyxclaude_harbor');
     }
     if (devChannels && devChannels.length > 0) {
       // gateChannelServer() still enforces the OAuth and org-policy gates
@@ -326,7 +326,7 @@ export function getRenderContext(exitOnCtrlC: boolean): {
 
   // Log analytics event when stdin override is active
   if (baseOptions.stdin) {
-    logEvent('tengu_stdin_interactive', {});
+    logEvent('nyxclaude_stdin_interactive', {});
   }
   const fpsTracker = new FpsTracker();
   const stats = createStatsStore();
@@ -336,7 +336,7 @@ export function getRenderContext(exitOnCtrlC: boolean): {
   // offline analysis by bench/repl-scroll.ts. Captures the full TUI
   // render pipeline (yoga → screen buffer → diff → optimize → stdout)
   // so perf work on any phase can be validated against real user flows.
-  const frameTimingLogPath = process.env.CLAUDE_CODE_FRAME_TIMING_LOG;
+  const frameTimingLogPath = process.env.NYXCLAUDE_FRAME_TIMING_LOG;
   return {
     getFpsMetrics: () => fpsTracker.getMetrics(),
     stats,
@@ -371,7 +371,7 @@ export function getRenderContext(exitOnCtrlC: boolean): {
           }
           const now = Date.now();
           if (now - lastFlickerTime < 1000) {
-            logEvent('tengu_flicker', {
+            logEvent('nyxclaude_flicker', {
               desiredHeight: flicker.desiredHeight,
               actualHeight: flicker.availableHeight,
               reason: flicker.reason

@@ -12,18 +12,18 @@ import type { OptionWithDescription } from '../../CustomSelect/select.js';
  * Check if a path is within the project's .nyxclaude/ folder.
  * This is used to determine whether to show the special Nyxclaude folder permission option.
  */
-export function isInClaudeFolder(filePath: string): boolean {
+export function isInNyxclaudeFolder(filePath: string): boolean {
   const absolutePath = expandPath(filePath);
-  const claudeFolderPath = expandPath(`${getOriginalCwd()}/.nyxclaude`);
+  const nyxclaudeFolderPath = expandPath(`${getOriginalCwd()}/.nyxclaude`);
 
   // Check if the path is within the project's .nyxclaude folder
   const normalizedAbsolutePath = normalizeCaseForComparison(absolutePath);
-  const normalizedClaudeFolderPath = normalizeCaseForComparison(claudeFolderPath);
+  const normalizedNyxnyxclaudeFolderPath = normalizeCaseForComparison(nyxclaudeFolderPath);
 
   // Path must start with the .nyxclaude folder path (and be inside it, not just the folder itself)
-  return normalizedAbsolutePath.startsWith(normalizedClaudeFolderPath + sep.toLowerCase()) ||
+  return normalizedAbsolutePath.startsWith(normalizedNyxnyxclaudeFolderPath + sep.toLowerCase()) ||
   // Also match case where sep is / on posix systems
-  normalizedAbsolutePath.startsWith(normalizedClaudeFolderPath + '/');
+  normalizedAbsolutePath.startsWith(normalizedNyxnyxclaudeFolderPath + '/');
 }
 
 /**
@@ -31,21 +31,21 @@ export function isInClaudeFolder(filePath: string): boolean {
  * This is used to determine whether to show the special Nyxclaude folder permission option
  * for files in the user's home directory.
  */
-export function isInGlobalClaudeFolder(filePath: string): boolean {
+export function isInGlobalNyxclaudeFolder(filePath: string): boolean {
   const absolutePath = expandPath(filePath);
   const normalizedAbsolutePath = normalizeCaseForComparison(absolutePath);
-  const globalClaudeFolderPaths = [expandPath('~/.nyxclaude')];
+  const globalNyxnyxclaudeFolderPaths = [expandPath('~/.nyxclaude')];
 
-  return globalClaudeFolderPaths.some(globalClaudeFolderPath => {
-    const normalizedGlobalClaudeFolderPath = normalizeCaseForComparison(globalClaudeFolderPath);
-    return normalizedAbsolutePath.startsWith(normalizedGlobalClaudeFolderPath + sep.toLowerCase()) || normalizedAbsolutePath.startsWith(normalizedGlobalClaudeFolderPath + '/');
+  return globalNyxnyxclaudeFolderPaths.some(globalNyxnyxclaudeFolderPath => {
+    const normalizedGlobalNyxnyxclaudeFolderPath = normalizeCaseForComparison(globalNyxnyxclaudeFolderPath);
+    return normalizedAbsolutePath.startsWith(normalizedGlobalNyxnyxclaudeFolderPath + sep.toLowerCase()) || normalizedAbsolutePath.startsWith(normalizedGlobalNyxnyxclaudeFolderPath + '/');
   });
 }
 export type PermissionOption = {
   type: 'accept-once';
 } | {
   type: 'accept-session';
-  scope?: 'claude-folder' | 'global-claude-folder';
+  scope?: 'nyxclaude-folder' | 'global-nyxnyxclaude-folder';
 } | {
   type: 'accept-full-access';
 } | {
@@ -102,20 +102,20 @@ export function getFilePermissionOptions({
   const showFullAccessOption = toolPermissionContext.isBypassPermissionsModeAvailable;
 
   // Check if this is a .nyxclaude/ folder path (project or global)
-  const inClaudeFolder = isInClaudeFolder(filePath);
-  const inGlobalClaudeFolder = isInGlobalClaudeFolder(filePath);
+  const inNyxclaudeFolder = isInNyxclaudeFolder(filePath);
+  const inGlobalNyxclaudeFolder = isInGlobalNyxclaudeFolder(filePath);
 
   // Option 2: For .nyxclaude/ folder, show special option instead of generic session option
   // Note: Session-level options are always shown since they only affect in-memory state,
   // not persisted settings. The allowManagedPermissionRulesOnly setting only restricts
   // persisted permission rules.
-  if ((inClaudeFolder || inGlobalClaudeFolder) && operationType !== 'read') {
+  if ((inNyxclaudeFolder || inGlobalNyxclaudeFolder) && operationType !== 'read') {
     options.push({
       label: `Yes, and allow ${PRODUCT_DISPLAY_NAME} to edit its own settings for this session`,
-      value: 'yes-claude-folder',
+      value: 'yes-nyxclaude-folder',
       option: {
         type: 'accept-session',
-        scope: inGlobalClaudeFolder ? 'global-claude-folder' : 'claude-folder'
+        scope: inGlobalNyxclaudeFolder ? 'global-nyxnyxclaude-folder' : 'nyxclaude-folder'
       }
     });
   } else {

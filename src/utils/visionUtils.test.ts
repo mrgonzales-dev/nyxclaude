@@ -111,7 +111,7 @@ describe('isVisionSupported', () => {
     ).toBe(false)
   })
 
-  test('returns true for Claude models', () => {
+  test('returns true for Models', () => {
     expect(isVisionSupported('claude-sonnet-4-6')).toBe(true)
   })
 

@@ -1,5 +1,5 @@
 /**
- * Inert stub for template job commands (`claude new|list|reply`).
+ * Inert stub for template job commands (`nyxnyxclaude new|list|reply`).
  *
  * The bundler noop-stubs this specifier in current builds; this module
  * mirrors that behavior for the typechecker. `templatesMain` resolves

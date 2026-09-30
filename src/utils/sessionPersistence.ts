@@ -12,7 +12,7 @@ import { randomUUID } from 'crypto'
 import { readFile, writeFile, mkdir, readdir, unlink } from 'fs/promises'
 import { existsSync } from 'fs'
 import path from 'path'
-import { getClaudeConfigHomeDir } from './envUtils.js'
+import { getNyxclaudeConfigHomeDir } from './envUtils.js'
 
 export interface Session {
   id: string
@@ -52,7 +52,7 @@ export interface SessionMetadata {
 }
 
 function getConfigDir(): string {
-  return getClaudeConfigHomeDir()
+  return getNyxclaudeConfigHomeDir()
 }
 
 function getSessionsDir(): string {

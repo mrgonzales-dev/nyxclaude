@@ -7,11 +7,9 @@ import { getCwd } from './cwd.js';
 import { relative } from 'path';
 import { formatNumber } from './format.js';
 import type { getGlobalConfig } from './config.js';
-import { getAnthropicApiKeyWithSource, getApiKeyFromConfigOrMacOSKeychain, getAuthTokenSource, isClaudeAISubscriber } from './auth.js';
+import { getAnthropicApiKeyWithSource, getApiKeyFromConfigOrMacOSKeychain, getAuthTokenSource, isSubscriber } from './auth.js';
 import type { AgentDefinitionsResult } from '../tools/AgentTool/loadAgentsDir.js';
 import { getAgentDescriptionsTotalTokens, AGENT_DESCRIPTIONS_THRESHOLD } from './statusNoticeHelpers.js';
-import { isSupportedJetBrainsTerminal, toIDEDisplayName, getTerminalIdeType } from './ide.js';
-import { isJetBrainsPluginInstalledCachedSync } from './jetbrains.js';
 import type { LocalModelContextWarning } from './statusNoticeLocalModel.js';
 import type { PermissionMode } from './permissions/PermissionMode.js';
 import { modelSupportsAutoMode } from './betas.js';
@@ -88,7 +86,7 @@ const claudeAiSubscriberExternalTokenNotice: StatusNoticeDefinition = {
   type: 'warning',
   isActive: () => {
     const authTokenInfo = getAuthTokenSource();
-    return isClaudeAISubscriber() && (authTokenInfo.source === 'ANTHROPIC_AUTH_TOKEN' || authTokenInfo.source === 'apiKeyHelper');
+    return isSubscriber() && (authTokenInfo.source === 'ANTHROPIC_AUTH_TOKEN' || authTokenInfo.source === 'apiKeyHelper');
   },
   render: () => {
     const authTokenInfo = getAuthTokenSource();
@@ -96,7 +94,7 @@ const claudeAiSubscriberExternalTokenNotice: StatusNoticeDefinition = {
         <Text color="warning">
           Auth conflict: Using {authTokenInfo.source} instead of Nyxclaude account
           subscription token. Either unset {authTokenInfo.source}, or run
-          `claude /logout`.
+          `nyxclaude /logout`.
         </Text>
       </WarningNoticeRow>;
   }
@@ -155,13 +153,13 @@ const bothAuthMethodsNotice: StatusNoticeDefinition = {
         <Box flexDirection="column" marginLeft={3}>
           <Text color="warning">
             · Trying to use{' '}
-            {authTokenInfo.source === 'claude.ai' ? 'claude.ai' : authTokenInfo.source}
+            {authTokenInfo.source === 'web console' ? 'web console' : authTokenInfo.source}
             ?{' '}
             {apiKeySource === 'ANTHROPIC_API_KEY' ? 'Unset the ANTHROPIC_API_KEY environment variable, or claude /logout then say "No" to the API key approval before login.' : apiKeySource === 'apiKeyHelper' ? 'Unset the apiKeyHelper setting.' : 'claude /logout'}
           </Text>
           <Text color="warning">
             · Trying to use {apiKeySource}?{' '}
-            {authTokenInfo.source === 'claude.ai' ? 'claude /logout to sign out of claude.ai.' : `Unset the ${authTokenInfo.source} environment variable.`}
+            {authTokenInfo.source === 'web console' ? 'claude /logout to sign out of web console.' : `Unset the ${authTokenInfo.source} environment variable.`}
           </Text>
         </Box>
       </Box>;
@@ -187,36 +185,6 @@ const largeAgentDescriptionsNotice: StatusNoticeDefinition = {
           <Text dimColor> · /agents to manage</Text>
         </Text>
       </WarningNoticeRow>;
-  }
-};
-const jetbrainsPluginNotice: StatusNoticeDefinition = {
-  id: 'jetbrains-plugin-install',
-  type: 'info',
-  isActive: context => {
-    // Only show if running in JetBrains built-in terminal
-    if (!isSupportedJetBrainsTerminal()) {
-      return false;
-    }
-    // Don't show if auto-install is disabled
-    const shouldAutoInstall = context.config.autoInstallIdeExtension ?? true;
-    if (!shouldAutoInstall) {
-      return false;
-    }
-    // Check if plugin is already installed (cached to avoid repeated filesystem checks)
-    const ideType = getTerminalIdeType();
-    return ideType !== null && !isJetBrainsPluginInstalledCachedSync(ideType);
-  },
-  render: () => {
-    const ideType = getTerminalIdeType();
-    const ideName = toIDEDisplayName(ideType);
-    return <Box flexDirection="row" gap={1} marginLeft={1}>
-        <Text color="ide">{figures.arrowUp}</Text>
-        <Text>
-          Install the <Text color="ide">{ideName}</Text> plugin from the
-          JetBrains Marketplace:{' '}
-          <Text bold>https://docs.claude.com/s/claude-code-jetbrains</Text>
-        </Text>
-      </Box>;
   }
 };
 const localModelContextLoadNotice: StatusNoticeDefinition = {
@@ -312,7 +280,7 @@ const dangerouslySkipPermissionsNotice: StatusNoticeDefinition = {
 };
 
 // All notice definitions
-export const statusNoticeDefinitions: StatusNoticeDefinition[] = [largeMemoryFilesNotice, largeAgentDescriptionsNotice, localModelContextLoadNotice, claudeAiSubscriberExternalTokenNotice, apiKeyConflictNotice, bothAuthMethodsNotice, jetbrainsPluginNotice, thirdPartyPermissiveModeNotice, dangerouslySkipPermissionsNotice];
+export const statusNoticeDefinitions: StatusNoticeDefinition[] = [largeMemoryFilesNotice, largeAgentDescriptionsNotice, localModelContextLoadNotice, claudeAiSubscriberExternalTokenNotice, apiKeyConflictNotice, bothAuthMethodsNotice, thirdPartyPermissiveModeNotice, dangerouslySkipPermissionsNotice];
 
 // Helper functions for external use
 export function getActiveNotices(context: StatusNoticeContext): StatusNoticeDefinition[] {

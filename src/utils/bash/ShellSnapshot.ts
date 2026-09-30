@@ -11,7 +11,7 @@ import {
   embeddedSearchToolsBinaryPath,
   hasEmbeddedSearchTools,
 } from '../embeddedTools.js'
-import { getClaudeConfigHomeDir } from '../envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../envUtils.js'
 import { pathExists } from '../file.js'
 import { getFsImplementation } from '../fsOperations.js'
 import { logError } from '../log.js'
@@ -266,7 +266,7 @@ function getUserSnapshotContent(configFile: string): string {
  * Generates Nyxclaude specific snapshot content
  * This content is always included regardless of user configuration
  */
-async function getClaudeCodeSnapshotContent(): Promise<string> {
+async function getNyxclaudeSnapshotContent(): Promise<string> {
   // Get the appropriate PATH based on platform
   let pathValue = process.env.PATH
   if (getPlatform() === 'windows') {
@@ -357,7 +357,7 @@ async function getSnapshotScript(
       ? // we need to manually force alias expansion in bash - normally `getUserSnapshotContent` takes care of this
         'echo "shopt -s expand_aliases" >> "$SNAPSHOT_FILE"'
       : ''
-  const claudeCodeContent = await getClaudeCodeSnapshotContent()
+  const claudeCodeContent = await getNyxclaudeSnapshotContent()
 
   const script = `SNAPSHOT_FILE=${quote([snapshotFilePath])}
       ${configFileExists ? `source "${configFile}" < /dev/null` : '# No user config file to source'}
@@ -436,7 +436,7 @@ export const createAndSaveSnapshot = async (
       // Create unique snapshot path with timestamp and random ID
       const timestamp = Date.now()
       const randomId = Math.random().toString(36).substring(2, 8)
-      const snapshotsDir = join(getClaudeConfigHomeDir(), 'shell-snapshots')
+      const snapshotsDir = join(getNyxclaudeConfigHomeDir(), 'shell-snapshots')
       logForDebugging(`Snapshots directory: ${snapshotsDir}`)
       const shellSnapshotPath = join(
         snapshotsDir,
@@ -458,7 +458,7 @@ export const createAndSaveSnapshot = async (
         ['-c', '-l', snapshotScript],
         {
           env: {
-            ...((process.env.CLAUDE_CODE_DONT_INHERIT_ENV
+            ...((process.env.NYXCLAUDE_DONT_INHERIT_ENV
               ? {}
               : subprocessEnv()) as typeof process.env),
             SHELL: binShell,
@@ -485,7 +485,7 @@ export const createAndSaveSnapshot = async (
             logForDebugging(`  - Config file: ${getConfigFile(binShell)}`)
             logForDebugging(`  - Config file exists: ${configFileExists}`)
             logForDebugging(`  - Working directory: ${getCwd()}`)
-            logForDebugging(`  - Nyxclaude home: ${getClaudeConfigHomeDir()}`)
+            logForDebugging(`  - Nyxclaude home: ${getNyxclaudeConfigHomeDir()}`)
             logForDebugging(`Full snapshot script:\n${snapshotScript}`)
             if (stdout) {
               logForDebugging(
@@ -510,7 +510,7 @@ export const createAndSaveSnapshot = async (
                   execError.signal as keyof typeof os.constants.signals
                 ]
               : undefined
-            logEvent('tengu_shell_snapshot_failed', {
+            logEvent('nyxclaude_shell_snapshot_failed', {
               stderr_length: stderr?.length || 0,
               has_error_code: !!execError?.code,
               error_signal_number: signalNumber,
@@ -563,7 +563,7 @@ export const createAndSaveSnapshot = async (
                   `Parent directory does not exist or is not accessible: ${snapshotsDir}`,
                 )
               }
-              logEvent('tengu_shell_unknown_error', {})
+              logEvent('nyxclaude_shell_unknown_error', {})
               resolve(undefined)
             }
           }
@@ -575,7 +575,7 @@ export const createAndSaveSnapshot = async (
         logForDebugging(`Error stack trace: ${error.stack}`)
       }
       logError(error)
-      logEvent('tengu_shell_snapshot_error', {})
+      logEvent('nyxclaude_shell_snapshot_error', {})
       resolve(undefined)
     }
   })

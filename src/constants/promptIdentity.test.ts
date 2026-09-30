@@ -4,7 +4,7 @@ import {
   releaseSharedMutationLock,
 } from '../test/sharedMutationLock.js'
 
-const originalSimpleEnv = process.env.CLAUDE_CODE_SIMPLE
+const originalSimpleEnv = process.env.NYXCLAUDE_SIMPLE
 const originalMacro = (globalThis as Record<string, unknown>).MACRO
 const hadOriginalMacro = Object.hasOwn(globalThis, 'MACRO')
 
@@ -60,37 +60,37 @@ afterAll(() => {
 
 afterEach(() => {
   if (originalSimpleEnv === undefined) {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
   } else {
-    process.env.CLAUDE_CODE_SIMPLE = originalSimpleEnv
+    process.env.NYXCLAUDE_SIMPLE = originalSimpleEnv
   }
   clearSystemPromptSections()
 })
 
-test('CLI identity prefixes describe Nyxclaude instead of Claude Code', () => {
+test('CLI identity prefixes describe Nyxclaude instead of Nyxclaude', () => {
   expect(getCLISyspromptPrefix()).toContain('Nyxclaude')
-  expect(getCLISyspromptPrefix()).not.toContain('Claude Code')
-  expect(getCLISyspromptPrefix()).not.toContain("Anthropic's official CLI for Claude")
+  expect(getCLISyspromptPrefix()).not.toContain('Nyxclaude')
+  expect(getCLISyspromptPrefix()).not.toContain("Anthropic CLI")
 
   for (const prefix of CLI_SYSPROMPT_PREFIXES) {
     expect(prefix).toContain('Nyxclaude')
-    expect(prefix).not.toContain('Claude Code')
-    expect(prefix).not.toContain("Anthropic's official CLI for Claude")
+    expect(prefix).not.toContain('Nyxclaude')
+    expect(prefix).not.toContain("Anthropic CLI")
   }
 })
 
-test('simple mode identity describes nyxclaude instead of Claude Code', async () => {
-  process.env.CLAUDE_CODE_SIMPLE = '1'
+test('simple mode identity describes nyxclaude instead of Nyxclaude', async () => {
+  process.env.NYXCLAUDE_SIMPLE = '1'
 
   const prompt = await getSystemPrompt([], 'gpt-4o')
 
   expect(prompt[0]).toContain('nyxclaude')
-  expect(prompt[0]).not.toContain('Claude Code')
-  expect(prompt[0]).not.toContain("Anthropic's official CLI for Claude")
+  expect(prompt[0]).not.toContain('Nyxclaude')
+  expect(prompt[0]).not.toContain("Anthropic CLI")
 })
 
 test('system prompt model identity updates when model changes mid-session', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
+  delete process.env.NYXCLAUDE_SIMPLE
   clearSystemPromptSections()
 
   const firstPrompt = await getSystemPrompt([], 'old-test-model')
@@ -105,9 +105,9 @@ test('system prompt model identity updates when model changes mid-session', asyn
 })
 
 test('system prompt includes immediate-tool-use directive in non-REPL mode', async () => {
-  const originalReplMode = process.env.CLAUDE_REPL_MODE
-  const originalCodeRepl = process.env.CLAUDE_CODE_REPL
-  process.env.CLAUDE_CODE_REPL = '0'
+  const originalReplMode = process.env.NYXCLAUDE_REPL_MODE
+  const originalCodeRepl = process.env.NYXCLAUDE_REPL
+  process.env.NYXCLAUDE_REPL = '0'
 
   try {
     const prompt = await getSystemPrompt([], 'gpt-4o')
@@ -115,23 +115,23 @@ test('system prompt includes immediate-tool-use directive in non-REPL mode', asy
     expect(text).toContain('If you intend to use a tool to accomplish a task or analyze a file, use the tool IMMEDIATELY. Do not output a message explaining what you are going to do and then stop to wait for the user to prompt you again. Always call the tool in the same response.')
   } finally {
     if (originalReplMode === undefined) {
-      delete process.env.CLAUDE_REPL_MODE
+      delete process.env.NYXCLAUDE_REPL_MODE
     } else {
-      process.env.CLAUDE_REPL_MODE = originalReplMode
+      process.env.NYXCLAUDE_REPL_MODE = originalReplMode
     }
     if (originalCodeRepl === undefined) {
-      delete process.env.CLAUDE_CODE_REPL
+      delete process.env.NYXCLAUDE_REPL
     } else {
-      process.env.CLAUDE_CODE_REPL = originalCodeRepl
+      process.env.NYXCLAUDE_REPL = originalCodeRepl
     }
   }
 })
 
 test('system prompt includes immediate-tool-use directive in REPL mode', async () => {
-  const originalReplMode = process.env.CLAUDE_REPL_MODE
-  const originalCodeRepl = process.env.CLAUDE_CODE_REPL
-  delete process.env.CLAUDE_CODE_REPL
-  process.env.CLAUDE_REPL_MODE = '1'
+  const originalReplMode = process.env.NYXCLAUDE_REPL_MODE
+  const originalCodeRepl = process.env.NYXCLAUDE_REPL
+  delete process.env.NYXCLAUDE_REPL
+  process.env.NYXCLAUDE_REPL_MODE = '1'
 
   try {
     const prompt = await getSystemPrompt([], 'gpt-4o')
@@ -139,40 +139,40 @@ test('system prompt includes immediate-tool-use directive in REPL mode', async (
     expect(text).toContain('If you intend to use a tool to accomplish a task or analyze a file, use the tool IMMEDIATELY. Do not output a message explaining what you are going to do and then stop to wait for the user to prompt you again. Always call the tool in the same response.')
   } finally {
     if (originalReplMode === undefined) {
-      delete process.env.CLAUDE_REPL_MODE
+      delete process.env.NYXCLAUDE_REPL_MODE
     } else {
-      process.env.CLAUDE_REPL_MODE = originalReplMode
+      process.env.NYXCLAUDE_REPL_MODE = originalReplMode
     }
     if (originalCodeRepl === undefined) {
-      delete process.env.CLAUDE_CODE_REPL
+      delete process.env.NYXCLAUDE_REPL
     } else {
-      process.env.CLAUDE_CODE_REPL = originalCodeRepl
+      process.env.NYXCLAUDE_REPL = originalCodeRepl
     }
   }
 })
 
-test('built-in agent prompts describe Nyxclaude instead of Claude Code', () => {
+test('built-in agent prompts describe Nyxclaude instead of Nyxclaude', () => {
   expect(DEFAULT_AGENT_PROMPT).toContain('Nyxclaude')
-  expect(DEFAULT_AGENT_PROMPT).not.toContain('Claude Code')
-  expect(DEFAULT_AGENT_PROMPT).not.toContain("Anthropic's official CLI for Claude")
+  expect(DEFAULT_AGENT_PROMPT).not.toContain('Nyxclaude')
+  expect(DEFAULT_AGENT_PROMPT).not.toContain("Anthropic CLI")
 
   const generalPrompt = GENERAL_PURPOSE_AGENT.getSystemPrompt({
     toolUseContext: { options: {} as never },
   })
   expect(generalPrompt).toContain('Nyxclaude')
-  expect(generalPrompt).not.toContain('Claude Code')
-  expect(generalPrompt).not.toContain("Anthropic's official CLI for Claude")
+  expect(generalPrompt).not.toContain('Nyxclaude')
+  expect(generalPrompt).not.toContain("Anthropic CLI")
 
   const explorePrompt = EXPLORE_AGENT.getSystemPrompt({
     toolUseContext: { options: {} as never },
   })
   expect(explorePrompt).toContain('Nyxclaude')
-  expect(explorePrompt).not.toContain('Claude Code')
-  expect(explorePrompt).not.toContain("Anthropic's official CLI for Claude")
+  expect(explorePrompt).not.toContain('Nyxclaude')
+  expect(explorePrompt).not.toContain("Anthropic CLI")
 
   const planPrompt = PLAN_AGENT.getSystemPrompt({
     toolUseContext: { options: {} as never },
   })
   expect(planPrompt).toContain('Nyxclaude')
-  expect(planPrompt).not.toContain('Claude Code')
+  expect(planPrompt).not.toContain('Nyxclaude')
 })

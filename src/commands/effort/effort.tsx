@@ -26,7 +26,7 @@ function setEffortValue(effortValue: EffortValue): EffortCommandResult {
       };
     }
   }
-  logEvent('tengu_effort_command', {
+  logEvent('nyxclaude_effort_command', {
     effort: effortValue as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
   });
 
@@ -35,17 +35,17 @@ function setEffortValue(effortValue: EffortValue): EffortCommandResult {
   // the same, so "Set effort to X" is true and the note is noise.
   const envOverride = getEffortEnvOverride();
   if (envOverride !== undefined && envOverride !== effortValue) {
-    const envRaw = process.env.CLAUDE_CODE_EFFORT_LEVEL;
+    const envRaw = process.env.NYXCLAUDE_EFFORT_LEVEL;
     if (persistable === undefined) {
       return {
-        message: `Not applied: CLAUDE_CODE_EFFORT_LEVEL=${envRaw} overrides effort this session, and ${effortValue} is session-only (nothing saved)`,
+        message: `Not applied: NYXCLAUDE_EFFORT_LEVEL=${envRaw} overrides effort this session, and ${effortValue} is session-only (nothing saved)`,
         effortUpdate: {
           value: effortValue
         }
       };
     }
     return {
-      message: `CLAUDE_CODE_EFFORT_LEVEL=${envRaw} overrides this session — clear it and ${effortValue} takes over`,
+      message: `NYXCLAUDE_EFFORT_LEVEL=${envRaw} overrides this session — clear it and ${effortValue} takes over`,
       effortUpdate: {
         value: effortValue
       }
@@ -84,16 +84,16 @@ function unsetEffortLevel(): EffortCommandResult {
       message: `Failed to set effort level: ${result.error.message}`
     };
   }
-  logEvent('tengu_effort_command', {
+  logEvent('nyxclaude_effort_command', {
     effort: 'auto' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
   });
   // env=auto/unset (null) matches what /effort auto asks for, so only warn
   // when env is pinning a specific level that will keep overriding.
   const envOverride = getEffortEnvOverride();
   if (envOverride !== undefined && envOverride !== null) {
-    const envRaw = process.env.CLAUDE_CODE_EFFORT_LEVEL;
+    const envRaw = process.env.NYXCLAUDE_EFFORT_LEVEL;
     return {
-      message: `Cleared effort from settings, but CLAUDE_CODE_EFFORT_LEVEL=${envRaw} still controls this session`,
+      message: `Cleared effort from settings, but NYXCLAUDE_EFFORT_LEVEL=${envRaw} still controls this session`,
       effortUpdate: {
         value: undefined
       }
@@ -187,7 +187,7 @@ function UltracodeCommand({ onDone }: { onDone: LocalJSXCommandOnDone }) {
 export async function call(onDone: LocalJSXCommandOnDone, _context: unknown, args?: string): Promise<React.ReactNode> {
   args = args?.trim() || '';
   if (COMMON_HELP_ARGS.includes(args)) {
-    onDone('Usage: /effort [low|medium|high|max|xhigh|ultracode|auto]\n\nEffort levels:\n- low: Quick, straightforward implementation\n- medium: Balanced approach with standard testing\n- high: Comprehensive implementation with extensive testing\n- max: Maximum capability with deepest reasoning (Opus 4.8+)\n- xhigh: Extra-high reasoning (OpenAI/Codex and Opus 4.7+)\n- ultracode: Ultracode session-only mode with multi-agent orchestration permission (Anthropic first-party + xhigh-capable models only)\n- auto: Use the default effort level for your model');
+    onDone('Usage: /effort [low|medium|high|max|xhigh|ultracode|auto]\n\nEffort levels:\n- low: Quick, straightforward implementation\n- medium: Balanced approach with standard testing\n- high: Comprehensive implementation with extensive testing\n- max: Maximum capability with deepest reasoning (Opus 4.8+)\n- xhigh: Extra-high reasoning (OpenAI/Codex and Opus 4.7+)\n- ultracode: Ultracode session-only mode with multi-agent orchestration permission (first-party + xhigh-capable models only)\n- auto: Use the default effort level for your model');
     return;
   }
   if (args === 'current' || args === 'status') {

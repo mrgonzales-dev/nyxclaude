@@ -4,8 +4,8 @@ import { getOrganizationUUID } from 'src/services/oauth/client.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../../services/analytics/growthbook.js'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
-  getClaudeAIOAuthTokens,
-  isClaudeAISubscriber,
+  getRemoteOAuthTokens,
+  isSubscriber,
 } from '../../auth.js'
 import { getCwd } from '../../cwd.js'
 import { logForDebugging } from '../../debug.js'
@@ -20,8 +20,8 @@ import { fetchEnvironments } from '../../teleport/environments.js'
  * Extracted from getTeleportErrors() in TeleportError.tsx
  * @returns true if login is required, false otherwise
  */
-export async function checkNeedsClaudeAiLogin(): Promise<boolean> {
-  if (!isClaudeAISubscriber()) {
+export async function checkNeedsRemoteLogin(): Promise<boolean> {
+  if (!isSubscriber()) {
     return false
   }
   return checkAndRefreshOAuthTokenIfNeeded()
@@ -81,7 +81,7 @@ export async function checkGithubAppInstalled(
   signal?: AbortSignal,
 ): Promise<boolean> {
   try {
-    const accessToken = getClaudeAIOAuthTokens()?.accessToken
+    const accessToken = getRemoteOAuthTokens()?.accessToken
     if (!accessToken) {
       logForDebugging(
         'checkGithubAppInstalled: No access token found, assuming app not installed',
@@ -163,7 +163,7 @@ export async function checkGithubAppInstalled(
  */
 export async function checkGithubTokenSynced(): Promise<boolean> {
   try {
-    const accessToken = getClaudeAIOAuthTokens()?.accessToken
+    const accessToken = getRemoteOAuthTokens()?.accessToken
     if (!accessToken) {
       logForDebugging('checkGithubTokenSynced: No access token found')
       return false
@@ -226,7 +226,7 @@ export async function checkRepoForRemoteAccess(
     return { hasAccess: true, method: 'github-app' }
   }
   if (
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_cobalt_lantern', false) &&
+    getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_cobalt_lantern', false) &&
     (await checkGithubTokenSynced())
   ) {
     return { hasAccess: true, method: 'token-sync' }

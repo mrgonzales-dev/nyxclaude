@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { BetaToolUnion } from 'src/types/api.js'
+import type { TextBlockParam } from 'src/types/api.js'
 import type { QuerySource } from '../../constants/querySource.js'
 import type { Message } from '../../types/message.js'
 import type { DebugLogLevel } from '../../utils/debug.js'
@@ -47,13 +47,13 @@ mock.module('../../utils/debug.js', () => ({
 }))
 
 const PROVIDER_ENV_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
   'OPENAI_BASE_URL',
   'OPENAI_API_BASE',
   'OPENAI_MODEL',
@@ -90,19 +90,19 @@ function clearProviderEnv(): void {
 
 function useOpenAIProvider(): void {
   clearProviderEnv()
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
 }
 
 function useOpenAIProviderWithDisabledFoundryFlag(flagValue: string): void {
   useOpenAIProvider()
-  process.env.CLAUDE_CODE_USE_FOUNDRY = flagValue
+  process.env.NYXCLAUDE_USE_FOUNDRY = flagValue
 }
 
 function useOpenAIProviderWithWhitespaceBaseFallback(): void {
   clearProviderEnv()
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = '   '
   process.env.OPENAI_API_BASE = 'https://api.deepseek.com/v1'
   process.env.OPENAI_MODEL = 'deepseek-chat'
@@ -110,27 +110,27 @@ function useOpenAIProviderWithWhitespaceBaseFallback(): void {
 
 function useCodexAliasWithLiteralUndefinedBaseUrl(): void {
   clearProviderEnv()
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'undefined'
   process.env.OPENAI_MODEL = 'codexplan'
 }
 
 function useOpenRouterProvider(): void {
   clearProviderEnv()
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'gpt-4o'
 }
 
 function useUnsupportedGithubProvider(): void {
   clearProviderEnv()
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_MODEL = 'gpt-4o'
 }
 
 function useFoundryProvider(): void {
   clearProviderEnv()
-  process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+  process.env.NYXCLAUDE_USE_FOUNDRY = '1'
 }
 
 function systemBlock(
@@ -225,7 +225,7 @@ async function triggerCacheDrop({
     'req-break',
   )
 
-  const event = events.findLast(e => e.name === 'tengu_prompt_cache_break')
+  const event = events.findLast(e => e.name === 'nyxclaude_prompt_cache_break')
   expect(event).toBeDefined()
   return event!
 }
@@ -567,7 +567,7 @@ describe('prompt cache break taxonomy', () => {
       'req-drop',
     )
 
-    expect(events.filter(e => e.name === 'tengu_prompt_cache_break')).toEqual([])
+    expect(events.filter(e => e.name === 'nyxclaude_prompt_cache_break')).toEqual([])
     expect(
       debugCalls.some(call => call.message.includes('cache deletion applied')),
     ).toBe(true)

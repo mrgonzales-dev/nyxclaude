@@ -10,14 +10,14 @@ import { createRequestSizeReport } from './requestSizeBreakdown.js'
 import type { ContextData } from './analyzeContext.js'
 
 const originalEnv = {
-  CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS:
-    process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS,
+  NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS:
+    process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS,
   ENABLE_TOOL_SEARCH: process.env.ENABLE_TOOL_SEARCH,
 }
 
 beforeEach(async () => {
   await acquireSharedMutationLock('utils/analyzeContext.mcp.test.ts')
-  delete process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS
+  delete process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS
   delete process.env.ENABLE_TOOL_SEARCH
 })
 
@@ -54,8 +54,8 @@ const emptyPermissionContext = async () => ({ mode: 'default' }) as never
 const countToolDefinitions = async () => 1_500
 const savedToolSearchEnv = {
   ENABLE_TOOL_SEARCH: process.env.ENABLE_TOOL_SEARCH,
-  CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS:
-    process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS,
+  NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS:
+    process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS,
   ANTHROPIC_BASE_URL: process.env.ANTHROPIC_BASE_URL,
 }
 
@@ -80,7 +80,7 @@ function makeContextData(overrides: Partial<ContextData> = {}): ContextData {
 describe('countMcpToolTokens', () => {
   beforeEach(() => {
     process.env.ENABLE_TOOL_SEARCH = 'true'
-    delete process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS
+    delete process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS
     delete process.env.ANTHROPIC_BASE_URL
   })
 
@@ -129,9 +129,9 @@ describe('countMcpToolTokens', () => {
   test('keeps deferred MCP schemas excluded from the outgoing request estimate when Tool Search is deferred', async () => {
     const previousToolSearch = process.env.ENABLE_TOOL_SEARCH
     const previousDisableBetas =
-      process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS
+      process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS
     process.env.ENABLE_TOOL_SEARCH = 'true'
-    delete process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS
+    delete process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS
     try {
       const result = await countMcpToolTokens(
         [
@@ -175,9 +175,9 @@ describe('countMcpToolTokens', () => {
         process.env.ENABLE_TOOL_SEARCH = previousToolSearch
       }
       if (previousDisableBetas === undefined) {
-        delete process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS
+        delete process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS
       } else {
-        process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS =
+        process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS =
           previousDisableBetas
       }
     }

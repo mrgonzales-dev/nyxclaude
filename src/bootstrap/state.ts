@@ -1,4 +1,4 @@
-import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { BetaMessageStreamParams } from 'src/types/api.js'
 import { realpathSync } from 'fs'
 import sumBy from 'lodash-es/sumBy.js'
 import { cwd } from 'process'
@@ -232,7 +232,7 @@ type State = {
   // Read at shutdown to send cache eviction hints to inference.
   lastMainRequestId: string | undefined
   // Timestamp (Date.now()) of the last successful API call completion.
-  // Used to compute timeSinceLastApiCallMs in tengu_api_success for
+  // Used to compute timeSinceLastApiCallMs in nyxclaude_api_success for
   // correlating cache misses with idle time (cache TTL is ~5min).
   lastApiCompletionTimestamp: number | null
   // Set to true after compaction (auto or manual /compact). Consumed by
@@ -1172,7 +1172,7 @@ export function setAllowedSettingSources(sources: SettingSource[]): void {
 
 export function preferThirdPartyAuthentication(): boolean {
   // IDE extension should behave as 1P for authentication reasons.
-  return getIsNonInteractiveSession() && STATE.clientType !== 'claude-vscode'
+  return getIsNonInteractiveSession() && STATE.clientType !== 'nyxclaude-vscode'
 }
 
 export function setInlinePlugins(plugins: Array<string>): void {

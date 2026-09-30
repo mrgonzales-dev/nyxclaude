@@ -11,10 +11,10 @@ import { clearConversation } from './conversation.js'
 
 describe('/clear goal lifecycle', () => {
   test('/clear clears active goal state', async () => {
-    const previousBareMode = process.env.CLAUDE_CODE_SIMPLE
+    const previousBareMode = process.env.NYXCLAUDE_SIMPLE
     const previousSessionId = getSessionId()
     const previousSessionProjectDir = getSessionProjectDir()
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.NYXCLAUDE_SIMPLE = '1'
     let state: AppState = {
       ...getDefaultAppState(),
       goal: createGoalState('finish implementation'),
@@ -36,9 +36,9 @@ describe('/clear goal lifecycle', () => {
       })
     } finally {
       if (previousBareMode === undefined) {
-        delete process.env.CLAUDE_CODE_SIMPLE
+        delete process.env.NYXCLAUDE_SIMPLE
       } else {
-        process.env.CLAUDE_CODE_SIMPLE = previousBareMode
+        process.env.NYXCLAUDE_SIMPLE = previousBareMode
       }
       switchSession(previousSessionId, previousSessionProjectDir)
     }

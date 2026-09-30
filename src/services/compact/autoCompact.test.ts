@@ -68,17 +68,17 @@ async function importAutoCompact(options: ImportAutoCompactOptions = {}) {
 }
 
 const SAVED_ENV = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
-  CLAUDE_CODE_USE_MISTRAL: process.env.CLAUDE_CODE_USE_MISTRAL,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
-  CLAUDE_CODE_USE_BEDROCK: process.env.CLAUDE_CODE_USE_BEDROCK,
-  CLAUDE_CODE_USE_VERTEX: process.env.CLAUDE_CODE_USE_VERTEX,
-  CLAUDE_CODE_USE_FOUNDRY: process.env.CLAUDE_CODE_USE_FOUNDRY,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
+  NYXCLAUDE_USE_MISTRAL: process.env.NYXCLAUDE_USE_MISTRAL,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
+  NYXCLAUDE_USE_BEDROCK: process.env.NYXCLAUDE_USE_BEDROCK,
+  NYXCLAUDE_USE_VERTEX: process.env.NYXCLAUDE_USE_VERTEX,
+  NYXCLAUDE_USE_FOUNDRY: process.env.NYXCLAUDE_USE_FOUNDRY,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
   MINIMAX_API_KEY: process.env.MINIMAX_API_KEY,
   XAI_API_KEY: process.env.XAI_API_KEY,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
@@ -89,12 +89,12 @@ const SAVED_ENV = {
   ANTHROPIC_BASE_URL: process.env.ANTHROPIC_BASE_URL,
   ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
   USER_TYPE: process.env.USER_TYPE,
-  CLAUDE_CODE_MAX_CONTEXT_TOKENS:
-    process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS,
-  CLAUDE_CODE_AUTO_COMPACT_WINDOW:
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW,
-  CLAUDE_CODE_MAX_OUTPUT_TOKENS:
-    process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS,
+  NYXCLAUDE_MAX_CONTEXT_TOKENS:
+    process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS,
+  NYXCLAUDE_AUTO_COMPACT_WINDOW:
+    process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW,
+  NYXCLAUDE_MAX_OUTPUT_TOKENS:
+    process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS,
   CLAUDE_AUTOCOMPACT_PCT_OVERRIDE:
     process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE,
   NYXCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS:
@@ -119,9 +119,9 @@ beforeEach(async () => {
   try {
     delete process.env.DISABLE_COMPACT
     delete process.env.DISABLE_AUTO_COMPACT
-    delete process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS
-    delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW
-    delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+    delete process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS
+    delete process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW
+    delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
   } catch (error) {
     releaseSharedMutationLock()
     hasSharedMutationLock = false
@@ -214,12 +214,12 @@ describe('getEffectiveContextWindowSize', () => {
     // at least reservedTokensForSummary + buffer.
     //
     // The exact floor depends on the max-output-tokens slot-reservation cap
-    // (tengu_otk_slot_v1 GrowthBook flag). With cap enabled, the model's
+    // (nyxclaude_otk_slot_v1 GrowthBook flag). With cap enabled, the model's
     // default output cap drops to CAPPED_DEFAULT_MAX_TOKENS (8k), so the
     // summary reservation is 8k and the floor is 8k + 13k = 21k. With cap
     // disabled it's 20k + 13k = 33k. Assert the worst case so the test is
     // stable regardless of flag state in CI vs local.
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     try {
       const effective = getEffectiveContextWindowSize('some-unknown-3p-model')
       expect(effective).toBeGreaterThan(0)
@@ -234,14 +234,14 @@ describe('getEffectiveContextWindowSize', () => {
 
   test('uses MiniMax M2 context and output metadata for compact budget', async () => {
     const { getEffectiveContextWindowSize } = await importAutoCompact()
-    delete process.env.CLAUDE_CODE_USE_GEMINI
-    delete process.env.CLAUDE_CODE_USE_MISTRAL
-    delete process.env.CLAUDE_CODE_USE_GITHUB
-    delete process.env.CLAUDE_CODE_USE_BEDROCK
-    delete process.env.CLAUDE_CODE_USE_VERTEX
-    delete process.env.CLAUDE_CODE_USE_FOUNDRY
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+    delete process.env.NYXCLAUDE_USE_GEMINI
+    delete process.env.NYXCLAUDE_USE_MISTRAL
+    delete process.env.NYXCLAUDE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_BEDROCK
+    delete process.env.NYXCLAUDE_USE_VERTEX
+    delete process.env.NYXCLAUDE_USE_FOUNDRY
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
     delete process.env.XAI_API_KEY
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_API_BASE
@@ -249,10 +249,10 @@ describe('getEffectiveContextWindowSize', () => {
     delete process.env.ANTHROPIC_BASE_URL
     delete process.env.ANTHROPIC_MODEL
     delete process.env.USER_TYPE
-    delete process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS
-    delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW
-    delete process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    delete process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS
+    delete process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW
+    delete process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_API_KEY = 'ambient-openai-key'
     process.env.MINIMAX_API_KEY = 'minimax-test'
     process.env.OPENAI_MODEL = 'MiniMax-M2.7'
@@ -271,7 +271,7 @@ describe('getEffectiveContextWindowSize', () => {
 
   test('uses explicit route runtime limits instead of ambient provider state', async () => {
     const { getEffectiveContextWindowSize } = await importAutoCompact()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
     process.env.OPENAI_MODEL = 'gpt-4o'
 
@@ -284,7 +284,7 @@ describe('getEffectiveContextWindowSize', () => {
   test('keeps internal context caps above explicit route runtime limits', async () => {
     const { getEffectiveContextWindowSize } = await importAutoCompact()
     process.env.USER_TYPE = 'ant'
-    process.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS = '100000'
+    process.env.NYXCLAUDE_MAX_CONTEXT_TOKENS = '100000'
 
     expect(getEffectiveContextWindowSize('k3-256k', {
       contextWindow: 262_144,
@@ -316,7 +316,7 @@ describe('getAutoCompactThreshold', () => {
 
   test('never returns negative threshold even for unknown 3P models (issue #635)', async () => {
     const { getAutoCompactThreshold } = await importAutoCompact()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     try {
       const threshold = getAutoCompactThreshold('some-unknown-3p-model')
       expect(threshold).toBeGreaterThan(0)
@@ -326,8 +326,8 @@ describe('getAutoCompactThreshold', () => {
   })
 
   test('keeps the floor buffer for constrained context windows', async () => {
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '30000'
-    process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS = '20000'
+    process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW = '30000'
+    process.env.NYXCLAUDE_MAX_OUTPUT_TOKENS = '20000'
     const { getAutoCompactThreshold } = await importAutoCompact()
 
     // The effective window is floor-raised to 33k in this configuration.
@@ -336,7 +336,7 @@ describe('getAutoCompactThreshold', () => {
   })
 
   test('keeps compaction and warning thresholds usable across mid-sized windows', async () => {
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '64000'
+    process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW = '64000'
     const { calculateTokenWarningState, getAutoCompactThreshold } =
       await importAutoCompact()
 
@@ -351,9 +351,9 @@ describe('getAutoCompactThreshold', () => {
   test('does not lower the threshold when a configured window grows', async () => {
     const { getAutoCompactThreshold } = await importAutoCompact()
 
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '62999'
+    process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW = '62999'
     const smallerWindowThreshold = getAutoCompactThreshold('claude-sonnet-4')
-    process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '63000'
+    process.env.NYXCLAUDE_AUTO_COMPACT_WINDOW = '63000'
     const largerWindowThreshold = getAutoCompactThreshold('claude-sonnet-4')
 
     expect(largerWindowThreshold).toBeGreaterThanOrEqual(smallerWindowThreshold)

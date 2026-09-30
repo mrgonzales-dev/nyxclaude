@@ -1,7 +1,7 @@
 /**
  * Telemetry for plugin/marketplace fetches that hit the network.
  *
- * Added for inc-5046 (GitHub complained about claude-plugins-official load).
+ * Added for inc-5046 (GitHub complained about nyxclaude-plugins-official load).
  * Before this, fetch operations only had logForDebugging — no way to measure
  * actual network volume. This surfaces what's hitting GitHub vs GCS vs
  * user-hosted so we can see the GCS migration take effect and catch future
@@ -9,7 +9,7 @@
  *
  * Volume: these fire at startup (install-counts 24h-TTL)
  * and on explicit user action (install/update). NOT per-interaction. Similar
- * envelope to tengu_binary_download_*.
+ * envelope to nyxclaude_binary_download_*.
  */
 
 import {
@@ -68,7 +68,7 @@ function extractHost(urlOrSpec: string): string {
 }
 
 /**
- * True if the URL/spec points at anthropics/claude-plugins-official — the
+ * True if the URL/spec points at anthropics/nyxclaude-plugins-official — the
  * repo GitHub complained about. Lets the dashboard separate "our problem"
  * traffic from user-configured marketplaces.
  */
@@ -84,8 +84,8 @@ export function logPluginFetch(
   errorKind?: string,
 ): void {
   // String values are bounded enums / hostname-only — no code, no paths,
-  // no raw error messages. Same privacy envelope as tengu_web_fetch_host.
-  logEvent('tengu_plugin_remote_fetch', {
+  // no raw error messages. Same privacy envelope as nyxclaude_web_fetch_host.
+  logEvent('nyxclaude_plugin_remote_fetch', {
     source: source as SafeString,
     host: (urlOrSpec ? extractHost(urlOrSpec) : 'unknown') as SafeString,
     is_official: urlOrSpec ? isOfficialRepo(urlOrSpec) : false,

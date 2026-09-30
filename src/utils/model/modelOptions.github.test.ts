@@ -26,12 +26,12 @@ async function importFreshModelOptionsModule() {
 }
 
 const originalEnv = {
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
-  CLAUDE_CODE_USE_BEDROCK: process.env.CLAUDE_CODE_USE_BEDROCK,
-  CLAUDE_CODE_USE_VERTEX: process.env.CLAUDE_CODE_USE_VERTEX,
-  CLAUDE_CODE_USE_FOUNDRY: process.env.CLAUDE_CODE_USE_FOUNDRY,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
+  NYXCLAUDE_USE_BEDROCK: process.env.NYXCLAUDE_USE_BEDROCK,
+  NYXCLAUDE_USE_VERTEX: process.env.NYXCLAUDE_USE_VERTEX,
+  NYXCLAUDE_USE_FOUNDRY: process.env.NYXCLAUDE_USE_FOUNDRY,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   ANTHROPIC_CUSTOM_MODEL_OPTION: process.env.ANTHROPIC_CUSTOM_MODEL_OPTION,
@@ -68,12 +68,12 @@ beforeEach(async () => {
   await acquireSharedMutationLock('model/modelOptions.github.test.ts')
   mock.restore()
   setSessionSettingsCache({ settings: {}, errors: [] })
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_MODEL
   delete process.env.OPENAI_BASE_URL
   delete process.env.ANTHROPIC_CUSTOM_MODEL_OPTION
@@ -84,12 +84,12 @@ afterEach(() => {
   try {
     mock.restore()
     resetSettingsCache()
-    restoreEnvValue('CLAUDE_CODE_USE_GITHUB')
-    restoreEnvValue('CLAUDE_CODE_USE_OPENAI')
-    restoreEnvValue('CLAUDE_CODE_USE_GEMINI')
-    restoreEnvValue('CLAUDE_CODE_USE_BEDROCK')
-    restoreEnvValue('CLAUDE_CODE_USE_VERTEX')
-    restoreEnvValue('CLAUDE_CODE_USE_FOUNDRY')
+    restoreEnvValue('NYXCLAUDE_USE_GITHUB')
+    restoreEnvValue('NYXCLAUDE_USE_OPENAI')
+    restoreEnvValue('NYXCLAUDE_USE_GEMINI')
+    restoreEnvValue('NYXCLAUDE_USE_BEDROCK')
+    restoreEnvValue('NYXCLAUDE_USE_VERTEX')
+    restoreEnvValue('NYXCLAUDE_USE_FOUNDRY')
     restoreEnvValue('OPENAI_MODEL')
     restoreEnvValue('OPENAI_BASE_URL')
     restoreEnvValue('ANTHROPIC_CUSTOM_MODEL_OPTION')
@@ -110,12 +110,12 @@ afterEach(() => {
 })
 
 test('GitHub provider exposes default + all Copilot models in /model options', async () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
 
   process.env.OPENAI_MODEL = 'gpt-4o'
   delete process.env.ANTHROPIC_CUSTOM_MODEL_OPTION

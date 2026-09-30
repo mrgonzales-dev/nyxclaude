@@ -88,7 +88,7 @@ afterEach(() => {
 })
 
 test('buildAPIProviderProperties labels NVIDIA NIM sessions', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.NVIDIA_NIM = '1'
   process.env.OPENAI_BASE_URL = 'https://integrate.api.nvidia.com/v1'
   process.env.OPENAI_MODEL = 'nvidia/llama-3.1-nemotron-70b-instruct'
@@ -103,7 +103,7 @@ test('buildAPIProviderProperties labels NVIDIA NIM sessions', async () => {
 })
 
 test('buildAPIProviderProperties labels MiniMax sessions', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.MINIMAX_API_KEY = 'minimax-key'
   process.env.OPENAI_BASE_URL = 'https://api.minimax.chat/v1'
   process.env.OPENAI_MODEL = 'MiniMax-M2.5'
@@ -116,7 +116,7 @@ test('buildAPIProviderProperties labels MiniMax sessions', async () => {
 })
 
 test('buildAPIProviderProperties keeps Codex-specific labels on the shared OpenAI-compatible path', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = DEFAULT_CODEX_BASE_URL
   process.env.OPENAI_MODEL = 'codexplan'
   process.env.CHATGPT_ACCOUNT_ID = 'acct_123'
@@ -129,7 +129,7 @@ test('buildAPIProviderProperties keeps Codex-specific labels on the shared OpenA
 })
 
 test('buildAPIProviderProperties redacts credentials in OpenAI-compatible base URLs', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     'https://user:pass@example.com/v1?api_key=sk-statusLeak1234567890ABCdef&model=qwen'
 
@@ -139,7 +139,7 @@ test('buildAPIProviderProperties redacts credentials in OpenAI-compatible base U
 })
 
 test('buildAPIProviderProperties uses the resolved route label for AI/ML API sessions', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.aimlapi.com/v1'
   process.env.OPENAI_MODEL = 'gpt-4o'
 
@@ -151,7 +151,7 @@ test('buildAPIProviderProperties uses the resolved route label for AI/ML API ses
 })
 
 test('buildAPIProviderProperties redacts token-bearing OpenAI-compatible base URLs', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     'https://api.example.test/v1?token=OPENAI_LEAK&mode=test#access_token=fragment-leak'
 
@@ -166,7 +166,7 @@ test('buildAPIProviderProperties redacts token-bearing OpenAI-compatible base UR
 })
 
 test('buildAPIProviderProperties does not substring-redact short configured secrets', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1?credential=1'
   process.env.OPENAI_MODEL = 'gpt-4.1'
   process.env.OPENAI_API_KEY = '1'
@@ -182,7 +182,7 @@ test('buildAPIProviderProperties does not substring-redact short configured secr
 })
 
 test('buildAPIProviderProperties redacts double-encoded configured secrets outside URL query values', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     'https://api.openai.com/abc%252FdefSecret987/v1'
   process.env.OPENAI_MODEL = 'gpt-4o abc%252FdefSecret987'
@@ -201,7 +201,7 @@ test('buildAPIProviderProperties redacts double-encoded configured secrets outsi
 })
 
 test('buildAPIProviderProperties redacts percent-encoded configured secret punctuation outside URL query values', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     'https://api.openai.com/abc%21defSecret987/v1'
   process.env.OPENAI_MODEL = 'gpt-4o abc%21defSecret987'
@@ -220,7 +220,7 @@ test('buildAPIProviderProperties redacts percent-encoded configured secret punct
 })
 
 test('buildAPIProviderProperties redacts token-bearing Gemini base URLs', async () => {
-  process.env.CLAUDE_CODE_USE_GEMINI = '1'
+  process.env.NYXCLAUDE_USE_GEMINI = '1'
   process.env.GEMINI_BASE_URL =
     'https://gemini.example.test/v1?api_key=GEMINI_LEAK&mode=test#secret=fragment-leak'
 
@@ -284,14 +284,14 @@ test('buildAPIProviderProperties redacts token-bearing direct provider base URLs
 test('buildAPIProviderProperties redacts proxy credentials and mTLS paths', async () => {
   const home = '/home/nyxclaude-status-test'
   process.env.HOME = home
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   delete process.env.http_proxy
   delete process.env.https_proxy
   delete process.env.HTTP_PROXY
   process.env.HTTPS_PROXY = 'https://alice:secret@proxy.example.com:8080'
   process.env.NODE_EXTRA_CA_CERTS = `${home}/.config/ca-bundle.crt`
-  process.env.CLAUDE_CODE_CLIENT_CERT = `${home}/.config/client.crt`
-  process.env.CLAUDE_CODE_CLIENT_KEY = `${home}/.config/client.key`
+  process.env.NYXCLAUDE_CLIENT_CERT = `${home}/.config/client.crt`
+  process.env.NYXCLAUDE_CLIENT_KEY = `${home}/.config/client.key`
 
   mock.restore()
   mock.module('./model/providers.js', () => ({
@@ -345,7 +345,7 @@ test('buildAPIProviderProperties redacts proxy credentials and mTLS paths', asyn
 test('buildAPIProviderProperties redacts proxy credentials from lowercase https_proxy', async () => {
   // getProxyUrl() prefers the lowercase variant. Confirm the redaction path
   // covers it — both env spellings flow through the same redactUrlForStatus.
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   delete process.env.http_proxy
   delete process.env.HTTPS_PROXY
   delete process.env.HTTP_PROXY

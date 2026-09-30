@@ -29,16 +29,16 @@ afterEach(() => {
 test('buildInheritedEnvVars marks spawned teammates as host-managed for provider routing', () => {
   const envVars = buildInheritedEnvVars()
 
-  expect(envVars).toContain('CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST=1')
+  expect(envVars).toContain('NYXCLAUDE_PROVIDER_MANAGED_BY_HOST=1')
 })
 
 test('buildInheritedEnvVars forwards pooled OpenAI credentials', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
 
   const envVars = buildInheritedEnvVars()
 
-  expect(envVars).toContain('CLAUDE_CODE_USE_OPENAI=1')
+  expect(envVars).toContain('NYXCLAUDE_USE_OPENAI=1')
   expect(envVars).toContain('OPENAI_API_KEYS=key-a\\,key-b')
 })
 

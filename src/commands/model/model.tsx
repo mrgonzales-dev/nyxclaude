@@ -250,8 +250,8 @@ function isActiveProfileAppliedToRoute(
   routeId: string,
 ): boolean {
   return (
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED === '1' &&
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID ===
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED === '1' &&
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID ===
       activeProfile.id &&
     getActiveProfileRouteId(activeProfile) === routeId
   )
@@ -336,7 +336,7 @@ function getLegacyOpenAIOptionsOverride(options: {
 function withInactiveProfileSwitchOptions(
   options: ModelOption[],
 ): ModelOption[] {
-  if (process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED !== '1') {
+  if (process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED !== '1') {
     return options
   }
   const activeProfile = getActiveProviderProfile()
@@ -384,7 +384,7 @@ function getOpenAIDiscoveryRequestOptions(routeId?: string | null): {
       }),
     ),
     baseUrl: request.baseUrl,
-    headers: parseCustomHeadersEnv(process.env.ANTHROPIC_CUSTOM_HEADERS),
+    headers: parseCustomHeadersEnv(process.env.NYXCLAUDE_CUSTOM_HEADERS),
   }
 }
 
@@ -676,7 +676,7 @@ function ModelPickerWrapper({
     )
 
   const handleCancel = () => {
-    logEvent('tengu_model_command_menu', {
+    logEvent('nyxclaude_model_command_menu', {
       action: 'cancel' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
     onDone(`Kept model as ${chalk.bold(renderModelLabel(mainLoopModel))}`, {
@@ -721,7 +721,7 @@ function ModelPickerWrapper({
         return
       }
       // Run the same fast-mode reconciliation as the regular switch path —
-      // otherwise a user with fastMode latched on Anthropic would carry the
+      // otherwise a user with fastMode latched on provider would carry the
       // latched state into the new profile even when its model can't support
       // it (jatmn review, #1119). This MUST run before setActiveProviderProfile:
       // reconcileFastModeForSwitch gates on isFastModeEnabled(), which reads the
@@ -740,7 +740,7 @@ function ModelPickerWrapper({
         })
         return
       }
-      logEvent('tengu_model_command_menu', {
+      logEvent('nyxclaude_model_command_menu', {
         action: 'switch_profile' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         from_model: String(mainLoopModel) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         to_model: String(switchTarget.model) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -807,7 +807,7 @@ function ModelPickerWrapper({
       return
     }
 
-    logEvent('tengu_model_command_menu', {
+    logEvent('nyxclaude_model_command_menu', {
       action: String(model) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       from_model: String(mainLoopModel) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       to_model: String(model) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -1045,7 +1045,7 @@ function SetModelAndClose({
 
       if (model && isOpus1mUnavailable(model)) {
         onDone(
-          'Opus with 1M context is not available for your account. Learn more: https://code.claude.com/docs/en/model-config#extended-context-with-1m',
+          'Opus with 1M context is not available for your account. Learn more: https://docs.nyxclaude.dev/model-config#extended-context-with-1m',
           {
             display: 'system',
           },
@@ -1054,7 +1054,7 @@ function SetModelAndClose({
       }
       if (model && isSonnet1mUnavailable(model)) {
         onDone(
-          'Sonnet 4.6 with 1M context is not available for your account. Learn more: https://code.claude.com/docs/en/model-config#extended-context-with-1m',
+          'Sonnet 4.6 with 1M context is not available for your account. Learn more: https://docs.nyxclaude.dev/model-config#extended-context-with-1m',
           {
             display: 'system',
           },
@@ -1306,7 +1306,7 @@ export const call: LocalJSXCommandCall = async (onDone, _context, args) => {
   const trimmedArgs = args?.trim() || ''
 
   if (COMMON_INFO_ARGS.includes(trimmedArgs)) {
-    logEvent('tengu_model_command_inline_help', {
+    logEvent('nyxclaude_model_command_inline_help', {
       args: trimmedArgs as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
     return <ShowModelAndClose onDone={onDone} />
@@ -1330,7 +1330,7 @@ export const call: LocalJSXCommandCall = async (onDone, _context, args) => {
   }
 
   if (trimmedArgs) {
-    logEvent('tengu_model_command_inline', {
+    logEvent('nyxclaude_model_command_inline', {
       args: trimmedArgs as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
     return <SetModelAndClose args={trimmedArgs} onDone={onDone} />

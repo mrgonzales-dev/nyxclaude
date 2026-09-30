@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle';
-import type { ContentBlockParam, TextBlockParam } from '@anthropic-ai/sdk/resources';
+import type { ContentBlockParam, TextBlockParam } from 'src/types/api.js';
 import { randomUUID } from 'crypto';
 import { setPromptId } from 'src/bootstrap/state.js';
 import { builtInCommandNames, type Command, type CommandBase, findCommand, getCommand, getCommandName, hasCommand, type PromptCommand } from 'src/commands.js';
@@ -60,7 +60,7 @@ const MCP_SETTLE_TIMEOUT_MS = 10_000;
 async function executeForkedSlashCommand(command: CommandBase & PromptCommand, args: string, context: ProcessUserInputContext, precedingInputBlocks: ContentBlockParam[], setToolJSX: SetToolJSXFn, canUseTool: CanUseToolFn): Promise<SlashCommandResult> {
   const agentId = createAgentId();
   const pluginMarketplace = command.pluginInfo ? parsePluginIdentifier(command.pluginInfo.repository).marketplace : undefined;
-  logEvent('tengu_slash_command_forked', {
+  logEvent('nyxclaude_slash_command_forked', {
     command_name: command.name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     invocation_trigger: 'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     ...(command.pluginInfo && {
@@ -91,7 +91,7 @@ async function executeForkedSlashCommand(command: CommandBase & PromptCommand, a
   // agent turn) cycles blocking user input. With this, N subagents run in
   // parallel and results trickle into the queue as they finish.
   //
-  // Gated on kairosEnabled (not CLAUDE_CODE_BRIEF) because the closed loop
+  // Gated on kairosEnabled (not NYXCLAUDE_BRIEF) because the closed loop
   // depends on assistant-mode invariants: scheduled_tasks.json exists,
   // the main agent knows to pipe results through SendUserMessage, and
   // isMeta prompts are hidden. Outside assistant mode, context:fork commands
@@ -311,7 +311,7 @@ export function resolveSlashCommand(commandName: string, commands: Command[], co
 export async function processSlashCommand(inputString: string, precedingInputBlocks: ContentBlockParam[], imageContentBlocks: ContentBlockParam[], attachmentMessages: AttachmentMessage[], context: ProcessUserInputContext, setToolJSX: SetToolJSXFn, uuid?: string, isAlreadyProcessing?: boolean, canUseTool?: CanUseToolFn, slashCommandOverride?: Command): Promise<ProcessUserInputBaseResult> {
   const parsed = parseSlashCommand(inputString);
   if (!parsed) {
-    logEvent('tengu_input_slash_missing', {});
+    logEvent('nyxclaude_input_slash_missing', {});
     const errorMessage = 'Commands are in the form `/command [args]`';
     return {
       messages: [createSyntheticUserCaveatMessage(), ...attachmentMessages, createUserMessage({
@@ -343,7 +343,7 @@ export async function processSlashCommand(inputString: string, precedingInputBlo
       // Not a file path — treat as command name
     }
     if (looksLikeCommand(commandName) && !isFilePath) {
-      logEvent('tengu_input_slash_invalid', {
+      logEvent('nyxclaude_input_slash_invalid', {
         input: commandName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
       const unknownMessage = `Unknown skill: ${commandName}`;
@@ -363,7 +363,7 @@ export async function processSlashCommand(inputString: string, precedingInputBlo
     }
     const promptId = randomUUID();
     setPromptId(promptId);
-    logEvent('tengu_input_prompt', {});
+    logEvent('nyxclaude_input_prompt', {});
     // Log user prompt event for OTLP
     void logOTelEvent('user_prompt', {
       prompt_length: String(inputString.length),
@@ -426,7 +426,7 @@ export async function processSlashCommand(inputString: string, precedingInputBlo
       }
       Object.assign(eventData, buildPluginCommandTelemetryFields(returnedCommand.pluginInfo));
     }
-    logEvent('tengu_input_command', {
+    logEvent('nyxclaude_input_command', {
       ...eventData,
       invocation_trigger: 'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
     });
@@ -447,7 +447,7 @@ export async function processSlashCommand(inputString: string, precedingInputBlo
     // Don't log as invalid if it looks like a common file path
     const looksLikeFilePath = inputString.startsWith('/var') || inputString.startsWith('/tmp') || inputString.startsWith('/private');
     if (!looksLikeFilePath) {
-      logEvent('tengu_input_slash_invalid', {
+      logEvent('nyxclaude_input_slash_invalid', {
         input: commandName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
     }
@@ -485,7 +485,7 @@ export async function processSlashCommand(inputString: string, precedingInputBlo
     }
     Object.assign(eventData, buildPluginCommandTelemetryFields(returnedCommand.pluginInfo));
   }
-  logEvent('tengu_input_command', {
+  logEvent('nyxclaude_input_command', {
     ...eventData,
     invocation_trigger: 'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
   });
@@ -855,11 +855,11 @@ async function getMessagesForPromptSlashCommand(command: CommandBase & PromptCom
   // skill content and allowedTools are useless. Instead, send a brief summary
   // telling the coordinator how to delegate this skill to a worker.
   //
-  // Workers run in-process and inherit CLAUDE_CODE_COORDINATOR_MODE from the
+  // Workers run in-process and inherit NYXCLAUDE_COORDINATOR_MODE from the
   // parent env, so we also check !context.agentId: agentId is only set for
   // subagents, letting workers fall through to getPromptForCommand and receive
   // the real skill content when they invoke the Skill tool.
-  if (feature('COORDINATOR_MODE') && isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE) && !context.agentId) {
+  if (feature('COORDINATOR_MODE') && isEnvTruthy(process.env.NYXCLAUDE_COORDINATOR_MODE) && !context.agentId) {
     const metadata = formatCommandLoadingMetadata(command, args);
     const parts: string[] = [`Skill "/${command.name}" is available for workers.`];
     if (command.description) {
@@ -926,7 +926,7 @@ async function getMessagesForPromptSlashCommand(command: CommandBase & PromptCom
   // with no permission prompt. Thread-level attachments still flow (input=null only
   // gates the user-input branch in getAttachments).
   const attachmentScanInput = attachmentScanInputForCommand(command, result.filter((block): block is TextBlockParam => block.type === 'text').map(block => block.text).join(' '));
-  const attachmentMessages = await toArray(getAttachmentMessages(attachmentScanInput, context, null, [],
+  const attachmentMessages = await toArray(getAttachmentMessages(attachmentScanInput, context, [],
   // queuedCommands - handled by query.ts for mid-turn attachments
   context.messages, 'repl_main_thread', {
     skipSkillDiscovery: true

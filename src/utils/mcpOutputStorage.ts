@@ -171,7 +171,7 @@ export async function persistBinaryContent(
   }
 
   // mime type and extension are safe fixed-vocabulary strings (not paths/code)
-  logEvent('tengu_binary_content_persisted', {
+  logEvent('nyxclaude_binary_content_persisted', {
     mimeType: (mimeType ??
       'unknown') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     sizeBytes: bytes.length,

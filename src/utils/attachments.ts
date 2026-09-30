@@ -22,7 +22,6 @@ import { countCharInString } from './stringUtils.js'
 import { count, uniq } from './array.js'
 import { getFsImplementation } from './fsOperations.js'
 import { readdir, stat } from 'fs/promises'
-import type { IDESelection } from '../hooks/useIdeSelection.js'
 import { TODO_WRITE_TOOL_NAME } from '../tools/TodoWriteTool/constants.js'
 import { TASK_CREATE_TOOL_NAME } from '../tools/TaskCreateTool/constants.js'
 import { TASK_UPDATE_TOOL_NAME } from '../tools/TaskUpdateTool/constants.js'
@@ -36,7 +35,6 @@ import {
   isTodoV2Enabled,
 } from './tasks.js'
 import { getPlanFilePath, getPlan } from './plans.js'
-import { getConnectedIdeName } from './ide.js'
 import {
   filterInjectedMemoryFiles,
   getManagedAndUserConditionalRules,
@@ -52,7 +50,6 @@ import { logError } from './log.js'
 import { logAntError } from './debug.js'
 import { isENOENT, toError } from './errors.js'
 import type { DiagnosticFile } from '../services/diagnosticTracking.js'
-import { diagnosticTracker } from '../services/diagnosticTracking.js'
 import type {
   AttachmentMessage,
   Message,
@@ -72,7 +69,7 @@ import type {
   ContentBlockParam,
   ImageBlockParam,
   Base64ImageSource,
-} from '@anthropic-ai/sdk/resources/messages.mjs'
+} from 'src/types/api.js'
 import { maybeResizeAndDownsampleImageBlock } from './imageResizer.js'
 import type { PastedContent } from './config.js'
 import { getGlobalConfig } from './config.js'
@@ -205,7 +202,7 @@ import {
   isThinkingMessage,
 } from './messages.js'
 import { isHumanTurn } from './messagePredicates.js'
-import { isEnvTruthy, getClaudeConfigHomeDir } from './envUtils.js'
+import { isEnvTruthy, getNyxclaudeConfigHomeDir } from './envUtils.js'
 import { feature } from 'bun:bundle'
 /* eslint-disable @typescript-eslint/no-require-imports */
 const BRIEF_TOOL_NAME: string | null =
@@ -777,15 +774,14 @@ const ATTACHMENT_FILE_IO_CONCURRENCY = 8
 export async function getAttachments(
   input: string | null,
   toolUseContext: ToolUseContext,
-  ideSelection: IDESelection | null,
   queuedCommands: QueuedCommand[],
   messages?: Message[],
   querySource?: QuerySource,
   options?: { skipSkillDiscovery?: boolean },
 ): Promise<Attachment[]> {
   if (
-    isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_ATTACHMENTS) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)
+    isEnvTruthy(process.env.NYXCLAUDE_DISABLE_ATTACHMENTS) ||
+    isEnvTruthy(process.env.NYXCLAUDE_SIMPLE)
   ) {
     // query.ts:removeFromQueue dequeues these unconditionally after
     // getAttachmentMessages runs — returning [] here silently drops them.
@@ -1005,17 +1001,8 @@ export async function getAttachments(
   // Attachments which are semantically only for the main conversation or don't have concurrency-safe implementations
   const mainThreadAttachments = isMainThread
     ? [
-        maybeAttachment('ide_selection', async () =>
-          getSelectedLinesFromIDE(ideSelection, toolUseContext),
-        ),
-        maybeAttachment('ide_opened_file', async () =>
-          getOpenedFileFromIDE(ideSelection, toolUseContext),
-        ),
         maybeAttachment('output_style', async () =>
           Promise.resolve(getOutputStyleAttachment()),
-        ),
-        maybeAttachment('diagnostics', async () =>
-          getDiagnosticAttachments(toolUseContext),
         ),
         maybeAttachment('lsp_diagnostics', async () =>
           getLSPDiagnosticAttachments(toolUseContext),
@@ -1082,7 +1069,7 @@ async function maybe<A>(
         .reduce((total, attachment) => {
           return total + jsonStringify(attachment).length
         }, 0)
-      logEvent('tengu_attachment_compute_duration', {
+      logEvent('nyxclaude_attachment_compute_duration', {
         label,
         duration_ms: duration,
         attachment_size_bytes: attachmentSizeBytes,
@@ -1094,7 +1081,7 @@ async function maybe<A>(
     const duration = Date.now() - startTime
     // Log only 5% of events to reduce volume
     if (Math.random() < 0.05) {
-      logEvent('tengu_attachment_compute_duration', {
+      logEvent('nyxclaude_attachment_compute_duration', {
         label,
         duration_ms: duration,
         error: true,
@@ -1517,8 +1504,8 @@ export function getUltrathinkEffortAttachment(
   // This helper is also used by speculative paths, which do not call
   // getAttachments(). Keep their behavior aligned with its global opt-out.
   if (
-    isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_ATTACHMENTS) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)
+    isEnvTruthy(process.env.NYXCLAUDE_DISABLE_ATTACHMENTS) ||
+    isEnvTruthy(process.env.NYXCLAUDE_SIMPLE)
   ) {
     return []
   }
@@ -1530,7 +1517,7 @@ export function getUltrathinkEffortAttachment(
     return []
   }
   if (logActivation) {
-    logEvent('tengu_ultrathink', {})
+    logEvent('nyxclaude_ultrathink', {})
   }
   return [{ type: 'ultrathink_effort', level: 'high' }]
 }
@@ -1540,9 +1527,9 @@ export function getUltracodePermissionAttachment(toolUseContext: ToolUseContext)
   const effortValue = toolUseContext.getAppState().effortValue
   const envOverride = getEffortEnvOverride()
   // Mirror resolveAppliedEffort's precedence so the permission tracks the effort
-  // the API actually runs with: a set CLAUDE_CODE_EFFORT_LEVEL wins over app
+  // the API actually runs with: a set NYXCLAUDE_EFFORT_LEVEL wins over app
   // state, and `null` (auto/unset) clears it. Otherwise `/effort ultracode` with
-  // CLAUDE_CODE_EFFORT_LEVEL=high would still leak ultracode_mode for a turn the
+  // NYXCLAUDE_EFFORT_LEVEL=high would still leak ultracode_mode for a turn the
   // API runs at high.
   const effectiveEffort =
     envOverride === null ? undefined : (envOverride ?? effortValue)
@@ -1575,7 +1562,7 @@ export function getDeferredToolsDeltaAttachment(
   // These three checks mirror the sync parts of isToolSearchEnabled —
   // the attachment text says "available via ToolSearch", so ToolSearch
   // has to actually be in the request. The async auto-threshold check
-  // is not replicated (would double-fire tengu_tool_search_mode_decision);
+  // is not replicated (would double-fire nyxclaude_tool_search_mode_decision);
   // in tst-auto below-threshold the attachment can fire while ToolSearch
   // is filtered out, but that's a narrow case and the tools announced
   // are directly callable anyway.
@@ -1733,38 +1720,6 @@ function getOutputStyleAttachment(): Attachment[] {
     {
       type: 'output_style',
       style: outputStyle,
-    },
-  ]
-}
-
-async function getSelectedLinesFromIDE(
-  ideSelection: IDESelection | null,
-  toolUseContext: ToolUseContext,
-): Promise<Attachment[]> {
-  const ideName = getConnectedIdeName(toolUseContext.options.mcpClients)
-  if (
-    !ideName ||
-    ideSelection?.lineStart === undefined ||
-    !ideSelection.text ||
-    !ideSelection.filePath
-  ) {
-    return []
-  }
-
-  const appState = toolUseContext.getAppState()
-  if (isFileReadDenied(ideSelection.filePath, appState.toolPermissionContext)) {
-    return []
-  }
-
-  return [
-    {
-      type: 'selected_lines_in_ide',
-      ideName,
-      lineStart: ideSelection.lineStart,
-      lineEnd: ideSelection.lineStart + ideSelection.lineCount - 1,
-      filename: ideSelection.filePath,
-      content: ideSelection.text,
-      displayPath: relative(getCwd(), ideSelection.filePath),
     },
   ]
 }
@@ -2003,7 +1958,7 @@ async function getNestedMemoryAttachmentsForFile(
     )
 
     const skipProjectLevel = getFeatureValue_CACHED_MAY_BE_STALE(
-      'tengu_paper_halyard',
+      'nyxclaude_paper_halyard',
       false,
     )
 
@@ -2041,36 +1996,6 @@ async function getNestedMemoryAttachmentsForFile(
   }
 
   return attachments
-}
-
-async function getOpenedFileFromIDE(
-  ideSelection: IDESelection | null,
-  toolUseContext: ToolUseContext,
-): Promise<Attachment[]> {
-  if (!ideSelection?.filePath || ideSelection.text) {
-    return []
-  }
-
-  const appState = toolUseContext.getAppState()
-  if (isFileReadDenied(ideSelection.filePath, appState.toolPermissionContext)) {
-    return []
-  }
-
-  // Get nested memory files
-  const nestedMemoryAttachments = await getNestedMemoryAttachmentsForFile(
-    ideSelection.filePath,
-    toolUseContext,
-    appState,
-  )
-
-  // Return nested memory attachments followed by the opened file attachment
-  return [
-    ...nestedMemoryAttachments,
-    {
-      type: 'opened_file_in_ide',
-      filename: ideSelection.filePath,
-    },
-  ]
 }
 
 type AttachmentFileContext = {
@@ -2177,7 +2102,7 @@ async function processAtMentionedFilesWithDependencies(
                 )
               }
               const stdout = names.join('\n')
-              logEvent('tengu_at_mention_extracting_directory_success', {})
+              logEvent('nyxclaude_at_mention_extracting_directory_success', {})
 
               return {
                 type: 'directory' as const,
@@ -2196,8 +2121,8 @@ async function processAtMentionedFilesWithDependencies(
         return await deps.generateFileAttachment(
           absoluteFilename,
           toolUseContext,
-          'tengu_at_mention_extracting_filename_success',
-          'tengu_at_mention_extracting_filename_error',
+          'nyxclaude_at_mention_extracting_filename_success',
+          'nyxclaude_at_mention_extracting_filename_error',
           'at-mention',
           {
             offset: lineStart,
@@ -2205,7 +2130,7 @@ async function processAtMentionedFilesWithDependencies(
           },
         )
       } catch {
-        logEvent('tengu_at_mention_extracting_filename_error', {})
+        logEvent('nyxclaude_at_mention_extracting_filename_error', {})
       }
       return null
     },
@@ -2225,11 +2150,11 @@ function processAgentMentions(
     const agentDef = agents.find(def => def.agentType === agentType)
 
     if (!agentDef) {
-      logEvent('tengu_at_mention_agent_not_found', {})
+      logEvent('nyxclaude_at_mention_agent_not_found', {})
       return null
     }
 
-    logEvent('tengu_at_mention_agent_success', {})
+    logEvent('nyxclaude_at_mention_agent_success', {})
 
     return {
       type: 'agent_mention' as const,
@@ -2258,14 +2183,14 @@ async function processMcpResourceAttachments(
         const uri = uriParts.join(':') // Rejoin in case URI contains colons
 
         if (!serverName || !uri) {
-          logEvent('tengu_at_mention_mcp_resource_error', {})
+          logEvent('nyxclaude_at_mention_mcp_resource_error', {})
           return null
         }
 
         // Find the MCP client
         const client = mcpClients.find(c => c.name === serverName)
         if (!client || client.type !== 'connected') {
-          logEvent('tengu_at_mention_mcp_resource_error', {})
+          logEvent('nyxclaude_at_mention_mcp_resource_error', {})
           return null
         }
 
@@ -2274,7 +2199,7 @@ async function processMcpResourceAttachments(
           toolUseContext.options.mcpResources?.[serverName] || []
         const resourceInfo = serverResources.find(r => r.uri === uri)
         if (!resourceInfo) {
-          logEvent('tengu_at_mention_mcp_resource_error', {})
+          logEvent('nyxclaude_at_mention_mcp_resource_error', {})
           return null
         }
 
@@ -2283,7 +2208,7 @@ async function processMcpResourceAttachments(
             uri,
           })
 
-          logEvent('tengu_at_mention_mcp_resource_success', {})
+          logEvent('nyxclaude_at_mention_mcp_resource_success', {})
 
           return {
             type: 'mcp_resource' as const,
@@ -2294,12 +2219,12 @@ async function processMcpResourceAttachments(
             content: result,
           }
         } catch (error) {
-          logEvent('tengu_at_mention_mcp_resource_error', {})
+          logEvent('nyxclaude_at_mention_mcp_resource_error', {})
           logError(error)
           return null
         }
       } catch {
-        logEvent('tengu_at_mention_mcp_resource_error', {})
+        logEvent('nyxclaude_at_mention_mcp_resource_error', {})
         return null
       }
     }),
@@ -2351,7 +2276,7 @@ export async function tryReadEditedImageAttachment(
     log(new Error(`watched-file image attachment skipped (${errorName})`))
     // Likewise only the file extension goes to analytics — never the path.
     const analyticsExt = getFileExtensionForAnalytics(normalizedPath)
-    track('tengu_watched_file_compression_failed', {
+    track('nyxclaude_watched_file_compression_failed', {
       ...(analyticsExt !== undefined && { ext: analyticsExt }),
     })
     return null
@@ -2686,7 +2611,7 @@ export function startRelevantMemoryPrefetch(
 ): MemoryPrefetch | undefined {
   if (
     !isAutoMemoryEnabled() ||
-    !getFeatureValue_CACHED_MAY_BE_STALE('tengu_moth_copse', false)
+    !getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_moth_copse', false)
   ) {
     return undefined
   }
@@ -2731,7 +2656,7 @@ export function startRelevantMemoryPrefetch(
     consumedOnIteration: -1,
     [Symbol.dispose]() {
       controller.abort()
-      logEvent('tengu_memdir_prefetch_collected', {
+      logEvent('nyxclaude_memdir_prefetch_collected', {
         hidden_by_first_iteration:
           handle.settledAt !== null && handle.consumedOnIteration === 0,
         consumed_on_iteration: handle.consumedOnIteration,
@@ -2941,7 +2866,7 @@ export function resetSentSkillNames(): void {
  * on --resume when a skill_listing attachment already exists in the
  * transcript.
  *
- * `sentSkillNames` is module-scope — process-local. Each `claude -p` spawn
+ * `sentSkillNames` is module-scope — process-local. Each `nyxclaude -p` spawn
  * starts with an empty Map, so without this every resume re-injects the
  * full ~600-token listing even though it's already in the conversation from
  * the prior process. Shows up on every --resume; particularly loud for
@@ -3199,31 +3124,6 @@ export function parseAtMentionedFileLines(
   return { filename: filename ?? mention, lineStart, lineEnd }
 }
 
-async function getDiagnosticAttachments(
-  toolUseContext: ToolUseContext,
-): Promise<Attachment[]> {
-  // Diagnostics are only useful if the agent has the Bash tool to act on them
-  if (
-    !toolUseContext.options.tools.some(t => toolMatchesName(t, BASH_TOOL_NAME))
-  ) {
-    return []
-  }
-
-  // Get new diagnostics from the tracker (IDE diagnostics via MCP)
-  const newDiagnostics = await diagnosticTracker.getNewDiagnosticsCompat()
-  if (newDiagnostics.length === 0) {
-    return []
-  }
-
-  return [
-    {
-      type: 'diagnostics',
-      files: newDiagnostics,
-      isNew: true,
-    },
-  ]
-}
-
 /**
  * Get LSP diagnostic attachments from passive LSP servers.
  * Follows the AsyncHookRegistry pattern for consistent async attachment delivery.
@@ -3355,7 +3255,6 @@ export const __test = {
 export async function* getAttachmentMessages(
   input: string | null,
   toolUseContext: ToolUseContext,
-  ideSelection: IDESelection | null,
   queuedCommands: QueuedCommand[],
   messages?: Message[],
   querySource?: QuerySource,
@@ -3365,7 +3264,6 @@ export async function* getAttachmentMessages(
   const attachments = await getAttachments(
     input,
     toolUseContext,
-    ideSelection,
     queuedCommands,
     messages,
     querySource,
@@ -3376,7 +3274,7 @@ export async function* getAttachmentMessages(
     return
   }
 
-  logEvent('tengu_attachments', {
+  logEvent('nyxclaude_attachments', {
     attachment_types: attachments.map(
       _ => _.type,
     ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -3416,7 +3314,7 @@ export async function tryGetPDFReference(
     // Use page count if available, otherwise fall back to size heuristic (~100KB per page)
     const effectivePageCount = pageCount ?? Math.ceil(stats.size / (100 * 1024))
     if (effectivePageCount > PDF_AT_MENTION_INLINE_THRESHOLD) {
-      logEvent('tengu_pdf_reference_attachment', {
+      logEvent('nyxclaude_pdf_reference_attachment', {
         pageCount: effectivePageCount,
         fileSize: stats.size,
         hadPdfinfo: pageCount !== null,
@@ -3472,7 +3370,7 @@ export async function generateFileAttachment(
     if (!isPDFExtension(ext)) {
       try {
         const stats = await getFsImplementation().stat(filename)
-        logEvent('tengu_attachment_file_too_large', {
+        logEvent('nyxclaude_attachment_file_too_large', {
           size_bytes: stats.size,
           mode,
         } as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS)
@@ -4206,7 +4104,7 @@ function getTeamContextAttachment(messages: Message[]): Attachment[] {
     return []
   }
 
-  const configDir = getClaudeConfigHomeDir()
+  const configDir = getNyxclaudeConfigHomeDir()
   const teamConfigPath = `${configDir}/teams/${teamName}/config.json`
   const taskListPath = `${configDir}/tasks/${teamName}/`
 
@@ -4226,7 +4124,7 @@ function getTokenUsageAttachment(
   messages: Message[],
   model: string,
 ): Attachment[] {
-  if (!isEnvTruthy(process.env.CLAUDE_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT)) {
+  if (!isEnvTruthy(process.env.NYXCLAUDE_ENABLE_TOKEN_USAGE_ATTACHMENT)) {
     return []
   }
 
@@ -4315,7 +4213,7 @@ async function getVerifyPlanReminderAttachment(
 ): Promise<Attachment[]> {
   if (
     process.env.USER_TYPE !== 'ant' ||
-    !isEnvTruthy(process.env.CLAUDE_CODE_VERIFY_PLAN)
+    !isEnvTruthy(process.env.NYXCLAUDE_VERIFY_PLAN)
   ) {
     return []
   }
@@ -4350,7 +4248,7 @@ export function getCompactionReminderAttachment(
   messages: Message[],
   model: string,
 ): Attachment[] {
-  if (!getFeatureValue_CACHED_MAY_BE_STALE('tengu_marble_fox', false)) {
+  if (!getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_marble_fox', false)) {
     return []
   }
 

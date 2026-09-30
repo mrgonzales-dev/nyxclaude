@@ -23,9 +23,9 @@ import {
 } from '../test/sharedMutationLock.js'
 import type { Command } from '../types/command.ts'
 import {
-  getClaudeConfigHomeDir,
-  getClaudeConfigHomeDirOverrideForTesting,
-  setClaudeConfigHomeDirForTesting,
+  getNyxclaudeConfigHomeDir,
+  getNyxclaudeConfigHomeDirOverrideForTesting,
+  setNyxclaudeConfigHomeDirForTesting,
 } from '../utils/envUtils.ts'
 import {
   getFsImplementation,
@@ -84,7 +84,7 @@ function writeUserSkill(
 
 function clearSkillAndConfigCaches(): void {
   clearSkillCaches()
-  getClaudeConfigHomeDir.cache?.clear?.()
+  getNyxclaudeConfigHomeDir.cache?.clear?.()
   resetSettingsCache()
 }
 
@@ -100,9 +100,9 @@ function setRealFilesystemForTest(): ReturnType<typeof getFsImplementation> {
 }
 
 function setConfigDirEnv(configDir: string): void {
-  setClaudeConfigHomeDirForTesting(undefined)
+  setNyxclaudeConfigHomeDirForTesting(undefined)
   process.env.NYXCLAUDE_CONFIG_DIR = configDir
-  delete process.env.CLAUDE_CONFIG_DIR
+  delete process.env.NYXCLAUDE_CONFIG_DIR
 }
 
 function restoreConfigDirEnv(original: {
@@ -110,7 +110,7 @@ function restoreConfigDirEnv(original: {
   claudeConfigDir: string | undefined
   configHomeOverride: string | undefined
 }): void {
-  setClaudeConfigHomeDirForTesting(original.configHomeOverride)
+  setNyxclaudeConfigHomeDirForTesting(original.configHomeOverride)
 
   if (original.nyxClaudeConfigDir === undefined) {
     delete process.env.NYXCLAUDE_CONFIG_DIR
@@ -119,9 +119,9 @@ function restoreConfigDirEnv(original: {
   }
 
   if (original.claudeConfigDir === undefined) {
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
   } else {
-    process.env.CLAUDE_CONFIG_DIR = original.claudeConfigDir
+    process.env.NYXCLAUDE_CONFIG_DIR = original.claudeConfigDir
   }
 }
 
@@ -131,8 +131,8 @@ test.serial('loads flat and nested skills with colon namespaces', async () => {
   const cwd = join(configDir, 'workspace')
   const originalConfigDir = {
     nyxClaudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
-    claudeConfigDir: process.env.CLAUDE_CONFIG_DIR,
-    configHomeOverride: getClaudeConfigHomeDirOverrideForTesting(),
+    claudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
+    configHomeOverride: getNyxclaudeConfigHomeDirOverrideForTesting(),
   }
   const originalSettingsState = enableUserAndProjectSettingSources()
   const originalFs = setRealFilesystemForTest()
@@ -196,8 +196,8 @@ test.serial('ignores legacy .claude project skills when .nyxclaude skills exist'
   const cwd = join(configDir, 'workspace')
   const originalConfigDir = {
     nyxClaudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
-    claudeConfigDir: process.env.CLAUDE_CONFIG_DIR,
-    configHomeOverride: getClaudeConfigHomeDirOverrideForTesting(),
+    claudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
+    configHomeOverride: getNyxclaudeConfigHomeDirOverrideForTesting(),
   }
   const originalSettingsState = enableUserAndProjectSettingSources()
   const originalFs = setRealFilesystemForTest()
@@ -244,8 +244,8 @@ test.serial('loads persisted registry trust metadata from skill.json', async () 
   const cwd = join(configDir, 'workspace')
   const originalConfigDir = {
     nyxClaudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
-    claudeConfigDir: process.env.CLAUDE_CONFIG_DIR,
-    configHomeOverride: getClaudeConfigHomeDirOverrideForTesting(),
+    claudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
+    configHomeOverride: getNyxclaudeConfigHomeDirOverrideForTesting(),
   }
   const originalSettingsState = enableUserAndProjectSettingSources()
   const originalFs = setRealFilesystemForTest()
@@ -292,8 +292,8 @@ test.serial('project skills are ordered before user skills with the same name', 
   const cwd = join(configDir, 'workspace')
   const originalConfigDir = {
     nyxClaudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
-    claudeConfigDir: process.env.CLAUDE_CONFIG_DIR,
-    configHomeOverride: getClaudeConfigHomeDirOverrideForTesting(),
+    claudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
+    configHomeOverride: getNyxclaudeConfigHomeDirOverrideForTesting(),
   }
   const originalSettingsState = enableUserAndProjectSettingSources()
   const originalFs = setRealFilesystemForTest()
@@ -301,7 +301,7 @@ test.serial('project skills are ordered before user skills with the same name', 
   try {
     mkdirSync(cwd, { recursive: true })
     setConfigDirEnv(configDir)
-    const userConfigDir = getClaudeConfigHomeDir()
+    const userConfigDir = getNyxclaudeConfigHomeDir()
     writeUserSkill(userConfigDir, 'shared', 'user skill')
     writeSkill(cwd, 'shared', {
       configDirName: '.nyxclaude',
@@ -347,14 +347,14 @@ test.serial('dynamic discovery checks .nyxclaude skill directories', async () =>
   await acquireSharedMutationLock('loadSkillsDir.test.ts')
   const originalFs = setRealFilesystemForTest()
   const originalArgv = [...process.argv]
-  const originalClaudeCodeSimple = process.env.CLAUDE_CODE_SIMPLE
+  const originalNyxclaudeSimple = process.env.NYXCLAUDE_SIMPLE
   const rootDir = mkdtempSync(join(tmpdir(), 'nyxclaude-skills-'))
   const cwd = join(rootDir, 'workspace')
   const featureDir = join(cwd, 'src', 'feature')
 
   try {
     process.argv = process.argv.filter(arg => arg !== '--bare')
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
     mkdirSync(featureDir, { recursive: true })
     execFileSync('git', ['init'], { cwd, stdio: 'ignore' })
     writeSkill(featureDir, 'feature-skill', {
@@ -367,10 +367,10 @@ test.serial('dynamic discovery checks .nyxclaude skill directories', async () =>
   } finally {
     try {
       process.argv = originalArgv
-      if (originalClaudeCodeSimple === undefined) {
-        delete process.env.CLAUDE_CODE_SIMPLE
+      if (originalNyxclaudeSimple === undefined) {
+        delete process.env.NYXCLAUDE_SIMPLE
       } else {
-        process.env.CLAUDE_CODE_SIMPLE = originalClaudeCodeSimple
+        process.env.NYXCLAUDE_SIMPLE = originalNyxclaudeSimple
       }
       setFsImplementation(originalFs)
       clearDynamicSkills()

@@ -1,14 +1,14 @@
 import type {
   BetaContentBlock,
   BetaWebSearchTool20250305,
-} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+} from 'src/types/api.js'
 import { PRODUCT_DISPLAY_NAME } from 'src/constants/product.js'
 import { getAPIProvider, isFirstPartyAnthropicBaseUrl } from 'src/utils/model/providers.js'
 import type { PermissionResult } from 'src/utils/permissions/PermissionResult.js'
 
 import { z } from 'zod/v4'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
-import { queryModelWithStreaming } from '../../services/api/claude.js'
+import { queryModelWithStreaming } from '../../services/api/modelApi.js'
 import { collectCodexCompletedResponse } from '../../services/api/codexShim.js'
 import { fetchWithProxyRetry } from '../../services/api/fetchWithProxyRetry.js'
 import {
@@ -775,7 +775,7 @@ export const WebSearchTool = buildTool({
     const toolSchema = makeToolSchema(input)
 
     const useHaiku = getFeatureValue_CACHED_MAY_BE_STALE(
-      'tengu_plum_vx3',
+      'nyxclaude_plum_vx3',
       false,
     )
 

@@ -194,12 +194,12 @@ const ANTHROPIC_WIRE_PROVIDERS: ReadonlySet<LegacyAPIProvider> = new Set([
 export function resolveToolSearchMode(
   env: {
     ENABLE_TOOL_SEARCH?: string
-    CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS?: string
+    NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS?: string
     [key: string]: string | undefined
   },
   provider: LegacyAPIProvider,
 ): ToolSearchMode {
-  // CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS is a kill switch for beta API
+  // NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS is a kill switch for beta API
   // features. Tool search emits defer_loading on tool definitions and
   // tool_reference content blocks — both require the API to accept a beta
   // header. When the kill switch is set, force 'standard' so no beta shapes
@@ -208,9 +208,9 @@ export function resolveToolSearchMode(
   // isToolSearchEnabledOptimistic doesn't cover. Scoped to Anthropic-wire
   // providers: converted wires (OpenAI shims, Gemini Vertex) never carry
   // beta shapes, so deferral stays available there.
-  // github.com/anthropics/claude-code/issues/20031
+  // github.com/nyxclaude/nyxclaude/issues/20031
   if (
-    isEnvTruthy(env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS) &&
+    isEnvTruthy(env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS) &&
     ANTHROPIC_WIRE_PROVIDERS.has(provider)
   ) {
     return 'standard'
@@ -254,7 +254,7 @@ function getUnsupportedToolReferencePatterns(): string[] {
   try {
     // Try to get from GrowthBook for live configuration
     const patterns = getFeatureValue_CACHED_MAY_BE_STALE<string[] | null>(
-      'tengu_tool_search_unsupported_models',
+      'nyxclaude_tool_search_unsupported_models',
       null,
     )
     if (patterns && Array.isArray(patterns) && patterns.length > 0) {
@@ -274,7 +274,7 @@ function getUnsupportedToolReferencePatterns(): string[] {
  * models work by default without code changes.
  *
  * Currently, Haiku models do NOT support tool_reference. This can be
- * updated via GrowthBook feature 'tengu_tool_search_unsupported_models'.
+ * updated via GrowthBook feature 'nyxclaude_tool_search_unsupported_models'.
  *
  * @param model The model name to check
  * @returns true if the model supports tool_reference, false otherwise
@@ -331,7 +331,7 @@ export function isToolSearchEnabledOptimistic(): boolean {
   // is 'firstParty' but the base URL points elsewhere, the proxy will reject
   // tool_reference blocks with a 400. Vertex/Bedrock/Foundry are unaffected —
   // they have their own endpoints and beta headers.
-  // https://github.com/anthropics/claude-code/issues/30912
+  // https://github.com/nyxclaude/nyxclaude/issues/30912
   //
   // HOWEVER: some proxies DO support tool_reference (LiteLLM passthrough,
   // Cloudflare AI Gateway, corp gateways that forward beta headers). The
@@ -445,7 +445,7 @@ export async function isToolSearchEnabled(
     reason: string,
     extraProps?: Record<string, number>,
   ): void {
-    logEvent('tengu_tool_search_mode_decision', {
+    logEvent('nyxclaude_tool_search_mode_decision', {
       enabled,
       mode: mode as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       reason:
@@ -646,7 +646,7 @@ export type DeferredToolsDelta = {
 }
 
 /**
- * Call-site discriminator for the tengu_deferred_tools_pool_change event.
+ * Call-site discriminator for the nyxclaude_deferred_tools_pool_change event.
  * The scan runs from several sites with different expected-prior semantics
  * (inc-4747):
  *   - attachments_main: main-thread getAttachments → prior=0 is a BUG on fire-2+
@@ -670,13 +670,13 @@ export type DeferredToolsDeltaScanContext = {
 
 /**
  * True → announce deferred tools via persisted delta attachments.
- * False → claude.ts keeps its per-call <available-deferred-tools>
+ * False → modelApi.ts keeps its per-call <available-deferred-tools>
  * header prepend (the attachment does not fire).
  */
 export function isDeferredToolsDeltaEnabled(): boolean {
   return (
     process.env.USER_TYPE === 'ant' ||
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_glacier_2xr', false)
+    getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_glacier_2xr', false)
   )
 }
 
@@ -778,7 +778,7 @@ export function getDeferredToolsDelta(
   // subagent first-fires and compact-path scans have EXPECTED prior=0 and
   // dominate the stat. callSite/querySource/attachmentTypesSeen split the
   // buckets so the real main-thread cross-turn failure is isolable in BQ.
-  logEvent('tengu_deferred_tools_pool_change', {
+  logEvent('nyxclaude_deferred_tools_pool_change', {
     addedCount: added.length,
     removedCount: removed.length,
     priorAnnouncedCount: announced.size,

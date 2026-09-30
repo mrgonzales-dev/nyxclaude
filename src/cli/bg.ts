@@ -179,11 +179,11 @@ export function buildBackgroundChildProcessConfig(
 ): BackgroundChildProcessConfig {
   const env: NodeJS.ProcessEnv = {
     ...input.processEnv,
-    CLAUDE_CODE_ENTRYPOINT: 'bg',
-    CLAUDE_CODE_SESSION_KIND: 'bg',
-    CLAUDE_CODE_SESSION_LOG: input.stdoutLogPath,
+    NYXCLAUDE_ENTRYPOINT: 'bg',
+    NYXCLAUDE_SESSION_KIND: 'bg',
+    NYXCLAUDE_SESSION_LOG: input.stdoutLogPath,
     ...(input.sessionName
-      ? { CLAUDE_CODE_SESSION_NAME: input.sessionName }
+      ? { NYXCLAUDE_SESSION_NAME: input.sessionName }
       : {}),
   }
   delete env[HEAP_RELAUNCHED_ENV]

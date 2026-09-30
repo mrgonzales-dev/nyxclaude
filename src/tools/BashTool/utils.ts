@@ -2,7 +2,7 @@ import type {
   Base64ImageSource,
   ContentBlockParam,
   ToolResultBlockParam,
-} from '@anthropic-ai/sdk/resources/index.mjs'
+} from 'src/types/api.js'
 import { readFile, stat } from 'fs/promises'
 import { getOriginalCwd } from 'src/bootstrap/state.js'
 import { logEvent } from 'src/services/analytics/index.js'
@@ -192,7 +192,7 @@ export function resetCwdIfOutsideProject(
     // Reset to original directory if maintaining project dir OR outside allowed working directory
     setCwd(originalCwd)
     if (!shouldMaintain) {
-      logEvent('tengu_bash_tool_reset_to_original_dir', {})
+      logEvent('nyxclaude_bash_tool_reset_to_original_dir', {})
       return true
     }
   }

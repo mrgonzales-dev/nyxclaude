@@ -93,7 +93,7 @@ export function getDefaultCommitCoAuthorName({
   // historical public fallback. OpenAI-compatible providers should identify the
   // actual configured model instead of claiming Claude Opus.
   if (apiProvider === 'firstParty') {
-    // @[MODEL LAUNCH]: Update this fallback when the default public Claude model changes.
+    // @[MODEL LAUNCH]: Update this fallback when the default public Model changes.
     return 'Claude Opus 4.8'
   }
 
@@ -119,7 +119,7 @@ export function getAttributionTexts(): AttributionTexts {
   }
 
   if (getClientType() === 'remote') {
-    const remoteSessionId = process.env.CLAUDE_CODE_REMOTE_SESSION_ID
+    const remoteSessionId = process.env.NYXCLAUDE_REMOTE_SESSION_ID
     if (remoteSessionId) {
       const ingressUrl = process.env.SESSION_INGRESS_URL
       // Skip for local dev - URLs won't persist
@@ -381,7 +381,7 @@ export async function getEnhancedPRAttribution(
   }
 
   if (getClientType() === 'remote') {
-    const remoteSessionId = process.env.CLAUDE_CODE_REMOTE_SESSION_ID
+    const remoteSessionId = process.env.NYXCLAUDE_REMOTE_SESSION_ID
     if (remoteSessionId) {
       const ingressUrl = process.env.SESSION_INGRESS_URL
       // Skip for local dev - URLs won't persist

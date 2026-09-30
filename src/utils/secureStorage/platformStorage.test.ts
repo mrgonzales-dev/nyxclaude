@@ -81,7 +81,7 @@ describe("Secure Storage Platform Implementations", () => {
   let realEnvUtils: typeof EnvUtils;
   let getSecureStorageServiceName: typeof MacOsKeychainHelpers.getSecureStorageServiceName;
   let CREDENTIALS_SERVICE_SUFFIX: typeof MacOsKeychainHelpers.CREDENTIALS_SERVICE_SUFFIX;
-  let setClaudeConfigHomeDirForTesting: typeof EnvUtils.setClaudeConfigHomeDirForTesting;
+  let setNyxclaudeConfigHomeDirForTesting: typeof EnvUtils.setNyxclaudeConfigHomeDirForTesting;
   let linuxSecretStorage: typeof LinuxSecretStorage;
   let windowsCredentialStorage: typeof WindowsCredentialStorage;
 
@@ -95,7 +95,7 @@ describe("Secure Storage Platform Implementations", () => {
     const moduleSuffix = `?platformStorageTest=${Date.now()}-${Math.random()}`;
     realEnvUtils = await import(`../envUtils.js${moduleSuffix}`);
     mock.module("../envUtils.js", () => realEnvUtils);
-    ({ setClaudeConfigHomeDirForTesting } = realEnvUtils);
+    ({ setNyxclaudeConfigHomeDirForTesting } = realEnvUtils);
     ({ getSecureStorageServiceName, CREDENTIALS_SERVICE_SUFFIX } = await import(
       `./macOsKeychainHelpers.js${moduleSuffix}`
     ));
@@ -105,14 +105,14 @@ describe("Secure Storage Platform Implementations", () => {
 
   beforeEach(() => {
     process.env = { ...originalEnv };
-    setClaudeConfigHomeDirForTesting(undefined);
+    setNyxclaudeConfigHomeDirForTesting(undefined);
     mockExecaSync.mockClear();
     // Default mock behavior
     mockExecaSync.mockImplementation(() => execaResult());
   });
 
   afterEach(() => {
-    setClaudeConfigHomeDirForTesting(undefined);
+    setNyxclaudeConfigHomeDirForTesting(undefined);
     process.env = originalEnv;
   });
 
@@ -139,12 +139,12 @@ describe("Secure Storage Platform Implementations", () => {
   };
 
   describe("Config-Dir Isolation", () => {
-    test("service name ignores CLAUDE_CONFIG_DIR", () => {
+    test("service name ignores NYXCLAUDE_CONFIG_DIR", () => {
       delete process.env.NYXCLAUDE_CONFIG_DIR;
-      delete process.env.CLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       const defaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
-      process.env.CLAUDE_CONFIG_DIR = "/tmp/other-config";
+      process.env.NYXCLAUDE_CONFIG_DIR = "/tmp/other-config";
       const otherName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       expect(otherName).toBe(defaultName);
@@ -154,11 +154,11 @@ describe("Secure Storage Platform Implementations", () => {
 
     test("service name changes with NYXCLAUDE_CONFIG_DIR", () => {
       delete process.env.NYXCLAUDE_CONFIG_DIR;
-      delete process.env.CLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       const defaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       process.env.NYXCLAUDE_CONFIG_DIR = "/tmp/preferred-config";
-      delete process.env.CLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       const preferredName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       expect(preferredName).not.toBe(defaultName);
@@ -168,7 +168,7 @@ describe("Secure Storage Platform Implementations", () => {
 
     test("service name stays default when NYXCLAUDE_CONFIG_DIR points at default config dir", () => {
       delete process.env.NYXCLAUDE_CONFIG_DIR;
-      delete process.env.CLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       const defaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       process.env.NYXCLAUDE_CONFIG_DIR = join(homedir(), ".nyxclaude");
@@ -179,7 +179,7 @@ describe("Secure Storage Platform Implementations", () => {
 
     test("service name stays default when NYXCLAUDE_CONFIG_DIR has a trailing separator", () => {
       delete process.env.NYXCLAUDE_CONFIG_DIR;
-      delete process.env.CLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       const defaultName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       process.env.NYXCLAUDE_CONFIG_DIR = `${join(homedir(), ".nyxclaude")}/`;
@@ -188,10 +188,10 @@ describe("Secure Storage Platform Implementations", () => {
       expect(explicitDefaultName).toBe(defaultName);
     });
 
-    test("Linux storage ignores CLAUDE_CONFIG_DIR scoped service name", () => {
+    test("Linux storage ignores NYXCLAUDE_CONFIG_DIR scoped service name", () => {
       delete process.env.NYXCLAUDE_CONFIG_DIR;
-      delete process.env.CLAUDE_CONFIG_DIR;
-      process.env.CLAUDE_CONFIG_DIR = "/tmp/linux-scoped";
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
+      process.env.NYXCLAUDE_CONFIG_DIR = "/tmp/linux-scoped";
       const expectedName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       linuxSecretStorage.update(testData);
@@ -202,7 +202,7 @@ describe("Secure Storage Platform Implementations", () => {
 
     test("Linux storage uses NYXCLAUDE_CONFIG_DIR scoped service name", () => {
       process.env.NYXCLAUDE_CONFIG_DIR = "/tmp/linux-preferred-scoped";
-      delete process.env.CLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       const expectedName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       linuxSecretStorage.update(testData);
@@ -211,10 +211,10 @@ describe("Secure Storage Platform Implementations", () => {
       expect(args).toContain(expectedName);
     });
 
-    test("Windows storage ignores CLAUDE_CONFIG_DIR scoped resource name", () => {
+    test("Windows storage ignores NYXCLAUDE_CONFIG_DIR scoped resource name", () => {
       delete process.env.NYXCLAUDE_CONFIG_DIR;
-      delete process.env.CLAUDE_CONFIG_DIR;
-      process.env.CLAUDE_CONFIG_DIR = "/tmp/win-scoped";
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
+      process.env.NYXCLAUDE_CONFIG_DIR = "/tmp/win-scoped";
       const expectedName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       windowsCredentialStorage.update(testData);
@@ -227,7 +227,7 @@ describe("Secure Storage Platform Implementations", () => {
 
     test("Windows storage uses NYXCLAUDE_CONFIG_DIR scoped resource name", () => {
       process.env.NYXCLAUDE_CONFIG_DIR = "/tmp/win-preferred-scoped";
-      delete process.env.CLAUDE_CONFIG_DIR;
+      delete process.env.NYXCLAUDE_CONFIG_DIR;
       const expectedName = getSecureStorageServiceName(CREDENTIALS_SERVICE_SUFFIX);
 
       windowsCredentialStorage.update(testData);

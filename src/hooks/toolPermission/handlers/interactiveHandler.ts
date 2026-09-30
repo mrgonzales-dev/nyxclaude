@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+import type { ContentBlockParam } from 'src/types/api.js'
 import { randomUUID } from 'crypto'
 import { logForDebugging } from 'src/utils/debug.js'
 // NYX: bridge deleted, stubbed
@@ -289,7 +289,7 @@ function handleInteractivePermission(
       },
     })
 
-    // Race 4: Bridge permission response from CCR (claude.ai)
+    // Race 4: Bridge permission response from CCR (web console)
     // When the bridge is connected, send the permission request to CCR and
     // subscribe for a response. Whichever side (CLI or CCR) responds first
     // wins via claim().
@@ -377,7 +377,7 @@ function handleInteractivePermission(
           (c): c is ConnectedMCPServer =>
             c.type === 'connected' &&
             Boolean(
-              c.capabilities?.experimental?.['claude/channel/permission'],
+              c.capabilities?.experimental?.['nyxclaude/channel/permission'],
             ) &&
             gateChannelServer(c.name, c.capabilities, c.config.pluginSource)
               .action === 'register',

@@ -105,8 +105,8 @@ export type McpServerConfigForProcessTransport = ({
   name: string
 })
 
-export type McpClaudeAIProxyServerConfig = {
-  type: "claudeai-proxy"
+export type McpRemoteProxyServerConfig = {
+  type: "remote-proxy"
   url: string
   id: string
 }
@@ -128,7 +128,7 @@ export type McpServerStatusConfig = (({
   type: "sdk"
   name: string
 })) | ({
-  type: "claudeai-proxy"
+  type: "remote-proxy"
   url: string
   id: string
 })
@@ -159,7 +159,7 @@ export type McpServerStatus = {
     type: "sdk"
     name: string
   })) | ({
-    type: "claudeai-proxy"
+    type: "remote-proxy"
     url: string
     id: string
   })
@@ -1586,7 +1586,7 @@ export type SDKUserMessageReplay = {
   isReplay: true
 }
 
-/** Rate limit information for claude.ai subscription users. */
+/** Rate limit information for web console subscription users. */
 export type SDKRateLimitInfo = {
   status: "allowed" | "allowed_warning" | "rejected"
   resetsAt?: number
@@ -1778,7 +1778,7 @@ export type SDKSystemMessage = {
   agents?: string[]
   apiKeySource: "user" | "project" | "org" | "temporary" | "oauth" | "none"
   betas?: string[]
-  claude_code_version: string
+  nyxclaude_version: string
   cwd: string
   tools: string[]
   mcp_servers: {
@@ -2151,7 +2151,7 @@ export type SDKMessage = ({
   agents?: string[]
   apiKeySource: "user" | "project" | "org" | "temporary" | "oauth" | "none"
   betas?: string[]
-  claude_code_version: string
+  nyxclaude_version: string
   cwd: string
   tools: string[]
   mcp_servers: {

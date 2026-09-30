@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ToolUseBlock } from 'src/types/api.js'
 import { query, type QueryParams } from '../query.js'
 import type { QueryDeps } from './deps.js'
 import { getMissingToolResultAbortMessage } from '../utils/abortReasons.js'
@@ -1026,7 +1026,7 @@ test('query loop checks the guard before optional follow-up work', async () => {
   )
   const summaryIndex = source.indexOf('let nextPendingToolUseSummary')
   const attachmentsIndex = source.indexOf(
-    "logEvent('tengu_query_before_attachments'",
+    "logEvent('nyxclaude_query_before_attachments'",
   )
 
   expect(guardIndex).toBeGreaterThan(-1)

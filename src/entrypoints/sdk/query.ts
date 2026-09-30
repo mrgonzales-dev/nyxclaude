@@ -5,7 +5,7 @@
  * factory functions.
  */
 
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ContentBlockParam } from 'src/types/api.js'
 import { randomUUID } from 'crypto'
 import { dirname } from 'path'
 import { QueryEngine } from '../../QueryEngine.js'

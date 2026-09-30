@@ -16,7 +16,7 @@ import {
 } from './cronTasks.js'
 import { lazySchema } from './lazySchema.js'
 
-// How often to re-fetch tengu_kairos_cron_config from GrowthBook. Short because
+// How often to re-fetch nyxclaude_kairos_cron_config from GrowthBook. Short because
 // this is an incident lever — when we push a config change to shed :00 load,
 // we want the fleet to converge within a minute, not on the next process
 // restart. The underlying call is a synchronous cache read; the refresh just
@@ -53,7 +53,7 @@ const cronJitterConfigSchema = lazySchema(() =>
 )
 
 /**
- * Read `tengu_kairos_cron_config` from GrowthBook, validate, fall back to
+ * Read `nyxclaude_kairos_cron_config` from GrowthBook, validate, fall back to
  * defaults on absent/malformed/out-of-bounds config. Called from check()
  * every tick via the `getJitterConfig` callback — cheap (synchronous cache
  * hit). Refresh window: JITTER_CONFIG_REFRESH_MS.
@@ -68,7 +68,7 @@ export function getCronJitterConfig(): CronJitterConfig {
   // The local growthbook shim takes no refresh-interval argument;
   // JITTER_CONFIG_REFRESH_MS documents the intended cadence.
   const raw = getFeatureValue_CACHED_WITH_REFRESH<unknown>(
-    'tengu_kairos_cron_config',
+    'nyxclaude_kairos_cron_config',
     DEFAULT_CRON_JITTER_CONFIG,
   )
   const parsed = cronJitterConfigSchema().safeParse(raw)

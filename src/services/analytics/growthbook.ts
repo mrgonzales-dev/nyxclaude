@@ -17,10 +17,10 @@ import { homedir } from 'node:os'
 // Only keys that DIFFER from upstream belong here — these are runtime gates
 // that should be enabled in the open build regardless of upstream defaults.
 const _openBuildDefaults: Record<string, unknown> = {
-	tengu_sedge_lantern: true, // AWAY_SUMMARY — "while you were away" recap
-	tengu_hive_evidence: true, // VERIFICATION_AGENT — read-only test/verification agent
-	tengu_passport_quail: true, // EXTRACT_MEMORIES — enable memory extraction
-	tengu_coral_fern: true, // EXTRACT_MEMORIES — enable memory search in past context
+	nyxclaude_sedge_lantern: true, // AWAY_SUMMARY — "while you were away" recap
+	nyxclaude_hive_evidence: true, // VERIFICATION_AGENT — read-only test/verification agent
+	nyxclaude_passport_quail: true, // EXTRACT_MEMORIES — enable memory extraction
+	nyxclaude_coral_fern: true, // EXTRACT_MEMORIES — enable memory search in past context
 }
 
 let _flags: Record<string, unknown> | null | undefined = undefined

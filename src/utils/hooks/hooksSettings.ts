@@ -2,7 +2,7 @@ import { join, resolve } from 'path'
 import type { HookEvent } from 'src/entrypoints/agentSdkTypes.js'
 import { getSessionId } from '../../bootstrap/state.js'
 import type { AppState } from '../../state/AppState.js'
-import { getClaudeConfigHomeDir } from '../envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../envUtils.js'
 import type { EditableSettingSource } from '../settings/constants.js'
 import { SOURCES } from '../settings/constants.js'
 import {
@@ -175,7 +175,7 @@ export function hookSourceDescriptionDisplayString(source: HookSource): string {
     return filePath ? getDisplayPath(filePath) : 'settings.json'
   }
   const pluginHooksPath = getDisplayPath(
-    join(getClaudeConfigHomeDir(), 'plugins', '*', 'hooks', 'hooks.json'),
+    join(getNyxclaudeConfigHomeDir(), 'plugins', '*', 'hooks', 'hooks.json'),
   ).replace(/\\/g, '/')
 
   switch (source) {

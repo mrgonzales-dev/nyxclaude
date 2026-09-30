@@ -1,6 +1,6 @@
 /**
  * MCP subcommand handlers — extracted from main.tsx for lazy loading.
- * These are dynamically imported only when the corresponding `claude mcp *` command runs.
+ * These are dynamically imported only when the corresponding `nyxclaude mcp *` command runs.
  */
 
 import { stat } from 'fs/promises';
@@ -149,7 +149,7 @@ export async function mcpServeHandler({
   verbose?: boolean;
 }): Promise<void> {
   const providedCwd = cwd();
-  logEvent('tengu_mcp_start', {});
+  logEvent('nyxclaude_mcp_start', {});
   try {
     await stat(providedCwd);
   } catch (error) {
@@ -187,7 +187,7 @@ export async function mcpRemoveHandler(name: string, options: {
   try {
     if (options.scope) {
       const scope = ensureConfigScope(options.scope);
-      logEvent('tengu_mcp_delete', {
+      logEvent('nyxclaude_mcp_delete', {
         name: name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         scope: scope as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -217,7 +217,7 @@ export async function mcpRemoveHandler(name: string, options: {
     } else if (scopes.length === 1) {
       // Server exists in only one scope, remove it
       const scope = scopes[0]!;
-      logEvent('tengu_mcp_delete', {
+      logEvent('nyxclaude_mcp_delete', {
         name: name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         scope: scope as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -244,7 +244,7 @@ export async function mcpRemoveHandler(name: string, options: {
 
 // mcp list (lines 4641–4688)
 export async function mcpListHandler(): Promise<void> {
-  logEvent('tengu_mcp_list', {});
+  logEvent('nyxclaude_mcp_list', {});
   const {
     servers: configs
   } = await getAllMcpConfigs();
@@ -269,14 +269,13 @@ export async function mcpListHandler(): Promise<void> {
       server,
       status
     } of results) {
-      // Intentionally excluding sse-ide servers here since they're internal
       if (server.type === 'sse') {
         // biome-ignore lint/suspicious/noConsole:: intentional console output
         console.log(`${name}: ${server.url} (SSE) - ${status}`);
       } else if (server.type === 'http') {
         // biome-ignore lint/suspicious/noConsole:: intentional console output
         console.log(`${name}: ${server.url} (HTTP) - ${status}`);
-      } else if (server.type === 'claudeai-proxy') {
+      } else if (server.type === 'remote-proxy') {
         // biome-ignore lint/suspicious/noConsole:: intentional console output
         console.log(`${name}: ${server.url} - ${status}`);
       } else if (!server.type || server.type === 'stdio') {
@@ -293,7 +292,7 @@ export async function mcpListHandler(): Promise<void> {
 
 // mcp get (lines 4694–4786)
 export async function mcpGetHandler(name: string): Promise<void> {
-  logEvent('tengu_mcp_get', {
+  logEvent('nyxclaude_mcp_get', {
     name: name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
   });
   const server = getMcpConfigByName(name);
@@ -311,7 +310,6 @@ export async function mcpGetHandler(name: string): Promise<void> {
   // biome-ignore lint/suspicious/noConsole:: intentional console output
   console.log(`  Status: ${status}`);
 
-  // Intentionally excluding sse-ide servers here since they're internal
   if (server.type === 'sse') {
     // biome-ignore lint/suspicious/noConsole:: intentional console output
     console.log(`  Type: sse`);
@@ -400,7 +398,7 @@ export async function mcpAddJsonHandler(name: string, json: string, options: {
         url: parsedJson.url
       }, clientSecret);
     }
-    logEvent('tengu_mcp_add', {
+    logEvent('nyxclaude_mcp_add', {
       scope: scope as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       source: 'json' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       type: transportType as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
@@ -411,22 +409,22 @@ export async function mcpAddJsonHandler(name: string, json: string, options: {
   }
 }
 
-// mcp add-from-claude-desktop (lines 4881–4927)
+// mcp add-from-desktop (lines 4881–4927)
 export async function mcpAddFromDesktopHandler(options: {
   scope?: string;
 }): Promise<void> {
   try {
     const scope = ensureConfigScope(options.scope);
     const platform = getPlatform();
-    logEvent('tengu_mcp_add', {
+    logEvent('nyxclaude_mcp_add', {
       scope: scope as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       platform: platform as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       source: 'desktop' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
     });
     const {
-      readClaudeDesktopMcpServers
-    } = await import('../../utils/claudeDesktop.js');
-    const servers = await readClaudeDesktopMcpServers();
+      readDesktopMcpServers
+    } = await import('../../utils/desktopConfig.js');
+    const servers = await readDesktopMcpServers();
     if (Object.keys(servers).length === 0) {
       cliOk('No MCP servers found in Nyxclaude Desktop configuration or configuration file does not exist.');
     }
@@ -448,7 +446,7 @@ export async function mcpAddFromDesktopHandler(options: {
 
 // mcp reset-project-choices (lines 4935–4952)
 export async function mcpResetChoicesHandler(): Promise<void> {
-  logEvent('tengu_mcp_reset_mcpjson_choices', {});
+  logEvent('nyxclaude_mcp_reset_mcpjson_choices', {});
   saveCurrentProjectConfig(current => ({
     ...current,
     enabledMcpjsonServers: [],

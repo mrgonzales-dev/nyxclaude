@@ -28,7 +28,7 @@ test('resolveProviderRequest exposes model-query thinking defaults', () => {
 test('resolveProviderRequest forces LongCat onto chat completions', () => {
   const request = resolveProviderRequest({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       LONGCAT_API_KEY: 'longcat-key',
       OPENAI_BASE_URL: 'https://api.longcat.chat/openai/v1',
       OPENAI_MODEL: 'LongCat-2.0',
@@ -67,7 +67,7 @@ test('resolveProviderRequest maps K3 context choices against an explicit Kimi ba
     model: 'k3-256k',
     baseUrl: 'https://api.kimi.com/coding/v1',
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_BASE_URL: 'https://api.openai.com/v1',
     },
   })
@@ -265,7 +265,7 @@ test('resolveProviderRequest ignores CLINE_API_MODEL without CLINE_API_KEY', () 
 test('resolveProviderRequest ignores ClinePass model when GitHub mode is active', () => {
   const request = resolveProviderRequest({
     processEnv: {
-      CLAUDE_CODE_USE_GITHUB: '1',
+      NYXCLAUDE_USE_GITHUB: '1',
       CLINE_API_KEY: 'cp-key',
       CLINE_API_MODEL: 'cline-pass/qwen3.7-max',
     },
@@ -348,7 +348,7 @@ test('resolveProviderRequest scopes GPT-5.6 alias effort defaults to the Codex t
   // default must NOT leak (#1961's contract: gateways do not inherit
   // first-party effort metadata) — while an explicit ?reasoning= pick flows.
   const processEnv = {
-    CLAUDE_CODE_USE_OPENAI: '1',
+    NYXCLAUDE_USE_OPENAI: '1',
     OPENAI_BASE_URL: 'https://gateway.example/v1',
     OPENAI_API_KEY: 'test-key',
   }

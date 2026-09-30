@@ -20,7 +20,7 @@ import {
 const GEMINI_API_HOST = 'generativelanguage.googleapis.com'
 
 const originalEnv = {
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_API_KEYS: process.env.OPENAI_API_KEYS,
   OPENAI_AZURE_STYLE: process.env.OPENAI_AZURE_STYLE,
@@ -29,9 +29,9 @@ const originalEnv = {
   OPENAI_AUTH_HEADER: process.env.OPENAI_AUTH_HEADER,
   OPENAI_AUTH_SCHEME: process.env.OPENAI_AUTH_SCHEME,
   OPENAI_AUTH_HEADER_VALUE: process.env.OPENAI_AUTH_HEADER_VALUE,
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
-  CLAUDE_CODE_USE_MISTRAL: process.env.CLAUDE_CODE_USE_MISTRAL,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
+  NYXCLAUDE_USE_MISTRAL: process.env.NYXCLAUDE_USE_MISTRAL,
   MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
   NVIDIA_API_KEY: process.env.NVIDIA_API_KEY,
   NVIDIA_NIM: process.env.NVIDIA_NIM,
@@ -46,7 +46,7 @@ const originalFetch = globalThis.fetch
 
 beforeEach(async () => {
   await acquireSharedMutationLock('openaiShim-providerCompatibility.test.ts')
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_GITHUB
   process.env.OPENAI_API_KEY = 'test-key'
   delete process.env.OPENAI_API_KEYS
   delete process.env.OPENAI_AZURE_STYLE
@@ -55,9 +55,9 @@ beforeEach(async () => {
   delete process.env.OPENAI_AUTH_HEADER
   delete process.env.OPENAI_AUTH_SCHEME
   delete process.env.OPENAI_AUTH_HEADER_VALUE
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_MISTRAL
   delete process.env.MISTRAL_API_KEY
   delete process.env.NVIDIA_API_KEY
   delete process.env.NVIDIA_NIM
@@ -388,7 +388,7 @@ test('the façade applies NIM thinking kwargs across DeepSeek and GLM reasoning 
 
 test('reads GitHub mode from the owning compatibility module', () => {
   expect(isGithubModelsMode()).toBe(false)
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   expect(isGithubModelsMode()).toBe(true)
 })
 

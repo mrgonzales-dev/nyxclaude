@@ -16,7 +16,7 @@ import { logForDebugging } from 'src/utils/debug.js'
 import { getDoctorDiagnostic } from 'src/utils/doctorDiagnostic.js'
 import { gracefulShutdown } from 'src/utils/gracefulShutdown.js'
 import {
-  installOrUpdateClaudePackage,
+  installOrUpdatePackage,
   localInstallationExists,
 } from 'src/utils/localInstaller.js'
 import { hasNativeDistribution } from 'src/utils/nativeDistribution.js'
@@ -86,7 +86,7 @@ export async function writePackageManagerUpdateGuidance(
 }
 
 export async function update() {
-  // Block updates for third-party providers using upstream Anthropic builds.
+  // Block updates for third-party providers using upstream provider builds.
   // The update mechanism downloads from the first-party distribution bucket,
   // which would silently replace the Nyxclaude build with the upstream
   // Nyxclaude binary. However, builds with a custom PACKAGE_URL (like
@@ -105,7 +105,7 @@ export async function update() {
     await gracefulShutdown(0)
   }
 
-  logEvent('tengu_update_check', {})
+  logEvent('nyxclaude_update_check', {})
   writeToStdout(`Current version: ${MACRO.DISPLAY_VERSION}\n`)
 
   const channel = getInitialSettings()?.autoUpdatesChannel ?? 'latest'
@@ -141,7 +141,7 @@ export async function update() {
       logForDebugging(`update: Warning detected: ${warning.issue}`)
 
       // Don't skip PATH warnings - they're always relevant
-      // The user needs to know that 'which claude' points elsewhere
+      // The user needs to know that 'which nyxclaude' points elsewhere
       logForDebugging(`update: Showing warning: ${warning.issue}`)
 
       writeToStdout(chalk.yellow(`Warning: ${warning.issue}\n`))
@@ -340,8 +340,8 @@ export async function update() {
     const packageName =
       MACRO.PACKAGE_URL ||
       (process.env.USER_TYPE === 'ant'
-        ? '@anthropic-ai/claude-cli'
-        : '@anthropic-ai/claude-code')
+        ? 'nyxclaude'
+        : 'nyxclaude')
     process.stderr.write(
       `  • Manually check: npm view ${packageName} version\n`,
     )
@@ -405,9 +405,9 @@ export async function update() {
 
   if (useLocalUpdate) {
     logForDebugging(
-      'update: Calling installOrUpdateClaudePackage() for local update',
+      'update: Calling installOrUpdatePackage() for local update',
     )
-    status = await installOrUpdateClaudePackage(channel)
+    status = await installOrUpdatePackage(channel)
   } else {
     logForDebugging('update: Calling installGlobalPackage() for global update')
     status = await installGlobalPackage()

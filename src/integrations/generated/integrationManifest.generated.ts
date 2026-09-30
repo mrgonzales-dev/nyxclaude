@@ -57,7 +57,7 @@ export const PROVIDER_PRESET_MANIFEST = [
     "routeKind": "vendor",
     "routeId": "anthropic",
     "vendorId": "anthropic",
-    "description": "Native Claude API (x-api-key auth)",
+    "description": "Native API (x-api-key auth)",
     "apiKeyEnvVars": [
       "ANTHROPIC_API_KEY"
     ],

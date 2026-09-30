@@ -15,18 +15,18 @@ const originalEnv = { ...process.env }
 const originalCwd = process.cwd()
 
 const RESTORED_KEYS = [
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
-  'CLAUDE_CODE_PROVIDER_ROUTE_ID',
-  'CLAUDE_CONFIG_DIR',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+  'NYXCLAUDE_PROVIDER_ROUTE_ID',
   'NYXCLAUDE_CONFIG_DIR',
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'NYXCLAUDE_CONFIG_DIR',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
   'OPENAI_BASE_URL',
   'OPENAI_API_BASE',
   'OPENAI_MODEL',
@@ -48,7 +48,7 @@ const RESTORED_KEYS = [
   'ANTHROPIC_MODEL',
   'ANTHROPIC_API_KEY',
   'ANTHROPIC_AUTH_TOKEN',
-  'ANTHROPIC_CUSTOM_HEADERS',
+  'NYXCLAUDE_CUSTOM_HEADERS',
   'ANTHROPIC_VERTEX_BASE_URL',
   'GEMINI_BASE_URL',
   'GEMINI_MODEL',
@@ -73,7 +73,7 @@ const RESTORED_KEYS = [
   'CLINE_API_KEY',
   'HICAP_API_KEY',
   'CLOUDFLARE_API_TOKEN',
-  'CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS',
+  'NYXCLAUDE_OPENAI_CONTEXT_WINDOWS',
 ] as const
 
 type MockConfigState = {
@@ -111,7 +111,7 @@ beforeEach(async () => {
     delete process.env[key]
   }
   testConfigDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
-  process.env.CLAUDE_CONFIG_DIR = testConfigDir
+  process.env.NYXCLAUDE_CONFIG_DIR = testConfigDir
   process.env.NYXCLAUDE_CONFIG_DIR = testConfigDir
 })
 
@@ -309,56 +309,56 @@ describe('applyProviderProfileToProcessEnv', () => {
   test('openai profile clears competing gemini/github flags', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
 
     applyProviderProfileToProcessEnv(buildProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
-    expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GITHUB).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
       'provider_test',
     )
     expect(getFreshAPIProvider()).toBe('openai')
   }, 20_000)
 
-  test('mistral profile sets CLAUDE_CODE_USE_MISTRAL and clears openai flags', async () => {
+  test('mistral profile sets NYXCLAUDE_USE_MISTRAL and clears openai flags', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
 
     applyProviderProfileToProcessEnv(buildMistralProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_MISTRAL).toBe('1')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_MISTRAL).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.MISTRAL_MODEL).toBe('devstral-latest')
     expect(getFreshAPIProvider()).toBe('mistral')
   })
 
-  test('gemini profile sets CLAUDE_CODE_USE_GEMINI and clears openai flags', async () => {
+  test('gemini profile sets NYXCLAUDE_USE_GEMINI and clears openai flags', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
 
     applyProviderProfileToProcessEnv(buildGeminiProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBe('1')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.GEMINI_MODEL).toBe('gemini-3-flash-preview')
     expect(getFreshAPIProvider()).toBe('gemini')
   })
 
-  test('bedrock profile sets CLAUDE_CODE_USE_BEDROCK and preserves anthropic model routing', async () => {
+  test('bedrock profile sets NYXCLAUDE_USE_BEDROCK and preserves anthropic model routing', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
 
     applyProviderProfileToProcessEnv(
       buildProfile({
@@ -370,8 +370,8 @@ describe('applyProviderProfileToProcessEnv', () => {
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_BEDROCK).toBe('1')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_BEDROCK).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.ANTHROPIC_MODEL).toBe('claude-sonnet-4-6')
     expect(process.env.ANTHROPIC_BEDROCK_BASE_URL).toBe(
       'https://bedrock-proxy.example',
@@ -379,10 +379,10 @@ describe('applyProviderProfileToProcessEnv', () => {
     expect(getFreshAPIProvider()).toBe('bedrock')
   })
 
-  test('github profile sets CLAUDE_CODE_USE_GITHUB instead of generic openai mode', async () => {
+  test('github profile sets NYXCLAUDE_USE_GITHUB instead of generic openai mode', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
 
     applyProviderProfileToProcessEnv(
       buildProfile({
@@ -394,8 +394,8 @@ describe('applyProviderProfileToProcessEnv', () => {
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBe('1')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GITHUB).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBe(
       'https://models.github.ai/inference',
     )
@@ -406,7 +406,7 @@ describe('applyProviderProfileToProcessEnv', () => {
   test('github-enterprise profile uses GitHub compatibility env', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
 
     applyProviderProfileToProcessEnv(
       buildProfile({
@@ -422,8 +422,8 @@ describe('applyProviderProfileToProcessEnv', () => {
       `../services/api/providerConfig.ts?ts=${Date.now()}-${Math.random()}`
     )
 
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBe('1')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GITHUB).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBe(
       'https://github.mycompany.com/api/copilot',
     )
@@ -452,7 +452,7 @@ describe('applyProviderProfileToProcessEnv', () => {
       }),
     )
 
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GITHUB).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.githubcopilot.com')
     expect(process.env.GITHUB_ENTERPRISE_URL).toBeUndefined()
   })
@@ -497,7 +497,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -551,7 +551,7 @@ describe('applyProviderProfileToProcessEnv', () => {
       }),
     )
 
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe(
       'https://integrate.api.nvidia.com/v1',
     )
@@ -582,8 +582,8 @@ describe('applyProviderProfileToProcessEnv', () => {
   test('anthropic profile clears competing gemini/github flags', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
 
     applyProviderProfileToProcessEnv(
       buildProfile({
@@ -595,9 +595,9 @@ describe('applyProviderProfileToProcessEnv', () => {
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GITHUB).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(getFreshAPIProvider()).toBe('firstParty')
   })
 
@@ -614,7 +614,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     )
 
     expect(process.env.OPENAI_MODEL).toBe('glm-4.7')
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.openai.com/v1')
   })
 
@@ -631,7 +631,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     )
 
     expect(process.env.OPENAI_MODEL).toBe('glm-4.7')
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.openai.com/v1')
   })
 
@@ -650,7 +650,7 @@ describe('applyProviderProfileToProcessEnv', () => {
 
     expect(process.env.OPENAI_MODEL).toBe('gpt-5.4')
     expect(process.env.OPENAI_API_FORMAT).toBe('responses')
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
   })
 
   test('openai responses_compat profile sets OPENAI_API_FORMAT', async () => {
@@ -668,7 +668,7 @@ describe('applyProviderProfileToProcessEnv', () => {
 
     expect(process.env.OPENAI_MODEL).toBe('gpt-5.4')
     expect(process.env.OPENAI_API_FORMAT).toBe('responses_compat')
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
   })
 
   test('custom OpenAI-compatible responses profile sets OPENAI_API_FORMAT', async () => {
@@ -687,7 +687,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     expect(process.env.OPENAI_MODEL).toBe('custom-responses-model')
     expect(process.env.OPENAI_BASE_URL).toBe('https://custom.example/v1')
     expect(process.env.OPENAI_API_FORMAT).toBe('responses')
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
   })
 
   test('openai profile sets custom auth header name and value', async () => {
@@ -708,7 +708,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     expect(process.env.OPENAI_AUTH_HEADER).toBe('api-key')
     expect(process.env.OPENAI_AUTH_SCHEME).toBe('raw')
     expect(process.env.OPENAI_AUTH_HEADER_VALUE).toBe('hicap-header-value')
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
   })
 
   test('minimax profile ignores advanced OpenAI-compatible auth settings', async () => {
@@ -736,26 +736,26 @@ describe('applyProviderProfileToProcessEnv', () => {
     expect(process.env.ANTHROPIC_MODEL).toBe('MiniMax-M2.7')
     expect(process.env.ANTHROPIC_API_KEY).toBe('minimax-live-key')
     expect(process.env.MINIMAX_API_KEY).toBe('minimax-live-key')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_API_FORMAT).toBeUndefined()
     expect(process.env.OPENAI_AZURE_STYLE).toBeUndefined()
     expect(process.env.OPENAI_AUTH_HEADER).toBeUndefined()
     expect(process.env.OPENAI_AUTH_SCHEME).toBeUndefined()
     expect(process.env.OPENAI_AUTH_HEADER_VALUE).toBeUndefined()
-    expect(process.env.ANTHROPIC_CUSTOM_HEADERS).toBeUndefined()
+    expect(process.env.NYXCLAUDE_CUSTOM_HEADERS).toBeUndefined()
   })
 
   test('venice profile applies OpenAI-compatible env with VENICE_API_KEY mirror', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
 
     applyProviderProfileToProcessEnv(buildVeniceProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.venice.ai/api/v1')
     expect(process.env.OPENAI_MODEL).toBe('venice-uncensored')
     expect(process.env.OPENAI_API_KEY).toBe('venice-test-key')
@@ -766,14 +766,14 @@ describe('applyProviderProfileToProcessEnv', () => {
   test('xiaomi mimo profile applies OpenAI-compatible env with MIMO_API_KEY mirror', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
 
     applyProviderProfileToProcessEnv(buildXiaomiMimoProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.xiaomimimo.com/v1')
     expect(process.env.OPENAI_MODEL).toBe('mimo-v2.5-pro')
     expect(process.env.OPENAI_API_KEY).toBe('mimo-test-key')
@@ -784,14 +784,14 @@ describe('applyProviderProfileToProcessEnv', () => {
   test('atlas cloud profile applies OpenAI-compatible env with ATLAS_CLOUD_API_KEY mirror', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
 
     applyProviderProfileToProcessEnv(buildAtlasCloudProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.atlascloud.ai/v1')
     expect(process.env.OPENAI_MODEL).toBe('deepseek-ai/deepseek-v4-pro')
     expect(process.env.OPENAI_API_KEY).toBe('atlas-test-key')
@@ -806,14 +806,14 @@ describe('applyProviderProfileToProcessEnv', () => {
     // picks the cloudflare preset back up on the next reload.
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
 
     applyProviderProfileToProcessEnv(buildCloudflareProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe(
       'https://api.cloudflare.com/client/v4/accounts/abc123/ai/v1',
     )
@@ -892,7 +892,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -944,14 +944,14 @@ describe('applyProviderProfileToProcessEnv', () => {
   test('xiaomi mimo token plan profile applies OpenAI-compatible env with MIMO_API_KEY mirror', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
 
     applyProviderProfileToProcessEnv(buildXiaomiMimoTokenProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe(
       'https://token-plan-sgp.xiaomimimo.com/v1',
     )
@@ -964,7 +964,7 @@ describe('applyProviderProfileToProcessEnv', () => {
   test('xiaomi mimo token plan CN profile applies OpenAI-compatible env with MIMO_API_KEY mirror', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
 
     applyProviderProfileToProcessEnv(buildXiaomiMimoTokenProfile({
       baseUrl: 'https://token-plan-cn.xiaomimimo.com/v1',
@@ -972,8 +972,8 @@ describe('applyProviderProfileToProcessEnv', () => {
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe(
       'https://token-plan-cn.xiaomimimo.com/v1',
     )
@@ -986,14 +986,14 @@ describe('applyProviderProfileToProcessEnv', () => {
   test('fireworks profile applies OpenAI-compatible env with FIREWORKS_API_KEY mirror', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
 
     applyProviderProfileToProcessEnv(buildFireworksProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe(
       'https://api.fireworks.ai/inference/v1',
     )
@@ -1025,7 +1025,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     expect(process.env.OPENAI_MODEL).toBe('gpt-4o')
     expect(process.env.OPENAI_API_KEY).toBe('aimlapi-test-key')
     expect(process.env.AIMLAPI_API_KEY).toBe('aimlapi-test-key')
-    expect(process.env.CLAUDE_CODE_PROVIDER_ROUTE_ID).toBe('aimlapi')
+    expect(process.env.NYXCLAUDE_PROVIDER_ROUTE_ID).toBe('aimlapi')
     expect(getFreshAPIProvider()).toBe('openai')
   }, 20_000)
 
@@ -1049,7 +1049,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     // host, so the canonical AIMLAPI credential must not be forwarded to it.
     expect(process.env.OPENAI_API_KEY).toBeUndefined()
     expect(process.env.AIMLAPI_API_KEY).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_PROVIDER_ROUTE_ID).toBe('aimlapi')
+    expect(process.env.NYXCLAUDE_PROVIDER_ROUTE_ID).toBe('aimlapi')
   }, 20_000)
 
   test('keyless AIMLAPI profile resolves AIMLAPI_API_KEY without persisting it', async () => {
@@ -1069,7 +1069,7 @@ describe('applyProviderProfileToProcessEnv', () => {
 
     expect(process.env.OPENAI_API_KEY).toBe('ambient-aimlapi-key')
     expect(process.env.AIMLAPI_API_KEY).toBe('ambient-aimlapi-key')
-    expect(process.env.CLAUDE_CODE_PROVIDER_ROUTE_ID).toBe('aimlapi')
+    expect(process.env.NYXCLAUDE_PROVIDER_ROUTE_ID).toBe('aimlapi')
   }, 20_000)
 
   test('keyless AIMLAPI profile without a base URL resolves the ambient key as canonical', async () => {
@@ -1091,7 +1091,7 @@ describe('applyProviderProfileToProcessEnv', () => {
 
     expect(process.env.AIMLAPI_API_KEY).toBe('ambient-aimlapi-key')
     expect(process.env.OPENAI_API_KEY).toBe('ambient-aimlapi-key')
-    expect(process.env.CLAUDE_CODE_PROVIDER_ROUTE_ID).toBe('aimlapi')
+    expect(process.env.NYXCLAUDE_PROVIDER_ROUTE_ID).toBe('aimlapi')
   }, 20_000)
 
   test('openai profile on AI/ML API route mirrors AIMLAPI_API_KEY', async () => {
@@ -1119,14 +1119,14 @@ describe('applyProviderProfileToProcessEnv', () => {
   test('ClinePass preset profile applies OpenAI-compatible env with CLINE_API_KEY mirror', async () => {
     const { applyProviderProfileToProcessEnv } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
 
     applyProviderProfileToProcessEnv(buildClinePassProfile())
     const { getAPIProvider: getFreshAPIProvider } =
       await importFreshProvidersModule()
 
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.cline.bot/api/v1')
     expect(process.env.OPENAI_MODEL).toBe('cline-pass/deepseek-v4-flash')
     expect(process.env.OPENAI_API_KEY).toBe('cline-test-key')
@@ -1201,7 +1201,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     expect(process.env.OPENAI_AUTH_HEADER).toBeUndefined()
     expect(process.env.OPENAI_AUTH_SCHEME).toBeUndefined()
     expect(process.env.OPENAI_AUTH_HEADER_VALUE).toBeUndefined()
-    expect(process.env.ANTHROPIC_CUSTOM_HEADERS).toBeUndefined()
+    expect(process.env.NYXCLAUDE_CUSTOM_HEADERS).toBeUndefined()
   })
 
   test('supported routes apply sanitized profile custom headers to env', async () => {
@@ -1219,8 +1219,8 @@ describe('applyProviderProfileToProcessEnv', () => {
       }),
     )
 
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
-    expect(process.env.ANTHROPIC_CUSTOM_HEADERS).toBe(
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_CUSTOM_HEADERS).toBe(
       'X-Team: devtools\nX-Trace: enabled',
     )
   })
@@ -1240,8 +1240,8 @@ describe('applyProviderProfileToProcessEnv', () => {
       }),
     )
 
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
-    expect(process.env.ANTHROPIC_CUSTOM_HEADERS).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_CUSTOM_HEADERS).toBeUndefined()
   })
 
   test('unsupported routes do not apply profile custom headers to env', async () => {
@@ -1258,7 +1258,7 @@ describe('applyProviderProfileToProcessEnv', () => {
       }),
     )
 
-    expect(process.env.ANTHROPIC_CUSTOM_HEADERS).toBeUndefined()
+    expect(process.env.NYXCLAUDE_CUSTOM_HEADERS).toBeUndefined()
   })
 
   test('anthropic profile with multi-model string sets only first model in ANTHROPIC_MODEL', async () => {
@@ -1288,7 +1288,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     )
 
     expect(process.env.GEMINI_MODEL).toBe('gemini-3-flash-preview')
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBe('1')
   })
 
   test('mistral profile with semicolon-separated multi-model string sets only first model in MISTRAL_MODEL', async () => {
@@ -1302,7 +1302,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     )
 
     expect(process.env.MISTRAL_MODEL).toBe('devstral-latest')
-    expect(process.env.CLAUDE_CODE_USE_MISTRAL).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_MISTRAL).toBe('1')
   })
 
   test('xai profile sets XAI_API_KEY and getAPIProvider returns xai', async () => {
@@ -1356,7 +1356,7 @@ describe('applyProviderProfileToProcessEnv', () => {
 
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:4000/v1')
     expect(process.env.OPENAI_MODEL).toBe('gpt-4o')
-    expect(process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS).toBe(
+    expect(process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS).toBe(
       JSON.stringify({ 'gpt-4o': 200_000 }),
     )
   })
@@ -1391,7 +1391,7 @@ describe('applyProviderProfileToProcessEnv', () => {
       }),
     )
 
-    expect(process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS).toBeUndefined()
+    expect(process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS).toBeUndefined()
     expect(
       resolveModelRuntimeLimits({
         model: 'gpt-4o',
@@ -1414,7 +1414,7 @@ describe('applyProviderProfileToProcessEnv', () => {
     )
 
     expect(process.env.ANTHROPIC_MODEL).toBe('claude-sonnet-4-6')
-    expect(process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS).toBeUndefined()
+    expect(process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS).toBeUndefined()
   })
 })
 
@@ -1503,10 +1503,10 @@ describe('clearActiveProviderProfile', () => {
     const { clearActiveProviderProfile } =
       await importFreshProviderProfileModules()
 
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = 'saved_deepseek'
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = 'saved_deepseek'
     // Managed provider env that a third-party profile would have applied.
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://api.deepseek.com'
     process.env.OPENAI_API_KEY = 'sk-test'
 
@@ -1519,13 +1519,13 @@ describe('clearActiveProviderProfile', () => {
     clearActiveProviderProfile()
 
     expect(
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
     ).toBeUndefined()
     expect(
-      process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+      process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
     ).toBeUndefined()
     // The managed provider env itself must be gone too.
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
     expect(process.env.OPENAI_API_KEY).toBeUndefined()
   })
@@ -1648,7 +1648,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
   test('does not override explicit startup provider selection', async () => {
     const { applyActiveProviderProfileFromConfig } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
     process.env.OPENAI_MODEL = 'qwen2.5:3b'
 
@@ -1669,23 +1669,23 @@ describe('applyActiveProviderProfileFromConfig', () => {
   })
 
   beforeEach(() => {
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-    delete process.env.CLAUDE_CODE_USE_OPENAI
-    delete process.env.CLAUDE_CODE_USE_GEMINI
-    delete process.env.CLAUDE_CODE_USE_MISTRAL
-    delete process.env.CLAUDE_CODE_USE_GITHUB
-    delete process.env.CLAUDE_CODE_USE_BEDROCK
-    delete process.env.CLAUDE_CODE_USE_VERTEX
-    delete process.env.CLAUDE_CODE_USE_FOUNDRY
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+    delete process.env.NYXCLAUDE_USE_OPENAI
+    delete process.env.NYXCLAUDE_USE_GEMINI
+    delete process.env.NYXCLAUDE_USE_MISTRAL
+    delete process.env.NYXCLAUDE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_BEDROCK
+    delete process.env.NYXCLAUDE_USE_VERTEX
+    delete process.env.NYXCLAUDE_USE_FOUNDRY
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_API_BASE
     delete process.env.OPENAI_MODEL
     delete process.env.OPENAI_API_FORMAT
   })
 
-  test('applies active profile when a bare CLAUDE_CODE_USE_OPENAI flag is stale (no BASE_URL/MODEL)', async () => {
-    // Regression: a leftover `CLAUDE_CODE_USE_OPENAI=1` in the shell with no
+  test('applies active profile when a bare NYXCLAUDE_USE_OPENAI flag is stale (no BASE_URL/MODEL)', async () => {
+    // Regression: a leftover `NYXCLAUDE_USE_OPENAI=1` in the shell with no
     // paired OPENAI_BASE_URL / OPENAI_MODEL is not a real explicit selection
     // — it's a stale export. The previous guard treated it as intent and
     // skipped the saved profile, causing the startup banner to show hardcoded
@@ -1693,7 +1693,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
     // profile.
     const { applyActiveProviderProfileFromConfig } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_API_BASE
     delete process.env.OPENAI_MODEL
@@ -1720,7 +1720,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
     // profile. This preserves the original "explicit startup wins" semantic.
     const { applyActiveProviderProfileFromConfig } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'http://192.168.1.1:8080/v1'
     delete process.env.OPENAI_MODEL
 
@@ -1742,7 +1742,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
   test('still respects complete shell selection with USE flag + MODEL', async () => {
     const { applyActiveProviderProfileFromConfig } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_MODEL = 'gpt-4o-mini'
     delete process.env.OPENAI_BASE_URL
 
@@ -1764,7 +1764,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
   test('respects env-only GitHub Enterprise startup selection', async () => {
     const { applyActiveProviderProfileFromConfig } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.GITHUB_ENTERPRISE_URL = 'https://github.mycompany.com/api/copilot'
     process.env.GITHUB_COPILOT_KEY = 'enterprise-direct-key'
     delete process.env.OPENAI_MODEL
@@ -1781,12 +1781,12 @@ describe('applyActiveProviderProfileFromConfig', () => {
     } as any)
 
     expect(applied).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GITHUB).toBe('1')
     expect(process.env.GITHUB_ENTERPRISE_URL).toBe(
       'https://github.mycompany.com/api/copilot',
     )
     expect(process.env.GITHUB_COPILOT_KEY).toBe('enterprise-direct-key')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
     expect(process.env.OPENAI_MODEL).toBeUndefined()
   })
@@ -1815,15 +1815,15 @@ describe('applyActiveProviderProfileFromConfig', () => {
       'https://api.minimax.io/anthropic',
     )
     expect(process.env.ANTHROPIC_MODEL).toBe('MiniMax-M2.7')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
   })
 
   test('does not override explicit startup selection when profile marker is stale', async () => {
     const { applyActiveProviderProfileFromConfig } =
       await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
     process.env.OPENAI_MODEL = 'qwen2.5:3b'
 
@@ -1839,7 +1839,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
     } as any)
 
     expect(applied).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:11434/v1')
     expect(process.env.OPENAI_MODEL).toBe('qwen2.5:3b')
   })
@@ -1887,7 +1887,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
 
     // Simulate an upgraded or partially restored process where the profile
     // marker and core OpenAI env survived, but this PR's new override did not.
-    delete process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS
+    delete process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS
 
     const applied = applyActiveProviderProfileFromConfig({
       providerProfiles: [activeProfile],
@@ -1897,7 +1897,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
     expect(applied?.id).toBe('saved_openai')
     expect(process.env.OPENAI_MODEL).toBe('gpt-4o')
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:4000/v1')
-    expect(String(process.env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS)).toBe(
+    expect(String(process.env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS)).toBe(
       JSON.stringify({ 'gpt-4o': 1_000_000 }),
     )
   })
@@ -1913,7 +1913,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
       }),
     )
 
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_MODEL = 'github:copilot'
 
     const applied = applyActiveProviderProfileFromConfig({
@@ -1928,7 +1928,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
     } as any)
 
     expect(applied).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GITHUB).toBe('1')
     expect(process.env.OPENAI_MODEL).toBe('github:copilot')
   })
 
@@ -2016,14 +2016,14 @@ describe('applyActiveProviderProfileFromConfig', () => {
   test('applies active profile when no explicit provider is selected', async () => {
     const { applyActiveProviderProfileFromConfig } =
       await importFreshProviderProfileModules()
-    delete process.env.CLAUDE_CODE_USE_OPENAI
-    delete process.env.CLAUDE_CODE_USE_GEMINI
-    delete process.env.CLAUDE_CODE_USE_GITHUB
-    delete process.env.CLAUDE_CODE_USE_BEDROCK
-    delete process.env.CLAUDE_CODE_USE_VERTEX
-    delete process.env.CLAUDE_CODE_USE_FOUNDRY
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+    delete process.env.NYXCLAUDE_USE_OPENAI
+    delete process.env.NYXCLAUDE_USE_GEMINI
+    delete process.env.NYXCLAUDE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_BEDROCK
+    delete process.env.NYXCLAUDE_USE_VERTEX
+    delete process.env.NYXCLAUDE_USE_FOUNDRY
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
 
     process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
     process.env.OPENAI_MODEL = 'qwen2.5:3b'
@@ -2040,7 +2040,7 @@ describe('applyActiveProviderProfileFromConfig', () => {
     } as any)
 
     expect(applied?.id).toBe('saved_openai')
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.openai.com/v1')
     expect(process.env.OPENAI_MODEL).toBe('gpt-4o')
   })
@@ -2139,9 +2139,9 @@ describe('applyActiveProviderProfileFromConfig', () => {
     // Simulate a cold start for the second scenario — leftover provider env
     // from the first application counts as explicit startup intent and would
     // short-circuit applyActiveProviderProfileFromConfig.
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-    delete process.env.CLAUDE_CODE_USE_OPENAI
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+    delete process.env.NYXCLAUDE_USE_OPENAI
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_MODEL
     _setSavedModelOverrideForTesting('kimi-k2.6')
@@ -2150,9 +2150,9 @@ describe('applyActiveProviderProfileFromConfig', () => {
 
     // gpt-5-mini/-nano are API-only tiers the Codex backend does not serve;
     // a stale pick from a direct-OpenAI profile must fall back too, not 400.
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-    delete process.env.CLAUDE_CODE_USE_OPENAI
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+    delete process.env.NYXCLAUDE_USE_OPENAI
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_MODEL
     _setSavedModelOverrideForTesting('gpt-5-mini')
@@ -2191,18 +2191,18 @@ describe('applyActiveProviderProfileFromConfig', () => {
       await importFreshProviderProfileModules()
 
     const providerEnvKeys = [
-      'CLAUDE_CODE_USE_OPENAI',
-      'CLAUDE_CODE_USE_GITHUB',
-      'CLAUDE_CODE_USE_GEMINI',
-      'CLAUDE_CODE_USE_MISTRAL',
-      'CLAUDE_CODE_USE_BEDROCK',
-      'CLAUDE_CODE_USE_VERTEX',
-      'CLAUDE_CODE_USE_FOUNDRY',
+      'NYXCLAUDE_USE_OPENAI',
+      'NYXCLAUDE_USE_GITHUB',
+      'NYXCLAUDE_USE_GEMINI',
+      'NYXCLAUDE_USE_MISTRAL',
+      'NYXCLAUDE_USE_BEDROCK',
+      'NYXCLAUDE_USE_VERTEX',
+      'NYXCLAUDE_USE_FOUNDRY',
       'OPENAI_BASE_URL',
       'OPENAI_MODEL',
       'OPENAI_API_KEY',
-      'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-      'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+      'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+      'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
     ]
     const providerEnvSnapshot = new Map(
       providerEnvKeys.map(key => [key, process.env[key]] as const),
@@ -2303,7 +2303,7 @@ describe('persistActiveProviderProfileModel', () => {
     // The configured list is preserved verbatim regardless of the chosen
     // model being in or out of the list.
     expect(updated?.model).toBe('devstral-latest; mistral-small-latest')
-    expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
+    expect(process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
       activeProfile.id,
     )
 
@@ -2577,7 +2577,7 @@ describe('getProviderPresetDefaults', () => {
 describe('setActiveProviderProfile', () => {
   test('sets OPENAI_MODEL env var when switching to an openai-type provider', async () => {
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -2600,10 +2600,10 @@ describe('setActiveProviderProfile', () => {
       })
 
       expect(result?.id).toBe('openai_prof')
-      expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+      expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
       expect(process.env.OPENAI_MODEL).toBe('gpt-4o')
       expect(process.env.OPENAI_BASE_URL).toBe('https://api.openai.com/v1')
-      expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
+      expect(process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
         'openai_prof',
       )
     } finally {
@@ -2622,7 +2622,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -2673,7 +2673,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
     process.env.OPENAI_API_KEY = 'sk-shell-should-not-persist'
 
     try {
@@ -2718,7 +2718,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -2764,7 +2764,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -2809,7 +2809,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -2850,7 +2850,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -2896,7 +2896,7 @@ describe('setActiveProviderProfile', () => {
       join(tmpdir(), 'nyxclaude-provider-config-'),
     )
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -2943,7 +2943,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -2985,7 +2985,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -3031,7 +3031,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -3073,7 +3073,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -3116,7 +3116,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -3147,7 +3147,7 @@ describe('setActiveProviderProfile', () => {
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
         AIMLAPI_API_KEY: 'aimlapi-test-key',
-        CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+        NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
         OPENAI_BASE_URL: 'https://api.aimlapi.com/v1',
         OPENAI_MODEL: 'gpt-4o',
         OPENAI_API_KEY: 'aimlapi-test-key',
@@ -3174,7 +3174,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -3204,7 +3204,7 @@ describe('setActiveProviderProfile', () => {
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toMatchObject({
         AIMLAPI_API_KEY: 'aimlapi-test-key',
-        CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+        NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
         OPENAI_BASE_URL: 'https://proxy.example.com/v1',
         OPENAI_MODEL: 'gpt-4o',
         OPENAI_API_KEY: 'aimlapi-test-key',
@@ -3220,7 +3220,7 @@ describe('setActiveProviderProfile', () => {
 
       expect(startupEnv.OPENAI_API_KEY).toBe('aimlapi-test-key')
       expect(startupEnv.AIMLAPI_API_KEY).toBe('aimlapi-test-key')
-      expect(startupEnv.CLAUDE_CODE_PROVIDER_ROUTE_ID).toBe('aimlapi')
+      expect(startupEnv.NYXCLAUDE_PROVIDER_ROUTE_ID).toBe('aimlapi')
     } finally {
       process.chdir(originalCwd)
       rmSync(tempDir, { recursive: true, force: true })
@@ -3232,7 +3232,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -3259,7 +3259,7 @@ describe('setActiveProviderProfile', () => {
 
       expect(persisted.profile).toBe('openai')
       expect(persisted.env).toEqual({
-        CLAUDE_CODE_PROVIDER_ROUTE_ID: 'aimlapi',
+        NYXCLAUDE_PROVIDER_ROUTE_ID: 'aimlapi',
         OPENAI_BASE_URL: 'https://proxy.example.com/v1',
         OPENAI_MODEL: 'gpt-4o',
       })
@@ -3277,7 +3277,7 @@ describe('setActiveProviderProfile', () => {
       // Route identity is preserved, but the ambient canonical AIMLAPI key must
       // NOT be forwarded to a user-controlled proxy host.
       expect(startupEnv.AIMLAPI_API_KEY).toBeUndefined()
-      expect(startupEnv.CLAUDE_CODE_PROVIDER_ROUTE_ID).toBe('aimlapi')
+      expect(startupEnv.NYXCLAUDE_PROVIDER_ROUTE_ID).toBe('aimlapi')
     } finally {
       process.chdir(originalCwd)
       rmSync(tempDir, { recursive: true, force: true })
@@ -3289,7 +3289,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -3332,7 +3332,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } =
@@ -3377,7 +3377,7 @@ describe('setActiveProviderProfile', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-'))
     const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-provider-config-'))
     process.chdir(tempDir)
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
 
     try {
       const { setActiveProviderProfile } = await importFreshProviderProfileModules()
@@ -3434,9 +3434,9 @@ describe('setActiveProviderProfile', () => {
     expect(result?.id).toBe('anthro_prof')
     expect(process.env.ANTHROPIC_MODEL).toBe('claude-sonnet-4-6')
     expect(process.env.ANTHROPIC_BASE_URL).toBe('https://api.anthropic.com')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_MODEL).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
+    expect(process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
       'anthro_prof',
     )
   })
@@ -3471,7 +3471,7 @@ describe('setActiveProviderProfile', () => {
       configDir: testConfigDir ?? undefined,
     })
     expect(process.env.OPENAI_MODEL).toBe('gpt-4o')
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
 
     // Now switch to the anthropic profile
     const result = setActiveProviderProfile('anthro_prof', {
@@ -3481,11 +3481,11 @@ describe('setActiveProviderProfile', () => {
     expect(result?.id).toBe('anthro_prof')
     expect(process.env.ANTHROPIC_MODEL).toBe('claude-sonnet-4-6')
     expect(process.env.ANTHROPIC_BASE_URL).toBe('https://api.anthropic.com')
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_MODEL).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
     expect(process.env.OPENAI_API_KEY).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
+    expect(process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
       'anthro_prof',
     )
   })
@@ -3528,13 +3528,13 @@ describe('setActiveProviderProfile', () => {
     })
 
     expect(result?.id).toBe('openai_prof')
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_MODEL).toBe('gpt-4o')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.openai.com/v1')
     expect(process.env.ANTHROPIC_MODEL).toBeUndefined()
     expect(process.env.ANTHROPIC_BASE_URL).toBeUndefined()
     expect(process.env.ANTHROPIC_API_KEY).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
+    expect(process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID).toBe(
       'openai_prof',
     )
   })
@@ -3559,15 +3559,15 @@ describe('setActiveProviderProfile', () => {
 
 describe('deleteProviderProfile', () => {
   beforeEach(() => {
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-    delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-    delete process.env.CLAUDE_CODE_USE_OPENAI
-    delete process.env.CLAUDE_CODE_USE_GEMINI
-    delete process.env.CLAUDE_CODE_USE_MISTRAL
-    delete process.env.CLAUDE_CODE_USE_GITHUB
-    delete process.env.CLAUDE_CODE_USE_BEDROCK
-    delete process.env.CLAUDE_CODE_USE_VERTEX
-    delete process.env.CLAUDE_CODE_USE_FOUNDRY
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+    delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+    delete process.env.NYXCLAUDE_USE_OPENAI
+    delete process.env.NYXCLAUDE_USE_GEMINI
+    delete process.env.NYXCLAUDE_USE_MISTRAL
+    delete process.env.NYXCLAUDE_USE_GITHUB
+    delete process.env.NYXCLAUDE_USE_BEDROCK
+    delete process.env.NYXCLAUDE_USE_VERTEX
+    delete process.env.NYXCLAUDE_USE_FOUNDRY
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_API_BASE
     delete process.env.OPENAI_MODEL
@@ -3599,14 +3599,14 @@ describe('deleteProviderProfile', () => {
     expect(result.removed).toBe(true)
     expect(result.activeProfileId).toBeUndefined()
 
-    expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
+    expect(process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
 
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_BEDROCK).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_VERTEX).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_FOUNDRY).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GITHUB).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_BEDROCK).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_VERTEX).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_FOUNDRY).toBeUndefined()
 
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
     expect(process.env.OPENAI_API_BASE).toBeUndefined()
@@ -3715,7 +3715,7 @@ describe('deleteProviderProfile', () => {
 
   test('deleting final profile preserves explicit startup provider env', async () => {
     const { deleteProviderProfile } = await importFreshProviderProfileModules()
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'http://localhost:11434/v1'
     process.env.OPENAI_MODEL = 'qwen2.5:3b'
 
@@ -3730,8 +3730,8 @@ describe('deleteProviderProfile', () => {
     expect(result.removed).toBe(true)
     expect(result.activeProfileId).toBeUndefined()
 
-    expect(process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
-    expect(String(process.env.CLAUDE_CODE_USE_OPENAI)).toBe('1')
+    expect(process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED).toBeUndefined()
+    expect(String(process.env.NYXCLAUDE_USE_OPENAI)).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:11434/v1')
     expect(process.env.OPENAI_MODEL).toBe('qwen2.5:3b')
   })
@@ -3777,7 +3777,7 @@ describe('getProfileModelOptions', () => {
   })
 
   test('route-scoped OpenAI cache ignores active profile cache entries', async () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'http://localhost:7777/v1'
     process.env.OPENAI_MODEL = 'route-model'
 

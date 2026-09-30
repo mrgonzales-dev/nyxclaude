@@ -1,5 +1,5 @@
 import { c as _c } from "react-compiler-runtime";
-import type { Base64ImageSource, ImageBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs';
+import type { Base64ImageSource, ImageBlockParam } from 'src/types/api.js';
 import React, { Suspense, use, useCallback, useMemo, useRef, useState } from 'react';
 import { useSettings } from '../../../hooks/useSettings.js';
 import { useTerminalSize } from '../../../hooks/useTerminalSize.js';
@@ -266,7 +266,7 @@ function AskUserQuestionPermissionRequestBody(t0) {
   if ($[25] !== isInPlanMode || $[26] !== metadataSource || $[27] !== onDone || $[28] !== onReject || $[29] !== questions.length || $[30] !== toolUseConfirm) {
     t12 = () => {
       if (metadataSource) {
-        logEvent("tengu_ask_user_question_rejected", {
+        logEvent("nyxclaude_ask_user_question_rejected", {
           source: metadataSource as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           questionCount: questions.length,
           isInPlanMode,
@@ -305,7 +305,7 @@ function AskUserQuestionPermissionRequestBody(t0) {
 
     Questions asked:\n${questionsWithAnswers}`;
       if (metadataSource) {
-        logEvent("tengu_ask_user_question_respond_to_claude", {
+        logEvent("nyxclaude_ask_user_question_respond_to_claude", {
           source: metadataSource as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           questionCount: questions.length,
           isInPlanMode,
@@ -327,7 +327,7 @@ function AskUserQuestionPermissionRequestBody(t0) {
   } else {
     t13 = $[39];
   }
-  const handleRespondToClaude = t13;
+  const handleRespondToAgent = t13;
   let t14;
   if ($[40] !== allImageAttachments || $[41] !== answers || $[42] !== isInPlanMode || $[43] !== metadataSource || $[44] !== onDone || $[45] !== questions || $[46] !== toolUseConfirm) {
     t14 = async () => {
@@ -343,7 +343,7 @@ Stop asking clarifying questions and proceed to finish the plan with the informa
 
 Questions asked and answers provided:\n${questionsWithAnswers_0}`;
       if (metadataSource) {
-        logEvent("tengu_ask_user_question_finish_plan_interview", {
+        logEvent("nyxclaude_ask_user_question_finish_plan_interview", {
           source: metadataSource as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           questionCount: questions.length,
           isInPlanMode,
@@ -370,7 +370,7 @@ Questions asked and answers provided:\n${questionsWithAnswers_0}`;
   if ($[48] !== allImageAttachments || $[49] !== isInPlanMode || $[50] !== metadataSource || $[51] !== onDone || $[52] !== questionStates || $[53] !== questions || $[54] !== toolUseConfirm) {
     t15 = async answersToSubmit => {
       if (metadataSource) {
-        logEvent("tengu_ask_user_question_accepted", {
+        logEvent("nyxclaude_ask_user_question_accepted", {
           source: metadataSource as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           questionCount: questions.length,
           answerCount: Object.keys(answersToSubmit).length,
@@ -561,8 +561,8 @@ Questions asked and answers provided:\n${questionsWithAnswers_0}`;
       t25 = $[84];
     }
     let t26;
-    if ($[85] !== answers || $[86] !== currentQuestion || $[87] !== currentQuestionIndex || $[88] !== globalContentHeight || $[89] !== globalContentWidth || $[90] !== handleCancel || $[91] !== handleFinishPlanInterview || $[92] !== handleQuestionAnswer || $[93] !== handleRespondToClaude || $[94] !== handleTabNext || $[95] !== handleTabPrev || $[96] !== hideSubmitTab || $[97] !== nextQuestion || $[98] !== planFilePath || $[99] !== questionStates || $[100] !== questions || $[101] !== setTextInputMode || $[102] !== t23 || $[103] !== t24 || $[104] !== t25 || $[105] !== updateQuestionState) {
-      t26 = <><QuestionView question={currentQuestion} questions={questions} currentQuestionIndex={currentQuestionIndex} answers={answers} questionStates={questionStates} hideSubmitTab={hideSubmitTab} minContentHeight={globalContentHeight} minContentWidth={globalContentWidth} planFilePath={planFilePath} onUpdateQuestionState={updateQuestionState} onAnswer={handleQuestionAnswer} onTextInputFocus={setTextInputMode} onCancel={handleCancel} onSubmit={nextQuestion} onTabPrev={handleTabPrev} onTabNext={handleTabNext} onRespondToClaude={handleRespondToClaude} onFinishPlanInterview={handleFinishPlanInterview} onImagePaste={t23} pastedContents={t24} onRemoveImage={t25} /></>;
+    if ($[85] !== answers || $[86] !== currentQuestion || $[87] !== currentQuestionIndex || $[88] !== globalContentHeight || $[89] !== globalContentWidth || $[90] !== handleCancel || $[91] !== handleFinishPlanInterview || $[92] !== handleQuestionAnswer || $[93] !== handleRespondToAgent || $[94] !== handleTabNext || $[95] !== handleTabPrev || $[96] !== hideSubmitTab || $[97] !== nextQuestion || $[98] !== planFilePath || $[99] !== questionStates || $[100] !== questions || $[101] !== setTextInputMode || $[102] !== t23 || $[103] !== t24 || $[104] !== t25 || $[105] !== updateQuestionState) {
+      t26 = <><QuestionView question={currentQuestion} questions={questions} currentQuestionIndex={currentQuestionIndex} answers={answers} questionStates={questionStates} hideSubmitTab={hideSubmitTab} minContentHeight={globalContentHeight} minContentWidth={globalContentWidth} planFilePath={planFilePath} onUpdateQuestionState={updateQuestionState} onAnswer={handleQuestionAnswer} onTextInputFocus={setTextInputMode} onCancel={handleCancel} onSubmit={nextQuestion} onTabPrev={handleTabPrev} onTabNext={handleTabNext} onRespondToAgent={handleRespondToAgent} onFinishPlanInterview={handleFinishPlanInterview} onImagePaste={t23} pastedContents={t24} onRemoveImage={t25} /></>;
       $[85] = answers;
       $[86] = currentQuestion;
       $[87] = currentQuestionIndex;
@@ -571,7 +571,7 @@ Questions asked and answers provided:\n${questionsWithAnswers_0}`;
       $[90] = handleCancel;
       $[91] = handleFinishPlanInterview;
       $[92] = handleQuestionAnswer;
-      $[93] = handleRespondToClaude;
+      $[93] = handleRespondToAgent;
       $[94] = handleTabNext;
       $[95] = handleTabPrev;
       $[96] = hideSubmitTab;

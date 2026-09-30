@@ -4,7 +4,7 @@ import {
   releaseSharedMutationLock,
 } from '../../test/sharedMutationLock.js'
 
-const originalSubagentModel = process.env.CLAUDE_CODE_SUBAGENT_MODEL
+const originalSubagentModel = process.env.NYXCLAUDE_SUBAGENT_MODEL
 const originalOpenAIModel = process.env.OPENAI_MODEL
 const originalDefaultModelEnv = {
   ANTHROPIC_DEFAULT_OPUS_MODEL: process.env.ANTHROPIC_DEFAULT_OPUS_MODEL,
@@ -75,7 +75,7 @@ async function importAgentModule(): Promise<typeof import('./agent.js')> {
 describe('getAgentModel provider-aware fallback', () => {
   beforeEach(async () => {
     await acquireSharedMutationLock('utils/model/agent.test.ts')
-    delete process.env.CLAUDE_CODE_SUBAGENT_MODEL
+    delete process.env.NYXCLAUDE_SUBAGENT_MODEL
     delete process.env.OPENAI_MODEL
     for (const key of Object.keys(originalDefaultModelEnv)) {
       delete process.env[key]
@@ -90,9 +90,9 @@ describe('getAgentModel provider-aware fallback', () => {
       mock.restore()
       setAvailableModelsForTest()
       if (originalSubagentModel === undefined) {
-        delete process.env.CLAUDE_CODE_SUBAGENT_MODEL
+        delete process.env.NYXCLAUDE_SUBAGENT_MODEL
       } else {
-        process.env.CLAUDE_CODE_SUBAGENT_MODEL = originalSubagentModel
+        process.env.NYXCLAUDE_SUBAGENT_MODEL = originalSubagentModel
       }
       if (originalOpenAIModel === undefined) {
         delete process.env.OPENAI_MODEL
@@ -344,9 +344,9 @@ describe('getAgentModel provider-aware fallback', () => {
       expect(result).toBe('gpt-4o-mini')
     })
 
-    test('CLAUDE_CODE_SUBAGENT_MODEL overrides tool-specified custom model', async () => {
+    test('NYXCLAUDE_SUBAGENT_MODEL overrides tool-specified custom model', async () => {
       mockProvider('openai')
-      process.env.CLAUDE_CODE_SUBAGENT_MODEL =
+      process.env.NYXCLAUDE_SUBAGENT_MODEL =
         'deepseek/deepseek-v4-flash:nitro'
 
       const { getAgentModel } = await importAgentModule()

@@ -1,4 +1,4 @@
-import { APIError } from '@anthropic-ai/sdk'
+import { APIError } from 'src/types/api.js'
 import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import { getEventListeners } from 'node:events'
 import { acquireSharedMutationLock, releaseSharedMutationLock } from '../../test/sharedMutationLock.js'
@@ -31,13 +31,13 @@ const originalEnv = {
   OPENAI_AUTH_HEADER: process.env.OPENAI_AUTH_HEADER,
   OPENAI_AUTH_SCHEME: process.env.OPENAI_AUTH_SCHEME,
   OPENAI_AUTH_HEADER_VALUE: process.env.OPENAI_AUTH_HEADER_VALUE,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
   GITHUB_COPILOT_KEY: process.env.GITHUB_COPILOT_KEY,
   GITHUB_ENTERPRISE_URL: process.env.GITHUB_ENTERPRISE_URL,
   GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   GH_TOKEN: process.env.GH_TOKEN,
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
   GEMINI_ACCESS_TOKEN: process.env.GEMINI_ACCESS_TOKEN,
@@ -45,7 +45,7 @@ const originalEnv = {
   GEMINI_BASE_URL: process.env.GEMINI_BASE_URL,
   GEMINI_MODEL: process.env.GEMINI_MODEL,
   GOOGLE_CLOUD_PROJECT: process.env.GOOGLE_CLOUD_PROJECT,
-  ANTHROPIC_CUSTOM_HEADERS: process.env.ANTHROPIC_CUSTOM_HEADERS,
+  NYXCLAUDE_CUSTOM_HEADERS: process.env.NYXCLAUDE_CUSTOM_HEADERS,
   NVIDIA_API_KEY: process.env.NVIDIA_API_KEY,
   NVIDIA_NIM: process.env.NVIDIA_NIM,
   MINIMAX_API_KEY: process.env.MINIMAX_API_KEY,
@@ -60,8 +60,8 @@ const originalEnv = {
   OPENGATEWAY_API_KEY: process.env.OPENGATEWAY_API_KEY,
   OPENGATEWAY_BASE_URL: process.env.OPENGATEWAY_BASE_URL,
   OPENCODE_API_KEY: process.env.OPENCODE_API_KEY,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED: process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID: process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED: process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID: process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
   CLAUDE_STREAM_IDLE_TIMEOUT_MS: process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS,
   API_TIMEOUT_MS: process.env.API_TIMEOUT_MS,
 }
@@ -494,13 +494,13 @@ beforeEach(async () => {
   delete process.env.OPENAI_AUTH_HEADER
   delete process.env.OPENAI_AUTH_SCHEME
   delete process.env.OPENAI_AUTH_HEADER_VALUE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_COPILOT_KEY
   delete process.env.GITHUB_ENTERPRISE_URL
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GOOGLE_API_KEY
   delete process.env.GEMINI_ACCESS_TOKEN
@@ -508,7 +508,7 @@ beforeEach(async () => {
   delete process.env.GEMINI_BASE_URL
   delete process.env.GEMINI_MODEL
   delete process.env.GOOGLE_CLOUD_PROJECT
-  delete process.env.ANTHROPIC_CUSTOM_HEADERS
+  delete process.env.NYXCLAUDE_CUSTOM_HEADERS
   delete process.env.NVIDIA_API_KEY
   delete process.env.NVIDIA_NIM
   delete process.env.MINIMAX_API_KEY
@@ -523,8 +523,8 @@ beforeEach(async () => {
   delete process.env.OPENGATEWAY_API_KEY
   delete process.env.OPENGATEWAY_BASE_URL
   delete process.env.OPENCODE_API_KEY
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
   delete process.env.CLAUDE_STREAM_IDLE_TIMEOUT_MS
   delete process.env.API_TIMEOUT_MS
 })
@@ -541,13 +541,13 @@ afterEach(() => {
     restoreEnv('OPENAI_AUTH_HEADER', originalEnv.OPENAI_AUTH_HEADER)
     restoreEnv('OPENAI_AUTH_SCHEME', originalEnv.OPENAI_AUTH_SCHEME)
     restoreEnv('OPENAI_AUTH_HEADER_VALUE', originalEnv.OPENAI_AUTH_HEADER_VALUE)
-    restoreEnv('CLAUDE_CODE_USE_GITHUB', originalEnv.CLAUDE_CODE_USE_GITHUB)
+    restoreEnv('NYXCLAUDE_USE_GITHUB', originalEnv.NYXCLAUDE_USE_GITHUB)
     restoreEnv('GITHUB_COPILOT_KEY', originalEnv.GITHUB_COPILOT_KEY)
     restoreEnv('GITHUB_ENTERPRISE_URL', originalEnv.GITHUB_ENTERPRISE_URL)
     restoreEnv('GITHUB_TOKEN', originalEnv.GITHUB_TOKEN)
     restoreEnv('GH_TOKEN', originalEnv.GH_TOKEN)
-    restoreEnv('CLAUDE_CODE_USE_OPENAI', originalEnv.CLAUDE_CODE_USE_OPENAI)
-    restoreEnv('CLAUDE_CODE_USE_GEMINI', originalEnv.CLAUDE_CODE_USE_GEMINI)
+    restoreEnv('NYXCLAUDE_USE_OPENAI', originalEnv.NYXCLAUDE_USE_OPENAI)
+    restoreEnv('NYXCLAUDE_USE_GEMINI', originalEnv.NYXCLAUDE_USE_GEMINI)
     restoreEnv('GEMINI_API_KEY', originalEnv.GEMINI_API_KEY)
     restoreEnv('GOOGLE_API_KEY', originalEnv.GOOGLE_API_KEY)
     restoreEnv('GEMINI_ACCESS_TOKEN', originalEnv.GEMINI_ACCESS_TOKEN)
@@ -555,7 +555,7 @@ afterEach(() => {
     restoreEnv('GEMINI_BASE_URL', originalEnv.GEMINI_BASE_URL)
     restoreEnv('GEMINI_MODEL', originalEnv.GEMINI_MODEL)
     restoreEnv('GOOGLE_CLOUD_PROJECT', originalEnv.GOOGLE_CLOUD_PROJECT)
-    restoreEnv('ANTHROPIC_CUSTOM_HEADERS', originalEnv.ANTHROPIC_CUSTOM_HEADERS)
+    restoreEnv('NYXCLAUDE_CUSTOM_HEADERS', originalEnv.NYXCLAUDE_CUSTOM_HEADERS)
     restoreEnv('NVIDIA_API_KEY', originalEnv.NVIDIA_API_KEY)
     restoreEnv('NVIDIA_NIM', originalEnv.NVIDIA_NIM)
     restoreEnv('MINIMAX_API_KEY', originalEnv.MINIMAX_API_KEY)
@@ -570,8 +570,8 @@ afterEach(() => {
     restoreEnv('OPENGATEWAY_API_KEY', originalEnv.OPENGATEWAY_API_KEY)
     restoreEnv('OPENGATEWAY_BASE_URL', originalEnv.OPENGATEWAY_BASE_URL)
     restoreEnv('OPENCODE_API_KEY', originalEnv.OPENCODE_API_KEY)
-    restoreEnv('CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED', originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED)
-    restoreEnv('CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID', originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID)
+    restoreEnv('NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED', originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED)
+    restoreEnv('NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID', originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID)
     restoreEnv('CLAUDE_STREAM_IDLE_TIMEOUT_MS', originalEnv.CLAUDE_STREAM_IDLE_TIMEOUT_MS)
     restoreEnv('API_TIMEOUT_MS', originalEnv.API_TIMEOUT_MS)
     globalThis.fetch = originalFetch
@@ -1708,7 +1708,7 @@ test('applies descriptor static headers before client and request headers', asyn
     },
   })
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://shim-header-test.example/v1'
   process.env.OPENAI_MODEL = 'shim-test-model'
 
@@ -1803,7 +1803,7 @@ test('opengateway sends Accept-Encoding: identity header on chat requests', asyn
     },
   })
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://opengateway.gitlawb.com/v1/xiaomi-mimo'
   process.env.OPENAI_MODEL = 'mimo-v2.5-pro'
 
@@ -1859,7 +1859,7 @@ test('opengateway sends Accept-Encoding: identity header on chat requests', asyn
 test('strips Anthropic-specific headers on GitHub Codex transport requests', async () => {
   let capturedHeaders: Headers | undefined
 
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_API_KEY = 'github-test-key'
   process.env.GITHUB_TOKEN = 'stored-secret'
   delete process.env.GITHUB_COPILOT_KEY
@@ -1909,7 +1909,7 @@ test('strips Anthropic-specific headers on GitHub Codex transport requests', asy
 
 // openaiShim test extraction seam 018 start: uses direct GitHub Copilot Enterprise key for shim authentication
 test('uses direct GitHub Copilot Enterprise key for shim authentication', async () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.GITHUB_COPILOT_KEY = 'enterprise-direct-key'
   process.env.GITHUB_ENTERPRISE_URL = 'https://github.mycompany.com'
   delete process.env.OPENAI_API_KEY
@@ -1927,7 +1927,7 @@ test('uses direct GitHub Copilot Enterprise key for shim authentication', async 
 
 // openaiShim test extraction seam 019 start: direct GitHub Copilot key wins over stale OpenAI key
 test('direct GitHub Copilot key wins over stale OpenAI key', async () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.GITHUB_COPILOT_KEY = 'enterprise-direct-key'
   process.env.GITHUB_ENTERPRISE_URL = 'https://github.mycompany.com'
   process.env.OPENAI_API_KEY = 'stale-openai-key'
@@ -1946,7 +1946,7 @@ test('direct GitHub Copilot key wins over stale OpenAI key', async () => {
 test('strips Anthropic-specific headers on GitHub Codex transport with providerOverride API key', async () => {
   let capturedHeaders: Headers | undefined
 
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_API_KEY = 'env-should-not-win'
   delete process.env.OPENAI_BASE_URL
   delete process.env.OPENAI_MODEL
@@ -3211,7 +3211,7 @@ test('keeps max_completion_tokens for non-local non-github providers', async () 
 test('uses route-specific credential env vars for descriptor-backed openai-compatible routes', async () => {
   let capturedHeaders: Headers | undefined
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENROUTER_API_KEY = 'or-route-key'
   delete process.env.OPENAI_API_KEY
@@ -3885,7 +3885,7 @@ test('uses GEMINI_ACCESS_TOKEN for Gemini OpenAI-compatible requests', async () 
   let capturedProject: string | null = null
   let requestUrl: string | undefined
 
-  process.env.CLAUDE_CODE_USE_GEMINI = '1'
+  process.env.NYXCLAUDE_USE_GEMINI = '1'
   process.env.GEMINI_AUTH_MODE = 'access-token'
   process.env.GEMINI_ACCESS_TOKEN = 'gemini-access-token'
   process.env.GOOGLE_CLOUD_PROJECT = 'gemini-project'
@@ -3958,7 +3958,7 @@ test('uses GEMINI_ACCESS_TOKEN for Gemini OpenAI-compatible requests', async () 
 test('uses NVIDIA_API_KEY for NVIDIA NIM requests without OPENAI_API_KEY', async () => {
   let capturedAuthorization: string | null = null
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.NVIDIA_NIM = '1'
   process.env.OPENAI_BASE_URL = 'https://integrate.api.nvidia.com/v1'
   process.env.OPENAI_MODEL = 'nvidia/llama-3.1-nemotron-70b-instruct'
@@ -4015,7 +4015,7 @@ test('uses NVIDIA_API_KEY for NVIDIA NIM requests without OPENAI_API_KEY', async
 test('does not use stale NVIDIA_API_KEY for non-NVIDIA OpenAI-compatible routes', async () => {
   let capturedAuthorization: string | null = null
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.NVIDIA_NIM = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'openai/gpt-5-mini'
@@ -4068,7 +4068,7 @@ test('does not use stale NVIDIA_API_KEY for non-NVIDIA OpenAI-compatible routes'
 test('does not use MINIMAX_API_KEY for non-MiniMax OpenAI-compatible routes', async () => {
   let capturedAuthorization: string | null = null
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'openai/gpt-5-mini'
   process.env.MINIMAX_API_KEY = 'minimax-live-key'
@@ -4121,7 +4121,7 @@ test('xiaomi mimo route uses api-key auth header and max_completion_tokens', asy
   let capturedHeaders: Record<string, string> | undefined
   let capturedBody: Record<string, unknown> | undefined
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.xiaomimimo.com/v1'
   process.env.OPENAI_MODEL = 'mimo-v2.5-pro'
   process.env.MIMO_API_KEY = 'mimo-live-key'
@@ -4174,7 +4174,7 @@ test('xiaomi mimo token plan uses raw api-key and OpenAI-compatible reasoning_ef
   let capturedHeaders: Record<string, string> | undefined
   let capturedBody: Record<string, unknown> | undefined
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://token-plan-sgp.xiaomimimo.com/v1'
   process.env.OPENAI_MODEL = 'mimo-v2.5-pro'
   process.env.MIMO_API_KEY = 'mimo-token-key'
@@ -4225,7 +4225,7 @@ test.each([
   process.env.OPENAI_BASE_URL = 'https://opencode.ai/zen/go/v1'
   delete process.env.OPENAI_API_KEY
   process.env.OPENAI_MODEL = model
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENCODE_API_KEY = 'fake-opencode-key'
   process.env.OPENAI_AUTH_HEADER = 'Authorization'
   process.env.OPENAI_AUTH_SCHEME = 'bearer'
@@ -4301,7 +4301,7 @@ test('opencode go messages endpoint rotates raw x-api-key credentials after rate
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENAI_API_KEYS
   process.env.OPENAI_MODEL = 'minimax-m3'
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENCODE_API_KEY = 'fake-opencode-a,fake-opencode-b'
 
   globalThis.fetch = (async (input, init) => {
@@ -4767,7 +4767,7 @@ test('longcat provider flag never falls back to an OPENAI_API_KEYS pool', async 
 })
 
 test('dedicated-only ClinePass route never falls back to generic OpenAI credentials', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.cline.bot/api/v1'
   process.env.OPENAI_MODEL = 'cline-pass/deepseek-v4-flash'
   process.env.OPENAI_API_KEY = 'generic-openai-key'
@@ -4822,7 +4822,7 @@ test('gitlawb opengateway stored provider profile key becomes bearer auth', asyn
 
 // openaiShim test extraction seam 077 start: openai route still sends OPENAI_API_KEY as bearer auth
 test('openai route still sends OPENAI_API_KEY as bearer auth', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEY = 'fake-openai-key'
@@ -4839,7 +4839,7 @@ test('openai route still sends OPENAI_API_KEY as bearer auth', async () => {
 test('OPENAI_API_KEYS rejects placeholder values before sending requests', async () => {
   const authorizations: Array<string | null> = []
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEYS = 'key-a,SUA_CHAVE'
@@ -4869,7 +4869,7 @@ test('OPENAI_API_KEYS rejects placeholder values before sending requests', async
 test('OPENAI_API_KEYS rotates to the next key on rate-limit failure', async () => {
   const authorizations: Array<string | null> = []
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
@@ -4906,7 +4906,7 @@ test('OPENAI_API_KEYS rotates to the next key on rate-limit failure', async () =
 test('OPENAI_API_KEYS does not reuse a cooled-down key after every key is rate-limited', async () => {
   const authorizations: Array<string | null> = []
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
@@ -4940,7 +4940,7 @@ test('OPENAI_API_KEYS does not reuse a cooled-down key after every key is rate-l
 test('comma-separated OPENAI_API_KEY rotates to the next key on rate-limit failure', async () => {
   const authorizations: Array<string | null> = []
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEY = 'key-a,key-b'
@@ -4977,7 +4977,7 @@ test('comma-separated OPENAI_API_KEY rotates to the next key on rate-limit failu
 test('OPENAI_API_KEYS does not rotate through pool on provider 5xx outage', async () => {
   const authorizations: Array<string | null> = []
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
@@ -5011,7 +5011,7 @@ test('OPENAI_API_KEYS does not rotate through pool on provider 5xx outage', asyn
 test('OPENAI_API_KEYS preserves cooldown state across client requests', async () => {
   const authorizations: Array<string | null> = []
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
@@ -5053,7 +5053,7 @@ test('OPENAI_API_KEYS preserves cooldown state across client requests', async ()
 test('OPENAI_API_KEYS rotates Azure api-key auth on auth failure', async () => {
   const apiKeys: Array<string | null> = []
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://example.openai.azure.com/openai/deployments/test/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEYS = 'azure-key-a,azure-key-b'
@@ -5089,7 +5089,7 @@ test('OPENAI_API_KEYS rotates Azure api-key auth on auth failure', async () => {
 test('OPENAI_API_KEYS does not reuse auth-disabled credentials across client requests', async () => {
   const authorizations: Array<string | null> = []
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
@@ -5133,7 +5133,7 @@ test('OPENAI_API_KEYS does not reuse auth-disabled credentials across client req
 test('OPENAI_API_KEYS permanently evicts 403 auth failures', async () => {
   const authorizations: Array<string | null> = []
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
@@ -5176,7 +5176,7 @@ test('OPENAI_API_KEYS permanently evicts 403 auth failures', async () => {
 test('does not use BNKR_API_KEY for non-Bankr OpenAI-compatible routes', async () => {
   let capturedAuthorization: string | null = null
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_MODEL = 'openai/gpt-5-mini'
   process.env.BNKR_API_KEY = 'bankr-live-key'
@@ -9044,7 +9044,7 @@ test('generic OpenAI-compatible providers do not echo reasoning_content on assis
 
 // openaiShim test extraction seam 148 start: gateway-routed DeepSeek models inherit descriptor-backed reasoning and token shaping
 test('gateway-routed DeepSeek models inherit descriptor-backed reasoning and token shaping', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_API_KEY = 'sk-openrouter-test'
 
@@ -10460,7 +10460,7 @@ test('strips Anthropic attribution header block from chat-completions system pro
           'x-anthropic-billing-header: cc_version=0.8.0.abc123; ' +
           'cc_entrypoint=cli;',
       },
-      { type: 'text', text: 'You are Claude Code, helpful assistant.' },
+      { type: 'text', text: 'You are Nyxclaude, helpful assistant.' },
       { type: 'text', text: 'Project context: bun + react.' },
     ],
     messages: [{ role: 'user', content: 'hello' }],
@@ -10473,7 +10473,7 @@ test('strips Anthropic attribution header block from chat-completions system pro
   expect(sysMsg).toBeDefined()
   expect(sysMsg?.content).not.toContain('x-anthropic-billing-header')
   expect(sysMsg?.content).not.toContain('cc_version=')
-  expect(sysMsg?.content).toContain('You are Claude Code, helpful assistant.')
+  expect(sysMsg?.content).toContain('You are Nyxclaude, helpful assistant.')
   expect(sysMsg?.content).toContain('Project context: bun + react.')
 })
 // openaiShim test extraction seam 177 end
@@ -10513,7 +10513,7 @@ test('strips Anthropic attribution header block from responses-API instructions 
         type: 'text',
         text: 'x-anthropic-billing-header: cc_version=0.8.0.abc123; cc_entrypoint=cli;',
       },
-      { type: 'text', text: 'You are Claude Code.' },
+      { type: 'text', text: 'You are Nyxclaude.' },
     ],
     messages: [{ role: 'user', content: 'hello' }],
     max_tokens: 64,
@@ -10523,7 +10523,7 @@ test('strips Anthropic attribution header block from responses-API instructions 
   const instructions = capturedBody?.instructions as string
   expect(instructions).not.toContain('x-anthropic-billing-header')
   expect(instructions).not.toContain('cc_version=')
-  expect(instructions).toContain('You are Claude Code.')
+  expect(instructions).toContain('You are Nyxclaude.')
 })
 // openaiShim test extraction seam 178 end
 
@@ -10891,7 +10891,7 @@ function makeCodexSseResponse(responseData: Record<string, unknown>): Response {
 }
 
 test('GitHub Copilot codex responses transport does not replay after a pre-header timeout', async () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
   process.env.OPENAI_API_KEY = 'test-token'
   process.env.API_TIMEOUT_MS = '20'
@@ -10939,7 +10939,7 @@ test('GitHub Copilot codex responses transport does not replay after a pre-heade
 })
 
 test('GitHub Copilot responses fallback does not replay after a pre-header timeout', async () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
   process.env.OPENAI_API_KEY = 'test-token'
   process.env.API_TIMEOUT_MS = '20'
@@ -10989,7 +10989,7 @@ test('GitHub Copilot responses fallback does not replay after a pre-header timeo
 })
 
 test('GitHub Copilot responses fallback preserves caller abort without retrying', async () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
   process.env.OPENAI_API_KEY = 'test-token'
   process.env.API_TIMEOUT_MS = '200'
@@ -11024,7 +11024,7 @@ test('GitHub Copilot responses fallback preserves caller abort without retrying'
 })
 
 test('GitHub Copilot responses fallback preserves non-caller transport aborts', async () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
   process.env.OPENAI_API_KEY = 'test-token'
   let fetchCalls = 0
@@ -11051,7 +11051,7 @@ test('GitHub Copilot responses fallback preserves non-caller transport aborts', 
 })
 
 test('GitHub Copilot responses fallback does not retry non-retryable HTTP failures', async () => {
-  process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  process.env.NYXCLAUDE_USE_GITHUB = '1'
   process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
   process.env.OPENAI_API_KEY = 'test-token'
   let fetchCalls = 0
@@ -11094,7 +11094,7 @@ test('GitHub Copilot 401 chat_completions retries with refreshed token', async (
       refreshCopilotTokenOn401: refreshSpy,
     }))
 
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
     process.env.OPENAI_API_KEY = 'initial-token'
     process.env.GITHUB_TOKEN = 'initial-token'
@@ -11199,7 +11199,7 @@ test('GitHub Copilot 401 codex_responses retries with refreshed token', async ()
       }),
     }))
 
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
     process.env.OPENAI_API_KEY = 'initial-token'
     process.env.GITHUB_TOKEN = 'initial-token'
@@ -11247,7 +11247,7 @@ test('GitHub Copilot 401 with credential pool uses refreshed token not pool key'
       refreshCopilotTokenOn401: refreshSpy,
     }))
 
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
     delete process.env.OPENAI_API_KEY
     process.env.OPENAI_API_KEYS = 'initial-token,second-key'
@@ -11312,7 +11312,7 @@ test('GitHub Copilot 401 with "token has expired" triggers refresh', async () =>
       refreshCopilotTokenOn401: refreshSpy,
     }))
 
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
     process.env.OPENAI_API_KEY = 'initial-token'
     process.env.GITHUB_TOKEN = 'initial-token'
@@ -11367,7 +11367,7 @@ test('GitHub Copilot 401 without expired-token message does not trigger refresh'
       refreshCopilotTokenOn401: refreshSpy,
     }))
 
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
     process.env.OPENAI_API_KEY = 'initial-token'
     process.env.GITHUB_TOKEN = 'initial-token'
@@ -11422,7 +11422,7 @@ test('GitHub Copilot 401 refresh returning same token does not update auth', asy
       refreshCopilotTokenOn401: refreshSpy,
     }))
 
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
     process.env.OPENAI_API_KEY = 'initial-token'
     process.env.GITHUB_TOKEN = 'initial-token'
@@ -11482,7 +11482,7 @@ test('GitHub Copilot 401 codex_responses with providerOverride does not trigger 
       refreshCopilotTokenOn401: refreshSpy,
     }))
 
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
     process.env.OPENAI_API_KEY = 'stored-copilot-token'
     process.env.GITHUB_TOKEN = 'stored-copilot-token'
@@ -11536,7 +11536,7 @@ test('GitHub Copilot 401 chat_completions with providerOverride does not trigger
       refreshCopilotTokenOn401: refreshSpy,
     }))
 
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     process.env.OPENAI_BASE_URL = 'https://api.githubcopilot.com'
     process.env.OPENAI_API_KEY = 'stored-copilot-token'
     process.env.GITHUB_TOKEN = 'stored-copilot-token'

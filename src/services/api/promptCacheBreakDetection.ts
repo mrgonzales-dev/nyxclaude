@@ -1,5 +1,5 @@
-import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { BetaToolUnion } from 'src/types/api.js'
+import type { TextBlockParam } from 'src/types/api.js'
 import { createPatch } from 'diff'
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
@@ -54,18 +54,18 @@ type PreviousState = {
   /** Sorted beta header list. Diffed to show which headers were added/removed. */
   betas: string[]
   /** AFK_MODE_BETA_HEADER presence — should NOT break cache anymore
-   *  (sticky-on latched in claude.ts). Tracked to verify the fix. */
+   *  (sticky-on latched in modelApi.ts). Tracked to verify the fix. */
   autoModeActive: boolean
   /** Overage state flip — should NOT break cache anymore (eligibility is
    *  latched session-stable in should1hCacheTTL). Tracked to verify the fix. */
   isUsingOverage: boolean
   /** Cache-editing beta header presence — should NOT break cache anymore
-   *  (sticky-on latched in claude.ts). Tracked to verify the fix. */
+   *  (sticky-on latched in modelApi.ts). Tracked to verify the fix. */
   cachedMCEnabled: boolean
   /** Resolved effort (env → options → model default). Goes into output_config
    *  or anthropic_internal.effort_override. */
   effortValue: string
-  /** Hash of getExtraBodyParams() — catches CLAUDE_CODE_EXTRA_BODY and
+  /** Hash of getExtraBodyParams() — catches NYXCLAUDE_EXTRA_BODY and
    *  anthropic_internal changes. */
   extraBodyHash: number
   callCount: number
@@ -171,7 +171,7 @@ function isExcludedModel(model: string): boolean {
  * are short-lived forked agents where cache break detection provides no
  * value — they run 1-3 turns with a fresh agentId each time, so there's
  * nothing meaningful to compare against. Their cache metrics are still
- * logged via tengu_api_success for analytics.
+ * logged via nyxclaude_api_success for analytics.
  */
 function getTrackingKey(
   querySource: QuerySource,
@@ -423,7 +423,7 @@ function resolvePromptCacheBreakAPIProvider(
   activeRouteId: string | null,
   model: string,
 ): APIProvider {
-  if (isCacheBreakEnvTruthy(env.CLAUDE_CODE_USE_FOUNDRY)) {
+  if (isCacheBreakEnvTruthy(env.NYXCLAUDE_USE_FOUNDRY)) {
     return 'foundry'
   }
 
@@ -466,7 +466,7 @@ function isGithubNativeAnthropicModeForCacheBreak(
   env: NodeJS.ProcessEnv,
   model: string,
 ): boolean {
-  if (!isCacheBreakEnvTruthy(env.CLAUDE_CODE_USE_GITHUB)) return false
+  if (!isCacheBreakEnvTruthy(env.NYXCLAUDE_USE_GITHUB)) return false
   const resolvedModel = model.trim() || env.OPENAI_MODEL?.trim() || ''
   return resolvedModel.toLowerCase().includes('claude-')
 }
@@ -872,7 +872,7 @@ export async function checkResponseForCacheBreak(
       reason = 'unknown local mutation or incomplete prompt state'
     }
 
-    logEvent('tengu_prompt_cache_break', {
+    logEvent('nyxclaude_prompt_cache_break', {
       classification:
         classification.kind as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       severity:

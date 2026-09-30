@@ -10,11 +10,11 @@ export class AbortError extends Error {
   override readonly name: 'AbortError'
 }
 
-export class ClaudeError extends Error {
+export class SDKErrorBase extends Error {
   constructor(message: string)
 }
 
-export class SDKError extends ClaudeError {
+export class SDKError extends SDKErrorBase {
   constructor(message: string)
 }
 
@@ -56,7 +56,7 @@ export type SDKAssistantMessageError =
 export function sdkErrorFromType(
   errorType: SDKAssistantMessageError,
   message?: string,
-): SDKError | ClaudeError
+): SDKError | SDKErrorBase
 
 // ============================================================================
 // Types

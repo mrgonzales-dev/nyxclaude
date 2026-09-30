@@ -1,5 +1,5 @@
 import type { UUID } from 'crypto'
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ContentBlockParam } from 'src/types/api.js'
 import type {
   NormalizedAssistantMessage,
   NormalizedMessage,

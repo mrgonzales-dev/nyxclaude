@@ -153,7 +153,7 @@ test('gpt-5.6 on an Azure custom-route base carries its default high effort from
   // advertised default 'high' instead of the legacy undefined. FAILS pre-fix
   // (getDefaultEffortForModel returns undefined on route 'custom').
   const snapshot = {
-    CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
+    NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
     OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
     OPENAI_API_BASE: process.env.OPENAI_API_BASE,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
@@ -161,7 +161,7 @@ test('gpt-5.6 on an Azure custom-route base carries its default high effort from
   }
   delete process.env.OPENAI_API_BASE
   delete process.env.OPENAI_AZURE_STYLE
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://myres.openai.azure.com/openai/v1'
   process.env.OPENAI_API_KEY = 'test-key'
 
@@ -189,7 +189,7 @@ test('gpt-5.6 on a regional OpenAI base carries its default high effort from met
   // eu.api.openai.com is an OpenAI-controlled surface (endsWith '.api.openai.com')
   // that still resolves to route 'custom'; the gated fallback must fire.
   const snapshot = {
-    CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
+    NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
     OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
     OPENAI_API_BASE: process.env.OPENAI_API_BASE,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
@@ -197,7 +197,7 @@ test('gpt-5.6 on a regional OpenAI base carries its default high effort from met
   }
   delete process.env.OPENAI_API_BASE
   delete process.env.OPENAI_AZURE_STYLE
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://eu.api.openai.com/v1'
   process.env.OPENAI_API_KEY = 'test-key'
 
@@ -225,7 +225,7 @@ test('gpt-5.6 on an arbitrary OpenAI-compatible gateway does NOT get an injected
   // legacy controls (no injected reasoning_effort default). FAILS pre-fix
   // (the ungated round-3 fallback returned 'high').
   const snapshot = {
-    CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
+    NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
     OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
     OPENAI_API_BASE: process.env.OPENAI_API_BASE,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
@@ -233,7 +233,7 @@ test('gpt-5.6 on an arbitrary OpenAI-compatible gateway does NOT get an injected
   }
   delete process.env.OPENAI_API_BASE
   delete process.env.OPENAI_AZURE_STYLE
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://gateway.example/v1'
   process.env.OPENAI_API_KEY = 'test-key'
 
@@ -326,7 +326,7 @@ test('e2e: max on non-Opus Anthropic model still clamps to high', async () => {
   expect(resolveAppliedEffort('claude-sonnet-4-6', 'max')).toBe('high')
 })
 
-test('modelSupportsXHighEffort: opus-4-7 and opus-4-8 are allowed; other Claude models are not', async () => {
+test('modelSupportsXHighEffort: opus-4-7 and opus-4-8 are allowed; other Models are not', async () => {
   const { modelSupportsXHighEffort } = await importFreshEffortModule({
     provider: 'firstParty' as unknown as 'openai',
     supportsCodexReasoningEffort: false,

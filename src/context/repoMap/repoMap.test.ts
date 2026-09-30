@@ -5,9 +5,9 @@ import { tmpdir } from 'os'
 import { join, win32 } from 'path'
 import { fileURLToPath } from 'url'
 import {
-  getClaudeConfigHomeDir,
-  getClaudeConfigHomeDirOverrideForTesting,
-  setClaudeConfigHomeDirForTesting,
+  getNyxclaudeConfigHomeDir,
+  getNyxclaudeConfigHomeDirOverrideForTesting,
+  setNyxclaudeConfigHomeDirForTesting,
 } from '../../utils/envUtils.js'
 import {
   acquireSharedMutationLock,
@@ -46,17 +46,17 @@ async function withWritableConfigHome<T>(
   callback: (configDir: string) => Promise<T>,
 ): Promise<T> {
   await acquireSharedMutationLock('context/repoMap/repoMap.test.ts config home')
-  const previousConfigHomeOverride = getClaudeConfigHomeDirOverrideForTesting()
+  const previousConfigHomeOverride = getNyxclaudeConfigHomeDirOverrideForTesting()
   let configDir: string | undefined
 
   try {
     configDir = mkdtempSync(join(tmpdir(), 'repomap-test-config-'))
-    setClaudeConfigHomeDirForTesting(configDir)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(configDir)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
     return await callback(configDir)
   } finally {
-    setClaudeConfigHomeDirForTesting(previousConfigHomeOverride)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(previousConfigHomeOverride)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
     if (configDir) {
       rmSync(configDir, { recursive: true, force: true })
     }
@@ -592,7 +592,7 @@ describe('cache', () => {
     const configDir = mkdtempSync(join(tmpdir(), 'repomap-config-home-'))
     const expectedCacheDir = join(configDir, 'repomap-cache')
     const {
-      CLAUDE_CONFIG_DIR: _legacyConfigDir,
+      NYXCLAUDE_CONFIG_DIR: _legacyConfigDir,
       NYXCLAUDE_CONFIG_DIR: _nyxClaudeConfigDir,
       ...env
     } = process.env

@@ -7,7 +7,7 @@
 // and registry getters trigger it automatically via setRegistryLazyLoader, so
 // startup paths that never read the registry skip the entire graph.
 
-import type { AnthropicProxyDescriptor } from './descriptors.js'
+import type { ProviderProxyDescriptor } from './descriptors.js'
 import type { ProviderPreset } from './generated/integrationManifest.generated.js'
 import {
   setRegistryLazyLoader,
@@ -74,7 +74,7 @@ function loadIntegrationArtifacts(): void {
     }
   }
 
-  for (const anthropicProxy of artifacts.ANTHROPIC_PROXY_DESCRIPTORS as readonly AnthropicProxyDescriptor[]) {
+  for (const anthropicProxy of artifacts.ANTHROPIC_PROXY_DESCRIPTORS as readonly ProviderProxyDescriptor[]) {
     if (!getAnthropicProxy(anthropicProxy.id)) {
       registerAnthropicProxy(anthropicProxy)
     }

@@ -31,17 +31,17 @@ let testSettings: SettingsJson = {}
 
 const originalEnv = {
   ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
-  CLAUDE_CODE_USE_BEDROCK: process.env.CLAUDE_CODE_USE_BEDROCK,
-  CLAUDE_CODE_USE_FOUNDRY: process.env.CLAUDE_CODE_USE_FOUNDRY,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
-  CLAUDE_CODE_USE_MISTRAL: process.env.CLAUDE_CODE_USE_MISTRAL,
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_VERTEX: process.env.CLAUDE_CODE_USE_VERTEX,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
+  NYXCLAUDE_USE_BEDROCK: process.env.NYXCLAUDE_USE_BEDROCK,
+  NYXCLAUDE_USE_FOUNDRY: process.env.NYXCLAUDE_USE_FOUNDRY,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
+  NYXCLAUDE_USE_MISTRAL: process.env.NYXCLAUDE_USE_MISTRAL,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_VERTEX: process.env.NYXCLAUDE_USE_VERTEX,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
   NVIDIA_NIM: process.env.NVIDIA_NIM,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
@@ -64,7 +64,7 @@ const originalEnv = {
   BNKR_API_KEY: process.env.BNKR_API_KEY,
   NYXCLAUDE_DISABLE_CO_AUTHORED_BY:
     process.env.NYXCLAUDE_DISABLE_CO_AUTHORED_BY,
-  CLAUDE_CODE_REMOTE_SESSION_ID: process.env.CLAUDE_CODE_REMOTE_SESSION_ID,
+  NYXCLAUDE_REMOTE_SESSION_ID: process.env.NYXCLAUDE_REMOTE_SESSION_ID,
   SESSION_INGRESS_URL: process.env.SESSION_INGRESS_URL,
   USER_TYPE: process.env.USER_TYPE,
 }
@@ -96,14 +96,14 @@ beforeEach(async () => {
   testSettings = {}
   setClientType('cli')
   setMainLoopModelOverride(undefined)
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
   delete process.env.NVIDIA_NIM
   delete process.env.OPENAI_BASE_URL
   delete process.env.OPENAI_API_BASE
@@ -121,11 +121,11 @@ beforeEach(async () => {
   delete process.env.VENICE_API_KEY
   delete process.env.MIMO_API_KEY
   delete process.env.BNKR_API_KEY
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   setMainLoopModelOverride('gpt-5.5')
   delete process.env.NYXCLAUDE_DISABLE_CO_AUTHORED_BY
-  delete process.env.CLAUDE_CODE_REMOTE_SESSION_ID
+  delete process.env.NYXCLAUDE_REMOTE_SESSION_ID
   delete process.env.SESSION_INGRESS_URL
   delete process.env.USER_TYPE
 
@@ -209,7 +209,7 @@ describe('getDefaultCommitCoAuthorName', () => {
     ).toBe('Nyxclaude (bad model id)')
   })
 
-  it('does not duplicate the Claude prefix for Claude model names', () => {
+  it('does not duplicate the Claude prefix for Model names', () => {
     // Use a model the public-name map recognizes (it keys on dot form) so this
     // exercises the real de-dup path — getPublicModelDisplayName already returns
     // a "Claude …"-prefixed name — rather than coincidentally hitting the
@@ -362,12 +362,12 @@ describe('getAttributionTexts', () => {
 
   it('preserves remote session attribution separately from local git attribution defaults', () => {
     setClientType('remote')
-    process.env.CLAUDE_CODE_REMOTE_SESSION_ID = 'session_remote_123'
+    process.env.NYXCLAUDE_REMOTE_SESSION_ID = 'session_remote_123'
     useSettings({})
 
     expect(getAttributionTexts()).toEqual({
-      commit: 'https://claude.ai/code/session_remote_123',
-      pr: 'https://claude.ai/code/session_remote_123',
+      commit: 'https://web console/code/session_remote_123',
+      pr: 'https://web console/code/session_remote_123',
     })
   })
 })

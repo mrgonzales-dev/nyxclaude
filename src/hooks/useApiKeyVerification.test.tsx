@@ -4,7 +4,7 @@ import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import React from 'react'
 import { createRoot, Text } from '../ink.js'
 import * as realState from '../bootstrap/state.js'
-import * as realClaudeApi from '../services/api/claude.js'
+import * as realClaudeApi from '../services/api/modelApi.js'
 import {
   acquireSharedMutationLock,
   releaseSharedMutationLock,
@@ -13,7 +13,7 @@ import * as realAuth from '../utils/auth.js'
 
 type AuthState = {
   anthropicAuthEnabled: boolean
-  claudeSubscriber: boolean
+  isSubscriber: boolean
   key?: string
   source?: string
 }
@@ -69,7 +69,7 @@ afterEach(() => {
     mock.restore()
     mock.module('../utils/auth.js', () => realAuth)
     mock.module('../bootstrap/state.js', () => realState)
-    mock.module('../services/api/claude.js', () => realClaudeApi)
+    mock.module('../services/api/modelApi.js', () => realClaudeApi)
   } finally {
     releaseSharedMutationLock()
   }
@@ -78,7 +78,7 @@ afterEach(() => {
 test('useApiKeyVerification resets stale missing status when the session switches to a third-party provider', async () => {
   const authState: AuthState = {
     anthropicAuthEnabled: true,
-    claudeSubscriber: false,
+    isSubscriber: false,
   }
   const seenStatuses: string[] = []
 
@@ -88,15 +88,15 @@ test('useApiKeyVerification resets stale missing status when the session switche
       source: authState.source,
     }),
     getApiKeyFromApiKeyHelper: async () => undefined,
-    isAnthropicAuthEnabled: () => authState.anthropicAuthEnabled,
-    isClaudeAISubscriber: () => authState.claudeSubscriber,
+    isRemoteAuthEnabled: () => authState.anthropicAuthEnabled,
+    isSubscriber: () => authState.isSubscriber,
   }))
 
   mock.module('../bootstrap/state.js', () => ({
     getIsNonInteractiveSession: () => false,
   }))
 
-  mock.module('../services/api/claude.js', () => ({
+  mock.module('../services/api/modelApi.js', () => ({
     verifyApiKey: async () => true,
   }))
 

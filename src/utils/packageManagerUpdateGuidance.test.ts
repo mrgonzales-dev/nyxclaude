@@ -7,9 +7,9 @@ const NYXCLAUDE_PACKAGE_URL = 'nyxclaude'
 
 describe('resolvePackageManagerUpdateGuidance', () => {
   test.each([
-    ['homebrew', 'Homebrew', 'brew upgrade claude-code'],
-    ['winget', 'winget', 'winget upgrade Anthropic.ClaudeCode'],
-    ['apk', 'apk', 'apk upgrade claude-code'],
+    ['homebrew', 'Homebrew', 'brew upgrade nyxclaude'],
+    ['winget', 'winget', 'winget upgrade nyxclaude'],
+    ['apk', 'apk', 'apk upgrade nyxclaude'],
   ] as const)(
     'preserves the upstream %s command only for the upstream package',
     (manager, managerName, command) => {
@@ -34,9 +34,9 @@ describe('resolvePackageManagerUpdateGuidance', () => {
       expect(guidance.command).toBeUndefined()
       expect(guidance.message).toContain('Nyxclaude')
       expect(guidance.message.toLowerCase()).toContain(manager === 'homebrew' ? 'homebrew' : manager)
-      expect(JSON.stringify(guidance)).not.toContain('brew upgrade claude-code')
-      expect(JSON.stringify(guidance)).not.toContain('Anthropic.ClaudeCode')
-      expect(JSON.stringify(guidance)).not.toContain('apk upgrade claude-code')
+      expect(JSON.stringify(guidance)).not.toContain('brew upgrade nyxclaude')
+      expect(JSON.stringify(guidance)).not.toContain('nyxclaude')
+      expect(JSON.stringify(guidance)).not.toContain('apk upgrade nyxclaude')
     },
   )
 

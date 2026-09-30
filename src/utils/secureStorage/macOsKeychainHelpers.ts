@@ -19,7 +19,7 @@ import { homedir, userInfo } from 'os'
 import { resolve } from 'path'
 import { getOauthConfig } from 'src/constants/oauth.js'
 import {
-  getClaudeConfigHomeDir,
+  getNyxclaudeConfigHomeDir,
   resolveClaudeConfigHomeDir,
 } from '../envUtils.js'
 import type { SecureStorageData } from './index.js'
@@ -40,7 +40,7 @@ export function getSecureStorageServiceName(
   const configDirEnv = process.env.NYXCLAUDE_CONFIG_DIR || undefined
   const configDir = configDirEnv
     ? resolveClaudeConfigHomeDir({ configDirEnv })
-    : getClaudeConfigHomeDir()
+    : getNyxclaudeConfigHomeDir()
   const defaultConfigDir = resolveClaudeConfigHomeDir({ homeDir: homedir() })
   const normalizedConfigDir = resolve(configDir).normalize('NFC')
   const normalizedDefaultConfigDir = resolve(defaultConfigDir).normalize('NFC')
@@ -75,7 +75,7 @@ export function getUsername(): string {
 // refreshing/invalidating tokens) without forcing a blocking spawnSync on
 // every read. In-process writes invalidate via clearKeychainCache() directly.
 //
-// The sync read() path takes ~500ms per `security` spawn. With 50+ claude.ai
+// The sync read() path takes ~500ms per `security` spawn. With 50+ web console
 // MCP connectors authenticating at startup, a short TTL expires mid-storm and
 // triggers repeat sync reads — observed as a 5.5s event-loop stall
 // (go/ccshare/adamj-20260326-212235). 30s of cross-process staleness is fine:

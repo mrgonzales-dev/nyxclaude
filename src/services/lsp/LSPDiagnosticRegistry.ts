@@ -126,7 +126,7 @@ const diagnosticWindows = new Map<string, DiagnosticWindowState>()
 const coalescingLogTimestamps = new Map<string, number>()
 
 function normalizeDiagnosticUri(uri: string): string {
-  for (const prefix of ['file://', '_claude_fs_right:', '_claude_fs_left:']) {
+  for (const prefix of ['file://', '_nyxclaude_fs_right:', '_claude_fs_left:']) {
     if (uri.startsWith(prefix)) {
       return uri.slice(prefix.length)
     }

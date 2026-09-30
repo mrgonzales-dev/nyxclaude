@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import { coerce, lt } from 'semver'
 import { getCwd } from '../../utils/cwd.js'
 import { createCombinedAbortSignal } from '../../utils/combinedAbortSignal.js'
-import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../../utils/envUtils.js'
 import { getDisplayPath } from '../../utils/file.js'
 import { parseFrontmatter } from '../../utils/frontmatterParser.js'
 import { getFsImplementation } from '../../utils/fsOperations.js'
@@ -75,7 +75,7 @@ async function pathExists(path: string): Promise<boolean> {
 
 function installRoot(options: InstallOptions): string {
   return options.global
-    ? join(getClaudeConfigHomeDir(), 'skills')
+    ? join(getNyxclaudeConfigHomeDir(), 'skills')
     : join(options.projectDir ?? getCwd(), '.nyxclaude', 'skills')
 }
 

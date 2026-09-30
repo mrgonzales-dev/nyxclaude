@@ -29,14 +29,14 @@ const queryModelWithoutStreamingMock = mock(
 )
 
 const realClaudeModule = await import(
-  `./api/claude.js?real=${Date.now()}-${Math.random()}`
+  `./api/modelApi.js?real=${Date.now()}-${Math.random()}`
 )
 const realSessionMemoryUtilsModule = await import(
   `./SessionMemory/sessionMemoryUtils.js?real=${Date.now()}-${Math.random()}`
 )
 
 // These stubs are registered in beforeAll (NOT at module load) and torn down in
-// afterAll so the shared bun:test process loads the REAL ./api/claude.js and
+// afterAll so the shared bun:test process loads the REAL ./api/modelApi.js and
 // ./SessionMemory/sessionMemoryUtils.js for every other test file at startup.
 //
 // bun evaluates all test files' module-level imports up front and caches the
@@ -55,7 +55,7 @@ beforeAll(async () => {
   await acquireSharedMutationLock('services/awaySummary.test.ts')
   hasSharedMutationLock = true
   try {
-    mock.module('./api/claude.js', () => ({
+    mock.module('./api/modelApi.js', () => ({
       queryModelWithoutStreaming: queryModelWithoutStreamingMock,
     }))
     mock.module('./SessionMemory/sessionMemoryUtils.js', () => ({
@@ -63,7 +63,7 @@ beforeAll(async () => {
     }))
     ;({ generateAwaySummary } = await import('./awaySummary.js'))
   } catch (error) {
-    mock.module('./api/claude.js', () => ({ ...realClaudeModule }))
+    mock.module('./api/modelApi.js', () => ({ ...realClaudeModule }))
     mock.module('./SessionMemory/sessionMemoryUtils.js', () => ({
       ...realSessionMemoryUtilsModule,
     }))
@@ -121,7 +121,7 @@ afterAll(() => {
     return
   }
   try {
-    mock.module('./api/claude.js', () => ({ ...realClaudeModule }))
+    mock.module('./api/modelApi.js', () => ({ ...realClaudeModule }))
     mock.module('./SessionMemory/sessionMemoryUtils.js', () => ({
       ...realSessionMemoryUtilsModule,
     }))

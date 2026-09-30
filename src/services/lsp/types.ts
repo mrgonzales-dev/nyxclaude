@@ -43,7 +43,7 @@ export type ScopedLspServerConfig = LspServerConfig & {
     | 'local'
     | 'dynamic'
     | 'enterprise'
-    | 'claudeai'
+    | 'remote'
     | 'managed'
   /** Originating plugin name */
   source: string

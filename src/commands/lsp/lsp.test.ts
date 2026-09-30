@@ -22,19 +22,6 @@ type TestServerInstance = {
   config?: TestServerConfig
 }
 
-type OfficialMarketplaceCheckResult = {
-  installed: boolean
-  skipped: boolean
-  reason?:
-    | 'already_attempted'
-    | 'already_installed'
-    | 'policy_blocked'
-    | 'git_unavailable'
-    | 'gcs_unavailable'
-    | 'unknown'
-  configSaveFailed?: boolean
-}
-
 let initializationStatus: InitializationStatus = { status: 'not-started' }
 let configuredServers: Record<string, TestServerConfig> = {}
 let serverInstances = new Map<string, TestServerInstance>()
@@ -55,7 +42,7 @@ const installPluginOp = mock(
   async (_plugin: string, _scope?: 'user' | 'local' | 'project') => ({
     success: true,
     message: 'Installed plugin',
-    pluginId: 'typescript-lsp@claude-plugins-official',
+    pluginId: 'typescript-lsp@nyxclaude-plugins-official',
     scope: 'user' as const,
   }),
 )
@@ -77,19 +64,12 @@ const uninstallPluginOp = mock(
   async (_plugin: string, _scope?: 'user' | 'local' | 'project') => ({
     success: true,
     message: 'Uninstalled plugin',
-    pluginId: 'typescript-lsp@claude-plugins-official',
+    pluginId: 'typescript-lsp@nyxclaude-plugins-official',
   }),
 )
 
 const reinitializeLspServerManager = mock(() => {})
 const waitForInitialization = mock(async () => {})
-const checkAndInstallOfficialMarketplace = mock(
-  async (): Promise<OfficialMarketplaceCheckResult> => ({
-    installed: false,
-    skipped: true,
-    reason: 'already_installed',
-  }),
-)
 const discoverWorkspaceExtensions = async (pathspec?: string) =>
   pathspec === 'src' || pathspec === '.'
     ? ['.ts', '.tsx']
@@ -124,7 +104,6 @@ const deps = {
     candidateCallOptions.push(options)
     return candidates
   },
-  checkAndInstallOfficialMarketplace,
   installPluginOp,
   uninstallPluginOp,
   refreshActivePlugins,
@@ -144,12 +123,6 @@ beforeEach(() => {
   refreshActivePlugins.mockClear()
   reinitializeLspServerManager.mockClear()
   waitForInitialization.mockClear()
-  checkAndInstallOfficialMarketplace.mockClear()
-  checkAndInstallOfficialMarketplace.mockImplementation(async () => ({
-    installed: false,
-    skipped: true,
-    reason: 'already_installed' as const,
-  }))
   deps.getInitializationStatus = () => initializationStatus
   deps.listLspPluginCandidates = async (options: unknown) => {
     candidateCallOptions.push(options)
@@ -264,9 +237,9 @@ describe('/lsp recommend', () => {
   test('lists candidates with binary state and next commands', async () => {
     candidates = [
       {
-        pluginId: 'typescript-lsp@claude-plugins-official',
+        pluginId: 'typescript-lsp@nyxclaude-plugins-official',
         pluginName: 'typescript-lsp',
-        marketplaceName: 'claude-plugins-official',
+        marketplaceName: 'nyxclaude-plugins-official',
         isOfficial: true,
         extensions: ['.ts', '.tsx'],
         command: 'typescript-language-server',
@@ -278,22 +251,22 @@ describe('/lsp recommend', () => {
     const output = await run('recommend src/main.ts')
 
     expect(output).toContain('LSP recommendations for .ts')
-    expect(output).toContain('typescript-lsp@claude-plugins-official')
+    expect(output).toContain('typescript-lsp@nyxclaude-plugins-official')
     expect(output).toContain('binary: missing')
     expect(output).toContain(
       'npm install -g typescript typescript-language-server',
     )
     expect(output).toContain(
-      '/lsp install typescript-lsp@claude-plugins-official',
+      '/lsp install typescript-lsp@nyxclaude-plugins-official',
     )
   })
 
   test('uses directory paths and bare extensions for recommendation scope', async () => {
     candidates = [
       {
-        pluginId: 'typescript-lsp@claude-plugins-official',
+        pluginId: 'typescript-lsp@nyxclaude-plugins-official',
         pluginName: 'typescript-lsp',
-        marketplaceName: 'claude-plugins-official',
+        marketplaceName: 'nyxclaude-plugins-official',
         isOfficial: true,
         extensions: ['.ts', '.tsx'],
         command: 'typescript-language-server',
@@ -320,9 +293,9 @@ describe('/lsp recommend', () => {
   test('does not list every marketplace candidate for a path without extensions', async () => {
     candidates = [
       {
-        pluginId: 'typescript-lsp@claude-plugins-official',
+        pluginId: 'typescript-lsp@nyxclaude-plugins-official',
         pluginName: 'typescript-lsp',
-        marketplaceName: 'claude-plugins-official',
+        marketplaceName: 'nyxclaude-plugins-official',
         isOfficial: true,
         extensions: ['.ts', '.tsx'],
         command: 'typescript-language-server',
@@ -354,9 +327,9 @@ describe('/lsp recommend', () => {
     ]
     candidates = [
       {
-        pluginId: 'typescript-lsp@claude-plugins-official',
+        pluginId: 'typescript-lsp@nyxclaude-plugins-official',
         pluginName: 'typescript-lsp',
-        marketplaceName: 'claude-plugins-official',
+        marketplaceName: 'nyxclaude-plugins-official',
         isOfficial: true,
         extensions: ['.ts', '.tsx'],
         command: 'typescript-language-server',
@@ -400,63 +373,19 @@ describe('/lsp recommend', () => {
     10_000,
   )
 
-  test('installs missing official marketplace and retries candidate lookup', async () => {
-    const typescriptCandidate = {
-      pluginId: 'typescript-lsp@claude-plugins-official',
-      pluginName: 'typescript-lsp',
-      marketplaceName: 'claude-plugins-official',
-      isOfficial: true,
-      extensions: ['.ts', '.tsx'],
-      command: 'typescript-language-server',
-      binaryInstalled: true,
-      installed: false,
-    }
-    let lookupCount = 0
-    deps.listLspPluginCandidates = async (options: unknown) => {
-      candidateCallOptions.push(options)
-      lookupCount += 1
-      return lookupCount === 1 ? [] : [typescriptCandidate]
-    }
-    checkAndInstallOfficialMarketplace.mockImplementationOnce(async () => ({
-      installed: true,
-      skipped: false,
-    }))
-
-    const output = await run('recommend src/main.ts')
-
-    expect(checkAndInstallOfficialMarketplace).toHaveBeenCalled()
-    expect(candidateCallOptions).toHaveLength(2)
-    expect(output).toContain(
-      'Anthropic marketplace installed for LSP recommendations',
-    )
-    expect(output).toContain('typescript-lsp@claude-plugins-official')
-  })
-
-  test('explains why marketplace repair could not provide candidates', async () => {
-    checkAndInstallOfficialMarketplace.mockImplementationOnce(async () => ({
-      installed: false,
-      skipped: true,
-      reason: 'policy_blocked',
-    }))
-
-    const output = await run('recommend src/main.ts')
-
-    expect(output).toContain('No LSP plugin candidates found for .ts')
-    expect(output).toContain('policy blocks it')
-  })
 })
 
 describe('/lsp install', () => {
   test('installs plugin and refreshes active plugins in-session', async () => {
-    const output = await run('install typescript-lsp@claude-plugins-official')
+    const output = await run('install typescript-lsp@nyxclaude-plugins-official')
 
     expect(installPluginOp).toHaveBeenCalledWith(
-      'typescript-lsp@claude-plugins-official',
+      'typescript-lsp@nyxclaude-plugins-official',
       'user',
     )
     expect(refreshActivePlugins).toHaveBeenCalledWith(EMPTY_CONTEXT.setAppState)
     expect(output).toContain(
-      'Installed typescript-lsp@claude-plugins-official',
+      'Installed typescript-lsp@nyxclaude-plugins-official',
     )
     expect(output).toContain('Activated 1 plugin LSP server')
   })
@@ -466,10 +395,10 @@ describe('/lsp install', () => {
       throw new Error('install exploded')
     })
 
-    const output = await run('install typescript-lsp@claude-plugins-official')
+    const output = await run('install typescript-lsp@nyxclaude-plugins-official')
 
     expect(output).toContain(
-      'Failed to install typescript-lsp@claude-plugins-official',
+      'Failed to install typescript-lsp@nyxclaude-plugins-official',
     )
     expect(output).toContain('install exploded')
   })
@@ -479,10 +408,10 @@ describe('/lsp install', () => {
       throw new Error('refresh exploded')
     })
 
-    const output = await run('install typescript-lsp@claude-plugins-official')
+    const output = await run('install typescript-lsp@nyxclaude-plugins-official')
 
     expect(output).toContain(
-      'Installed typescript-lsp@claude-plugins-official',
+      'Installed typescript-lsp@nyxclaude-plugins-official',
     )
     expect(output).toContain('plugin refresh failed')
     expect(output).toContain('refresh exploded')
@@ -497,16 +426,16 @@ describe('/lsp uninstall', () => {
       },
     }
 
-    const output = await run('uninstall typescript-lsp@claude-plugins-official')
+    const output = await run('uninstall typescript-lsp@nyxclaude-plugins-official')
 
     expect(uninstallPluginOp).toHaveBeenCalledWith(
-      'typescript-lsp@claude-plugins-official',
+      'typescript-lsp@nyxclaude-plugins-official',
       'user',
     )
     expect(refreshActivePlugins).toHaveBeenCalledWith(EMPTY_CONTEXT.setAppState)
     expect(reinitializeLspServerManager).not.toHaveBeenCalled()
     expect(waitForInitialization).toHaveBeenCalled()
-    expect(output).toContain('Uninstalled typescript-lsp@claude-plugins-official')
+    expect(output).toContain('Uninstalled typescript-lsp@nyxclaude-plugins-official')
     expect(output).toContain('1 plugin LSP server still active')
   })
 
@@ -535,7 +464,7 @@ describe('/lsp uninstall', () => {
       throw new Error('uninstall exploded')
     })
 
-    const output = await run('uninstall typescript-lsp@claude-plugins-official')
+    const output = await run('uninstall typescript-lsp@nyxclaude-plugins-official')
 
     expect(output).toContain('Failed to uninstall')
     expect(output).toContain('uninstall exploded')
@@ -546,9 +475,9 @@ describe('/lsp uninstall', () => {
       throw new Error('refresh exploded')
     })
 
-    const output = await run('uninstall typescript-lsp@claude-plugins-official')
+    const output = await run('uninstall typescript-lsp@nyxclaude-plugins-official')
 
-    expect(output).toContain('Uninstalled typescript-lsp@claude-plugins-official')
+    expect(output).toContain('Uninstalled typescript-lsp@nyxclaude-plugins-official')
     expect(output).toContain('plugin refresh failed')
     expect(output).toContain('refresh exploded')
   })
@@ -625,9 +554,9 @@ describe('binary install hints', () => {
   test('shows OS-specific install instructions for known binaries', async () => {
     candidates = [
       {
-        pluginId: 'clangd-lsp@claude-plugins-official',
+        pluginId: 'clangd-lsp@nyxclaude-plugins-official',
         pluginName: 'clangd-lsp',
-        marketplaceName: 'claude-plugins-official',
+        marketplaceName: 'nyxclaude-plugins-official',
         isOfficial: true,
         extensions: ['.c', '.cpp'],
         command: 'clangd',
@@ -671,9 +600,9 @@ describe('binary install hints', () => {
   test('shows notes for binaries that have them', async () => {
     candidates = [
       {
-        pluginId: 'gopls-lsp@claude-plugins-official',
+        pluginId: 'gopls-lsp@nyxclaude-plugins-official',
         pluginName: 'gopls-lsp',
-        marketplaceName: 'claude-plugins-official',
+        marketplaceName: 'nyxclaude-plugins-official',
         isOfficial: true,
         extensions: ['.go'],
         command: 'gopls',

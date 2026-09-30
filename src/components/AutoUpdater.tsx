@@ -9,7 +9,7 @@ import { getAutoUpdaterNpmMethod, shouldRemoveInstalledSymlinkForNpmUpdate } fro
 import { getGlobalConfig, isAutoUpdaterDisabled } from '../utils/config.js';
 import { logForDebugging } from '../utils/debug.js';
 import { getCurrentInstallationType } from '../utils/doctorDiagnostic.js';
-import { installOrUpdateClaudePackage, localInstallationExists } from '../utils/localInstaller.js';
+import { installOrUpdatePackage, localInstallationExists } from '../utils/localInstaller.js';
 import { hasNativeDistribution } from '../utils/nativeDistribution.js';
 import { removeInstalledSymlink } from '../utils/nativeInstaller/index.js';
 import { gt, gte } from '../utils/semver.js';
@@ -116,7 +116,7 @@ export function AutoUpdater({
       if (updateMethod === 'local') {
         // Use local update for local installations
         logForDebugging('AutoUpdater: Using local update method');
-        installStatus = await installOrUpdateClaudePackage(channel);
+        installStatus = await installOrUpdatePackage(channel);
       } else if (updateMethod === 'global') {
         // Use global update for global installations
         logForDebugging('AutoUpdater: Using global update method');
@@ -133,7 +133,7 @@ export function AutoUpdater({
       }
       onChangeIsUpdating(false);
       if (installStatus === 'success') {
-        logEvent('tengu_auto_updater_success', {
+        logEvent('nyxclaude_auto_updater_success', {
           fromVersion: currentVersion as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           toVersion: latestVersion as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           durationMs: Date.now() - startTime,
@@ -141,7 +141,7 @@ export function AutoUpdater({
           installationType: installationType as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
         });
       } else {
-        logEvent('tengu_auto_updater_fail', {
+        logEvent('nyxclaude_auto_updater_fail', {
           fromVersion: currentVersion as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           attemptedVersion: latestVersion as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           status: installStatus as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

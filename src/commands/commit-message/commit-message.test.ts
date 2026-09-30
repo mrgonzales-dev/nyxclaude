@@ -3,8 +3,8 @@ import { mkdtempSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import {
-  getClaudeConfigHomeDir,
-  setClaudeConfigHomeDirForTesting,
+  getNyxclaudeConfigHomeDir,
+  setNyxclaudeConfigHomeDirForTesting,
 } from '../../utils/envUtils.js'
 import { resetSettingsCache } from '../../utils/settings/settingsCache.js'
 import {
@@ -18,8 +18,8 @@ import {
 let tempSettingsDir: string | null = null
 
 afterEach(() => {
-  setClaudeConfigHomeDirForTesting(undefined)
-  getClaudeConfigHomeDir.cache?.clear?.()
+  setNyxclaudeConfigHomeDirForTesting(undefined)
+  getNyxclaudeConfigHomeDir.cache?.clear?.()
   resetSettingsCache()
   if (tempSettingsDir) {
     rmSync(tempSettingsDir, { recursive: true, force: true })
@@ -79,8 +79,8 @@ describe('commit-message command helpers', () => {
 
   it('describes default reset as privacy-preserving', async () => {
     tempSettingsDir = mkdtempSync(join(tmpdir(), 'nyxclaude-settings-'))
-    setClaudeConfigHomeDirForTesting(tempSettingsDir)
-    getClaudeConfigHomeDir.cache?.clear?.()
+    setNyxclaudeConfigHomeDirForTesting(tempSettingsDir)
+    getNyxclaudeConfigHomeDir.cache?.clear?.()
 
     await expect(call('default', {} as never)).resolves.toEqual({
       type: 'text',

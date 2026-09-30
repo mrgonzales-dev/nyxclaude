@@ -35,15 +35,15 @@ export interface AgentRunModelRouting {
 type AgentModelConfig = NonNullable<SettingsJson['agentModels']>[string]
 
 const PROVIDER_ENV_VARS_TO_CLEAR_FOR_OVERRIDE = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
   'NVIDIA_NIM',
   'ANTHROPIC_MODEL',
   'ANTHROPIC_BASE_URL',
@@ -348,7 +348,7 @@ function parseCliFlag(args: readonly string[], flag: string): string | undefined
  *
  * agentModels entries are OpenAI-compatible routes. Clear competing route
  * selectors and stale model/endpoint/header knobs first because provider
- * detection gives several selectors higher priority than CLAUDE_CODE_USE_OPENAI.
+ * detection gives several selectors higher priority than NYXCLAUDE_USE_OPENAI.
  */
 export function applyAgentProviderOverrideToEnv(
   providerOverride: ProviderOverride,
@@ -358,7 +358,7 @@ export function applyAgentProviderOverrideToEnv(
     delete env[key]
   }
 
-  env.CLAUDE_CODE_USE_OPENAI = '1'
+  env.NYXCLAUDE_USE_OPENAI = '1'
   env.OPENAI_MODEL = providerOverride.model
   env.OPENAI_BASE_URL = providerOverride.baseURL
   env.OPENAI_API_KEY = providerOverride.apiKey

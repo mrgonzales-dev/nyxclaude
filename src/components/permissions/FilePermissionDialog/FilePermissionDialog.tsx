@@ -1,6 +1,5 @@
 import { relative } from 'path';
 import React, { useMemo } from 'react';
-import { useDiffInIDE } from '../../../hooks/useDiffInIDE.js';
 import { Box, Text } from '../../../ink.js';
 import type { ToolUseContext } from '../../../Tool.js';
 import { getLanguageName } from '../../../utils/cliHighlight.js';
@@ -9,13 +8,11 @@ import { getFsImplementation, safeResolvePath } from '../../../utils/fsOperation
 import { expandPath } from '../../../utils/path.js';
 import type { CompletionType } from '../../../utils/unaryLogging.js';
 import { Select } from '../../CustomSelect/index.js';
-import { ShowInIDEPrompt } from '../../ShowInIDEPrompt.js';
 import { usePermissionRequestLogging } from '../hooks.js';
 import { PermissionScaffold } from '../PermissionScaffold.js';
 import type { ToolUseConfirm } from '../PermissionRequest.js';
 import type { WorkerBadgeProps } from '../WorkerBadge.js';
 import { useDangerousModeConfirmation } from '../useDangerousModeConfirmation.js';
-import type { IDEDiffSupport } from './ideDiffConfig.js';
 import type { FileOperationType, PermissionOption } from './permissionOptions.js';
 import { type ToolInput, useFilePermissionDialog } from './useFilePermissionDialog.js';
 export type FilePermissionDialogProps<T extends ToolInput = ToolInput> = {
@@ -40,15 +37,11 @@ export type FilePermissionDialogProps<T extends ToolInput = ToolInput> = {
   parseInput: (input: unknown) => T;
   operationType?: FileOperationType;
 
-  // IDE diff support
-  ideDiffSupport?: IDEDiffSupport<T>;
-
   // Worker badge for teammate permission requests
   workerBadge: WorkerBadgeProps | undefined;
 };
 export function FilePermissionDialog<T extends ToolInput = ToolInput>({
   toolUseConfirm,
-  toolUseContext,
   onDone,
   onReject,
   title,
@@ -59,7 +52,6 @@ export function FilePermissionDialog<T extends ToolInput = ToolInput>({
   path,
   parseInput,
   operationType = 'write',
-  ideDiffSupport,
   workerBadge,
   languageName: languageNameOverride
 }: FilePermissionDialogProps<T>): React.ReactNode {
@@ -113,52 +105,11 @@ export function FilePermissionDialog<T extends ToolInput = ToolInput>({
 
   // Parse input using the provided parser
   const parsedInput = parseInput(toolUseConfirm.input);
-
-  // Set up IDE diff support if enabled. Memoized: getConfig may do disk I/O
-  // (FileWrite's getConfig calls readFileSync for the old-content diff).
-  // Keyed on the raw input — parseInput is a pure Zod parse whose result
-  // depends only on toolUseConfirm.input.
-  const ideDiffConfig = useMemo(() => ideDiffSupport ? ideDiffSupport.getConfig(parseInput(toolUseConfirm.input)) : null, [ideDiffSupport, toolUseConfirm.input]);
-
-  // Create diff params based on whether IDE diff is available
-  const diffParams = ideDiffConfig ? {
-    onChange: (option: PermissionOption, input: {
-      file_path: string;
-      edits: Array<{
-        old_string: string;
-        new_string: string;
-        replace_all?: boolean;
-      }>;
-    }) => {
-      const transformedInput = ideDiffSupport!.applyChanges(parsedInput, input.edits);
-      fileDialogResult.onChange(option, transformedInput);
-    },
-    toolUseContext,
-    filePath: ideDiffConfig.filePath,
-    edits: (ideDiffConfig.edits || []).map(e => ({
-      old_string: e.old_string,
-      new_string: e.new_string,
-      replace_all: e.replace_all || false
-    })),
-    editMode: ideDiffConfig.editMode || 'single'
-  } : {
-    onChange: () => {},
-    toolUseContext,
-    filePath: '',
-    edits: [],
-    editMode: 'single' as const
-  };
-  const {
-    closeTabInIDE,
-    showingDiffInIDE,
-    ideName
-  } = useDiffInIDE(diffParams);
   const {
     confirmDangerousMode,
     dangerousModeDialog
   } = useDangerousModeConfirmation();
   const onChange = (option_0: PermissionOption, feedback?: string) => {
-    closeTabInIDE?.();
     if (option_0.type === 'accept-full-access') {
       confirmDangerousMode('fullAccess', () => {
         fileDialogResult.onChange(option_0, parsedInput, feedback?.trim());
@@ -169,9 +120,6 @@ export function FilePermissionDialog<T extends ToolInput = ToolInput>({
   };
   if (dangerousModeDialog) {
     return dangerousModeDialog;
-  }
-  if (showingDiffInIDE && ideDiffConfig && path) {
-    return <ShowInIDEPrompt onChange={(option_1: PermissionOption, _input, feedback_0?: string) => onChange(option_1, feedback_0)} options={options} filePath={path} input={parsedInput} ideName={ideName} symlinkTarget={symlinkTarget} rejectFeedback={rejectFeedback} acceptFeedback={acceptFeedback} setFocusedOption={setFocusedOption} onInputModeToggle={handleInputModeToggle} focusedOption={focusedOption} yesInputMode={yesInputMode} noInputMode={noInputMode} />;
   }
   const isSymlinkOutsideCwd = symlinkTarget != null && relative(getCwd(), symlinkTarget).startsWith('..');
   const symlinkWarning = symlinkTarget ? <Box paddingX={1} marginBottom={1}>

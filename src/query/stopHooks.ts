@@ -140,13 +140,13 @@ export async function* handleStopHooks(
   // state after each turn. Gate on repl_main_thread so background forks
   // (extract-memories, auto-dream) don't pollute the timeline with their own
   // assistant messages. Await the classifier so state.json is written before
-  // the turn returns — otherwise `claude list` shows stale state for the gap.
+  // the turn returns — otherwise `nyxclaude list` shows stale state for the gap.
   // Env key hardcoded (vs importing JOB_ENV_KEY from jobs/state) to match the
   // require()-gated jobs/ import pattern above; spawn.test.ts asserts the
   // string matches.
   if (
     feature('TEMPLATES') &&
-    process.env.CLAUDE_JOB_DIR &&
+    process.env.NYXCLAUDE_JOB_DIR &&
     querySource.startsWith('repl_main_thread') &&
     !toolUseContext.agentId
   ) {
@@ -157,7 +157,7 @@ export async function* handleStopHooks(
       (m): m is AssistantMessage => m.type === 'assistant',
     )
     const p = jobClassifierModule!
-      .classifyAndWriteState(process.env.CLAUDE_JOB_DIR, turnAssistantMessages)
+      .classifyAndWriteState(process.env.NYXCLAUDE_JOB_DIR, turnAssistantMessages)
       .catch(err => {
         logForDebugging(`[job] classifier error: ${errorMessage(err)}`, {
           level: 'error',
@@ -174,7 +174,7 @@ export async function* handleStopHooks(
   // or forked agents contending for resources during shutdown.
   if (!isBareMode()) {
     // Inline env check for dead code elimination in external builds
-    if (!isEnvDefinedFalsy(process.env.CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION)) {
+    if (!isEnvDefinedFalsy(process.env.NYXCLAUDE_ENABLE_PROMPT_SUGGESTION)) {
       void executePromptSuggestion(stopHookContext)
     }
     if (
@@ -321,7 +321,7 @@ export async function* handleStopHooks(
       // Check if we were aborted during hook execution
       if (toolUseContext.abortController.signal.aborted) {
         const abortReason = toolUseContext.abortController.signal.reason
-        logEvent('tengu_pre_stop_hooks_cancelled', {
+        logEvent('nyxclaude_pre_stop_hooks_cancelled', {
           queryChainId: toolUseContext.queryTracking
             ?.chainId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
 
@@ -566,7 +566,7 @@ export async function* handleStopHooks(
     }
   } catch (error) {
     const durationMs = Date.now() - hookStartTime
-    logEvent('tengu_stop_hook_error', {
+    logEvent('nyxclaude_stop_hook_error', {
       duration: durationMs,
 
       queryChainId: toolUseContext.queryTracking

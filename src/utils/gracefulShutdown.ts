@@ -126,9 +126,9 @@ function cleanupTerminalModes(skipUnmount: boolean = false): void {
     // Clear tab status (OSC 21337) so a stale dot doesn't linger
     if (supportsTabStatus()) writeSync(1, wrapForMultiplexer(CLEAR_TAB_STATUS))
     // Clear terminal title so the tab doesn't show stale session info.
-    // Respect CLAUDE_CODE_DISABLE_TERMINAL_TITLE — if the user opted out of
+    // Respect NYXCLAUDE_DISABLE_TERMINAL_TITLE — if the user opted out of
     // title changes, don't clear their existing title on exit either.
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE)) {
+    if (!isEnvTruthy(process.env.NYXCLAUDE_DISABLE_TERMINAL_TITLE)) {
       if (process.platform === 'win32') {
         process.title = ''
       } else {
@@ -160,7 +160,7 @@ function printResumeHint(): void {
   ) {
     try {
       const sessionId = getSessionId()
-      // Don't show resume hint if no session file exists (e.g., subcommands like `claude update`)
+      // Don't show resume hint if no session file exists (e.g., subcommands like `nyxclaude update`)
       if (!sessionIdExists(sessionId)) {
         return
       }
@@ -321,7 +321,7 @@ export const setupGracefulShutdown = memoize(() => {
       error_name: error.name,
       error_message: error.message.slice(0, 2000),
     })
-    logEvent('tengu_uncaught_exception', {
+    logEvent('nyxclaude_uncaught_exception', {
       error_name:
         error.name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
@@ -344,7 +344,7 @@ export const setupGracefulShutdown = memoize(() => {
           }
         : { error_message: String(reason).slice(0, 2000) }
     logForDiagnosticsNoPII('error', 'unhandled_rejection', errorInfo)
-    logEvent('tengu_unhandled_rejection', {
+    logEvent('nyxclaude_unhandled_rejection', {
       error_name:
         errorName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
@@ -490,7 +490,7 @@ export async function gracefulShutdown(
   }
 
   // Execute SessionEnd hooks. Bound both the per-hook default timeout and the
-  // overall execution via a single budget (CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS,
+  // overall execution via a single budget (NYXCLAUDE_SESSIONEND_HOOKS_TIMEOUT_MS,
   // default 1.5s). hook.timeout in settings is respected up to this cap.
   const { signal, cleanup } = createCombinedAbortSignal(undefined, {
     timeoutMs: sessionEndTimeoutMs,
@@ -518,7 +518,7 @@ export async function gracefulShutdown(
   // Fires before analytics flush so the event makes it to the pipeline.
   const lastRequestId = getLastMainRequestId()
   if (lastRequestId) {
-    logEvent('tengu_cache_eviction_hint', {
+    logEvent('nyxclaude_cache_eviction_hint', {
       scope:
         'session_end' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       last_request_id:

@@ -27,8 +27,7 @@ function MCPToggle(t0) {
       }
       didRun.current = true;
       const isEnabling = action === "enable";
-      const clients = mcpClients.filter(_temp2);
-      const toToggle = target === "all" ? clients.filter(c_0 => isEnabling ? c_0.type === "disabled" : c_0.type !== "disabled") : clients.filter(c_1 => c_1.name === target);
+      const toToggle = target === "all" ? mcpClients.filter(c_0 => isEnabling ? c_0.type === "disabled" : c_0.type !== "disabled") : mcpClients.filter(c_1 => c_1.name === target);
       if (toToggle.length === 0) {
         onComplete(target === "all" ? `All MCP servers are already ${isEnabling ? "enabled" : "disabled"}` : `MCP server "${target}" not found`);
         return;
@@ -52,9 +51,6 @@ function MCPToggle(t0) {
   }
   useEffect(t1, t2);
   return null;
-}
-function _temp2(c) {
-  return c.name !== "ide";
 }
 function _temp(s) {
   return s.mcp.clients;

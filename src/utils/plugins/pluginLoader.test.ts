@@ -53,7 +53,7 @@ describe('mergePluginSources', () => {
   test('keeps the enabled copy when duplicate marketplace plugins disagree on enabled state', () => {
     const enabledOfficial = marketplacePlugin(
       'frontend-design',
-      'claude-plugins-official',
+      'nyxclaude-plugins-official',
       true,
     )
     const disabledLegacy = marketplacePlugin(
@@ -80,7 +80,7 @@ describe('mergePluginSources', () => {
     )
     const official = marketplacePlugin(
       'frontend-design',
-      'claude-plugins-official',
+      'nyxclaude-plugins-official',
       true,
     )
 
@@ -342,9 +342,9 @@ describe('resolvePluginComponentPath', () => {
     const tempRoot = await mkdtemp(join(tmpdir(), 'plugin-paths-'))
     try {
       const pluginRoot = join(tempRoot, 'plugin')
-      await mkdir(join(pluginRoot, '.claude-plugin'), { recursive: true })
+      await mkdir(join(pluginRoot, '.nyxclaude-plugin'), { recursive: true })
       await writeFile(
-        join(pluginRoot, '.claude-plugin', 'plugin.json'),
+        join(pluginRoot, '.nyxclaude-plugin', 'plugin.json'),
         JSON.stringify({
           name: 'test-plugin',
           hooks: './../outside-hooks.json',
@@ -393,9 +393,9 @@ describe('resolvePluginComponentPath', () => {
       const pluginRoot = join(tempRoot, 'plugin')
       const outsideHooksPath = join(tempRoot, 'outside-hooks.json')
       const linkPath = join(pluginRoot, 'linked-hooks.json')
-      await mkdir(join(pluginRoot, '.claude-plugin'), { recursive: true })
+      await mkdir(join(pluginRoot, '.nyxclaude-plugin'), { recursive: true })
       await writeFile(
-        join(pluginRoot, '.claude-plugin', 'plugin.json'),
+        join(pluginRoot, '.nyxclaude-plugin', 'plugin.json'),
         JSON.stringify({
           name: 'test-plugin',
           hooks: './linked-hooks.json',

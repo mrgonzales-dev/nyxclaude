@@ -3,13 +3,13 @@
  *
  * Pure Node.js — no internal dependencies on logging, experiments, or feature
  * flags. Shared between the CLI (src/utils/sessionStorage.ts) and the VS Code
- * extension (packages/claude-vscode/src/common-host/sessionStorage.ts).
+ * extension (packages/nyxclaude-vscode/src/common-host/sessionStorage.ts).
  */
 
 import type { UUID } from 'crypto'
 import { open as fsOpen, readdir, realpath, stat } from 'fs/promises'
 import { join } from 'path'
-import { getClaudeConfigHomeDir, getProjectsDir } from './envUtils.js'
+import { getNyxclaudeConfigHomeDir, getProjectsDir } from './envUtils.js'
 import { getWorktreePathsPortable } from './getWorktreePathsPortable.js'
 import { djb2Hash } from './hash.js'
 

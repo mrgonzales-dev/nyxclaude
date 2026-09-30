@@ -8,9 +8,13 @@ import type { PastedContent } from './config.js'
 import { classifyGuiEditor, getExternalEditor } from './editor.js'
 import { execSync_DEPRECATED } from './execSyncWrapper.js'
 import { getFsImplementation } from './fsOperations.js'
-import { toIDEDisplayName } from './ide.js'
 import { writeFileSync_DEPRECATED } from './slowOperations.js'
 import { generateTempFilePath } from './tempfile.js'
+
+const editorDisplayName = (cmd: string) => {
+  const base = cmd.split('/').pop() ?? cmd
+  return base.charAt(0).toUpperCase() + base.slice(1)
+}
 
 // Map of editor command overrides (e.g., to add wait flags)
 const EDITOR_OVERRIDES: Record<string, string> = {
@@ -98,7 +102,7 @@ export function editFileInEditor(filePath: string): EditorResult {
     ) {
       const status = (err as { status: number }).status
       if (status !== 0) {
-        const editorName = toIDEDisplayName(editor)
+        const editorName = editorDisplayName(editor)
         return {
           content: null,
           error: `${editorName} exited with code ${status}`,

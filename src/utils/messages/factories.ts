@@ -1,11 +1,11 @@
 import type {
   BetaContentBlock,
   BetaUsage as Usage,
-} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+} from 'src/types/api.js'
 import type {
   ContentBlockParam,
   ToolResultBlockParam,
-} from '@anthropic-ai/sdk/resources/index.mjs'
+} from 'src/types/api.js'
 import { randomUUID, type UUID } from 'crypto'
 import type { Progress } from '../../Tool.js'
 import { NO_CONTENT_MESSAGE } from '../../constants/messages.js'

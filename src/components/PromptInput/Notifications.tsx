@@ -6,11 +6,9 @@ import { type Notification, useNotifications } from 'src/context/notifications.j
 import { logEvent } from 'src/services/analytics/index.js';
 import { useAppState } from 'src/state/AppState.js';
 import type { VerificationStatus } from '../../hooks/useApiKeyVerification.js';
-import { useIdeConnectionStatus } from '../../hooks/useIdeConnectionStatus.js';
-import type { IDESelection } from '../../hooks/useIdeSelection.js';
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js';
 import { Box, Text } from '../../ink.js';
-import { useClaudeAiLimits } from '../../services/claudeAiLimitsHook.js';
+import { useLimits } from '../../services/limitsHook.js';
 import { calculateTokenWarningState } from '../../services/compact/autoCompact.js';
 import type { MCPServerConnection } from '../../services/mcp/types.js';
 import type { Message } from '../../types/message.js';
@@ -21,13 +19,11 @@ import { isEnvTruthy } from '../../utils/envUtils.js'
 import { hasNoProviderConfigured } from '../../utils/providerProfile.js';
 import { formatDuration } from '../../utils/format.js';
 import { setEnvHookNotifier } from '../../utils/hooks/fileChangedWatcher.js';
-import { toIDEDisplayName } from '../../utils/ide.js';
 import { getMessagesAfterCompactBoundary } from '../../utils/messages.js';
 import { tokenCountFromLastAPIResponse } from '../../utils/tokens.js';
 import { AutoUpdaterWrapper } from '../AutoUpdaterWrapper.js';
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js';
 import { getEffortNotificationText } from '../EffortIndicator.js';
-import { hasIdeSelection, IdeStatusIndicator } from '../IdeStatusIndicator.js';
 import { MemoryUsageIndicator } from '../MemoryUsageIndicator.js';
 import { SentryErrorBoundary } from '../SentryErrorBoundary.js';
 import { TokenWarning } from '../TokenWarning.js';
@@ -38,6 +34,10 @@ const VoiceIndicator: typeof import('./VoiceIndicator.js').VoiceIndicator = feat
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 export const FOOTER_TEMPORARY_STATUS_TIMEOUT = 5000;
+const editorDisplayName = (cmd: string) => {
+  const base = cmd.split('/').pop() ?? cmd;
+  return base.charAt(0).toUpperCase() + base.slice(1);
+};
 type Props = {
   apiKeyStatus: VerificationStatus;
   autoUpdaterResult: AutoUpdaterResult | null;
@@ -47,13 +47,12 @@ type Props = {
   messages: Message[];
   onAutoUpdaterResult: (result: AutoUpdaterResult) => void;
   onChangeIsUpdating: (isUpdating: boolean) => void;
-  ideSelection: IDESelection | undefined;
   mcpClients?: MCPServerConnection[];
   isInputWrapped?: boolean;
   isNarrow?: boolean;
 };
 export function Notifications(t0) {
-  const $ = _c(35);
+  const $ = _c(32);
   const {
     apiKeyStatus,
     autoUpdaterResult,
@@ -63,7 +62,6 @@ export function Notifications(t0) {
     messages,
     onAutoUpdaterResult,
     onChangeIsUpdating,
-    ideSelection,
     mcpClients,
     isInputWrapped: t1,
     isNarrow: t2
@@ -91,15 +89,12 @@ export function Notifications(t0) {
     t4 = $[4];
   }
   const isShowingCompactMessage = t4.isAboveWarningThreshold;
-  const {
-    status: ideStatus
-  } = useIdeConnectionStatus(mcpClients);
   const notifications = useAppState(_temp);
   const {
     addNotification,
     removeNotification
   } = useNotifications();
-  const claudeAiLimits = useClaudeAiLimits();
+  const limits = useLimits();
   let t5;
   let t6;
   if ($[5] !== addNotification) {
@@ -124,9 +119,7 @@ export function Notifications(t0) {
     t6 = $[7];
   }
   useEffect(t5, t6);
-  const shouldShowIdeSelection = ideStatus === "connected" && hasIdeSelection(ideSelection);
-  const shouldShowAutoUpdater = !shouldShowIdeSelection || isAutoUpdating || autoUpdaterResult?.status !== "success";
-  const isInOverageMode = claudeAiLimits.isUsingOverage;
+  const isInOverageMode = limits.isUsingOverage;
   let t7;
   if ($[8] === Symbol.for("react.memo_cache_sentinel")) {
     t7 = getSubscriptionType();
@@ -150,10 +143,10 @@ export function Notifications(t0) {
   if ($[10] !== addNotification || $[11] !== removeNotification || $[12] !== shouldShowExternalEditorHint) {
     t9 = () => {
       if (shouldShowExternalEditorHint && editor) {
-        logEvent("tengu_external_editor_hint_shown", {});
+        logEvent("nyxclaude_external_editor_hint_shown", {});
         addNotification({
           key: "external-editor-hint",
-          jsx: <Text dimColor={true}><ConfigurableShortcutHint action="chat:externalEditor" context="Chat" fallback="ctrl+g" description={`edit in ${toIDEDisplayName(editor)}`} /></Text>,
+          jsx: <Text dimColor={true}><ConfigurableShortcutHint action="chat:externalEditor" context="Chat" fallback="ctrl+g" description={`edit in ${editorDisplayName(editor)}`} /></Text>,
           priority: "immediate",
           timeoutMs: 5000
         });
@@ -175,36 +168,33 @@ export function Notifications(t0) {
   const t11 = isNarrow ? "flex-start" : "flex-end";
   const t12 = isInOverageMode ?? false;
   let t13;
-  if ($[15] !== apiKeyStatus || $[16] !== autoUpdaterResult || $[17] !== debug || $[18] !== ideSelection || $[19] !== isAutoUpdating || $[20] !== isShowingCompactMessage || $[21] !== mainLoopModel || $[22] !== mcpClients || $[23] !== notifications || $[24] !== onAutoUpdaterResult || $[25] !== onChangeIsUpdating || $[26] !== shouldShowAutoUpdater || $[27] !== t12 || $[28] !== tokenUsage || $[29] !== shouldShowIdeSelection || $[30] !== verbose) {
-    t13 = <NotificationContent ideSelection={ideSelection} mcpClients={mcpClients} notifications={notifications} isInOverageMode={t12} isTeamOrEnterprise={isTeamOrEnterprise} apiKeyStatus={apiKeyStatus} debug={debug} verbose={verbose} tokenUsage={tokenUsage} mainLoopModel={mainLoopModel} shouldShowAutoUpdater={shouldShowAutoUpdater} shouldShowIdeSelection={shouldShowIdeSelection} autoUpdaterResult={autoUpdaterResult} isAutoUpdating={isAutoUpdating} isShowingCompactMessage={isShowingCompactMessage} onAutoUpdaterResult={onAutoUpdaterResult} onChangeIsUpdating={onChangeIsUpdating} />;
+  if ($[15] !== apiKeyStatus || $[16] !== autoUpdaterResult || $[17] !== debug || $[18] !== isAutoUpdating || $[19] !== isShowingCompactMessage || $[20] !== mainLoopModel || $[21] !== mcpClients || $[22] !== notifications || $[23] !== onAutoUpdaterResult || $[24] !== onChangeIsUpdating || $[25] !== t12 || $[26] !== tokenUsage || $[27] !== verbose) {
+    t13 = <NotificationContent mcpClients={mcpClients} notifications={notifications} isInOverageMode={t12} isTeamOrEnterprise={isTeamOrEnterprise} apiKeyStatus={apiKeyStatus} debug={debug} verbose={verbose} tokenUsage={tokenUsage} mainLoopModel={mainLoopModel} autoUpdaterResult={autoUpdaterResult} isAutoUpdating={isAutoUpdating} isShowingCompactMessage={isShowingCompactMessage} onAutoUpdaterResult={onAutoUpdaterResult} onChangeIsUpdating={onChangeIsUpdating} />;
     $[15] = apiKeyStatus;
     $[16] = autoUpdaterResult;
     $[17] = debug;
-    $[18] = ideSelection;
-    $[19] = isAutoUpdating;
-    $[20] = isShowingCompactMessage;
-    $[21] = mainLoopModel;
-    $[22] = mcpClients;
-    $[23] = notifications;
-    $[24] = onAutoUpdaterResult;
-    $[25] = onChangeIsUpdating;
-    $[26] = shouldShowAutoUpdater;
-    $[27] = t12;
-    $[28] = tokenUsage;
-    $[29] = shouldShowIdeSelection;
-    $[30] = verbose;
-    $[31] = t13;
+    $[18] = isAutoUpdating;
+    $[19] = isShowingCompactMessage;
+    $[20] = mainLoopModel;
+    $[21] = mcpClients;
+    $[22] = notifications;
+    $[23] = onAutoUpdaterResult;
+    $[24] = onChangeIsUpdating;
+    $[25] = t12;
+    $[26] = tokenUsage;
+    $[27] = verbose;
+    $[28] = t13;
   } else {
-    t13 = $[31];
+    t13 = $[28];
   }
   let t14;
-  if ($[32] !== t11 || $[33] !== t13) {
+  if ($[29] !== t11 || $[30] !== t13) {
     t14 = <SentryErrorBoundary><Box flexDirection="column" alignItems={t11} flexShrink={0} overflowX="hidden">{t13}</Box></SentryErrorBoundary>;
-    $[32] = t11;
-    $[33] = t13;
-    $[34] = t14;
+    $[29] = t11;
+    $[30] = t13;
+    $[31] = t14;
   } else {
-    t14 = $[34];
+    t14 = $[31];
   }
   return t14;
 }
@@ -215,7 +205,6 @@ function _temp(s) {
   return s.notifications;
 }
 function NotificationContent({
-  ideSelection,
   mcpClients,
   notifications,
   isInOverageMode,
@@ -225,15 +214,12 @@ function NotificationContent({
   verbose,
   tokenUsage,
   mainLoopModel,
-  shouldShowAutoUpdater,
-  shouldShowIdeSelection,
   autoUpdaterResult,
   isAutoUpdating,
   isShowingCompactMessage,
   onAutoUpdaterResult,
   onChangeIsUpdating
 }: {
-  ideSelection: IDESelection | undefined;
   mcpClients?: MCPServerConnection[];
   notifications: {
     current: Notification | null;
@@ -246,8 +232,6 @@ function NotificationContent({
   verbose: boolean;
   tokenUsage: number;
   mainLoopModel: string;
-  shouldShowAutoUpdater: boolean;
-  shouldShowIdeSelection: boolean;
   autoUpdaterResult: AutoUpdaterResult | null;
   isAutoUpdating: boolean;
   isShowingCompactMessage: boolean;
@@ -284,7 +268,7 @@ function NotificationContent({
   // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
   useAppState(s_2 => s_2.viewingAgentTaskId) : undefined;
   const briefOwnsGap = isBriefOnly && !viewingAgentTaskId;
-  const shouldShowEffortFallback = !briefOwnsGap && !shouldShowIdeSelection;
+  const shouldShowEffortFallback = !briefOwnsGap;
   const effortValue = useAppState(s_3 => s_3.effortValue);
   const effortNotificationText = shouldShowEffortFallback ? getEffortNotificationText(effortValue, mainLoopModel) : undefined;
   let notificationNode: ReactNode = null;
@@ -312,7 +296,6 @@ function NotificationContent({
     return <VoiceIndicator voiceState={voiceState} />;
   }
   return <>
-      <IdeStatusIndicator ideSelection={ideSelection} mcpClients={mcpClients} />
       {notificationNode ?? effortFallbackNode}
       {isInOverageMode && !isTeamOrEnterprise && <Box>
           <Text dimColor wrap="truncate">
@@ -329,7 +312,7 @@ function NotificationContent({
         </Box>}
       {(apiKeyStatus === 'invalid' || apiKeyStatus === 'missing') && <Box>
           <Text color="error" wrap="truncate">
-            {isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) ? 'Authentication error · Try again' : hasNoProviderConfigured() ? 'No provider · Run /provider' : 'Not logged in · Run /login'}
+            {isEnvTruthy(process.env.NYXCLAUDE_REMOTE) ? 'Authentication error · Try again' : hasNoProviderConfigured() ? 'No provider · Run /provider' : 'Not logged in · Run /login'}
           </Text>
         </Box>}
       {debug && <Box>
@@ -343,7 +326,7 @@ function NotificationContent({
           </Text>
         </Box>}
       {!isBriefOnly && <TokenWarning tokenUsage={tokenUsage} model={mainLoopModel} />}
-      {shouldShowAutoUpdater && <AutoUpdaterWrapper verbose={verbose} onAutoUpdaterResult={onAutoUpdaterResult} autoUpdaterResult={autoUpdaterResult} isUpdating={isAutoUpdating} onChangeIsUpdating={onChangeIsUpdating} showSuccessMessage={!isShowingCompactMessage} />}
+      <AutoUpdaterWrapper verbose={verbose} onAutoUpdaterResult={onAutoUpdaterResult} autoUpdaterResult={autoUpdaterResult} isUpdating={isAutoUpdating} onChangeIsUpdating={onChangeIsUpdating} showSuccessMessage={!isShowingCompactMessage} />
       {feature('VOICE_MODE') ? voiceEnabled && voiceError && <Box>
               <Text color="error" wrap="truncate">
                 {voiceError}

@@ -8,7 +8,7 @@ import {
   getArcSummary,
   resetArc,
 } from './conversationArc.js'
-import { setClaudeConfigHomeDirForTesting } from './envUtils.js'
+import { setNyxclaudeConfigHomeDirForTesting } from './envUtils.js'
 import { getGlobalGraph, clearMemoryOnly, resetGlobalGraph } from './knowledgeGraph.js'
 import {
   acquireSharedMutationLock,
@@ -28,7 +28,7 @@ describe('Conversation Arc Scale and Stability', () => {
   beforeEach(async () => {
     await acquireSharedMutationLock('conversationArc.perf')
     configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-arc-perf-'))
-    setClaudeConfigHomeDirForTesting(configDir)
+    setNyxclaudeConfigHomeDirForTesting(configDir)
     resetGlobalGraph()
     clearMemoryOnly()
     resetArc()
@@ -40,7 +40,7 @@ describe('Conversation Arc Scale and Stability', () => {
       resetGlobalGraph()
       clearMemoryOnly()
       resetArc()
-      setClaudeConfigHomeDirForTesting(undefined)
+      setNyxclaudeConfigHomeDirForTesting(undefined)
       rmSync(configDir, { recursive: true, force: true })
     } finally {
       releaseSharedMutationLock()

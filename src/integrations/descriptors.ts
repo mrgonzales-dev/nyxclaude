@@ -301,7 +301,7 @@ export interface GatewayDescriptor {
   preset?: ProviderPresetMetadata
 }
 
-export interface AnthropicProxyDescriptor {
+export interface ProviderProxyDescriptor {
   id: string
   label: string
   classification: 'anthropic-proxy'

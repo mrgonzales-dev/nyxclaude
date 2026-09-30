@@ -29,27 +29,27 @@ const REAL_EXTRA_USAGE_FOR_MODEL_TEST = { ...actualExtraUsageForModelTest }
 type SettingsModule = typeof import('../../utils/settings/settings.js')
 
 const originalEnv = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
-  CLAUDE_CODE_USE_MISTRAL: process.env.CLAUDE_CODE_USE_MISTRAL,
-  CLAUDE_CODE_USE_BEDROCK: process.env.CLAUDE_CODE_USE_BEDROCK,
-  CLAUDE_CODE_USE_VERTEX: process.env.CLAUDE_CODE_USE_VERTEX,
-  CLAUDE_CODE_USE_FOUNDRY: process.env.CLAUDE_CODE_USE_FOUNDRY,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
+  NYXCLAUDE_USE_MISTRAL: process.env.NYXCLAUDE_USE_MISTRAL,
+  NYXCLAUDE_USE_BEDROCK: process.env.NYXCLAUDE_USE_BEDROCK,
+  NYXCLAUDE_USE_VERTEX: process.env.NYXCLAUDE_USE_VERTEX,
+  NYXCLAUDE_USE_FOUNDRY: process.env.NYXCLAUDE_USE_FOUNDRY,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   OPENAI_API_BASE: process.env.OPENAI_API_BASE,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_API_KEYS: process.env.OPENAI_API_KEYS,
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
-  ANTHROPIC_CUSTOM_HEADERS: process.env.ANTHROPIC_CUSTOM_HEADERS,
-  CLAUDE_CODE_EFFORT_LEVEL: process.env.CLAUDE_CODE_EFFORT_LEVEL,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
-  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC:
-    process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,
+  NYXCLAUDE_CUSTOM_HEADERS: process.env.NYXCLAUDE_CUSTOM_HEADERS,
+  NYXCLAUDE_EFFORT_LEVEL: process.env.NYXCLAUDE_EFFORT_LEVEL,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+  NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC:
+    process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC,
 }
 
 async function importFreshModelModule(
@@ -211,32 +211,32 @@ afterEach(() => {
     mock.restore()
     resetSettingsCache()
     settingsForTest = {}
-    restoreEnv('CLAUDE_CODE_USE_OPENAI', originalEnv.CLAUDE_CODE_USE_OPENAI)
-    restoreEnv('CLAUDE_CODE_USE_GEMINI', originalEnv.CLAUDE_CODE_USE_GEMINI)
-    restoreEnv('CLAUDE_CODE_USE_GITHUB', originalEnv.CLAUDE_CODE_USE_GITHUB)
-    restoreEnv('CLAUDE_CODE_USE_MISTRAL', originalEnv.CLAUDE_CODE_USE_MISTRAL)
-    restoreEnv('CLAUDE_CODE_USE_BEDROCK', originalEnv.CLAUDE_CODE_USE_BEDROCK)
-    restoreEnv('CLAUDE_CODE_USE_VERTEX', originalEnv.CLAUDE_CODE_USE_VERTEX)
-    restoreEnv('CLAUDE_CODE_USE_FOUNDRY', originalEnv.CLAUDE_CODE_USE_FOUNDRY)
+    restoreEnv('NYXCLAUDE_USE_OPENAI', originalEnv.NYXCLAUDE_USE_OPENAI)
+    restoreEnv('NYXCLAUDE_USE_GEMINI', originalEnv.NYXCLAUDE_USE_GEMINI)
+    restoreEnv('NYXCLAUDE_USE_GITHUB', originalEnv.NYXCLAUDE_USE_GITHUB)
+    restoreEnv('NYXCLAUDE_USE_MISTRAL', originalEnv.NYXCLAUDE_USE_MISTRAL)
+    restoreEnv('NYXCLAUDE_USE_BEDROCK', originalEnv.NYXCLAUDE_USE_BEDROCK)
+    restoreEnv('NYXCLAUDE_USE_VERTEX', originalEnv.NYXCLAUDE_USE_VERTEX)
+    restoreEnv('NYXCLAUDE_USE_FOUNDRY', originalEnv.NYXCLAUDE_USE_FOUNDRY)
     restoreEnv('OPENAI_BASE_URL', originalEnv.OPENAI_BASE_URL)
     restoreEnv('OPENAI_API_BASE', originalEnv.OPENAI_API_BASE)
     restoreEnv('OPENAI_API_KEY', originalEnv.OPENAI_API_KEY)
     restoreEnv('OPENAI_API_KEYS', originalEnv.OPENAI_API_KEYS)
     restoreEnv('OPENROUTER_API_KEY', originalEnv.OPENROUTER_API_KEY)
     restoreEnv('OPENAI_MODEL', originalEnv.OPENAI_MODEL)
-    restoreEnv('ANTHROPIC_CUSTOM_HEADERS', originalEnv.ANTHROPIC_CUSTOM_HEADERS)
-    restoreEnv('CLAUDE_CODE_EFFORT_LEVEL', originalEnv.CLAUDE_CODE_EFFORT_LEVEL)
+    restoreEnv('NYXCLAUDE_CUSTOM_HEADERS', originalEnv.NYXCLAUDE_CUSTOM_HEADERS)
+    restoreEnv('NYXCLAUDE_EFFORT_LEVEL', originalEnv.NYXCLAUDE_EFFORT_LEVEL)
     restoreEnv(
-      'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-      originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
+      'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+      originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
     )
     restoreEnv(
-      'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
-      originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+      'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+      originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
     )
     restoreEnv(
-      'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC',
-      originalEnv.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,
+      'NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC',
+      originalEnv.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC,
     )
   } finally {
     releaseSharedMutationLock()
@@ -392,13 +392,13 @@ async function renderModelCommandWithCapturedPicker(
 }
 
 test('opens the model picker without awaiting local model discovery refresh', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
   process.env.OPENAI_BASE_URL = 'http://127.0.0.1:8080/v1'
   process.env.OPENAI_MODEL = 'qwen2.5-coder-7b-instruct'
@@ -433,7 +433,7 @@ test('/model current reports the effective effort when env overrides session ult
   const stdout = new PassThrough()
   ;(stdout as unknown as { columns: number }).columns = 120
 
-  process.env.CLAUDE_CODE_EFFORT_LEVEL = 'high'
+  process.env.NYXCLAUDE_EFFORT_LEVEL = 'high'
   const element = await call(
     result => {
       if (result) messages.push(result)
@@ -471,7 +471,7 @@ test('/model current resolves effort against the active session model', async ()
   const stdout = new PassThrough()
   ;(stdout as unknown as { columns: number }).columns = 120
 
-  delete process.env.CLAUDE_CODE_EFFORT_LEVEL
+  delete process.env.NYXCLAUDE_EFFORT_LEVEL
   const element = await call(
     result => {
       if (result) messages.push(result)
@@ -506,17 +506,17 @@ test('/model current resolves effort against the active session model', async ()
 })
 
 test('opens the model picker without awaiting descriptor-backed route refresh', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_API_KEY = 'sk-openrouter'
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'openai/gpt-5-mini'
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mock.module('../../integrations/discoveryCache.js', () => ({
@@ -608,8 +608,8 @@ test('descriptor model options include active profile configured models', async 
     model: 'devstral-latest, mistral-medium-latest',
     apiKey: 'sk-mistral',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveOpenAIModelOptionsCache: () => [],
@@ -666,8 +666,8 @@ test('descriptor model options omit route defaults outside active profile models
     model: 'mistral-medium-latest, mistral-small-latest',
     apiKey: 'sk-mistral',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveOpenAIModelOptionsCache: () => [],
@@ -729,8 +729,8 @@ test('descriptor model options preserve discovered route models for discovery-ba
     model: 'openai/gpt-oss-120b:free',
     apiKey: 'sk-openrouter',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveOpenAIModelOptionsCache: () => [],
@@ -764,7 +764,7 @@ test('descriptor model options preserve discovered route models for discovery-ba
         },
         {
           value: 'anthropic/claude-sonnet-4',
-          label: 'Claude Sonnet 4',
+          label: 'Sonnet 4',
           description: 'Provider: OpenRouter',
         },
       ],
@@ -783,7 +783,7 @@ test('descriptor model options preserve discovered route models for discovery-ba
     },
     {
       value: 'anthropic/claude-sonnet-4',
-      label: 'Claude Sonnet 4',
+      label: 'Sonnet 4',
       description: 'Provider: OpenRouter',
     },
   ])
@@ -798,8 +798,8 @@ test('native vendor routes show the full catalog regardless of the profile model
     model: 'MiniMax-M2.7',
     apiKey: 'sk-minimax',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveProviderProfile: () => activeProfile,
@@ -831,8 +831,8 @@ test('auto profile model picker mode uses explicit multi-model profiles as the p
     model: 'mistral-medium-latest, mistral-small-latest',
     apiKey: 'sk-mistral',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveProviderProfile: () => activeProfile,
@@ -890,8 +890,8 @@ test('provider profile model picker surface keeps static route catalogs for sing
     model: 'mimo-v2.5-pro',
     apiKey: 'sk-opengateway',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveProviderProfile: () => activeProfile,
@@ -943,8 +943,8 @@ test('provider profile model picker surface keeps discovered catalogs and append
     model: 'custom/private-model',
     apiKey: 'sk-openrouter',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveProviderProfile: () => activeProfile,
@@ -1051,8 +1051,8 @@ test('provider profile model picker mode override keeps catalog first for multi-
     model: 'mistral-medium-latest, mistral-small-latest',
     apiKey: 'sk-mistral',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveProviderProfile: () => activeProfile,
@@ -1117,19 +1117,19 @@ test('/model applies providerProfileModelPickerMode profile override on descript
     model: 'openai/gpt-oss-120b:free',
     apiKey: 'sk-openrouter',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   process.env.OPENAI_API_KEY = activeProfile.apiKey
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = activeProfile.model
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mock.module('../../integrations/discoveryCache.js', () => ({
@@ -1213,19 +1213,19 @@ test('/model applies auto profile surface for multi-model descriptor profiles', 
     model: 'openai/gpt-oss-120b:free, custom/private-model',
     apiKey: 'sk-openrouter',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   process.env.OPENAI_API_KEY = activeProfile.apiKey
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'openai/gpt-oss-120b:free'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mockDescriptorDiscovery({
@@ -1270,19 +1270,19 @@ test('/model applies auto provider surface for single-model descriptor profiles'
     model: 'openai/gpt-oss-120b:free',
     apiKey: 'sk-openrouter',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   process.env.OPENAI_API_KEY = activeProfile.apiKey
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = activeProfile.model
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mockDescriptorDiscovery({
@@ -1348,19 +1348,19 @@ test('/model discovery override still surfaces inactive-profile switch options (
     model: 'kimi-k2',
     apiKey: 'sk-kimi',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   process.env.OPENAI_API_KEY = activeProfile.apiKey
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = activeProfile.model
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mockDescriptorDiscovery({
@@ -1410,19 +1410,19 @@ test('/model applies auto provider surface for single-model static descriptor pr
     model: 'mimo-v2.5-pro',
     apiKey: 'sk-opengateway',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   process.env.OPENAI_API_KEY = activeProfile.apiKey
   process.env.OPENAI_MODEL = activeProfile.model
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
   delete process.env.OPENROUTER_API_KEY
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mockProviderProfiles({
@@ -1469,19 +1469,19 @@ test('/model applies providerProfileModelPickerMode provider override on descrip
     model: 'custom/private-model, openai/gpt-oss-120b:free',
     apiKey: 'sk-openrouter',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   process.env.OPENAI_API_KEY = activeProfile.apiKey
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'openai/gpt-oss-120b:free'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mockDescriptorDiscovery({
@@ -1544,19 +1544,19 @@ test('/model applies profile surface to legacy local OpenAI-compatible profiles'
     model: 'local-model-a, local-model-b',
     apiKey: '',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'local-model-a'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   expect(getAdditionalModelOptionsCacheScope()?.startsWith('openai:')).toBe(
@@ -1621,19 +1621,19 @@ test('/model legacy local OpenAI route ignores inactive saved profile cache', as
     model: 'saved-profile-model',
     apiKey: '',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:7777/v1'
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'route-model'
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   expect(getAdditionalModelOptionsCacheScope()?.startsWith('openai:')).toBe(
@@ -1680,19 +1680,19 @@ test('/model legacy local OpenAI route ignores inactive saved profile cache', as
 
 test('/model legacy local OpenAI route filters scoped cache by availableModels', async () => {
   useSettings({ availableModels: ['allowed-route'] } as SettingsJson)
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:7777/v1'
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'allowed-route'
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   await mockScopedLocalOpenAIModelCache([
@@ -1739,19 +1739,19 @@ test('/model legacy local OpenAI refresh does not write inactive profile cache',
     model: 'saved-profile-model',
     apiKey: '',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:7777/v1'
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'route-model'
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   const scopedCache = await mockScopedLocalOpenAIModelCache([
@@ -1838,19 +1838,19 @@ test('/model legacy local OpenAI refresh does not write inactive profile cache',
 
 test('/model legacy local OpenAI refresh compares allowlist-filtered options', async () => {
   useSettings({ availableModels: ['allowed-route'] } as SettingsJson)
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:7777/v1'
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'allowed-route'
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   const scopedCache = await mockScopedLocalOpenAIModelCache([
@@ -1917,19 +1917,19 @@ test('/model legacy local OpenAI refresh compares allowlist-filtered options', a
 })
 
 test('/model legacy local OpenAI refresh preserves cached options when discovery finds no models', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:7777/v1'
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'route-model'
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   const cachedOptions = [
@@ -2004,19 +2004,19 @@ test('/model legacy local OpenAI refresh preserves cached provider options for a
     model: 'profile-only-model, route-model',
     apiKey: '',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'route-model'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   const cachedOptions = [
@@ -2112,19 +2112,19 @@ test('/model legacy provider mode keeps raw local cache before profile-only mode
     model: 'profile-only-model, route-model',
     apiKey: '',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'route-model'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   await mockScopedLocalOpenAIModelCache([
@@ -2197,8 +2197,8 @@ test('descriptor model options filter route and profile-only entries by availabl
     model: 'blocked-profile-only',
     apiKey: 'sk-openrouter',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveProviderProfile: () => activeProfile,
@@ -2245,8 +2245,8 @@ test('descriptor model options skip saved profile models for env-selected routes
     model: 'devstral-latest, mistral-medium-latest',
     apiKey: 'sk-mistral',
   }
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
 
   mockProviderProfiles({
     getActiveOpenAIModelOptionsCache: () => [],
@@ -2293,8 +2293,8 @@ test('descriptor model options ignore active profile when applied profile id doe
     model: 'mistral-medium-latest',
     apiKey: 'sk-mistral',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = 'other-profile'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = 'other-profile'
 
   mockProviderProfiles({
     getActiveProviderProfile: () => activeProfile,
@@ -2333,8 +2333,8 @@ test('descriptor model options ignore active profile when route does not match',
     model: 'mistral-medium-latest',
     apiKey: 'sk-mistral',
   }
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
 
   mockProviderProfiles({
     getActiveProviderProfile: () => activeProfile,
@@ -2365,18 +2365,18 @@ test('descriptor model options ignore active profile when route does not match',
 })
 
 test('/model refresh passes first pooled OpenAI credential to descriptor discovery', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'gpt-5.5'
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   const discoverModelsForRoute = mock(async () => ({
@@ -2429,17 +2429,17 @@ test('/model refresh passes first pooled OpenAI credential to descriptor discove
 })
 
 test('/model refresh clears descriptor cache and reports updates', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   delete process.env.OPENAI_API_KEY
   process.env.OPENROUTER_API_KEY = 'sk-openrouter-route'
   process.env.OPENAI_MODEL = 'openai/gpt-5-mini'
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   const clearDiscoveryCache = mock(async () => {})
@@ -2520,19 +2520,19 @@ test('/model refresh reports discovered model changes for dynamic active profile
     model: 'local-model-a',
     apiKey: '',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = activeProfile.model
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mock.module('../../integrations/discoveryCache.js', () => ({
@@ -2597,17 +2597,17 @@ test('/model refresh reports discovered model changes for dynamic active profile
 
 test('/model refresh compares already allowlist-filtered descriptor options', async () => {
   useSettings({ availableModels: ['local-model-a'] } as SettingsJson)
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:1234/v1'
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'local-model-a'
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mock.module('../../integrations/discoveryCache.js', () => ({
@@ -2660,19 +2660,19 @@ test('/model refresh compares already allowlist-filtered descriptor options', as
 })
 
 test('/model refresh treats empty legacy OpenAI-compatible discovery as failed no-op', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:7777/v1'
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'route-model'
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   const cachedOptions = [
@@ -2720,19 +2720,19 @@ test('interactive model picker refresh keeps descriptor options allowlist-filter
     model: 'blocked-profile-only',
     apiKey: 'sk-openrouter',
   }
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = activeProfile.baseUrl
   process.env.OPENAI_API_KEY = activeProfile.apiKey
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'allowed-route'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
+  process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID = activeProfile.id
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mockDescriptorDiscovery({
@@ -2851,18 +2851,18 @@ test('interactive model picker rejects models blocked by availableModels before 
 })
 
 test('/model does not auto-refresh descriptor models when nonessential traffic is disabled', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openrouter.ai/api/v1'
   process.env.OPENAI_API_KEY = 'sk-openrouter'
   delete process.env.OPENROUTER_API_KEY
   process.env.OPENAI_MODEL = 'openai/gpt-5-mini'
-  process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
+  process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
   delete process.env.OPENAI_API_BASE
 
   mock.module('../../integrations/discoveryCache.js', () => ({

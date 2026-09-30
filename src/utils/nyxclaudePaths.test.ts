@@ -44,7 +44,7 @@ describe('Nyxclaude paths', () => {
   test('defaults user config home to ~/.nyxclaude', async () => {
     await acquireEnvMutex()
     delete process.env.NYXCLAUDE_CONFIG_DIR
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
     const { resolveClaudeConfigHomeDir } = await importFreshEnvUtils()
 
     expect(
@@ -57,7 +57,7 @@ describe('Nyxclaude paths', () => {
   test('hard-cuts user config home to ~/.nyxclaude by default', async () => {
     await acquireEnvMutex()
     delete process.env.NYXCLAUDE_CONFIG_DIR
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
     const { resolveClaudeConfigHomeDir } = await importFreshEnvUtils()
 
     expect(
@@ -101,11 +101,11 @@ describe('Nyxclaude paths', () => {
         tmpdir,
       }))
       delete process.env.NYXCLAUDE_CONFIG_DIR
-      delete process.env.CLAUDE_CONFIG_DIR
+      delete process.env.NYXCLAUDE_CONFIG_DIR
 
-      const { getClaudeConfigHomeDir } = await importFreshEnvUtils()
+      const { getNyxclaudeConfigHomeDir } = await importFreshEnvUtils()
 
-      expect(getClaudeConfigHomeDir()).toBe(join(tempHome, '.nyxclaude'))
+      expect(getNyxclaudeConfigHomeDir()).toBe(join(tempHome, '.nyxclaude'))
     } finally {
       rmSync(tempHome, { recursive: true, force: true })
     }
@@ -114,7 +114,7 @@ describe('Nyxclaude paths', () => {
   test('default plans directory uses ~/.nyxclaude/plans', async () => {
     await acquireEnvMutex()
     delete process.env.NYXCLAUDE_CONFIG_DIR
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
     const { getDefaultPlansDirectory } = await importFreshPlans()
 
     expect(getDefaultPlansDirectory({ homeDir: homedir() })).toBe(
@@ -134,7 +134,7 @@ describe('Nyxclaude paths', () => {
   test('default plans directory respects NYXCLAUDE_CONFIG_DIR', async () => {
     await acquireEnvMutex()
     process.env.NYXCLAUDE_CONFIG_DIR = '/tmp/preferred-nyxclaude'
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
     const { getDefaultPlansDirectory } = await importFreshPlans()
 
     expect(getDefaultPlansDirectory()).toBe(
@@ -145,7 +145,7 @@ describe('Nyxclaude paths', () => {
   test('NYXCLAUDE_CONFIG_DIR wins for default plans directory', async () => {
     await acquireEnvMutex()
     process.env.NYXCLAUDE_CONFIG_DIR = '/tmp/preferred-nyxclaude'
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/legacy-nyxclaude'
+    process.env.NYXCLAUDE_CONFIG_DIR = '/tmp/legacy-nyxclaude'
     const { getDefaultPlansDirectory } = await importFreshPlans()
 
     expect(getDefaultPlansDirectory()).toBe(
@@ -171,56 +171,56 @@ describe('Nyxclaude paths', () => {
     ).toBe(join('/tmp/caf\u00e9-nyxclaude', 'plans'))
   })
 
-  test('ignores CLAUDE_CONFIG_DIR override when provided', async () => {
+  test('ignores NYXCLAUDE_CONFIG_DIR override when provided', async () => {
     await acquireEnvMutex()
     delete process.env.NYXCLAUDE_CONFIG_DIR
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/custom-nyxclaude'
+    process.env.NYXCLAUDE_CONFIG_DIR = '/tmp/custom-nyxclaude'
     mock.module('os', () => ({
       homedir: () => '/tmp/home',
       tmpdir,
     }))
-    const { getClaudeConfigHomeDir } = await importFreshEnvUtils()
+    const { getNyxclaudeConfigHomeDir } = await importFreshEnvUtils()
 
-    expect(getClaudeConfigHomeDir()).toBe('/tmp/home/.nyxclaude')
+    expect(getNyxclaudeConfigHomeDir()).toBe('/tmp/home/.nyxclaude')
   })
 
   test('NYXCLAUDE_CONFIG_DIR overrides the default (issue #454)', async () => {
     await acquireEnvMutex()
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
     process.env.NYXCLAUDE_CONFIG_DIR = '/tmp/oc-config-only'
-    const { getClaudeConfigHomeDir } = await importFreshEnvUtils()
+    const { getNyxclaudeConfigHomeDir } = await importFreshEnvUtils()
 
-    expect(getClaudeConfigHomeDir()).toBe('/tmp/oc-config-only')
+    expect(getNyxclaudeConfigHomeDir()).toBe('/tmp/oc-config-only')
   })
 
   test('NYXCLAUDE_CONFIG_DIR wins when both env vars are set with different values', async () => {
     await acquireEnvMutex()
     process.env.NYXCLAUDE_CONFIG_DIR = '/tmp/oc-wins'
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/legacy-loses'
-    const { getClaudeConfigHomeDir } = await importFreshEnvUtils()
+    process.env.NYXCLAUDE_CONFIG_DIR = '/tmp/legacy-loses'
+    const { getNyxclaudeConfigHomeDir } = await importFreshEnvUtils()
 
-    expect(getClaudeConfigHomeDir()).toBe('/tmp/oc-wins')
+    expect(getNyxclaudeConfigHomeDir()).toBe('/tmp/oc-wins')
   })
 
-  test('CLAUDE_CONFIG_DIR is ignored when NYXCLAUDE_CONFIG_DIR is unset', async () => {
+  test('NYXCLAUDE_CONFIG_DIR is ignored when NYXCLAUDE_CONFIG_DIR is unset', async () => {
     await acquireEnvMutex()
     delete process.env.NYXCLAUDE_CONFIG_DIR
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/legacy-only'
-    const { getClaudeConfigHomeDir } = await importFreshEnvUtils()
+    process.env.NYXCLAUDE_CONFIG_DIR = '/tmp/legacy-only'
+    const { getNyxclaudeConfigHomeDir } = await importFreshEnvUtils()
 
-    expect(getClaudeConfigHomeDir()).toBe(join(homedir(), '.nyxclaude'))
+    expect(getNyxclaudeConfigHomeDir()).toBe(join(homedir(), '.nyxclaude'))
   })
 
-  test('empty NYXCLAUDE_CONFIG_DIR does not fall through to CLAUDE_CONFIG_DIR', async () => {
+  test('empty NYXCLAUDE_CONFIG_DIR does not fall through to NYXCLAUDE_CONFIG_DIR', async () => {
     await acquireEnvMutex()
     process.env.NYXCLAUDE_CONFIG_DIR = ''
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/legacy-fallback'
-    const { getClaudeConfigHomeDir } = await importFreshEnvUtils()
+    process.env.NYXCLAUDE_CONFIG_DIR = '/tmp/legacy-fallback'
+    const { getNyxclaudeConfigHomeDir } = await importFreshEnvUtils()
 
-    expect(getClaudeConfigHomeDir()).toBe(join(homedir(), '.nyxclaude'))
+    expect(getNyxclaudeConfigHomeDir()).toBe(join(homedir(), '.nyxclaude'))
   })
 
-  test('resolveConfigDirEnv ignores CLAUDE_CONFIG_DIR without warning', async () => {
+  test('resolveConfigDirEnv ignores NYXCLAUDE_CONFIG_DIR without warning', async () => {
     await acquireEnvMutex()
     const { resolveConfigDirEnv, __resetConfigDirEnvWarningForTesting } =
       await importFreshEnvUtils()
@@ -312,7 +312,7 @@ describe('Nyxclaude paths', () => {
   test('local installer uses nyxclaude wrapper path', async () => {
     await acquireEnvMutex()
     process.env.NYXCLAUDE_CONFIG_DIR = join(homedir(), '.nyxclaude')
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
     const { getLocalClaudePath } = await importFreshLocalInstaller()
 
     expect(getLocalClaudePath()).toBe(

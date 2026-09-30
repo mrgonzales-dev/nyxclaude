@@ -16,7 +16,7 @@ export function buildPowerShellArgs(cmd: string): string[] {
  * Base64-encode a string as UTF-16LE for PowerShell's -EncodedCommand.
  * Same encoding the parser uses (parser.ts toUtf16LeBase64). The output
  * is [A-Za-z0-9+/=] only — survives ANY shell-quoting layer, including
- * @anthropic-ai/sandbox-runtime's shellquote.quote() which would otherwise
+ * sandbox-runtime's shellquote.quote() which would otherwise
  * corrupt !$? to \!$? when re-wrapping a single-quoted string in double
  * quotes. Review 2964609818.
  */
@@ -115,7 +115,7 @@ export function createPowerShellProvider(shellPath: string): ShellProvider {
       if (currentSandboxTmpDir) {
         // PowerShell on Linux/macOS honors TMPDIR for [System.IO.Path]::GetTempPath()
         env.TMPDIR = currentSandboxTmpDir
-        env.CLAUDE_CODE_TMPDIR = currentSandboxTmpDir
+        env.NYXCLAUDE_TMPDIR = currentSandboxTmpDir
         env.CLAUDE_TMPDIR = currentSandboxTmpDir
       }
       return env

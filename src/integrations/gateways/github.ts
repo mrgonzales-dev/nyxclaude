@@ -1,7 +1,7 @@
 import { defineGateway } from '../define.js'
 
 /**
- * GitHub Copilot has a special native-Claude path for Claude models.
+ * GitHub Copilot has a special native-Claude path for Models.
  * When the model string contains "claude-", the runtime routes through
  * the native Anthropic path instead of the OpenAI shim to enable prompt
  * caching. This exception is handled in openaiShim.ts and providers.ts
@@ -18,7 +18,7 @@ import { defineGateway } from '../define.js'
  * Nyxclaude's sub-agent architecture can consume multiple Premium Requests
  * per chat interaction (one per agent per turn), rapidly depleting the quota.
  *
- * By default, when CLAUDE_CODE_USE_GITHUB=1 is active, Nyxclaude limits
+ * By default, when NYXCLAUDE_USE_GITHUB=1 is active, Nyxclaude limits
  * sub-agents to synchronous in-process execution (max 1 concurrent) to mitigate
  * Premium Request consumption (mitigates #678). Configure these env vars to tune behaviour:
  *
@@ -52,7 +52,7 @@ export default defineGateway({
   validation: {
     kind: 'github-token',
     routing: {
-      enablementEnvVar: 'CLAUDE_CODE_USE_GITHUB',
+      enablementEnvVar: 'NYXCLAUDE_USE_GITHUB',
       skipWhenUseOpenAI: true,
     },
     missingCredentialMessage:

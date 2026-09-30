@@ -15,9 +15,9 @@ async function loadAnalyzeContextForTesting() {
 describe('approximateMessageTokens', () => {
   test('counts inline user image blocks as attachments/media', async () => {
     await acquireSharedMutationLock('analyzeContext.messageBreakdown.test.ts')
-    const originalFixtureRoot = process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT
+    const originalFixtureRoot = process.env.NYXCLAUDE_TEST_FIXTURES_ROOT
     const fixtureRoot = await mkdtemp(join(tmpdir(), 'nyxclaude-vcr-'))
-    process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = fixtureRoot
+    process.env.NYXCLAUDE_TEST_FIXTURES_ROOT = fixtureRoot
 
     try {
       const { approximateMessageTokensForTesting } =
@@ -47,9 +47,9 @@ describe('approximateMessageTokens', () => {
       expect(breakdown.userMessageTokens).toBeGreaterThan(0)
     } finally {
       if (originalFixtureRoot === undefined) {
-        delete process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT
+        delete process.env.NYXCLAUDE_TEST_FIXTURES_ROOT
       } else {
-        process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = originalFixtureRoot
+        process.env.NYXCLAUDE_TEST_FIXTURES_ROOT = originalFixtureRoot
       }
       await rm(fixtureRoot, { recursive: true, force: true })
       releaseSharedMutationLock()
@@ -58,9 +58,9 @@ describe('approximateMessageTokens', () => {
 
   test('uses local message estimates when provider token counters are unavailable', async () => {
     await acquireSharedMutationLock('analyzeContext.messageBreakdown.test.ts')
-    const originalFixtureRoot = process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT
+    const originalFixtureRoot = process.env.NYXCLAUDE_TEST_FIXTURES_ROOT
     const fixtureRoot = await mkdtemp(join(tmpdir(), 'nyxclaude-vcr-'))
-    process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = fixtureRoot
+    process.env.NYXCLAUDE_TEST_FIXTURES_ROOT = fixtureRoot
 
     try {
       const countMessagesTokensWithAPI = mock(async () => null)
@@ -90,9 +90,9 @@ describe('approximateMessageTokens', () => {
     } finally {
       mock.restore()
       if (originalFixtureRoot === undefined) {
-        delete process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT
+        delete process.env.NYXCLAUDE_TEST_FIXTURES_ROOT
       } else {
-        process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = originalFixtureRoot
+        process.env.NYXCLAUDE_TEST_FIXTURES_ROOT = originalFixtureRoot
       }
       await rm(fixtureRoot, { recursive: true, force: true })
       releaseSharedMutationLock()
@@ -101,9 +101,9 @@ describe('approximateMessageTokens', () => {
 
   test('uses media-aware estimates instead of serialized base64 length', async () => {
     await acquireSharedMutationLock('analyzeContext.messageBreakdown.test.ts')
-    const originalFixtureRoot = process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT
+    const originalFixtureRoot = process.env.NYXCLAUDE_TEST_FIXTURES_ROOT
     const fixtureRoot = await mkdtemp(join(tmpdir(), 'nyxclaude-vcr-'))
-    process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = fixtureRoot
+    process.env.NYXCLAUDE_TEST_FIXTURES_ROOT = fixtureRoot
 
     try {
       const { approximateMessageTokensForTesting } =
@@ -131,9 +131,9 @@ describe('approximateMessageTokens', () => {
       expect(breakdown.attachmentsByType.get('image')).toBe(2_000)
     } finally {
       if (originalFixtureRoot === undefined) {
-        delete process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT
+        delete process.env.NYXCLAUDE_TEST_FIXTURES_ROOT
       } else {
-        process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = originalFixtureRoot
+        process.env.NYXCLAUDE_TEST_FIXTURES_ROOT = originalFixtureRoot
       }
       await rm(fixtureRoot, { recursive: true, force: true })
       releaseSharedMutationLock()

@@ -11,7 +11,7 @@ import { getTotalAPIDuration, getTotalCost, getTotalDuration, getTotalInputToken
 import { useMainLoopModel } from '../hooks/useMainLoopModel.js';
 import { type ReadonlySettings, useSettings } from '../hooks/useSettings.js';
 import { Ansi, Box, Text } from '../ink.js';
-import { getRawUtilization } from '../services/claudeAiLimits.js';
+import { getRawUtilization } from '../services/limits.js';
 import type { Message } from '../types/message.js';
 import type { StatusLineCommandInput } from '../types/statusLine.js';
 import type { VimMode } from '../types/textInputTypes.js';
@@ -219,7 +219,7 @@ function StatusLineInner({
   } = useNotifications();
   // AppState-sourced model — same source as API requests. getMainLoopModel()
   // re-reads settings.json on every call, so another session's /model write
-  // would leak into this session's statusline (anthropics/claude-code#37596).
+  // would leak into this session's statusline (nyxclaude/nyxclaude#37596).
   const mainLoopModel = useMainLoopModel();
 
   // Keep latest values in refs for stable callback access
@@ -379,7 +379,7 @@ function StatusLineInner({
   useEffect(() => {
     const statusLine = settings?.statusLine;
     if (statusLine) {
-      logEvent('tengu_status_line_mount', {
+      logEvent('nyxclaude_status_line_mount', {
         command_length: statusLine.command.length,
         padding: statusLine.padding
       });
@@ -391,7 +391,7 @@ function StatusLineInner({
       }
       // executeStatusLineCommand (hooks.ts) returns undefined when trust is
       // blocked — statusLineText stays undefined forever, user sees nothing,
-      // and tengu_status_line_mount above fires anyway so telemetry looks fine.
+      // and nyxclaude_status_line_mount above fires anyway so telemetry looks fine.
       if (!checkHasTrustDialogAccepted()) {
         addNotification({
           key: 'statusline-trust-blocked',

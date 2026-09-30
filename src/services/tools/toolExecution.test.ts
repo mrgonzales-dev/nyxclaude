@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ToolUseBlock } from 'src/types/api.js'
 import { z } from 'zod/v4'
 
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'

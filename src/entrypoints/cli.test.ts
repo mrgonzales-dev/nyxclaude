@@ -147,8 +147,8 @@ describe('cli.tsx — NODE_OPTIONS --max-old-space-size (issue #402)', () => {
 
 describe('cli.tsx — --provider startup ordering', () => {
   const providerEnvKeys = [
-    'CLAUDE_CODE_USE_OPENAI',
-    'CLAUDE_CODE_USE_GEMINI',
+    'NYXCLAUDE_USE_OPENAI',
+    'NYXCLAUDE_USE_GEMINI',
     'OPENAI_API_KEY',
     'OPENAI_BASE_URL',
     'OPENAI_MODEL',
@@ -234,7 +234,7 @@ describe('cli.tsx — --provider startup ordering', () => {
 
   it('preserves explicit --provider-env-file values through settings and startup profile env merges', () => {
     const filePath = writeProviderEnvFile([
-      'CLAUDE_CODE_USE_OPENAI=1',
+      'NYXCLAUDE_USE_OPENAI=1',
       'OPENAI_API_KEY=file-key',
       'OPENAI_BASE_URL=https://file.example/v1',
       'OPENAI_MODEL=file-model',
@@ -250,14 +250,14 @@ describe('cli.tsx — --provider startup ordering', () => {
     applyLoadedEnvFileValues(loaded)
 
     applyProfileEnvToProcessEnv(process.env, {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      NYXCLAUDE_USE_OPENAI: '1',
       OPENAI_API_KEY: 'profile-key',
       OPENAI_BASE_URL: 'https://profile.example/v1',
       OPENAI_MODEL: 'profile-model',
     })
     applyLoadedEnvFileValues(loaded)
 
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_API_KEY).toBe('file-key')
     expect(process.env.OPENAI_BASE_URL).toBe('https://file.example/v1')
     expect(process.env.OPENAI_MODEL).toBe('file-model')
@@ -265,7 +265,7 @@ describe('cli.tsx — --provider startup ordering', () => {
 
   it('keeps explicit --provider values ahead of provider env-file reapply checkpoints', () => {
     const filePath = writeProviderEnvFile([
-      'CLAUDE_CODE_USE_OPENAI=1',
+      'NYXCLAUDE_USE_OPENAI=1',
       'OPENAI_API_KEY=file-key',
       'OPENAI_BASE_URL=https://file.example/v1',
       'OPENAI_MODEL=file-model',
@@ -283,8 +283,8 @@ describe('cli.tsx — --provider startup ordering', () => {
     applyLoadedEnvFileValues(loaded)
     reapplyRememberedProviderFlag()
 
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBe('1')
     expect(process.env.GEMINI_MODEL).toBe('gemini-2.0-flash')
   })
 

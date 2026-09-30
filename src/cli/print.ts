@@ -5610,8 +5610,7 @@ export type DynamicMcpState = {
 function toScopedConfig(
   config: McpServerConfigForProcessTransport,
 ): ScopedMcpServerConfig {
-  // McpServerConfigForProcessTransport is a subset of McpServerConfig
-  // (it excludes IDE-specific types like sse-ide and ws-ide)
+  // McpServerConfigForProcessTransport is a subset of McpServerConfig.
   // Adding scope makes it a valid ScopedMcpServerConfig
   return { ...config, scope: 'dynamic' } as ScopedMcpServerConfig
 }

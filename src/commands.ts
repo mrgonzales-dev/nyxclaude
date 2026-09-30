@@ -20,7 +20,6 @@ import doctor from './commands/doctor/index.js'
 import knowledge from './commands/knowledge/index.js'
 import repomap from './commands/repomap/index.js'
 import help from './commands/help/index.js'
-import ide from './commands/ide/index.js'
 import init from './commands/init.js'
 import initVerifiers from './commands/init-verifiers.js'
 import keybindings from './commands/keybindings/index.js'
@@ -106,7 +105,7 @@ import {
   clearPluginSkillsCache,
 } from './utils/plugins/loadPluginCommands.js'
 import memoize from 'lodash-es/memoize.js'
-import { isUsing3PServices, isClaudeAISubscriber } from './utils/auth.js'
+import { isUsing3PServices, isSubscriber } from './utils/auth.js'
 import { isFirstPartyAnthropicBaseUrl } from './utils/model/providers.js'
 import exit from './commands/exit/index.js'
 import exportCommand from './commands/export/index.js'
@@ -180,7 +179,6 @@ const COMMANDS = memoize((): Command[] => [
   files,
   heapDump,
   help,
-  ide,
   init,
   keybindings,
   knowledge,
@@ -308,15 +306,15 @@ export function meetsAvailabilityRequirement(cmd: Command | null | undefined): b
   if (!cmd || !cmd.availability || !Array.isArray(cmd.availability)) return true
   for (const a of cmd.availability) {
     switch (a) {
-      case 'claude-ai':
-        if (isClaudeAISubscriber()) return true
+      case 'remote':
+        if (isSubscriber()) return true
         break
       case 'console':
-        // Console API key user = direct 1P API customer (not 3P, not claude.ai).
+        // Console API key user = direct 1P API customer (not 3P, not web console).
         // Excludes 3P (Bedrock/Vertex/Foundry) who don't set ANTHROPIC_BASE_URL
         // and gateway users who proxy through a custom base URL.
         if (
-          !isClaudeAISubscriber() &&
+          !isSubscriber() &&
           !isUsing3PServices() &&
           isFirstPartyAnthropicBaseUrl()
         )

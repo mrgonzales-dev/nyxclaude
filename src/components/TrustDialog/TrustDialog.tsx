@@ -131,7 +131,7 @@ export function TrustDialog(t0) {
   if ($[13] !== hasAnyBashExecution) {
     t12 = () => {
       const isHomeDir = homedir() === getCwd();
-      logEvent("tengu_trust_dialog_shown", {
+      logEvent("nyxclaude_trust_dialog_shown", {
         isHomeDir,
         hasMcpServers,
         hasHooks,
@@ -160,7 +160,7 @@ export function TrustDialog(t0) {
         return;
       }
       const isHomeDir_0 = homedir() === getCwd();
-      logEvent("tengu_trust_dialog_accept", {
+      logEvent("nyxclaude_trust_dialog_accept", {
         isHomeDir: isHomeDir_0,
         hasMcpServers,
         hasHooks,
@@ -217,7 +217,7 @@ export function TrustDialog(t0) {
   }
   let t19;
   if ($[23] === Symbol.for("react.memo_cache_sentinel")) {
-    t19 = <Text dimColor={true}><Link url="https://code.claude.com/docs/en/security">Security guide</Link></Text>;
+    t19 = <Text dimColor={true}><Link url="https://docs.nyxclaude.dev/">Security guide</Link></Text>;
     $[23] = t19;
   } else {
     t19 = $[23];

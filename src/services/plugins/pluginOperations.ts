@@ -2,7 +2,7 @@
  * Core plugin operations (install, uninstall, enable, disable, update)
  *
  * This module provides pure library functions that can be used by both:
- * - CLI commands (`claude plugin install/uninstall/enable/disable/update`)
+ * - CLI commands (`nyxclaude plugin install/uninstall/enable/disable/update`)
  * - Interactive UI (ManagePlugins.tsx)
  *
  * Functions in this module:
@@ -988,7 +988,7 @@ async function performPluginUpdate({
 
     // Try to load manifest from plugin directory (for version info)
     let pluginManifest: PluginManifest | undefined
-    const manifestPath = join(sourcePath, '.claude-plugin', 'plugin.json')
+    const manifestPath = join(sourcePath, '.nyxclaude-plugin', 'plugin.json')
     try {
       pluginManifest = await loadPluginManifest(
         manifestPath,

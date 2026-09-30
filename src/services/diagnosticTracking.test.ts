@@ -1,152 +1,63 @@
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test'
+import { describe, test, expect } from 'bun:test'
 import { DiagnosticTrackingService } from './diagnosticTracking.js'
-import type { MCPServerConnection } from './mcp/types.js'
+import type { Diagnostic, DiagnosticFile } from './diagnosticTracking.js'
 
-// Mock the IDE client utility
-const mockGetConnectedIdeClient = (clients: MCPServerConnection[]) => 
-  clients.find(client => client.type === 'connected')
+function diagnostic(overrides: Partial<Diagnostic> = {}): Diagnostic {
+  return {
+    message: 'test diagnostic',
+    severity: 'Error',
+    range: {
+      start: { line: 0, character: 0 },
+      end: { line: 0, character: 5 },
+    },
+    ...overrides,
+  }
+}
 
 describe('DiagnosticTrackingService', () => {
-  let service: DiagnosticTrackingService
-  let mockClients: MCPServerConnection[]
-  let mockIdeClient: MCPServerConnection
-
-  beforeEach(() => {
-    // Get fresh instance for each test
-    service = DiagnosticTrackingService.getInstance()
-    
-    // Setup mock clients
-    mockIdeClient = {
-      type: 'connected',
-      name: 'test-ide',
-      capabilities: {},
-      config: {},
-      cleanup: async () => {},
-      client: {
-        request: async () => ({}),
-        setNotificationHandler: () => {},
-        close: async () => {},
-      },
-    } as unknown as MCPServerConnection
-
-    mockClients = [
-      { type: 'disconnected', name: 'test-disconnected', config: {} } as unknown as MCPServerConnection,
-      mockIdeClient,
-    ]
-  })
-
-  afterEach(async () => {
-    await service.shutdown()
-  })
-
-  describe('handleQueryStart', () => {
-    test('should store MCP clients and initialize service', async () => {
-      await service.handleQueryStart(mockClients)
-
-      // Service should be initialized
-      expect(service).toBeDefined()
-
-      // Should be able to get IDE client from stored clients
-      // We can't directly test private methods, but we can test the behavior
-      const result = await service.getNewDiagnosticsCompat()
-      expect(result).toEqual([]) // Should return empty when no diagnostics
-    })
-
-    test('should reset service if already initialized', async () => {
-      // Initialize first
-      await service.handleQueryStart(mockClients)
-      
-      // Call again - should reset without error
-      await service.handleQueryStart(mockClients)
-      
-      // Should still work
-      const result = await service.getNewDiagnosticsCompat()
-      expect(result).toEqual([])
+  describe('getSeveritySymbol', () => {
+    test('returns a symbol for each severity', () => {
+      for (const severity of ['Error', 'Warning', 'Info', 'Hint'] as const) {
+        expect(
+          DiagnosticTrackingService.getSeveritySymbol(severity),
+        ).toBeTruthy()
+      }
     })
   })
 
-  describe('backward-compatible methods', () => {
-    beforeEach(async () => {
-      await service.handleQueryStart(mockClients)
-    })
-
-    test('beforeFileEditedCompat should work without explicit client', async () => {
-      // Should not throw error and should return undefined when no IDE client
-      const result = await service.beforeFileEditedCompat('/test/file.ts')
-      expect(result).toBeUndefined()
-    })
-
-    test('getNewDiagnosticsCompat should work without explicit client', async () => {
-      const result = await service.getNewDiagnosticsCompat()
-      expect(Array.isArray(result)).toBe(true)
-    })
-
-    test('ensureFileOpenedCompat should work without explicit client', async () => {
-      const result = await service.ensureFileOpenedCompat('/test/file.ts')
-      expect(result).toBeUndefined()
-    })
-  })
-
-  describe('new explicit client methods', () => {
-    test('beforeFileEdited should require client parameter', async () => {
-      // Should not work without client
-      const result = await service.beforeFileEdited('/test/file.ts', undefined as any)
-      expect(result).toBeUndefined()
-    })
-
-    test('getNewDiagnostics should require client parameter', async () => {
-      // Should not work without client
-      const result = await service.getNewDiagnostics(undefined as any)
-      expect(result).toEqual([])
-    })
-
-    test('ensureFileOpened should require client parameter', async () => {
-      // Should not work without client
-      const result = await service.ensureFileOpened('/test/file.ts', undefined as any)
-      expect(result).toBeUndefined()
-    })
-  })
-
-  describe('shutdown', () => {
-    test('should clear stored clients on shutdown', async () => {
-      await service.handleQueryStart(mockClients)
-      
-      // Verify service is working
-      const beforeResult = await service.getNewDiagnosticsCompat()
-      expect(Array.isArray(beforeResult)).toBe(true)
-      
-      // Shutdown
-      await service.shutdown()
-      
-      // After shutdown, compat methods should return empty results
-      const afterResult = await service.getNewDiagnosticsCompat()
-      expect(afterResult).toEqual([])
-    })
-  })
-
-  describe('integration with existing functionality', () => {
-    test('should maintain existing diagnostic tracking behavior', async () => {
-      await service.handleQueryStart(mockClients)
-      
-      // Test baseline tracking
-      await service.beforeFileEditedCompat('/test/file.ts')
-      
-      // Test getting new diagnostics (should be empty since no IDE client is actually connected)
-      const newDiagnostics = await service.getNewDiagnosticsCompat()
-      expect(Array.isArray(newDiagnostics)).toBe(true)
-    })
-
-    test('should handle missing IDE client gracefully', async () => {
-      // Test with no connected clients
-      const noIdeClients = [
-        { type: 'disconnected', name: 'test-disconnected-2', config: {} } as unknown as MCPServerConnection,
+  describe('formatDiagnosticsSummary', () => {
+    test('formats files with diagnostics', () => {
+      const files: DiagnosticFile[] = [
+        {
+          uri: 'file:///repo/src/foo.ts',
+          diagnostics: [
+            diagnostic({ message: 'Cannot find name', code: 'TS2304' }),
+          ],
+        },
       ]
-      
-      await service.handleQueryStart(noIdeClients)
-      
-      // Should handle gracefully
-      const result = await service.getNewDiagnosticsCompat()
-      expect(result).toEqual([])
+
+      const result = DiagnosticTrackingService.formatDiagnosticsSummary(files)
+      expect(result).toContain('foo.ts')
+      expect(result).toContain('Cannot find name')
+      expect(result).toContain('[Line 1:1]')
+      expect(result).toContain('[TS2304]')
+    })
+
+    test('returns empty string for no files', () => {
+      expect(DiagnosticTrackingService.formatDiagnosticsSummary([])).toBe('')
+    })
+
+    test('truncates output beyond the max length', () => {
+      const files: DiagnosticFile[] = [
+        {
+          uri: 'file:///repo/big.ts',
+          diagnostics: [diagnostic({ message: 'x'.repeat(5000) })],
+        },
+      ]
+
+      const result = DiagnosticTrackingService.formatDiagnosticsSummary(files)
+      expect(result.endsWith('…[truncated]')).toBe(true)
+      expect(result.length).toBeLessThanOrEqual(4000)
     })
   })
 })

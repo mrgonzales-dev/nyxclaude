@@ -1,11 +1,11 @@
-import Anthropic, { type ClientOptions } from '@anthropic-ai/sdk'
+import { Anthropic, type ClientOptions } from 'src/types/api.js'
 import { randomUUID } from 'crypto'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
   getAnthropicApiKey,
   getApiKeyFromApiKeyHelper,
-  getClaudeAIOAuthTokens,
-  isClaudeAISubscriber,
+  getRemoteOAuthTokens,
+  isSubscriber,
 } from 'src/utils/auth.js'
 import {
   convertEffortValueToLevel,
@@ -193,7 +193,7 @@ function applyMiniMaxEnvOnlyDefaults(model: string | undefined): void {
       ? modelOverride
       : undefined) ??
     getRouteDefaultModel('minimax')
-  delete process.env.CLAUDE_CODE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_OPENAI
   delete process.env.OPENAI_API_FORMAT
   delete process.env.OPENAI_AZURE_STYLE
   delete process.env.OPENAI_AUTH_HEADER
@@ -214,7 +214,7 @@ function applyXiaomiMimoEnvOnlyDefaults(): void {
   const hasBaseOverride = baseUrlOverride !== undefined
   const modelOverride = process.env.OPENAI_MODEL?.trim() || undefined
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     baseUrlOverride ?? getRouteDefaultBaseUrl('xiaomi-mimo')
   process.env.OPENAI_MODEL =
@@ -235,7 +235,7 @@ function applyXaiEnvOnlyDefaults(): void {
   const hasXaiBaseOverride = baseUrlOverride !== undefined
   const modelOverride = process.env.OPENAI_MODEL?.trim() || undefined
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     baseUrlOverride ?? getRouteDefaultBaseUrl('xai')
   process.env.OPENAI_MODEL =
@@ -271,7 +271,7 @@ function applyNearaiEnvOnlyDefaults(): void {
   const hasNearaiBaseOverride = baseUrlOverride !== undefined
   const modelOverride = process.env.OPENAI_MODEL?.trim() || undefined
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     baseUrlOverride ?? getRouteDefaultBaseUrl('nearai')
   process.env.OPENAI_MODEL =
@@ -300,7 +300,7 @@ function isFireworksModelName(value: string | undefined): boolean {
 
 /**
  * Applies Fireworks AI environment defaults by setting the OpenAI shim env
- * vars (`CLAUDE_CODE_USE_OPENAI`, `OPENAI_BASE_URL`, `OPENAI_MODEL`,
+ * vars (`NYXCLAUDE_USE_OPENAI`, `OPENAI_BASE_URL`, `OPENAI_MODEL`,
  * `OPENAI_API_KEY`) and clearing stale OpenAI shim options.
  */
 function applyFireworksEnvOnlyDefaults(): void {
@@ -308,7 +308,7 @@ function applyFireworksEnvOnlyDefaults(): void {
   const hasFireworksBaseOverride = baseUrlOverride !== undefined
   const modelOverride = process.env.OPENAI_MODEL?.trim() || undefined
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     baseUrlOverride ?? getRouteDefaultBaseUrl('fireworks')
   process.env.OPENAI_MODEL =
@@ -334,7 +334,7 @@ function applyLongcatEnvOnlyDefaults(): void {
   const hasLongcatBaseOverride = baseUrlOverride !== undefined
   const modelOverride = process.env.OPENAI_MODEL?.trim() || undefined
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     baseUrlOverride ?? getRouteDefaultBaseUrl('longcat')
   process.env.OPENAI_MODEL =
@@ -357,7 +357,7 @@ function applyAimlapiEnvOnlyDefaults(): void {
     undefined
   const modelOverride = process.env.OPENAI_MODEL?.trim() || undefined
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL =
     baseUrlOverride ?? getRouteDefaultBaseUrl('aimlapi')
   process.env.OPENAI_MODEL = modelOverride ?? getRouteDefaultModel('aimlapi')
@@ -402,7 +402,7 @@ export async function getAnthropicClient({
       baseUrl: effortBaseUrl,
       model: effortModel,
       preferBaseUrlRoute:
-        providerOverride !== undefined || isEnvTruthy(process.env.CLAUDE_CODE_USE_OPENAI),
+        providerOverride !== undefined || isEnvTruthy(process.env.NYXCLAUDE_USE_OPENAI),
     })
     : undefined
   const effortShimConfig = effortRuntimeContext?.openaiShimConfig
@@ -459,8 +459,8 @@ export async function getAnthropicClient({
             ? 'max'
           : standardEffortToOpenAI(appliedEffortLevel))
       : undefined
-  const containerId = process.env.CLAUDE_CODE_CONTAINER_ID
-  const remoteSessionId = process.env.CLAUDE_CODE_REMOTE_SESSION_ID
+  const containerId = process.env.NYXCLAUDE_CONTAINER_ID
+  const remoteSessionId = process.env.NYXCLAUDE_REMOTE_SESSION_ID
   const clientApp = process.env.CLAUDE_AGENT_SDK_CLIENT_APP
   const customHeaders = getCustomHeaders()
   const defaultHeaders: { [key: string]: string } = {
@@ -478,12 +478,12 @@ export async function getAnthropicClient({
 
   // Log API client configuration for HFI debugging
   logForDebugging(
-    `[API:request] Creating client, ANTHROPIC_CUSTOM_HEADERS present: ${!!process.env.ANTHROPIC_CUSTOM_HEADERS}, has Authorization header: ${!!customHeaders['Authorization']}`,
+    `[API:request] Creating client, NYXCLAUDE_CUSTOM_HEADERS present: ${!!process.env.NYXCLAUDE_CUSTOM_HEADERS}, has Authorization header: ${!!customHeaders['Authorization']}`,
   )
 
   // Add additional protection header if enabled via env var
   const additionalProtectionEnabled = isEnvTruthy(
-    process.env.CLAUDE_CODE_ADDITIONAL_PROTECTION,
+    process.env.NYXCLAUDE_ADDITIONAL_PROTECTION,
   )
   if (additionalProtectionEnabled) {
     defaultHeaders['x-anthropic-additional-protection'] = 'true'
@@ -538,7 +538,7 @@ export async function getAnthropicClient({
   const useMiniMaxNativeProvider =
     useMiniMaxEnvOnlyProvider ||
     (getAPIProvider() === 'minimax' &&
-      !isEnvTruthy(process.env.CLAUDE_CODE_USE_OPENAI))
+      !isEnvTruthy(process.env.NYXCLAUDE_USE_OPENAI))
 
   if (shouldUseFirstPartyAuth) {
     logForDebugging('[API:auth] OAuth token check starting')
@@ -546,8 +546,8 @@ export async function getAnthropicClient({
     logForDebugging('[API:auth] OAuth token check complete')
   }
 
-  const isClaudeAiSubscriber =
-    shouldUseFirstPartyAuth && isClaudeAISubscriber()
+  const isSubscriberUser =
+    shouldUseFirstPartyAuth && isSubscriber()
   const anthropicAuthToken = process.env.ANTHROPIC_AUTH_TOKEN?.trim()
   const usesCustomAnthropicAuthToken = shouldUseCustomAnthropicBearerAuth({
     providerOverride,
@@ -557,7 +557,7 @@ export async function getAnthropicClient({
   })
 
   if (
-    (shouldUseFirstPartyAuth && !isClaudeAiSubscriber) ||
+    (shouldUseFirstPartyAuth && !isSubscriberUser) ||
     usesCustomAnthropicAuthToken
   ) {
     await configureApiKeyHeaders(
@@ -609,7 +609,7 @@ export async function getAnthropicClient({
   // GitHub provider in native Anthropic API mode: send requests in Anthropic
   // format so cache_control blocks are honoured and prompt caching works.
   // Requires the GitHub endpoint (OPENAI_BASE_URL) to support Anthropic's
-  // messages API — set CLAUDE_CODE_GITHUB_ANTHROPIC_API=1 to opt in.
+  // messages API — set NYXCLAUDE_GITHUB_ANTHROPIC_API=1 to opt in.
   if (isGithubNativeAnthropicMode(model)) {
     const githubBaseUrl =
       process.env.OPENAI_BASE_URL?.replace(/\/$/, '') ??
@@ -631,10 +631,10 @@ export async function getAnthropicClient({
     useNearaiEnvOnlyProvider ||
     useFireworksEnvOnlyProvider ||
     useAimlapiEnvOnlyProvider ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_OPENAI) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_GEMINI) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_MISTRAL)
+    isEnvTruthy(process.env.NYXCLAUDE_USE_OPENAI) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_GITHUB) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_GEMINI) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_MISTRAL)
   ) {
     const { createOpenAIShimClient } = await import('./openaiShim.js')
     return createOpenAIShimClient({
@@ -647,7 +647,7 @@ export async function getAnthropicClient({
 
   // Determine authentication method based on available tokens
   const clientConfig: ConstructorParameters<typeof Anthropic>[0] = {
-    apiKey: isClaudeAiSubscriber || usesCustomAnthropicAuthToken
+    apiKey: isSubscriberUser || usesCustomAnthropicAuthToken
       ? null
       : useMiniMaxNativeProvider
         ? process.env.MINIMAX_API_KEY || process.env.ANTHROPIC_API_KEY
@@ -657,8 +657,8 @@ export async function getAnthropicClient({
             : getAnthropicApiKey()),
     // Pass an explicit null for non-Bearer routes so the SDK cannot fall back
     // to ANTHROPIC_AUTH_TOKEN from its own environment lookup.
-    authToken: isClaudeAiSubscriber
-      ? getClaudeAIOAuthTokens()?.accessToken
+    authToken: isSubscriberUser
+      ? getRemoteOAuthTokens()?.accessToken
       : usesCustomAnthropicAuthToken
         ? anthropicAuthToken
         : null,
@@ -696,7 +696,7 @@ function removeManagedAnthropicAuthHeaders(headers: Record<string, string>): voi
       delete headers[name]
     }
   }
-  // The Anthropic SDK also reads ANTHROPIC_CUSTOM_HEADERS. Null sentinels clear
+  // The Anthropic SDK also reads NYXCLAUDE_CUSTOM_HEADERS. Null sentinels clear
   // those env-parsed managed auth headers before the supported credential wins.
   headers.Authorization = null as unknown as string
   headers['X-Api-Key'] = null as unknown as string
@@ -705,7 +705,7 @@ function removeManagedAnthropicAuthHeaders(headers: Record<string, string>): voi
 
 function getCustomHeaders(): Record<string, string> {
   const customHeaders: Record<string, string> = {}
-  const customHeadersEnv = process.env.ANTHROPIC_CUSTOM_HEADERS
+  const customHeadersEnv = process.env.NYXCLAUDE_CUSTOM_HEADERS
 
   if (!customHeadersEnv) return customHeaders
 

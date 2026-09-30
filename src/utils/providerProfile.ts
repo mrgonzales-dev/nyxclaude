@@ -45,7 +45,7 @@ export {
   sanitizeApiKey,
   sanitizeProviderConfigValue,
 } from './providerSecrets.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
+import { getNyxclaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
 
 export const PROFILE_FILE_NAME = '.nyxclaude-profile.json'
 export const DEFAULT_GEMINI_BASE_URL =
@@ -54,21 +54,21 @@ export const DEFAULT_GEMINI_MODEL = 'gemini-3-flash-preview'
 export const DEFAULT_MISTRAL_BASE_URL = 'https://api.mistral.ai/v1'
 export const DEFAULT_MISTRAL_MODEL = 'mistral-vibe-cli-latest'
 export const DEFAULT_STARTUP_PROVIDER_ENV_VAR =
-  'CLAUDE_CODE_DEFAULT_STARTUP_PROVIDER'
+  'NYXCLAUDE_DEFAULT_STARTUP_PROVIDER'
 
 const PROFILE_ENV_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
   'ANTHROPIC_BASE_URL',
   'ANTHROPIC_MODEL',
   'ANTHROPIC_API_KEY',
   'ANTHROPIC_AUTH_TOKEN',
-  'ANTHROPIC_CUSTOM_HEADERS',
+  'NYXCLAUDE_CUSTOM_HEADERS',
   'ANTHROPIC_BEDROCK_BASE_URL',
   'ANTHROPIC_VERTEX_BASE_URL',
   'OPENAI_BASE_URL',
@@ -83,7 +83,7 @@ const PROFILE_ENV_KEYS = [
   'OPENAI_API_KEY',
   'GITHUB_COPILOT_KEY',
   'GITHUB_ENTERPRISE_URL',
-  'CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS',
+  'NYXCLAUDE_OPENAI_CONTEXT_WINDOWS',
   'CODEX_API_KEY',
   'CODEX_CREDENTIAL_SOURCE',
   'CHATGPT_ACCOUNT_ID',
@@ -117,7 +117,7 @@ const PROFILE_ENV_KEYS = [
   'LONGCAT_API_KEY',
   'CLINE_API_KEY',
   'OPENCODE_API_KEY',
-  'CLAUDE_CODE_PROVIDER_ROUTE_ID',
+  'NYXCLAUDE_PROVIDER_ROUTE_ID',
   'CLOUDFLARE_API_TOKEN',
   DEFAULT_STARTUP_PROVIDER_ENV_VAR,
 ] as const
@@ -155,7 +155,7 @@ export type ProfileEnv = {
   ANTHROPIC_MODEL?: string
   ANTHROPIC_API_KEY?: string
   ANTHROPIC_AUTH_TOKEN?: string
-  ANTHROPIC_CUSTOM_HEADERS?: string
+  NYXCLAUDE_CUSTOM_HEADERS?: string
   ANTHROPIC_BEDROCK_BASE_URL?: string
   ANTHROPIC_VERTEX_BASE_URL?: string
   OPENAI_BASE_URL?: string
@@ -203,8 +203,8 @@ export type ProfileEnv = {
   LONGCAT_API_KEY?: string
   OPENCODE_API_KEY?: string
   CLOUDFLARE_API_TOKEN?: string
-  CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS?: string
-  CLAUDE_CODE_PROVIDER_ROUTE_ID?: string
+  NYXCLAUDE_OPENAI_CONTEXT_WINDOWS?: string
+  NYXCLAUDE_PROVIDER_ROUTE_ID?: string
 }
 
 export type ProfileFile = {
@@ -225,7 +225,7 @@ export type ProfileFileLocation = {
 }
 
 export function getDefaultProfileFilePath(configDir?: string): string {
-  return join(configDir ?? getClaudeConfigHomeDir(), PROFILE_FILE_NAME)
+  return join(configDir ?? getNyxclaudeConfigHomeDir(), PROFILE_FILE_NAME)
 }
 
 function resolveLegacyProfileFilePath(cwd = process.cwd()): string {
@@ -888,7 +888,7 @@ export function buildOpenAIProfileEnv(options: {
     ...(key ? { [keyEnvVar]: key } : {}),
     ...(options.maxContextLength
       ? {
-          CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS: JSON.stringify({
+          NYXCLAUDE_OPENAI_CONTEXT_WINDOWS: JSON.stringify({
             [normalizedModel]: options.maxContextLength,
           }),
         }
@@ -1047,27 +1047,27 @@ function buildXaiProfileEnv(options: {
 function getCompatibilityProfileFlag(
   compatibilityMode: CompatibilityProfileMode,
 ):
-  | 'CLAUDE_CODE_USE_OPENAI'
-  | 'CLAUDE_CODE_USE_GITHUB'
-  | 'CLAUDE_CODE_USE_GEMINI'
-  | 'CLAUDE_CODE_USE_MISTRAL'
-  | 'CLAUDE_CODE_USE_BEDROCK'
-  | 'CLAUDE_CODE_USE_VERTEX'
+  | 'NYXCLAUDE_USE_OPENAI'
+  | 'NYXCLAUDE_USE_GITHUB'
+  | 'NYXCLAUDE_USE_GEMINI'
+  | 'NYXCLAUDE_USE_MISTRAL'
+  | 'NYXCLAUDE_USE_BEDROCK'
+  | 'NYXCLAUDE_USE_VERTEX'
   | undefined {
   switch (compatibilityMode) {
     case 'openai':
-      return 'CLAUDE_CODE_USE_OPENAI'
+      return 'NYXCLAUDE_USE_OPENAI'
     case 'github':
     case 'github-enterprise':
-      return 'CLAUDE_CODE_USE_GITHUB'
+      return 'NYXCLAUDE_USE_GITHUB'
     case 'gemini':
-      return 'CLAUDE_CODE_USE_GEMINI'
+      return 'NYXCLAUDE_USE_GEMINI'
     case 'mistral':
-      return 'CLAUDE_CODE_USE_MISTRAL'
+      return 'NYXCLAUDE_USE_MISTRAL'
     case 'bedrock':
-      return 'CLAUDE_CODE_USE_BEDROCK'
+      return 'NYXCLAUDE_USE_BEDROCK'
     case 'vertex':
-      return 'CLAUDE_CODE_USE_VERTEX'
+      return 'NYXCLAUDE_USE_VERTEX'
     default:
       return undefined
   }
@@ -1239,23 +1239,23 @@ export function hasExplicitProviderSelection(
   processEnv: NodeJS.ProcessEnv = process.env,
 ): boolean {
   // If env was already applied from a provider profile, preserve it.
-  if (processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED === '1') {
+  if (processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED === '1') {
     return true
   }
 
   return (
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_OPENAI) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_GEMINI) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_MISTRAL) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_BEDROCK) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_VERTEX) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_FOUNDRY)
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_OPENAI) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_GITHUB) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_GEMINI) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_MISTRAL) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_BEDROCK) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_VERTEX) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_FOUNDRY)
   )
 }
 
 /**
- * Returns true when no provider is configured at all — no CLAUDE_CODE_USE_*
+ * Returns true when no provider is configured at all — no NYXCLAUDE_USE_*
  * flags, no provider API keys (OPENAI_API_KEY, GEMINI_API_KEY, etc.), no
  * Anthropic credentials, and no profile-applied env. The CLI should prompt
  * the user to run /provider instead of silently falling back to Anthropic
@@ -1278,12 +1278,12 @@ function hasExplicitNonOpenAIProviderSelection(
   processEnv: NodeJS.ProcessEnv = process.env,
 ): boolean {
   return (
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_GEMINI) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_MISTRAL) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_BEDROCK) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_VERTEX) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_FOUNDRY)
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_GITHUB) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_GEMINI) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_MISTRAL) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_BEDROCK) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_VERTEX) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_FOUNDRY)
   )
 }
 
@@ -1291,19 +1291,19 @@ function hasExplicitOpenAICompatibleOptOut(
   processEnv: NodeJS.ProcessEnv = process.env,
 ): boolean {
   return (
-    processEnv.CLAUDE_CODE_USE_OPENAI !== undefined &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_OPENAI)
+    processEnv.NYXCLAUDE_USE_OPENAI !== undefined &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_OPENAI)
   )
 }
 
 function hasConcreteProviderSelection(
   processEnv: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  if (processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED === '1') {
+  if (processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED === '1') {
     return true
   }
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_OPENAI)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_OPENAI)) {
     return (
       sanitizeProviderConfigValue(processEnv.OPENAI_BASE_URL) !== undefined ||
       sanitizeProviderConfigValue(processEnv.OPENAI_API_BASE) !== undefined ||
@@ -1313,7 +1313,7 @@ function hasConcreteProviderSelection(
     )
   }
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GEMINI)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_GEMINI)) {
     return (
       sanitizeProviderConfigValue(processEnv.GEMINI_BASE_URL) !== undefined ||
       normalizeProfileModel(
@@ -1324,7 +1324,7 @@ function hasConcreteProviderSelection(
     )
   }
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_MISTRAL)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_MISTRAL)) {
     return (
       sanitizeProviderConfigValue(processEnv.MISTRAL_BASE_URL) !== undefined ||
       normalizeProfileModel(
@@ -1334,7 +1334,7 @@ function hasConcreteProviderSelection(
     )
   }
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_GITHUB)) {
     return (
       sanitizeApiKey(processEnv.GITHUB_TOKEN) !== undefined ||
       sanitizeApiKey(processEnv.GH_TOKEN) !== undefined ||
@@ -1345,15 +1345,15 @@ function hasConcreteProviderSelection(
   }
 
   if (
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_BEDROCK) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_VERTEX) ||
-    isEnvTruthy(processEnv.CLAUDE_CODE_USE_FOUNDRY)
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_BEDROCK) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_VERTEX) ||
+    isEnvTruthy(processEnv.NYXCLAUDE_USE_FOUNDRY)
   ) {
     return true
   }
 
   // Anthropic-native proxies are selected by their own endpoint, model, and
-  // Bearer token rather than a CLAUDE_CODE_USE_* flag. Treat that complete
+  // Bearer token rather than a NYXCLAUDE_USE_* flag. Treat that complete
   // contract as explicit so fresh-install fallback cannot replace it with the
   // default OpenAI-compatible provider.
   if (
@@ -1367,7 +1367,7 @@ function hasConcreteProviderSelection(
     return true
   }
 
-  // Env-only provider setups — no CLAUDE_CODE_USE_* flag needed
+  // Env-only provider setups — no NYXCLAUDE_USE_* flag needed
   return (
     sanitizeApiKey(processEnv.FIREWORKS_API_KEY) !== undefined ||
     sanitizeApiKey(processEnv.NEARAI_API_KEY) !== undefined ||
@@ -1478,8 +1478,8 @@ export async function buildLaunchEnv(options: {
   const persistedOpenAIAuthHeaderValue = sanitizeApiKey(
     persistedEnv.OPENAI_AUTH_HEADER_VALUE,
   )
-  const persistedCustomHeaders = persistedEnv.ANTHROPIC_CUSTOM_HEADERS
-  const shellCustomHeaders = processEnv.ANTHROPIC_CUSTOM_HEADERS
+  const persistedCustomHeaders = persistedEnv.NYXCLAUDE_CUSTOM_HEADERS
+  const shellCustomHeaders = processEnv.NYXCLAUDE_CUSTOM_HEADERS
   const shellOpenAIModel = normalizeProfileModel(
     sanitizeProviderConfigValue(
       processEnv.OPENAI_MODEL,
@@ -1523,12 +1523,12 @@ export async function buildLaunchEnv(options: {
 
   if (hasExplicitProviderSelection(processEnv)) {
     const explicitProfileOverrides: Array<[string, ProviderProfile]> = [
-      ['CLAUDE_CODE_USE_GITHUB', 'github'],
-      ['CLAUDE_CODE_USE_BEDROCK', 'bedrock'],
-      ['CLAUDE_CODE_USE_VERTEX', 'vertex'],
-      ['CLAUDE_CODE_USE_MISTRAL', 'mistral'],
-      ['CLAUDE_CODE_USE_GEMINI', 'gemini'],
-      ['CLAUDE_CODE_USE_OPENAI', 'openai'],
+      ['NYXCLAUDE_USE_GITHUB', 'github'],
+      ['NYXCLAUDE_USE_BEDROCK', 'bedrock'],
+      ['NYXCLAUDE_USE_VERTEX', 'vertex'],
+      ['NYXCLAUDE_USE_MISTRAL', 'mistral'],
+      ['NYXCLAUDE_USE_GEMINI', 'gemini'],
+      ['NYXCLAUDE_USE_OPENAI', 'openai'],
     ]
 
     for (const [envKey, provider] of explicitProfileOverrides) {
@@ -1605,7 +1605,7 @@ export async function buildLaunchEnv(options: {
           : {}),
         ...(shellCustomHeaders || persistedCustomHeaders
           ? {
-              ANTHROPIC_CUSTOM_HEADERS:
+              NYXCLAUDE_CUSTOM_HEADERS:
                 shellCustomHeaders || persistedCustomHeaders,
             }
           : {}),
@@ -1776,7 +1776,7 @@ export async function buildLaunchEnv(options: {
     })
     const customHeaders = shellCustomHeaders || persistedCustomHeaders
     if (customHeaders) {
-      env.ANTHROPIC_CUSTOM_HEADERS = customHeaders
+      env.NYXCLAUDE_CUSTOM_HEADERS = customHeaders
     }
     // Preserve the OAuth credential-source marker so startup validation
     // accepts an xAI OAuth profile (no XAI_API_KEY needed; openaiShim
@@ -1999,7 +1999,7 @@ export async function buildLaunchEnv(options: {
   // OPENAI_API_KEY, so dropping them would leave the relaunched profile
   // unauthenticated.
   const resolvedOpenAIRouteId = resolveRouteIdFromBaseUrl(env.OPENAI_BASE_URL)
-  const persistedOpenAIRouteId = persistedEnv.CLAUDE_CODE_PROVIDER_ROUTE_ID?.trim()
+  const persistedOpenAIRouteId = persistedEnv.NYXCLAUDE_PROVIDER_ROUTE_ID?.trim()
   // Compare on endpoint equivalence, not the raw string: a shell
   // `OPENAI_BASE_URL` that differs from the saved one only by a trailing slash
   // (or scheme/host casing) still names the same endpoint. A literal comparison
@@ -2016,11 +2016,11 @@ export async function buildLaunchEnv(options: {
     resolvedOpenAIRouteId ||
     (shouldUsePersistedOpenAIRouteId ? persistedOpenAIRouteId : undefined)
   if (resolvedOpenAIRouteId && resolvedOpenAIRouteId !== 'openai') {
-    env.CLAUDE_CODE_PROVIDER_ROUTE_ID = resolvedOpenAIRouteId
+    env.NYXCLAUDE_PROVIDER_ROUTE_ID = resolvedOpenAIRouteId
   } else if (shouldUsePersistedOpenAIRouteId && persistedOpenAIRouteId) {
-    env.CLAUDE_CODE_PROVIDER_ROUTE_ID = persistedOpenAIRouteId
+    env.NYXCLAUDE_PROVIDER_ROUTE_ID = persistedOpenAIRouteId
   } else {
-    delete env.CLAUDE_CODE_PROVIDER_ROUTE_ID
+    delete env.NYXCLAUDE_PROVIDER_ROUTE_ID
   }
   // A keyless retained aimlapi profile on a non-canonical (proxy) base URL must
   // not receive the ambient canonical credential via the generic OPENAI_API_KEY
@@ -2118,7 +2118,7 @@ export async function buildLaunchEnv(options: {
       env.NVIDIA_NIM = nvidiaNimFlag
     }
   }
-  // ANTHROPIC_CUSTOM_HEADERS is a third credential channel: client.ts parses it
+  // NYXCLAUDE_CUSTOM_HEADERS is a third credential channel: client.ts parses it
   // and merges the result into the defaultHeaders it hands to the OpenAI shim
   // client, and its own filter only drops `authorization`, `x-api-key` and
   // `api-key` — a custom-named header such as `X-Proxy-Auth: <secret>` survives
@@ -2129,17 +2129,17 @@ export async function buildLaunchEnv(options: {
     ? persistedCustomHeaders
     : shellCustomHeaders || persistedCustomHeaders
   if (customHeaders) {
-    env.ANTHROPIC_CUSTOM_HEADERS = customHeaders
+    env.NYXCLAUDE_CUSTOM_HEADERS = customHeaders
   } else {
-    delete env.ANTHROPIC_CUSTOM_HEADERS
+    delete env.NYXCLAUDE_CUSTOM_HEADERS
   }
   const contextWindows =
-    processEnv.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS ||
+    processEnv.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS ||
     (usePersistedOpenAIConfig
-      ? persistedEnv.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS
+      ? persistedEnv.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS
       : undefined)
   if (contextWindows) {
-    env.CLAUDE_CODE_OPENAI_CONTEXT_WINDOWS = contextWindows
+    env.NYXCLAUDE_OPENAI_CONTEXT_WINDOWS = contextWindows
   }
 
   return buildCompatibilityProcessEnv({
@@ -2161,13 +2161,13 @@ export async function buildStartupEnvFromProfile(options?: {
   const persisted =
     options && 'persisted' in options ? options.persisted : loadProfileFile()
 
-  const profileManagedEnv = processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED === '1'
+  const profileManagedEnv = processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED === '1'
 
   // The single-profile file in the user config directory is a
   // first-run / fallback mechanism. The newer plural provider-profile
   // system (`/provider` presets + activeProviderProfileId in config) is
   // applied earlier in the bootstrap via applyActiveProviderProfileFromConfig
-  // and signals completion with CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED=1.
+  // and signals completion with NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED=1.
   //
   // If the plural system has already set env, trust it — do NOT overlay the
   // legacy file. addProviderProfile() does not sync the legacy file, so a
@@ -2182,7 +2182,7 @@ export async function buildStartupEnvFromProfile(options?: {
   const concreteOpenAIRouteId = getConcreteOpenAICompatibleEnvRouteId(processEnv)
   if (
     concreteOpenAIRouteId === 'nvidia-nim' &&
-    !isEnvTruthy(processEnv.CLAUDE_CODE_USE_OPENAI) &&
+    !isEnvTruthy(processEnv.NYXCLAUDE_USE_OPENAI) &&
     !hasExplicitOpenAICompatibleOptOut(processEnv) &&
     !hasExplicitNonOpenAIProviderSelection(processEnv)
   ) {
@@ -2203,13 +2203,13 @@ export async function buildStartupEnvFromProfile(options?: {
     return processEnv
   }
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_GITHUB)) {
     return processEnv
   }
 
   if (!persisted) {
     // No saved profile. If the user explicitly disabled the OpenAI-compatible
-    // provider (CLAUDE_CODE_USE_OPENAI=0), honor that opt-out instead of
+    // provider (NYXCLAUDE_USE_OPENAI=0), honor that opt-out instead of
     // injecting the default Opengateway profile — otherwise the fallback
     // re-enables OpenAI and the startup validator reports a spurious missing
     // OPENAI_API_KEY warning (#1245).
@@ -2310,7 +2310,7 @@ export async function applySavedProfileToCurrentSession(options: {
   const processEnv = options.processEnv ?? process.env
   const hasExplicitSelection = hasExplicitProviderSelection(processEnv)
   const profileManagedEnv =
-    processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED === '1'
+    processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED === '1'
 
   if (options.profileFile.profile === 'codex' && hasExplicitSelection) {
     const isCodexOAuthProfile =
@@ -2331,16 +2331,16 @@ export async function applySavedProfileToCurrentSession(options: {
       getOllamaChatBaseUrl,
       readGeminiAccessToken,
     })
-    delete explicitEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-    delete explicitEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+    delete explicitEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+    delete explicitEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
     const validationEnv = isCodexOAuthProfile
       ? { ...explicitEnv, CODEX_API_KEY: 'codex-oauth-token-for-validation' }
       : explicitEnv
     const validationError = await getProviderValidationError(validationEnv)
 
     if (profileManagedEnv) {
-      delete processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-      delete processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+      delete processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+      delete processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
       applyProfileEnvToProcessEnv(processEnv, explicitEnv)
       return validationError
     }
@@ -2356,15 +2356,15 @@ export async function applySavedProfileToCurrentSession(options: {
     options.profileFile.profile === 'codex' &&
     options.profileFile.env.CODEX_CREDENTIAL_SOURCE === 'oauth'
 
-  delete baseEnv.CLAUDE_CODE_USE_OPENAI
-  delete baseEnv.CLAUDE_CODE_USE_GITHUB
-  delete baseEnv.CLAUDE_CODE_USE_GEMINI
-  delete baseEnv.CLAUDE_CODE_USE_MISTRAL
-  delete baseEnv.CLAUDE_CODE_USE_BEDROCK
-  delete baseEnv.CLAUDE_CODE_USE_VERTEX
-  delete baseEnv.CLAUDE_CODE_USE_FOUNDRY
-  delete baseEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete baseEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete baseEnv.NYXCLAUDE_USE_OPENAI
+  delete baseEnv.NYXCLAUDE_USE_GITHUB
+  delete baseEnv.NYXCLAUDE_USE_GEMINI
+  delete baseEnv.NYXCLAUDE_USE_MISTRAL
+  delete baseEnv.NYXCLAUDE_USE_BEDROCK
+  delete baseEnv.NYXCLAUDE_USE_VERTEX
+  delete baseEnv.NYXCLAUDE_USE_FOUNDRY
+  delete baseEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete baseEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
 
   if (isCodexOAuthProfile) {
     delete baseEnv.CODEX_API_KEY
@@ -2388,8 +2388,8 @@ export async function applySavedProfileToCurrentSession(options: {
     return validationError
   }
 
-  delete processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete processEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete processEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
   applyProfileEnvToProcessEnv(processEnv, nextEnv)
   return null
 }

@@ -2,7 +2,7 @@
 // Registry implementation: stores descriptors, provides lookup, and validates integrity.
 
 import type {
-  AnthropicProxyDescriptor,
+  ProviderProxyDescriptor,
   BrandDescriptor,
   GatewayDescriptor,
   ModelCatalogEntry,
@@ -14,7 +14,7 @@ import type {
 const _brands = new Map<string, BrandDescriptor>()
 const _vendors = new Map<string, VendorDescriptor>()
 const _gateways = new Map<string, GatewayDescriptor>()
-const _anthropicProxies = new Map<string, AnthropicProxyDescriptor>()
+const _providerProxies = new Map<string, ProviderProxyDescriptor>()
 const _models = new Map<string, ModelDescriptor>()
 
 // ---------------------------------------------------------------------------
@@ -77,11 +77,11 @@ export function registerGateway(d: GatewayDescriptor): void {
   _gateways.set(d.id, d)
 }
 
-export function registerAnthropicProxy(d: AnthropicProxyDescriptor): void {
-  if (_anthropicProxies.has(d.id)) {
+export function registerAnthropicProxy(d: ProviderProxyDescriptor): void {
+  if (_providerProxies.has(d.id)) {
     throw new Error(`Duplicate anthropic proxy id: ${d.id}`)
   }
-  _anthropicProxies.set(d.id, d)
+  _providerProxies.set(d.id, d)
 }
 
 export function registerModel(d: ModelDescriptor): void {
@@ -110,9 +110,9 @@ export function getGateway(id: string): GatewayDescriptor | undefined {
   return _gateways.get(id)
 }
 
-export function getAnthropicProxy(id: string): AnthropicProxyDescriptor | undefined {
+export function getAnthropicProxy(id: string): ProviderProxyDescriptor | undefined {
   ensureLoaded()
-  return _anthropicProxies.get(id)
+  return _providerProxies.get(id)
 }
 
 export function getModel(id: string): ModelDescriptor | undefined {
@@ -139,9 +139,9 @@ export function getAllGateways(): GatewayDescriptor[] {
   return Array.from(_gateways.values())
 }
 
-export function getAllAnthropicProxies(): AnthropicProxyDescriptor[] {
+export function getAllAnthropicProxies(): ProviderProxyDescriptor[] {
   ensureLoaded()
-  return Array.from(_anthropicProxies.values())
+  return Array.from(_providerProxies.values())
 }
 
 export function getAllModels(): ModelDescriptor[] {
@@ -224,7 +224,7 @@ export function validateIntegrationRegistry(): RegistryValidationResult {
   const allGateways = getAllGateways()
   const allAnthropicProxies = getAllAnthropicProxies()
   const allRoutes: Array<
-    VendorDescriptor | GatewayDescriptor | AnthropicProxyDescriptor
+    VendorDescriptor | GatewayDescriptor | ProviderProxyDescriptor
   > = [...allVendors, ...allGateways, ...allAnthropicProxies]
 
   // Helper: check duplicates within a map
@@ -449,6 +449,6 @@ export function _clearRegistryForTesting(): void {
   _brands.clear()
   _vendors.clear()
   _gateways.clear()
-  _anthropicProxies.clear()
+  _providerProxies.clear()
   _models.clear()
 }

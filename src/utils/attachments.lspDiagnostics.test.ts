@@ -48,8 +48,8 @@ const { getAttachmentMessages, __test } = await import(
   `./attachments.ts?test=${Date.now()}-${Math.random()}`
 )
 
-const SAVED_SIMPLE = process.env.CLAUDE_CODE_SIMPLE
-const SAVED_DISABLE_ATTACHMENTS = process.env.CLAUDE_CODE_DISABLE_ATTACHMENTS
+const SAVED_SIMPLE = process.env.NYXCLAUDE_SIMPLE
+const SAVED_DISABLE_ATTACHMENTS = process.env.NYXCLAUDE_DISABLE_ATTACHMENTS
 
 type DiagnosticsAttachment = Extract<Attachment, { type: 'diagnostics' }>
 
@@ -121,7 +121,6 @@ async function collectLSPDiagnosticAttachments(): Promise<
   for await (const message of getAttachmentMessages(
     null,
     makeToolUseContext(),
-    null,
     [],
     [],
     'compact',
@@ -137,8 +136,8 @@ async function collectLSPDiagnosticAttachments(): Promise<
 
 describe('LSP diagnostic attachment filtering', () => {
   beforeEach(() => {
-    delete process.env.CLAUDE_CODE_SIMPLE
-    delete process.env.CLAUDE_CODE_DISABLE_ATTACHMENTS
+    delete process.env.NYXCLAUDE_SIMPLE
+    delete process.env.NYXCLAUDE_DISABLE_ATTACHMENTS
     diagnosticSets = []
     nextDeliveryDelay = null
     checkForLSPDiagnosticsOptions.length = 0
@@ -151,14 +150,14 @@ describe('LSP diagnostic attachment filtering', () => {
 
   afterEach(() => {
     if (SAVED_SIMPLE === undefined) {
-      delete process.env.CLAUDE_CODE_SIMPLE
+      delete process.env.NYXCLAUDE_SIMPLE
     } else {
-      process.env.CLAUDE_CODE_SIMPLE = SAVED_SIMPLE
+      process.env.NYXCLAUDE_SIMPLE = SAVED_SIMPLE
     }
     if (SAVED_DISABLE_ATTACHMENTS === undefined) {
-      delete process.env.CLAUDE_CODE_DISABLE_ATTACHMENTS
+      delete process.env.NYXCLAUDE_DISABLE_ATTACHMENTS
     } else {
-      process.env.CLAUDE_CODE_DISABLE_ATTACHMENTS = SAVED_DISABLE_ATTACHMENTS
+      process.env.NYXCLAUDE_DISABLE_ATTACHMENTS = SAVED_DISABLE_ATTACHMENTS
     }
   })
 

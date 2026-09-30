@@ -19,14 +19,14 @@
  * effort.
  */
 
-import type { APIError } from '@anthropic-ai/sdk'
+import type { APIError } from 'src/types/api.js'
 import type {
   BetaContentBlock,
   BetaRawMessageStreamEvent,
   BetaToolUseBlock,
   BetaUsage,
-} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+} from 'src/types/api.js'
+import type { ContentBlockParam } from 'src/types/api.js'
 import type { UUID } from 'crypto'
 import type { Progress } from '../Tool.js'
 import type { Attachment } from '../utils/attachments.js'

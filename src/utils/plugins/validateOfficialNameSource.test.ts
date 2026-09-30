@@ -4,7 +4,7 @@ import {
   validateOfficialNameSource,
 } from './schemas.js'
 
-const RESERVED = 'claude-code-marketplace'
+const RESERVED = 'nyxclaude-marketplace'
 
 // Regression: the git-URL branch validated official ownership with a substring
 // check (`url.includes('github.com/anthropics/')`), which also matches hostile

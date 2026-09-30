@@ -1,23 +1,23 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { parseUserSpecifiedModel } from './model.js'
 
-// Regression: when 1M context is disabled (CLAUDE_CODE_DISABLE_1M_CONTEXT, used
+// Regression: when 1M context is disabled (NYXCLAUDE_DISABLE_1M_CONTEXT, used
 // by C4E/HIPAA admins), `has1mContext` returns false. The parser gated the
 // stripping of the `[1m]` tag on that flag, so an aliased request like
 // `sonnet[1m]` kept the tag attached, never matched the `sonnet` alias, and
 // returned the literal, unservable string `sonnet[1m]`. The tag must be stripped
 // for matching regardless; only the re-appended suffix depends on 1M being on.
 describe('parseUserSpecifiedModel — [1m] tag when 1M context is disabled', () => {
-  const original = process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+  const original = process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
 
   beforeEach(() => {
-    process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT = '1'
+    process.env.NYXCLAUDE_DISABLE_1M_CONTEXT = '1'
   })
   afterEach(() => {
     if (original === undefined) {
-      delete process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+      delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
     } else {
-      process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT = original
+      process.env.NYXCLAUDE_DISABLE_1M_CONTEXT = original
     }
   })
 
@@ -65,16 +65,16 @@ describe('parseUserSpecifiedModel — [1m] tag when 1M context is disabled', () 
 
 // Guard the opposite direction: with 1M enabled (default), the tag is preserved.
 describe('parseUserSpecifiedModel — [1m] tag when 1M context is enabled', () => {
-  const original = process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+  const original = process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
 
   beforeEach(() => {
-    delete process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+    delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
   })
   afterEach(() => {
     if (original === undefined) {
-      delete process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+      delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
     } else {
-      process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT = original
+      process.env.NYXCLAUDE_DISABLE_1M_CONTEXT = original
     }
   })
 
@@ -106,7 +106,7 @@ describe('parseUserSpecifiedModel — [1m] tag when 1M context is enabled', () =
 // strip that too, and the enabled path must honor it without duplicating it.
 describe('parseUserSpecifiedModel — [1m] on custom default env overrides', () => {
   const KEYS = [
-    'CLAUDE_CODE_DISABLE_1M_CONTEXT',
+    'NYXCLAUDE_DISABLE_1M_CONTEXT',
     'ANTHROPIC_DEFAULT_SONNET_MODEL',
     'ANTHROPIC_DEFAULT_OPUS_MODEL',
   ] as const
@@ -125,7 +125,7 @@ describe('parseUserSpecifiedModel — [1m] on custom default env overrides', () 
   })
 
   test('disabled: alias drops the baked [1m] from the resolved default', () => {
-    process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT = '1'
+    process.env.NYXCLAUDE_DISABLE_1M_CONTEXT = '1'
     // Casing of the custom deployment id is preserved; only the tag is dropped.
     expect(parseUserSpecifiedModel('sonnet[1m]')).toBe('MySonnetDeploy')
     expect(parseUserSpecifiedModel('sonnet')).toBe('MySonnetDeploy')
@@ -133,7 +133,7 @@ describe('parseUserSpecifiedModel — [1m] on custom default env overrides', () 
   })
 
   test('enabled: baked [1m] honored and never duplicated', () => {
-    delete process.env.CLAUDE_CODE_DISABLE_1M_CONTEXT
+    delete process.env.NYXCLAUDE_DISABLE_1M_CONTEXT
     // Bare alias honors the env default's opt-in; tag normalized to [1m].
     expect(parseUserSpecifiedModel('sonnet')).toBe('MySonnetDeploy[1m]')
     // Tagged alias does not double the suffix.

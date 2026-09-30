@@ -15,7 +15,7 @@
 import { z } from 'zod/v4'
 import { getIsNonInteractiveSession } from '../bootstrap/state.js'
 import { logEvent } from '../services/analytics/index.js'
-import { queryHaiku } from '../services/api/claude.js'
+import { querySmallModel } from '../services/api/modelApi.js'
 import type { Message } from '../types/message.js'
 import { modelSupportsStructuredOutputs } from './betas.js'
 import { createCombinedAbortSignal } from './combinedAbortSignal.js'
@@ -402,7 +402,7 @@ export async function generateSessionTitle(
   })
 
   try {
-    const result = await queryHaiku({
+    const result = await querySmallModel({
       systemPrompt: asSystemPrompt([SESSION_TITLE_PROMPT]),
       userPrompt: trimmed,
       outputFormat,
@@ -441,7 +441,7 @@ export async function generateSessionTitle(
       })
     }
 
-    logEvent('tengu_session_title_generated', { success: parsed.success })
+    logEvent('nyxclaude_session_title_generated', { success: parsed.success })
 
     return parsed.title
   } catch (error) {
@@ -454,7 +454,7 @@ export async function generateSessionTitle(
       level: 'warn',
       error,
     })
-    logEvent('tengu_session_title_generated', { success: false })
+    logEvent('nyxclaude_session_title_generated', { success: false })
 
     // Fallback: When using 3P providers without a compatible schema,
     // default to the application name.

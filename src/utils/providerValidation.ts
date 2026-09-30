@@ -30,7 +30,7 @@ import {
   shouldUseCodexTransport,
 } from '../services/api/providerConfig.js'
 import { hasUsableOpenAICredential } from '../services/api/credentialPool.js'
-import { getGlobalClaudeFile } from './env.js'
+import { getGlobalConfigFile } from './env.js'
 import { isBareMode } from './envUtils.js'
 import {
   type GeminiResolvedCredential,
@@ -108,12 +108,12 @@ function checkGithubTokenStatus(
 }
 
 function getOpenAIMissingKeyMessage(): string {
-  const globalConfigPath = getGlobalClaudeFile()
+  const globalConfigPath = getGlobalConfigFile()
   const profilePath = resolve(process.cwd(), PROFILE_FILE_NAME)
 
   return [
-    'OPENAI_API_KEYS or OPENAI_API_KEY is required when CLAUDE_CODE_USE_OPENAI=1 and OPENAI_BASE_URL is not local.',
-    `To recover, run /provider and switch provider, or set CLAUDE_CODE_USE_OPENAI=0 in your shell environment.`,
+    'OPENAI_API_KEYS or OPENAI_API_KEY is required when NYXCLAUDE_USE_OPENAI=1 and OPENAI_BASE_URL is not local.',
+    `To recover, run /provider and switch provider, or set NYXCLAUDE_USE_OPENAI=0 in your shell environment.`,
     `Saved startup settings can come from ${globalConfigPath} or ${profilePath}.`,
   ].join('\n')
 }
@@ -223,7 +223,7 @@ function getValidationTargetBaseUrl(
 function getRuntimeValidationTarget(
   env: NodeJS.ProcessEnv,
 ): ValidationTarget | undefined {
-  const useOpenAI = isEnvTruthy(env.CLAUDE_CODE_USE_OPENAI)
+  const useOpenAI = isEnvTruthy(env.NYXCLAUDE_USE_OPENAI)
   const validationTargets = getValidationTargets()
 
   const enabledTarget = validationTargets.find(target => {
@@ -524,7 +524,7 @@ export async function getProviderValidationError(
   },
 ): Promise<string | null> {
   const secretSource = env as SecretValueSource
-  const useOpenAI = isEnvTruthy(env.CLAUDE_CODE_USE_OPENAI)
+  const useOpenAI = isEnvTruthy(env.NYXCLAUDE_USE_OPENAI)
   const validationTarget = getRuntimeValidationTarget(env)
 
   if (!useOpenAI && !validationTarget) {

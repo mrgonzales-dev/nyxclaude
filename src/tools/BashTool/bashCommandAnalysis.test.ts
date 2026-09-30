@@ -38,15 +38,15 @@ afterEach(() => {
 
 async function withLegacyParserFallback<T>(fn: () => Promise<T>): Promise<T> {
   const originalInjectionFlag =
-    process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK
-  process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK = '1'
+    process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK
+  process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK = '1'
   try {
     return await fn()
   } finally {
     if (originalInjectionFlag === undefined) {
-      delete process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK
+      delete process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK
     } else {
-      process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK =
+      process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK =
         originalInjectionFlag
     }
   }
@@ -105,8 +105,8 @@ test('keeps parser aborts fail-closed as too complex', () => {
 
 test('logs one sanitized debug event for an expected legacy parser limitation', async () => {
   const originalInjectionFlag =
-    process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK
-  process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK = '1'
+    process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK
+  process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK = '1'
   try {
     const debugSpy = mock((_message: string, _options?: { level?: string }) => {})
     const { analyzeBashCommand, logLegacyParserLimitationOnce } =
@@ -129,9 +129,9 @@ test('logs one sanitized debug event for an expected legacy parser limitation', 
     expect(debugSpy.mock.calls[0]?.[1]).toEqual({ level: 'debug' })
   } finally {
     if (originalInjectionFlag === undefined) {
-      delete process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK
+      delete process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK
     } else {
-      process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK =
+      process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK =
         originalInjectionFlag
     }
   }

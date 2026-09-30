@@ -18,7 +18,7 @@ import { formatDuration, formatNumber } from '../utils/format.js';
 import { generateHeatmap } from '../utils/heatmap.js';
 import { renderModelName } from '../utils/model/model.js';
 import { copyAnsiToClipboard } from '../utils/screenshotClipboard.js';
-import { aggregateClaudeCodeStatsForRange, type ClaudeCodeStats, type DailyModelTokens, type StatsDateRange } from '../utils/stats.js';
+import { aggregateStatsForRange, type Stats, type DailyModelTokens, type StatsDateRange } from '../utils/stats.js';
 import { resolveThemeSetting } from '../utils/systemTheme.js';
 import { getTheme, themeColorToAnsi } from '../utils/theme.js';
 import { Pane } from './design-system/Pane.js';
@@ -38,7 +38,7 @@ type Props = {
 };
 type StatsResult = {
   type: 'success';
-  data: ClaudeCodeStats;
+  data: Stats;
 } | {
   type: 'error';
   message: string;
@@ -46,8 +46,8 @@ type StatsResult = {
   type: 'empty';
 };
 type StatsTab = 'Overview' | 'Models';
-type StatsCache = Partial<Record<StatsDateRange, ClaudeCodeStats>>;
-type ModelUsageStats = ClaudeCodeStats['modelUsage'][string];
+type StatsCache = Partial<Record<StatsDateRange, Stats>>;
+type ModelUsageStats = Stats['modelUsage'][string];
 type ModelUsageEntry = [string, ModelUsageStats];
 const DATE_RANGE_LABELS: Record<StatsDateRange, string> = {
   '7d': 'Last 7 days',
@@ -65,7 +65,7 @@ function getNextDateRange(current: StatsDateRange): StatsDateRange {
  * Always loads all-time stats for the heatmap.
  */
 function createAllTimeStatsPromise(): Promise<StatsResult> {
-  return aggregateClaudeCodeStatsForRange('all').then((data): StatsResult => {
+  return aggregateStatsForRange('all').then((data): StatsResult => {
     if (!data || data.totalSessions === 0) {
       return {
         type: 'empty'
@@ -153,7 +153,7 @@ function StatsContent(t0: StatsContentProps): React.ReactNode {
       }
       let cancelled = false;
       setIsLoadingFiltered(true);
-      aggregateClaudeCodeStatsForRange(dateRange).then(data => {
+      aggregateStatsForRange(dateRange).then(data => {
         if (!cancelled) {
           setStatsCache(prev => ({
             ...prev,
@@ -180,8 +180,8 @@ function StatsContent(t0: StatsContentProps): React.ReactNode {
     t3 = $[4];
   }
   useEffect(t2, t3);
-  const displayStats: ClaudeCodeStats | null = dateRange === "all" ? allTimeResult.type === "success" ? allTimeResult.data : null : statsCache[dateRange] ?? (allTimeResult.type === "success" ? allTimeResult.data : null);
-  const allTimeStats: ClaudeCodeStats | null = allTimeResult.type === "success" ? allTimeResult.data : null;
+  const displayStats: Stats | null = dateRange === "all" ? allTimeResult.type === "success" ? allTimeResult.data : null : statsCache[dateRange] ?? (allTimeResult.type === "success" ? allTimeResult.data : null);
+  const allTimeStats: Stats | null = allTimeResult.type === "success" ? allTimeResult.data : null;
   let t4;
   if ($[5] !== onClose) {
     t4 = () => {
@@ -367,8 +367,8 @@ function OverviewTab({
   dateRange,
   isLoading
 }: {
-  stats: ClaudeCodeStats;
-  allTimeStats: ClaudeCodeStats;
+  stats: Stats;
+  allTimeStats: Stats;
   dateRange: StatsDateRange;
   isLoading: boolean;
 }): React.ReactNode {
@@ -680,7 +680,7 @@ const TIME_COMPARISONS = [{
   name: 'a full night of sleep',
   minutes: 480
 }];
-function generateFunFactoid(stats: ClaudeCodeStats, totalTokens: number): string {
+function generateFunFactoid(stats: Stats, totalTokens: number): string {
   const factoids: string[] = [];
   if (totalTokens > 0) {
     const matchingBooks = BOOK_COMPARISONS.filter(book => totalTokens >= book.tokens);
@@ -709,7 +709,7 @@ function generateFunFactoid(stats: ClaudeCodeStats, totalTokens: number): string
   return factoids[randomIndex]!;
 }
 type ModelsTabProps = {
-  stats: ClaudeCodeStats;
+  stats: Stats;
   dateRange: StatsDateRange;
   isLoading: boolean;
 };
@@ -1056,7 +1056,7 @@ function generateXAxisLabels(data: DailyModelTokens[], _chartWidth: number, yAxi
 }
 
 // Screenshot functionality
-async function handleScreenshot(stats: ClaudeCodeStats, activeTab: 'Overview' | 'Models', setStatus: (status: string | null) => void): Promise<void> {
+async function handleScreenshot(stats: Stats, activeTab: 'Overview' | 'Models', setStatus: (status: string | null) => void): Promise<void> {
   setStatus('copying…');
   const ansiText = renderStatsToAnsi(stats, activeTab);
   const result = await copyAnsiToClipboard(ansiText);
@@ -1065,7 +1065,7 @@ async function handleScreenshot(stats: ClaudeCodeStats, activeTab: 'Overview' | 
   // Clear status after 2 seconds
   setTimeout(setStatus, 2000, null);
 }
-function renderStatsToAnsi(stats: ClaudeCodeStats, activeTab: 'Overview' | 'Models'): string {
+function renderStatsToAnsi(stats: Stats, activeTab: 'Overview' | 'Models'): string {
   const lines: string[] = [];
   if (activeTab === 'Overview') {
     lines.push(...renderOverviewToAnsi(stats));
@@ -1092,7 +1092,7 @@ function renderStatsToAnsi(stats: ClaudeCodeStats, activeTab: 'Overview' | 'Mode
   }
   return lines.join('\n');
 }
-function renderOverviewToAnsi(stats: ClaudeCodeStats): string[] {
+function renderOverviewToAnsi(stats: Stats): string[] {
   const lines: string[] = [];
   const theme = getTheme(resolveThemeSetting(getGlobalConfig().theme));
   const h = (text: string) => applyColor(text, theme.claude as Color);
@@ -1182,7 +1182,7 @@ function renderOverviewToAnsi(stats: ClaudeCodeStats): string[] {
   lines.push(chalk.gray(`Stats from the last ${stats.totalDays} days`));
   return lines;
 }
-function renderModelsToAnsi(stats: ClaudeCodeStats): string[] {
+function renderModelsToAnsi(stats: Stats): string[] {
   const lines: string[] = [];
   const modelEntries = Object.entries(stats.modelUsage).sort(([, a], [, b]) => b.inputTokens + b.outputTokens - (a.inputTokens + a.outputTokens));
   if (modelEntries.length === 0) {

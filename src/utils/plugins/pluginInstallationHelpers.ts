@@ -189,7 +189,7 @@ export async function cacheAndRegisterPlugin(
       // errors when /tmp is on a different filesystem (e.g., tmpfs)
       const tempPath = join(
         dirname(cacheResult.path),
-        `.claude-plugin-temp-${Date.now()}-${randomBytes(4).toString('hex')}`,
+        `.nyxclaude-plugin-temp-${Date.now()}-${randomBytes(4).toString('hex')}`,
       )
       await rename(cacheResult.path, tempPath)
       await getFsImplementation().mkdir(dirname(versionedPath))
@@ -559,7 +559,7 @@ export async function installPluginFromMarketplace({
     // non-official) because dbt external_claude_code_plugin_installs.sql
     // extracts $.plugin_id for official-marketplace install tracking. Other
     // plugin lifecycle events drop the blob key — no downstream consumers.
-    logEvent('tengu_plugin_installed', {
+    logEvent('nyxclaude_plugin_installed', {
       _PROTO_plugin_name:
         entry.name as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
       _PROTO_marketplace_name:

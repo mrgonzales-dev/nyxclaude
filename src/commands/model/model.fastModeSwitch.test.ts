@@ -78,7 +78,7 @@ test('returns "unchanged" when fastMode is not currently latched', async () => {
   )
 })
 
-test('returns "off" for the cross-profile switch target when fastMode is latched on Anthropic and the new profile model is unsupported (#1119)', async () => {
+test('returns "off" for the cross-profile switch target when fastMode is latched on provider and the new profile model is unsupported (#1119)', async () => {
   mockFastMode({
     isFastModeEnabled: () => true,
     isFastModeSupportedByModel: (m: string | null) =>

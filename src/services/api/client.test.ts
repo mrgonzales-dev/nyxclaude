@@ -39,14 +39,14 @@ type ShimClient = {
 const originalFetch = globalThis.fetch
 const originalMacro = (globalThis as Record<string, unknown>).MACRO
 const originalEnv = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_BEDROCK: process.env.CLAUDE_CODE_USE_BEDROCK,
-  CLAUDE_CODE_SKIP_BEDROCK_AUTH: process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH,
-  CLAUDE_CODE_USE_VERTEX: process.env.CLAUDE_CODE_USE_VERTEX,
-  CLAUDE_CODE_USE_FOUNDRY: process.env.CLAUDE_CODE_USE_FOUNDRY,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
-  CLAUDE_CODE_USE_MISTRAL: process.env.CLAUDE_CODE_USE_MISTRAL,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_BEDROCK: process.env.NYXCLAUDE_USE_BEDROCK,
+  NYXCLAUDE_SKIP_BEDROCK_AUTH: process.env.NYXCLAUDE_SKIP_BEDROCK_AUTH,
+  NYXCLAUDE_USE_VERTEX: process.env.NYXCLAUDE_USE_VERTEX,
+  NYXCLAUDE_USE_FOUNDRY: process.env.NYXCLAUDE_USE_FOUNDRY,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
+  NYXCLAUDE_USE_MISTRAL: process.env.NYXCLAUDE_USE_MISTRAL,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   GEMINI_MODEL: process.env.GEMINI_MODEL,
   GEMINI_BASE_URL: process.env.GEMINI_BASE_URL,
@@ -74,13 +74,13 @@ const originalEnv = {
   ANTHROPIC_AUTH_TOKEN: process.env.ANTHROPIC_AUTH_TOKEN,
   ANTHROPIC_BASE_URL: process.env.ANTHROPIC_BASE_URL,
   ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
-  ANTHROPIC_CUSTOM_HEADERS: process.env.ANTHROPIC_CUSTOM_HEADERS,
+  NYXCLAUDE_CUSTOM_HEADERS: process.env.NYXCLAUDE_CUSTOM_HEADERS,
   USER_TYPE: process.env.USER_TYPE,
   USE_STAGING_OAUTH: process.env.USE_STAGING_OAUTH,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
-  CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID:
-    process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
+  NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID:
+    process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
 }
 
 function restoreEnv(key: string, value: string | undefined): void {
@@ -92,16 +92,16 @@ function restoreEnv(key: string, value: string | undefined): void {
 }
 
 function clearEnvForMiniMaxOnlyTest(): void {
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_SKIP_BEDROCK_AUTH
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -127,7 +127,7 @@ function clearEnvForMiniMaxOnlyTest(): void {
   delete process.env.ANTHROPIC_AUTH_TOKEN
   delete process.env.ANTHROPIC_BASE_URL
   delete process.env.ANTHROPIC_MODEL
-  delete process.env.ANTHROPIC_CUSTOM_HEADERS
+  delete process.env.NYXCLAUDE_CUSTOM_HEADERS
   delete process.env.USER_TYPE
   delete process.env.USE_STAGING_OAUTH
 }
@@ -135,19 +135,19 @@ function clearEnvForMiniMaxOnlyTest(): void {
 beforeEach(async () => {
   await acquireSharedMutationLock('client.test.ts')
   ;(globalThis as Record<string, unknown>).MACRO = { VERSION: 'test-version' }
-  process.env.CLAUDE_CODE_USE_GEMINI = '1'
+  process.env.NYXCLAUDE_USE_GEMINI = '1'
   process.env.GEMINI_API_KEY = 'gemini-test-key'
   process.env.GEMINI_MODEL = 'gemini-2.0-flash'
   process.env.GEMINI_BASE_URL = 'https://gemini.example/v1beta/openai'
   process.env.GEMINI_AUTH_MODE = 'api-key'
 
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_SKIP_BEDROCK_AUTH
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
   delete process.env.GOOGLE_API_KEY
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENAI_BASE_URL
@@ -171,25 +171,25 @@ beforeEach(async () => {
   delete process.env.ANTHROPIC_AUTH_TOKEN
   delete process.env.ANTHROPIC_BASE_URL
   delete process.env.ANTHROPIC_MODEL
-  delete process.env.ANTHROPIC_CUSTOM_HEADERS
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED
-  delete process.env.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID
+  delete process.env.NYXCLAUDE_CUSTOM_HEADERS
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
+  delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID
 })
 
 afterEach(() => {
   try {
     ;(globalThis as Record<string, unknown>).MACRO = originalMacro
-    restoreEnv('CLAUDE_CODE_USE_OPENAI', originalEnv.CLAUDE_CODE_USE_OPENAI)
-    restoreEnv('CLAUDE_CODE_USE_BEDROCK', originalEnv.CLAUDE_CODE_USE_BEDROCK)
+    restoreEnv('NYXCLAUDE_USE_OPENAI', originalEnv.NYXCLAUDE_USE_OPENAI)
+    restoreEnv('NYXCLAUDE_USE_BEDROCK', originalEnv.NYXCLAUDE_USE_BEDROCK)
     restoreEnv(
-      'CLAUDE_CODE_SKIP_BEDROCK_AUTH',
-      originalEnv.CLAUDE_CODE_SKIP_BEDROCK_AUTH,
+      'NYXCLAUDE_SKIP_BEDROCK_AUTH',
+      originalEnv.NYXCLAUDE_SKIP_BEDROCK_AUTH,
     )
-    restoreEnv('CLAUDE_CODE_USE_VERTEX', originalEnv.CLAUDE_CODE_USE_VERTEX)
-    restoreEnv('CLAUDE_CODE_USE_FOUNDRY', originalEnv.CLAUDE_CODE_USE_FOUNDRY)
-    restoreEnv('CLAUDE_CODE_USE_GEMINI', originalEnv.CLAUDE_CODE_USE_GEMINI)
-    restoreEnv('CLAUDE_CODE_USE_GITHUB', originalEnv.CLAUDE_CODE_USE_GITHUB)
-    restoreEnv('CLAUDE_CODE_USE_MISTRAL', originalEnv.CLAUDE_CODE_USE_MISTRAL)
+    restoreEnv('NYXCLAUDE_USE_VERTEX', originalEnv.NYXCLAUDE_USE_VERTEX)
+    restoreEnv('NYXCLAUDE_USE_FOUNDRY', originalEnv.NYXCLAUDE_USE_FOUNDRY)
+    restoreEnv('NYXCLAUDE_USE_GEMINI', originalEnv.NYXCLAUDE_USE_GEMINI)
+    restoreEnv('NYXCLAUDE_USE_GITHUB', originalEnv.NYXCLAUDE_USE_GITHUB)
+    restoreEnv('NYXCLAUDE_USE_MISTRAL', originalEnv.NYXCLAUDE_USE_MISTRAL)
     restoreEnv('GEMINI_API_KEY', originalEnv.GEMINI_API_KEY)
     restoreEnv('GEMINI_MODEL', originalEnv.GEMINI_MODEL)
     restoreEnv('GEMINI_BASE_URL', originalEnv.GEMINI_BASE_URL)
@@ -217,16 +217,16 @@ afterEach(() => {
     restoreEnv('ANTHROPIC_AUTH_TOKEN', originalEnv.ANTHROPIC_AUTH_TOKEN)
     restoreEnv('ANTHROPIC_BASE_URL', originalEnv.ANTHROPIC_BASE_URL)
     restoreEnv('ANTHROPIC_MODEL', originalEnv.ANTHROPIC_MODEL)
-    restoreEnv('ANTHROPIC_CUSTOM_HEADERS', originalEnv.ANTHROPIC_CUSTOM_HEADERS)
+    restoreEnv('NYXCLAUDE_CUSTOM_HEADERS', originalEnv.NYXCLAUDE_CUSTOM_HEADERS)
     restoreEnv('USER_TYPE', originalEnv.USER_TYPE)
     restoreEnv('USE_STAGING_OAUTH', originalEnv.USE_STAGING_OAUTH)
     restoreEnv(
-      'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-      originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED,
+      'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+      originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED,
     )
     restoreEnv(
-      'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
-      originalEnv.CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID,
+      'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+      originalEnv.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID,
     )
     globalThis.fetch = originalFetch
   } finally {
@@ -237,17 +237,17 @@ afterEach(() => {
 test('first-party Anthropic requests execute the configured fetch wrapper without runtime symbol errors', async () => {
   let capturedHeaders: Headers | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
   delete process.env.GEMINI_AUTH_MODE
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
   delete process.env.OPENAI_API_KEY
   delete process.env.OPENAI_BASE_URL
   delete process.env.OPENAI_API_BASE
@@ -313,19 +313,19 @@ test('routes a custom Anthropic endpoint with ANTHROPIC_AUTH_TOKEN without requi
   let capturedUrl: string | undefined
   let capturedHeaders: Headers | undefined
 
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
   process.env.ANTHROPIC_API_KEY = 'must-not-forward'
   process.env.ANTHROPIC_AUTH_TOKEN = 'custom-anthropic-token'
   process.env.ANTHROPIC_BASE_URL = 'https://anthropic.example/api/v1'
   process.env.USER_TYPE = 'ant'
   process.env.USE_STAGING_OAUTH = '1'
-  process.env.ANTHROPIC_CUSTOM_HEADERS = 'X-Tenant: tenant-a\nauthorization: stale-value'
+  process.env.NYXCLAUDE_CUSTOM_HEADERS = 'X-Tenant: tenant-a\nauthorization: stale-value'
 
   const fetchOverride = (async (input, init) => {
     capturedUrl =
@@ -372,7 +372,7 @@ test('routes a custom Anthropic endpoint with ANTHROPIC_AUTH_TOKEN without requi
 test('does not forward a custom bearer token to the first-party Anthropic endpoint', async () => {
   let capturedHeaders: Headers | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -410,17 +410,17 @@ test('does not forward a custom bearer token to the first-party Anthropic endpoi
 test('routes a custom Anthropic endpoint with native x-api-key authentication', async () => {
   let capturedHeaders: Headers | undefined
 
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
   delete process.env.ANTHROPIC_AUTH_TOKEN
   process.env.ANTHROPIC_API_KEY = 'custom-anthropic-api-key'
   process.env.ANTHROPIC_BASE_URL = 'https://anthropic.example/api'
-  process.env.ANTHROPIC_CUSTOM_HEADERS =
+  process.env.NYXCLAUDE_CUSTOM_HEADERS =
     'X-Tenant: tenant-a\nauthorization: stale-value\nx-api-key: stale-key'
 
   const fetchOverride = (async (_input, init) => {
@@ -518,7 +518,7 @@ test('routes env-only MiniMax requests through the Anthropic-compatible API', as
   let capturedBody: Record<string, unknown> | undefined
 
   clearEnvForMiniMaxOnlyTest()
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_KEY = 'ambient-openai-key'
   process.env.XAI_API_KEY = 'ambient-xai-key'
   process.env.MINIMAX_API_KEY = 'minimax-test-key'
@@ -574,7 +574,7 @@ test('routes env-only MiniMax requests through the Anthropic-compatible API', as
   expect(capturedBody?.model).toBe('MiniMax-M2.5')
   expect(process.env.ANTHROPIC_BASE_URL).toBe('https://api.minimax.io/anthropic')
   expect(process.env.ANTHROPIC_API_KEY).toBe('minimax-test-key')
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(response).toMatchObject({
     role: 'assistant',
     model: 'MiniMax-M2.5',
@@ -689,7 +689,7 @@ test('env-only MiniMax fallback drops stale OpenAI shim options', async () => {
 })
 
 test('env-only MiniMax fallback replaces stale non-MiniMax model env', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -703,13 +703,13 @@ test('env-only MiniMax fallback replaces stale non-MiniMax model env', async () 
     model: 'MiniMax-M2.7',
   })
 
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(process.env.ANTHROPIC_MODEL).toBe('MiniMax-M2.7')
   expect(process.env.ANTHROPIC_API_KEY).toBe('minimax-test-key')
 })
 
 test('env-only MiniMax fallback does not override explicit OpenAI credentials', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -723,14 +723,14 @@ test('env-only MiniMax fallback does not override explicit OpenAI credentials', 
     model: 'gpt-4o',
   })
 
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(process.env.OPENAI_API_KEY).toBe('openai-test-key')
   expect(process.env.OPENAI_BASE_URL).toBeUndefined()
   expect(process.env.OPENAI_MODEL).toBeUndefined()
 })
 
 test('env-only MiniMax fallback ignores non-MiniMax base overrides', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -745,7 +745,7 @@ test('env-only MiniMax fallback ignores non-MiniMax base overrides', async () =>
     model: 'MiniMax-M2.7',
   })
 
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(process.env.OPENAI_API_KEY).toBeUndefined()
   expect(process.env.OPENAI_BASE_URL).toBe('https://api.openai.com/v1')
   expect(process.env.OPENAI_MODEL).toBe('MiniMax-M2.7')
@@ -756,7 +756,7 @@ test('routes env-only AI/ML API requests through the OpenAI-compatible shim desp
   let capturedHeaders: Headers | undefined
   let capturedBody: Record<string, unknown> | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -821,7 +821,7 @@ test('routes env-only AI/ML API requests through the OpenAI-compatible shim desp
   expect(capturedHeaders?.get('http-referer')).toBe('Nyxclaude')
   expect(capturedHeaders?.get('x-title')).toBe('Nyxclaude')
   expect(capturedBody?.model).toBe('gpt-4o')
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
   expect(process.env.OPENAI_BASE_URL).toBe('https://api.aimlapi.com/v1')
   expect(process.env.OPENAI_MODEL).toBe('gpt-4o')
   expect(process.env.OPENAI_API_KEY).toBe('aimlapi-test-key')
@@ -836,7 +836,7 @@ test('routes env-only xAI requests through the OpenAI-compatible shim', async ()
   let capturedHeaders: Headers | undefined
   let capturedBody: Record<string, unknown> | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -907,7 +907,7 @@ test('routes env-only xAI requests through the OpenAI-compatible shim', async ()
 })
 
 test('env-only xAI fallback replaces stale OpenAI credentials and model env', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -921,7 +921,7 @@ test('env-only xAI fallback replaces stale OpenAI credentials and model env', as
     model: 'grok-4',
   })
 
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
   expect(process.env.OPENAI_MODEL).toBe('grok-4.3')
   expect(process.env.OPENAI_API_KEY).toBe('xai-test-key')
 })
@@ -929,7 +929,7 @@ test('env-only xAI fallback replaces stale OpenAI credentials and model env', as
 test('env-only xAI fallback preserves xAI OPENAI_API_BASE host overrides', async () => {
   let capturedUrl: string | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -982,7 +982,7 @@ test('env-only xAI fallback drops unsupported OpenAI shim options', async () => 
   let capturedUrl: string | undefined
   let capturedHeaders: Headers | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -1041,7 +1041,7 @@ test('env-only xAI fallback drops unsupported OpenAI shim options', async () => 
 })
 
 test('env-only xAI fallback ignores non-xAI base overrides', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -1056,7 +1056,7 @@ test('env-only xAI fallback ignores non-xAI base overrides', async () => {
     model: 'grok-4',
   })
 
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(process.env.OPENAI_API_KEY).toBeUndefined()
   expect(process.env.OPENAI_BASE_URL).toBe('https://api.openai.com/v1')
   expect(process.env.OPENAI_MODEL).toBe('grok-4')
@@ -1066,7 +1066,7 @@ test('env-only xAI wins when MiniMax key is also present', async () => {
   let capturedUrl: string | undefined
   let capturedHeaders: Headers | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -1118,13 +1118,13 @@ test('env-only xAI wins when MiniMax key is also present', async () => {
 })
 
 test('env-only MiniMax fallback yields to explicit Bedrock selection', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
   delete process.env.GEMINI_AUTH_MODE
-  process.env.CLAUDE_CODE_USE_BEDROCK = '1'
-  process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH = '1'
+  process.env.NYXCLAUDE_USE_BEDROCK = '1'
+  process.env.NYXCLAUDE_SKIP_BEDROCK_AUTH = '1'
   process.env.MINIMAX_API_KEY = 'minimax-test-key'
 
   globalThis.fetch = (async () => {
@@ -1136,20 +1136,20 @@ test('env-only MiniMax fallback yields to explicit Bedrock selection', async () 
     model: 'claude-sonnet-4-6',
   })
 
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(process.env.OPENAI_BASE_URL).toBeUndefined()
   expect(process.env.OPENAI_MODEL).toBeUndefined()
   expect(process.env.OPENAI_API_KEY).toBeUndefined()
 })
 
 test('env-only xAI fallback yields to explicit Bedrock selection', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
   delete process.env.GEMINI_AUTH_MODE
-  process.env.CLAUDE_CODE_USE_BEDROCK = '1'
-  process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH = '1'
+  process.env.NYXCLAUDE_USE_BEDROCK = '1'
+  process.env.NYXCLAUDE_SKIP_BEDROCK_AUTH = '1'
   process.env.XAI_API_KEY = 'xai-test-key'
 
   globalThis.fetch = (async () => {
@@ -1161,7 +1161,7 @@ test('env-only xAI fallback yields to explicit Bedrock selection', async () => {
     model: 'claude-sonnet-4-6',
   })
 
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(process.env.OPENAI_BASE_URL).toBeUndefined()
   expect(process.env.OPENAI_MODEL).toBeUndefined()
   expect(process.env.OPENAI_API_KEY).toBeUndefined()
@@ -1172,7 +1172,7 @@ test('routes env-only Fireworks AI requests through the OpenAI-compatible shim',
   let capturedHeaders: Headers | undefined
   let capturedBody: Record<string, unknown> | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -1236,7 +1236,7 @@ test('routes env-only Fireworks AI requests through the OpenAI-compatible shim',
 })
 
 test('env-only Fireworks fallback replaces stale OpenAI model env', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -1248,7 +1248,7 @@ test('env-only Fireworks fallback replaces stale OpenAI model env', async () => 
 
   await getAnthropicClient({ maxRetries: 0, model: 'accounts/fireworks/models/deepseek-v3' })
 
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
   expect(process.env.OPENAI_MODEL).toBe(
     'accounts/fireworks/models/llama-v3p1-70b-instruct',
   )
@@ -1258,7 +1258,7 @@ test('env-only Fireworks fallback replaces stale OpenAI model env', async () => 
 test('env-only Fireworks fallback preserves Fireworks OPENAI_API_BASE host overrides', async () => {
   let capturedUrl: string | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -1323,7 +1323,7 @@ test('env-only Fireworks fallback preserves Fireworks OPENAI_API_BASE host overr
 test('env-only Fireworks fallback drops unsupported OpenAI shim options', async () => {
   let capturedHeaders: Headers | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -1384,7 +1384,7 @@ test('env-only Fireworks fallback drops unsupported OpenAI shim options', async 
 })
 
 test('env-only Fireworks fallback ignores non-Fireworks base overrides', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -1397,7 +1397,7 @@ test('env-only Fireworks fallback ignores non-Fireworks base overrides', async (
   await getAnthropicClient({ maxRetries: 0, model: 'accounts/fireworks/models/deepseek-v3' })
 
   // ANTHROPIC_API_KEY takes precedence — Fireworks env-only provider does not activate
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(process.env.OPENAI_API_KEY).toBeUndefined()
   expect(process.env.OPENAI_BASE_URL).toBe('https://api.openai.com/v1')
   expect(process.env.OPENAI_MODEL).toBe(
@@ -1406,7 +1406,7 @@ test('env-only Fireworks fallback ignores non-Fireworks base overrides', async (
 })
 
 test('env-only Fireworks does not activate when MiniMax key is present', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
@@ -1426,20 +1426,20 @@ test('env-only Fireworks does not activate when MiniMax key is present', async (
   })
 
   // MiniMax takes priority over Fireworks
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(process.env.OPENAI_BASE_URL).toBeUndefined()
   expect(process.env.OPENAI_MODEL).toBeUndefined()
   expect(process.env.OPENAI_API_KEY).toBeUndefined()
 })
 
 test('env-only Fireworks fallback yields to explicit Bedrock selection', async () => {
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
   delete process.env.GEMINI_AUTH_MODE
-  process.env.CLAUDE_CODE_USE_BEDROCK = '1'
-  process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH = '1'
+  process.env.NYXCLAUDE_USE_BEDROCK = '1'
+  process.env.NYXCLAUDE_SKIP_BEDROCK_AUTH = '1'
   process.env.FIREWORKS_API_KEY = 'fireworks-test-key'
 
   globalThis.fetch = (async () => {
@@ -1451,7 +1451,7 @@ test('env-only Fireworks fallback yields to explicit Bedrock selection', async (
     model: 'claude-sonnet-4-6',
   })
 
-  expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+  expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
   expect(process.env.OPENAI_BASE_URL).toBeUndefined()
   expect(process.env.OPENAI_MODEL).toBeUndefined()
   expect(process.env.OPENAI_API_KEY).toBeUndefined()
@@ -1460,12 +1460,12 @@ test('env-only Fireworks fallback yields to explicit Bedrock selection', async (
 test('strips Anthropic-specific custom headers before sending OpenAI-compatible shim requests', async () => {
   let capturedHeaders: Headers | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_KEY = 'openai-test-key'
   process.env.OPENAI_BASE_URL = 'http://example.test/v1'
   process.env.OPENAI_MODEL = 'gpt-4o'
-  process.env.ANTHROPIC_CUSTOM_HEADERS = [
+  process.env.NYXCLAUDE_CUSTOM_HEADERS = [
     'anthropic-version: 2023-06-01',
     'anthropic-beta: prompt-caching-2024-07-31',
     'x-anthropic-additional-protection: true',
@@ -1531,7 +1531,7 @@ test('strips Anthropic-specific custom headers before sending OpenAI-compatible 
 test('strips Anthropic-specific custom headers on providerOverride shim requests too', async () => {
   let capturedHeaders: Headers | undefined
 
-  process.env.ANTHROPIC_CUSTOM_HEADERS = [
+  process.env.NYXCLAUDE_CUSTOM_HEADERS = [
     'anthropic-version: 2023-06-01',
     'anthropic-beta: prompt-caching-2024-07-31',
     'x-claude-remote-session-id: remote-123',
@@ -1654,9 +1654,9 @@ test('providerOverride OpenAI gpt effort does not fall back to ambient provider'
 
 test('normal OpenAI gpt effort uses catalog metadata', async () => {
   let requestBody: Record<string, unknown> | undefined
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_API_KEY = 'test-key'
 
@@ -1682,9 +1682,9 @@ test('normal OpenAI gpt effort uses catalog metadata', async () => {
 
 test('auto-routed Azure gpt-5.4 and gpt-5.5 requests preserve selected effort', async () => {
   const requestBodies: Record<string, unknown>[] = []
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://myres.openai.azure.com/openai/v1'
   process.env.OPENAI_API_KEY = 'test-key'
 
@@ -1715,9 +1715,9 @@ test('auto-routed Azure gpt-5.4 and gpt-5.5 requests preserve selected effort', 
 test('OPENAI_API_BASE gateway does not inherit first-party GPT-5.6 effort metadata', async () => {
   let requestUrl = ''
   let requestBody: Record<string, unknown> | undefined
-  delete process.env.CLAUDE_CODE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GEMINI
   delete process.env.GEMINI_API_KEY
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_BASE = 'https://gateway.example/v1'
   process.env.OPENAI_API_KEY = 'test-key'
 
@@ -2452,12 +2452,12 @@ test('providerOverride Groq DeepSeek does not receive stripped effort override',
 test('rejects CRLF-injected custom headers before sending OpenAI-compatible shim requests', async () => {
   let capturedHeaders: Headers | undefined
 
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_API_KEY = 'openai-test-key'
   process.env.OPENAI_BASE_URL = 'http://example.test/v1'
   process.env.OPENAI_MODEL = 'gpt-4o'
-  process.env.ANTHROPIC_CUSTOM_HEADERS =
+  process.env.NYXCLAUDE_CUSTOM_HEADERS =
     'x-safe-header: keep-me\r\nx-injected: bad'
 
   globalThis.fetch = (async (_input, init) => {

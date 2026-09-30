@@ -65,7 +65,7 @@ export class RemoteIO extends StructuredIO {
     }
 
     // Add environment runner version if available (set by Environment Manager)
-    const erVersion = process.env.CLAUDE_CODE_ENVIRONMENT_RUNNER_VERSION
+    const erVersion = process.env.NYXCLAUDE_ENVIRONMENT_RUNNER_VERSION
     if (erVersion) {
       headers['x-environment-runner-version'] = erVersion
     }
@@ -79,7 +79,7 @@ export class RemoteIO extends StructuredIO {
       if (freshToken) {
         h['Authorization'] = `Bearer ${freshToken}`
       }
-      const freshErVersion = process.env.CLAUDE_CODE_ENVIRONMENT_RUNNER_VERSION
+      const freshErVersion = process.env.NYXCLAUDE_ENVIRONMENT_RUNNER_VERSION
       if (freshErVersion) {
         h['x-environment-runner-version'] = freshErVersion
       }
@@ -95,7 +95,7 @@ export class RemoteIO extends StructuredIO {
     )
 
     // Set up data callback
-    this.isBridge = process.env.CLAUDE_CODE_ENVIRONMENT_KIND === 'bridge'
+    this.isBridge = process.env.NYXCLAUDE_ENVIRONMENT_KIND === 'bridge'
     this.isDebug = isDebugMode()
     this.transport.setOnData((data: string) => {
       this.inputStream.write(data)
@@ -115,7 +115,7 @@ export class RemoteIO extends StructuredIO {
     // synchronously, so new CCRClient() MUST run before transport.connect() —
     // otherwise early SSE frames hit an unwired onEventCallback and their
     // 'received' delivery acks are silently dropped.
-    if (isEnvTruthy(process.env.CLAUDE_CODE_USE_CCR_V2)) {
+    if (isEnvTruthy(process.env.NYXCLAUDE_USE_CCR_V2)) {
       // CCR v2 is SSE+POST by definition. getTransportForUrl returns
       // SSETransport under the same env var, but the two checks live in
       // different files — assert the invariant so a future decoupling
@@ -178,7 +178,7 @@ export class RemoteIO extends StructuredIO {
     // remote control session. The keep_alive type is filtered before
     // reaching any client UI (Query.ts drops it; structuredIO.ts drops it;
     // web/iOS/Android never see it in their message loop). Interval comes
-    // from GrowthBook (tengu_bridge_poll_interval_config
+    // from GrowthBook (nyxclaude_bridge_poll_interval_config
     // session_keepalive_interval_v2_ms, default 120s); 0 = disabled.
     // Bridge-only: fixes Envoy idle timeout on bridge-topology sessions
     // (#21931). byoc workers ran without this before #21931 and do not

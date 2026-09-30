@@ -1,4 +1,4 @@
-import type { Base64ImageSource } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { Base64ImageSource } from 'src/types/api.js'
 import { readdir, readFile as readFileAsync } from 'fs/promises'
 import * as path from 'path'
 import { posix, win32 } from 'path'
@@ -29,7 +29,7 @@ import {
 import type { ToolUseContext } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { getCwd } from '../../utils/cwd.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '../../utils/envUtils.js'
+import { getNyxclaudeConfigHomeDir, isEnvTruthy } from '../../utils/envUtils.js'
 import { getErrnoCode, isENOENT } from '../../utils/errors.js'
 import {
   addLineNumbers,
@@ -297,7 +297,7 @@ function fileReadTruncationMarker(
 function detectSessionFileType(
   filePath: string,
 ): 'session_memory' | 'session_transcript' | null {
-  const configDir = getClaudeConfigHomeDir()
+  const configDir = getNyxclaudeConfigHomeDir()
 
   // Only match files within the Nyxclaude config directory
   if (!filePath.startsWith(configDir)) {
@@ -635,7 +635,7 @@ export const FileReadTool = buildTool({
     // Telemetry: track when callers override default read limits.
     // Only fires on override (low volume) — event count = override frequency.
     if (fileReadingLimits !== undefined) {
-      logEvent('tengu_file_read_limits_override', {
+      logEvent('nyxclaude_file_read_limits_override', {
         hasMaxTokens: fileReadingLimits.maxTokens !== undefined,
         hasMaxSizeBytes: fileReadingLimits.maxSizeBytes !== undefined,
       })
@@ -660,7 +660,7 @@ export const FileReadTool = buildTool({
     // 3P default: killswitch off = dedup enabled. Client-side only — no
     // server support needed, safe for Bedrock/Vertex/Foundry.
     const dedupKillswitch = getFeatureValue_CACHED_MAY_BE_STALE(
-      'tengu_read_dedup_killswitch',
+      'nyxclaude_read_dedup_killswitch',
       false,
     )
     const existingState = dedupKillswitch
@@ -682,7 +682,7 @@ export const FileReadTool = buildTool({
           const mtimeMs = await getFileModificationTimeAsync(fullFilePath)
           if (mtimeMs === existingState.timestamp) {
             const analyticsExt = getFileExtensionForAnalytics(fullFilePath)
-            logEvent('tengu_file_read_dedup', {
+            logEvent('nyxclaude_file_read_dedup', {
               ...(analyticsExt !== undefined && { ext: analyticsExt }),
             })
             return {
@@ -701,7 +701,7 @@ export const FileReadTool = buildTool({
     // Discover skills from this file's path (fire-and-forget, non-blocking)
     // Skip in simple mode - no skills available
     const cwd = getCwd()
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+    if (!isEnvTruthy(process.env.NYXCLAUDE_SIMPLE)) {
       const newSkillDirs = await discoverSkillDirsForPaths([fullFilePath], cwd)
       if (newSkillDirs.length > 0) {
         // Store discovered dirs for attachment display
@@ -1045,7 +1045,7 @@ async function callInner(
       if (!extractResult.success) {
         throw new Error(extractResult.error.message)
       }
-      logEvent('tengu_pdf_page_extraction', {
+      logEvent('nyxclaude_pdf_page_extraction', {
         success: true,
         pageCount: extractResult.data.file.count,
         fileSize: extractResult.data.file.originalSize,
@@ -1106,13 +1106,13 @@ async function callInner(
     if (shouldExtractPages) {
       const extractResult = await extractPDFPages(resolvedFilePath)
       if (extractResult.success) {
-        logEvent('tengu_pdf_page_extraction', {
+        logEvent('nyxclaude_pdf_page_extraction', {
           success: true,
           pageCount: extractResult.data.file.count,
           fileSize: extractResult.data.file.originalSize,
         })
       } else {
-        logEvent('tengu_pdf_page_extraction', {
+        logEvent('nyxclaude_pdf_page_extraction', {
           success: false,
           available: extractResult.error.reason !== 'unavailable',
           fileSize: stats.size,
@@ -1213,7 +1213,7 @@ async function callInner(
 
   const sessionFileType = detectSessionFileType(fullFilePath)
   const analyticsExt = getFileExtensionForAnalytics(fullFilePath)
-  logEvent('tengu_session_file_read', {
+  logEvent('nyxclaude_session_file_read', {
     totalLines,
     readLines: lineCount,
     totalBytes,

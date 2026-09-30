@@ -16,10 +16,10 @@ const tokenState = {
 
 function applyMocks() {
   mock.module('../services/analytics/growthbook.js', () => ({
-    // Only intercept the mcpValidation flag (tengu_satin_quoll); return defaultValue
+    // Only intercept the mcpValidation flag (nyxclaude_satin_quoll); return defaultValue
     // for all other flags so this mock does not affect unrelated test files.
     getFeatureValue_CACHED_MAY_BE_STALE: (flag: string, defaultValue: unknown) =>
-      flag === 'tengu_satin_quoll' ? null : defaultValue,
+      flag === 'nyxclaude_satin_quoll' ? null : defaultValue,
   }))
   mock.module('../services/tokenEstimation.js', () => ({
     // Spread the real module so roughTokenCountEstimation is never replaced.

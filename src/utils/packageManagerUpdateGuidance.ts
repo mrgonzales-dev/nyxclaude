@@ -4,9 +4,9 @@ import { PRODUCT_DISPLAY_NAME } from '../constants/product.js'
 const UPSTREAM_PACKAGE_URL = '@anthropic-ai/claude-code'
 
 const upstreamCommands: Partial<Record<PackageManager, string>> = {
-  homebrew: 'brew upgrade claude-code',
-  winget: 'winget upgrade Anthropic.ClaudeCode',
-  apk: 'apk upgrade claude-code',
+  homebrew: 'brew upgrade nyxclaude',
+  winget: 'winget upgrade nyxclaude',
+  apk: 'apk upgrade nyxclaude',
 }
 
 const managerNames: Partial<Record<PackageManager, string>> = {

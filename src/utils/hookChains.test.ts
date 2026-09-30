@@ -10,7 +10,7 @@ import {
 type HookChainsModule = typeof import('./hookChains.js')
 
 const tempDirs: string[] = []
-const originalHookChainsEnabled = process.env.CLAUDE_CODE_ENABLE_HOOK_CHAINS
+const originalHookChainsEnabled = process.env.NYXCLAUDE_ENABLE_HOOK_CHAINS
 
 async function makeConfigFile(config: unknown): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), 'nyxclaude-hook-chains-'))
@@ -44,7 +44,7 @@ async function importHookChainsModule(options?: {
 
 beforeEach(async () => {
   await acquireSharedMutationLock('utils/hookChains.test.ts')
-  process.env.CLAUDE_CODE_ENABLE_HOOK_CHAINS = '1'
+  process.env.NYXCLAUDE_ENABLE_HOOK_CHAINS = '1'
 })
 
 afterEach(async () => {
@@ -52,9 +52,9 @@ afterEach(async () => {
     mock.restore()
 
     if (originalHookChainsEnabled === undefined) {
-      delete process.env.CLAUDE_CODE_ENABLE_HOOK_CHAINS
+      delete process.env.NYXCLAUDE_ENABLE_HOOK_CHAINS
     } else {
-      process.env.CLAUDE_CODE_ENABLE_HOOK_CHAINS = originalHookChainsEnabled
+      process.env.NYXCLAUDE_ENABLE_HOOK_CHAINS = originalHookChainsEnabled
     }
 
     await Promise.all(
@@ -67,7 +67,7 @@ afterEach(async () => {
 
 describe('hookChains schema validation', () => {
   test('returns disabled config when env gate is unset', async () => {
-    delete process.env.CLAUDE_CODE_ENABLE_HOOK_CHAINS
+    delete process.env.NYXCLAUDE_ENABLE_HOOK_CHAINS
     const mod = await importHookChainsModule()
 
     const configPath = await makeConfigFile({

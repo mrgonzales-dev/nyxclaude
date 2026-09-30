@@ -40,7 +40,7 @@ export default defineGateway({
   validation: {
     kind: 'github-token',
     routing: {
-      enablementEnvVar: 'CLAUDE_CODE_USE_GITHUB',
+      enablementEnvVar: 'NYXCLAUDE_USE_GITHUB',
       skipWhenUseOpenAI: true,
     },
     missingCredentialMessage:

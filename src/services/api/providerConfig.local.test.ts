@@ -12,14 +12,14 @@ import {
 } from './providerConfig.js'
 
 const originalEnv = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   OPENAI_API_KEYS: process.env.OPENAI_API_KEYS,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_AUTH_HEADER: process.env.OPENAI_AUTH_HEADER,
   OPENAI_AUTH_SCHEME: process.env.OPENAI_AUTH_SCHEME,
   OPENAI_AUTH_HEADER_VALUE: process.env.OPENAI_AUTH_HEADER_VALUE,
-  ANTHROPIC_CUSTOM_HEADERS: process.env.ANTHROPIC_CUSTOM_HEADERS,
+  NYXCLAUDE_CUSTOM_HEADERS: process.env.NYXCLAUDE_CUSTOM_HEADERS,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
   OPENAI_API_FORMAT: process.env.OPENAI_API_FORMAT,
   OPENAI_AZURE_STYLE: process.env.OPENAI_AZURE_STYLE,
@@ -39,14 +39,14 @@ beforeEach(async () => {
 
 afterEach(() => {
   try {
-    restoreEnv('CLAUDE_CODE_USE_OPENAI', originalEnv.CLAUDE_CODE_USE_OPENAI)
+    restoreEnv('NYXCLAUDE_USE_OPENAI', originalEnv.NYXCLAUDE_USE_OPENAI)
     restoreEnv('OPENAI_BASE_URL', originalEnv.OPENAI_BASE_URL)
     restoreEnv('OPENAI_API_KEYS', originalEnv.OPENAI_API_KEYS)
     restoreEnv('OPENAI_API_KEY', originalEnv.OPENAI_API_KEY)
     restoreEnv('OPENAI_AUTH_HEADER', originalEnv.OPENAI_AUTH_HEADER)
     restoreEnv('OPENAI_AUTH_SCHEME', originalEnv.OPENAI_AUTH_SCHEME)
     restoreEnv('OPENAI_AUTH_HEADER_VALUE', originalEnv.OPENAI_AUTH_HEADER_VALUE)
-    restoreEnv('ANTHROPIC_CUSTOM_HEADERS', originalEnv.ANTHROPIC_CUSTOM_HEADERS)
+    restoreEnv('NYXCLAUDE_CUSTOM_HEADERS', originalEnv.NYXCLAUDE_CUSTOM_HEADERS)
     restoreEnv('OPENAI_MODEL', originalEnv.OPENAI_MODEL)
     restoreEnv('OPENAI_API_FORMAT', originalEnv.OPENAI_API_FORMAT)
     restoreEnv('OPENAI_AZURE_STYLE', originalEnv.OPENAI_AZURE_STYLE)
@@ -91,7 +91,7 @@ test('treats public hosts as remote', () => {
 })
 
 test('creates a cache scope for local openai-compatible providers', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:1234/v1'
   process.env.OPENAI_MODEL = 'llama-3.2-3b-instruct'
 
@@ -101,7 +101,7 @@ test('creates a cache scope for local openai-compatible providers', () => {
 })
 
 test('keeps codex alias models on chat completions for local openai-compatible providers', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://127.0.0.1:8080/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4'
 
@@ -117,7 +117,7 @@ test('keeps codex alias models on chat completions for local openai-compatible p
 })
 
 test('normalizes legacy Gitlawb Opengateway provider-prefixed base URLs to the smart route', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://opengateway.gitlawb.com/v1/xiaomi-mimo'
   process.env.OPENAI_MODEL = 'zai-org/GLM-5.1-FP8'
 
@@ -130,11 +130,11 @@ test('normalizes legacy Gitlawb Opengateway provider-prefixed base URLs to the s
 })
 
 test('partitions local openai-compatible model cache scope by credentials and headers', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:1234/v1'
   process.env.OPENAI_MODEL = 'llama-3.2-3b-instruct'
   process.env.OPENAI_API_KEY = 'first-key'
-  process.env.ANTHROPIC_CUSTOM_HEADERS = 'X-Route: first'
+  process.env.NYXCLAUDE_CUSTOM_HEADERS = 'X-Route: first'
 
   const firstScope = getAdditionalModelOptionsCacheScope()
 
@@ -142,11 +142,11 @@ test('partitions local openai-compatible model cache scope by credentials and he
   const secondScope = getAdditionalModelOptionsCacheScope()
 
   process.env.OPENAI_API_KEY = 'first-key'
-  process.env.ANTHROPIC_CUSTOM_HEADERS = 'X-Route: second'
+  process.env.NYXCLAUDE_CUSTOM_HEADERS = 'X-Route: second'
   const thirdScope = getAdditionalModelOptionsCacheScope()
 
   delete process.env.OPENAI_API_KEY
-  process.env.ANTHROPIC_CUSTOM_HEADERS = 'X-Route: first'
+  process.env.NYXCLAUDE_CUSTOM_HEADERS = 'X-Route: first'
   process.env.OPENAI_API_KEYS = 'first-a,first-b'
   const pooledScope = getAdditionalModelOptionsCacheScope()
 
@@ -161,7 +161,7 @@ test('partitions local openai-compatible model cache scope by credentials and he
 })
 
 test('uses responses transport when OpenAI-compatible API format requests responses', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4'
   process.env.OPENAI_API_FORMAT = 'responses'
@@ -175,7 +175,7 @@ test('uses responses transport when OpenAI-compatible API format requests respon
 })
 
 test('uses responses transport for Hicap gpt-5.5 models when requested', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_FORMAT = 'responses'
@@ -189,7 +189,7 @@ test('uses responses transport for Hicap gpt-5.5 models when requested', () => {
 })
 
 test('defaults Hicap gpt-5.5 to responses transport', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
 
@@ -202,7 +202,7 @@ test('defaults Hicap gpt-5.5 to responses transport', () => {
 })
 
 test('defaults Hicap gpt-5.5 catalog id to responses transport', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'hicap-gpt-5.5'
 
@@ -215,7 +215,7 @@ test('defaults Hicap gpt-5.5 catalog id to responses transport', () => {
 })
 
 test('forces Hicap gpt-5.5 to responses even when chat completions is configured', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_FORMAT = 'chat_completions'
@@ -229,7 +229,7 @@ test('forces Hicap gpt-5.5 to responses even when chat completions is configured
 })
 
 test('preserves explicit responses_compat for Hicap gpt-5.5', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.5'
   process.env.OPENAI_API_FORMAT = 'responses_compat'
@@ -243,7 +243,7 @@ test('preserves explicit responses_compat for Hicap gpt-5.5', () => {
 })
 
 test('uses responses transport for Hicap gpt-5.4 when requested', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4'
   process.env.OPENAI_API_FORMAT = 'responses'
@@ -257,7 +257,7 @@ test('uses responses transport for Hicap gpt-5.4 when requested', () => {
 })
 
 test('defaults Hicap gpt-5.4 to responses transport', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4'
 
@@ -270,7 +270,7 @@ test('defaults Hicap gpt-5.4 to responses transport', () => {
 })
 
 test('forces Hicap gpt-5.4 to responses even when chat completions is configured', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4'
   process.env.OPENAI_API_FORMAT = 'chat_completions'
@@ -284,7 +284,7 @@ test('forces Hicap gpt-5.4 to responses even when chat completions is configured
 })
 
 test('preserves explicit responses_compat for Hicap gpt-5.4', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4'
   process.env.OPENAI_API_FORMAT = 'responses_compat'
@@ -298,7 +298,7 @@ test('preserves explicit responses_compat for Hicap gpt-5.4', () => {
 })
 
 test('falls back to chat completions for non-gpt Hicap models when responses is requested', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'claude-opus-4.8'
   process.env.OPENAI_API_FORMAT = 'responses'
@@ -312,7 +312,7 @@ test('falls back to chat completions for non-gpt Hicap models when responses is 
 })
 
 test('keeps Codex backend on Codex responses transport even when API format is set', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://chatgpt.com/backend-api/codex'
   process.env.OPENAI_MODEL = 'codexplan'
   process.env.OPENAI_API_FORMAT = 'chat_completions'
@@ -326,7 +326,7 @@ test('keeps Codex backend on Codex responses transport even when API format is s
 })
 
 test('skips local model cache scope for remote openai-compatible providers', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-4o'
 
@@ -410,7 +410,7 @@ test('modelRequiresResponsesApi matches gpt-5.4/5.5/5.6 (excl. mini/nano) only',
 })
 
 test('keeps gpt-5.4-mini on chat completions on the OpenAI base', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4-mini'
   delete process.env.OPENAI_API_FORMAT
@@ -422,7 +422,7 @@ test('keeps gpt-5.4-mini on chat completions on the OpenAI base', () => {
 })
 
 test('auto-routes gpt-5.6 to responses on the default OpenAI base', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.6-sol'
   delete process.env.OPENAI_API_FORMAT
@@ -435,7 +435,7 @@ test('auto-routes gpt-5.6 to responses on the default OpenAI base', () => {
 })
 
 test('auto-routes gpt-5.6 to responses on regional OpenAI subdomains', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://eu.api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.6-sol'
   delete process.env.OPENAI_API_FORMAT
@@ -448,7 +448,7 @@ test('auto-routes gpt-5.6 to responses on regional OpenAI subdomains', () => {
 })
 
 test('explicit chat_completions overrides the gpt-5.6 responses auto-route', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.6-sol'
   process.env.OPENAI_API_FORMAT = 'chat_completions'
@@ -460,7 +460,7 @@ test('explicit chat_completions overrides the gpt-5.6 responses auto-route', () 
 })
 
 test('leaves gpt-4-class models on chat completions for the OpenAI base', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.openai.com/v1'
   process.env.OPENAI_MODEL = 'gpt-4o'
   delete process.env.OPENAI_API_FORMAT
@@ -472,7 +472,7 @@ test('leaves gpt-4-class models on chat completions for the OpenAI base', () => 
 })
 
 test('does not auto-route gpt-5.6 on an arbitrary non-OpenAI gateway base', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://gateway.example/v1'
   process.env.OPENAI_MODEL = 'gpt-5.6-sol'
   delete process.env.OPENAI_API_FORMAT
@@ -484,7 +484,7 @@ test('does not auto-route gpt-5.6 on an arbitrary non-OpenAI gateway base', () =
 })
 
 test('auto-routes gpt-5.6 to responses on an Azure OpenAI v1 base', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://myres.openai.azure.com/openai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.6-terra'
   delete process.env.OPENAI_API_FORMAT
@@ -496,7 +496,7 @@ test('auto-routes gpt-5.6 to responses on an Azure OpenAI v1 base', () => {
 })
 
 test('OPENAI_AZURE_STYLE extends the gpt-5.6 responses auto-route to non-azure.com hosts', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://apim.contoso.example/azure-openai'
   process.env.OPENAI_MODEL = 'gpt-5.6-sol'
   process.env.OPENAI_AZURE_STYLE = '1'
@@ -509,7 +509,7 @@ test('OPENAI_AZURE_STYLE extends the gpt-5.6 responses auto-route to non-azure.c
 })
 
 test('without OPENAI_AZURE_STYLE the same non-azure.com host stays on chat completions', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://apim.contoso.example/azure-openai'
   process.env.OPENAI_MODEL = 'gpt-5.6-sol'
   delete process.env.OPENAI_AZURE_STYLE
@@ -522,7 +522,7 @@ test('without OPENAI_AZURE_STYLE the same non-azure.com host stays on chat compl
 })
 
 test('does not auto-route an Azure-hosted custom gateway based on its resource name', () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://openai-proxy.web.azure.com/v1'
   process.env.OPENAI_MODEL = 'gpt-5.6-sol'
   delete process.env.OPENAI_AZURE_STYLE

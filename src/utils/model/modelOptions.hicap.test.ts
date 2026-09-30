@@ -26,7 +26,7 @@ async function getOpenAIModelOptions() {
   return getModelOptions()
 }
 const originalEnv = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
   OPENAI_API_BASE: process.env.OPENAI_API_BASE,
   OPENAI_API_FORMAT: process.env.OPENAI_API_FORMAT,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
@@ -80,7 +80,7 @@ afterEach(() => {
 })
 
 test('Hicap GLM discovered aliases reuse the static model option', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'zai-org/GLM-5.2'
   process.env.HICAP_API_KEY = 'hicap-test-key'
@@ -92,7 +92,7 @@ test('Hicap GLM discovered aliases reuse the static model option', async () => {
   expect(values.filter(value => value === 'glm-5.2')).toHaveLength(1)
 })
 test('Hicap Responses models expose the static route catalog in /model options', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4'
   process.env.HICAP_API_KEY = 'hicap-test-key'
@@ -107,7 +107,7 @@ test('Hicap Responses models expose the static route catalog in /model options',
 })
 
 test('Hicap active profile model options merge with the static route catalog', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4'
   process.env.HICAP_API_KEY = 'hicap-test-key'
@@ -145,7 +145,7 @@ test('Hicap active profile model options merge with the static route catalog', a
 })
 
 test('Hicap Responses catalog ignores stale legacy OpenAI model cache', async () => {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
   process.env.OPENAI_MODEL = 'gpt-5.4'
   process.env.HICAP_API_KEY = 'hicap-test-key'

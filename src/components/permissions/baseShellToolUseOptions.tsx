@@ -394,7 +394,7 @@ export function handleBaseShellSelection({
     case 'yes': {
       const trimmedFeedback = acceptFeedback.trim()
       logUnaryPermissionEvent('tool_use_single', toolUseConfirm, 'accept')
-      logEvent('tengu_accept_submitted', {
+      logEvent('nyxclaude_accept_submitted', {
         toolName: toolAnalyticsName,
         isMcp: toolUseConfirm.tool.isMcp ?? false,
         has_instructions: !!trimmedFeedback,
@@ -424,7 +424,7 @@ export function handleBaseShellSelection({
       if (!trimmedFeedback) {
         return
       }
-      logEvent('tengu_reject_submitted', {
+      logEvent('nyxclaude_reject_submitted', {
         toolName: toolAnalyticsName,
         isMcp: toolUseConfirm.tool.isMcp ?? false,
         has_instructions: !!trimmedFeedback,
@@ -436,7 +436,7 @@ export function handleBaseShellSelection({
     }
     case 'no': {
       const trimmedFeedback = noInputMode ? rejectFeedback.trim() : ''
-      logEvent('tengu_reject_submitted', {
+      logEvent('nyxclaude_reject_submitted', {
         toolName: toolAnalyticsName,
         isMcp: toolUseConfirm.tool.isMcp ?? false,
         has_instructions: !!trimmedFeedback,

@@ -3,7 +3,7 @@ import { getDisplayedEffortLevel, getEffortSuffix } from './effort.js'
 
 // ultracode is a meta-mode (the standing multi-agent permission). The display
 // surfaces show it as the current level when it is the EFFECTIVE effort —
-// CLAUDE_CODE_EFFORT_LEVEL takes precedence over the session value (matching the
+// NYXCLAUDE_EFFORT_LEVEL takes precedence over the session value (matching the
 // API and the permission gate), so the display follows that precedence too.
 // @see #1551
 const MODEL = 'claude-opus-4-8'
@@ -13,16 +13,16 @@ const OPENAI_CONTEXT = {
   supportsCodexReasoningEffort: () => true,
 }
 const ENV_VARS = [
-  'CLAUDE_CODE_EFFORT_LEVEL',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+  'NYXCLAUDE_EFFORT_LEVEL',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
   'ANTHROPIC_BASE_URL',
   'ANTHROPIC_API_KEY',
   'ANTHROPIC_MODEL',
@@ -77,8 +77,8 @@ describe('ultracode display surfaces', () => {
     )
   })
 
-  test('a conflicting CLAUDE_CODE_EFFORT_LEVEL override wins over session ultracode', () => {
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'high'
+  test('a conflicting NYXCLAUDE_EFFORT_LEVEL override wins over session ultracode', () => {
+    process.env.NYXCLAUDE_EFFORT_LEVEL = 'high'
     expect(getDisplayedEffortLevel(MODEL, 'ultracode', FIRST_PARTY_CONTEXT)).toBe(
       'high',
     )
@@ -87,8 +87,8 @@ describe('ultracode display surfaces', () => {
     )
   })
 
-  test('CLAUDE_CODE_EFFORT_LEVEL=ultracode surfaces ultracode even if the session differs', () => {
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'ultracode'
+  test('NYXCLAUDE_EFFORT_LEVEL=ultracode surfaces ultracode even if the session differs', () => {
+    process.env.NYXCLAUDE_EFFORT_LEVEL = 'ultracode'
     expect(getDisplayedEffortLevel(MODEL, 'high', FIRST_PARTY_CONTEXT)).toBe(
       'ultracode',
     )
@@ -97,8 +97,8 @@ describe('ultracode display surfaces', () => {
     )
   })
 
-  test('CLAUDE_CODE_EFFORT_LEVEL=ultracode clamps display on unsupported first-party models', () => {
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'ultracode'
+  test('NYXCLAUDE_EFFORT_LEVEL=ultracode clamps display on unsupported first-party models', () => {
+    process.env.NYXCLAUDE_EFFORT_LEVEL = 'ultracode'
     expect(
       getDisplayedEffortLevel(
         'claude-sonnet-4-6',
@@ -111,8 +111,8 @@ describe('ultracode display surfaces', () => {
     )
   })
 
-  test('CLAUDE_CODE_EFFORT_LEVEL=ultracode displays the API effort on OpenAI routes', () => {
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'ultracode'
+  test('NYXCLAUDE_EFFORT_LEVEL=ultracode displays the API effort on OpenAI routes', () => {
+    process.env.NYXCLAUDE_EFFORT_LEVEL = 'ultracode'
     expect(getDisplayedEffortLevel('gpt-5.4', 'high', OPENAI_CONTEXT)).toBe(
       'xhigh',
     )

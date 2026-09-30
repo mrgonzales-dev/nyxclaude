@@ -16,10 +16,10 @@ import { logEvent } from '../../services/analytics/index.js';
 import { MCPConnectionManager } from '../../services/mcp/MCPConnectionManager.js';
 import { AppStateProvider } from '../../state/AppState.js';
 import { onChangeAppState } from '../../state/onChangeAppState.js';
-import { isAnthropicAuthEnabled } from '../../utils/auth.js';
+import { isRemoteAuthEnabled } from '../../utils/auth.js';
 export async function setupTokenHandler(root: Root): Promise<void> {
-  logEvent('tengu_setup_token_command', {});
-  const showAuthWarning = !isAnthropicAuthEnabled();
+  logEvent('nyxclaude_setup_token_command', {});
+  const showAuthWarning = !isRemoteAuthEnabled();
   const {
     ConsoleOAuthFlow
   } = await import('../../components/ConsoleOAuthFlow.js');
@@ -70,7 +70,7 @@ function DoctorWithPlugins(t0) {
   return t1;
 }
 export async function doctorHandler(root: Root): Promise<void> {
-  logEvent('tengu_doctor_command', {});
+  logEvent('nyxclaude_doctor_command', {});
   await new Promise<void>(resolve => {
     root.render(<AppStateProvider>
         <KeybindingSetup>

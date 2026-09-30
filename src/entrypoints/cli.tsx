@@ -2,7 +2,7 @@ import { feature } from 'bun:bundle';
 import { getClearTerminalSequence } from '../ink/clearTerminal.js';
 
 // NYXCLAUDE: provider config (OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL,
-// ANTHROPIC_API_KEY, CLAUDE_CODE_USE_OPENAI) is no longer hardcoded here.
+// ANTHROPIC_API_KEY, NYXCLAUDE_USE_OPENAI) is no longer hardcoded here.
 // Add a provider via /provider — it saves to .nyxclaude-profile.json and
 // loads at startup via applyStartupEnvFromProfile(). Operational env vars
 // (DISABLE_TELEMETRY, etc.) live in .nyxclaude/settings.local.json.
@@ -37,9 +37,9 @@ if (typeof globalThis.File === 'undefined') {
 // Nyxclaude: disable experimental API betas by default.
 // Tool search (defer_loading), global cache scope, and context management
 // require internal API support not available to external accounts → 500.
-// Users can opt-in with CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=false.
+// Users can opt-in with NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS=false.
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
-process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS ??= 'true'
+process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS ??= 'true'
 
 // Bugfix for corepack auto-pinning, which adds yarnpkg to peoples' package.jsons
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
@@ -235,8 +235,8 @@ if (!process.env.NODE_OPTIONS?.includes('--max-old-space-size')) {
 // module-level consts at import time — init() runs too late. feature() gate
 // DCEs this entire block from external builds.
 // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
-if (feature('ABLATION_BASELINE') && process.env.CLAUDE_CODE_ABLATION_BASELINE) {
-  for (const k of ['CLAUDE_CODE_SIMPLE', 'CLAUDE_CODE_DISABLE_THINKING', 'DISABLE_INTERLEAVED_THINKING', 'DISABLE_COMPACT', 'DISABLE_AUTO_COMPACT', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY', 'CLAUDE_CODE_DISABLE_BACKGROUND_TASKS']) {
+if (feature('ABLATION_BASELINE') && process.env.NYXCLAUDE_ABLATION_BASELINE) {
+  for (const k of ['NYXCLAUDE_SIMPLE', 'NYXCLAUDE_DISABLE_THINKING', 'DISABLE_INTERLEAVED_THINKING', 'DISABLE_COMPACT', 'DISABLE_AUTO_COMPACT', 'NYXCLAUDE_DISABLE_AUTO_MEMORY', 'NYXCLAUDE_DISABLE_BACKGROUND_TASKS']) {
     // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
     process.env[k] ??= '1';
   }
@@ -488,7 +488,7 @@ export async function main(
     }
   }
 
-  // Hydrate GitHub credentials after profile is applied so CLAUDE_CODE_USE_GITHUB from profile is available
+  // Hydrate GitHub credentials after profile is applied so NYXCLAUDE_USE_GITHUB from profile is available
   {
     const {
       hydrateGithubModelsTokenFromSecureStorage,
@@ -572,7 +572,7 @@ export async function main(
     return;
   }
 
-  // Fast-path for `claude remote-control` (also accepts legacy `claude remote` / `claude sync` / `claude bridge`):
+  // Fast-path for `nyxclaude remote-control` (also accepts legacy `nyxclaude remote` / `nyxclaude sync` / `nyxclaude bridge`):
   // serve local machine as bridge environment.
   // feature() must stay inline for build-time dead code elimination;
   // isBridgeEnabled() checks the runtime GrowthBook gate.
@@ -601,9 +601,9 @@ export async function main(
     // getBridgeDisabledReason awaits GB init, so the returned value is fresh
     // (not the stale disk cache), but init still needs auth headers to work.
     const {
-      getClaudeAIOAuthTokens
+      getRemoteOAuthTokens
     } = await import('../utils/auth.js');
-    if (!getClaudeAIOAuthTokens()?.accessToken) {
+    if (!getRemoteOAuthTokens()?.accessToken) {
       exitWithError(BRIDGE_LOGIN_ERROR);
     }
     const disabledReason = await getBridgeDisabledReason();
@@ -628,7 +628,7 @@ export async function main(
     return;
   }
 
-  // Fast-path for `claude daemon [subcommand]`: long-running supervisor.
+  // Fast-path for `nyxclaude daemon [subcommand]`: long-running supervisor.
   if (feature('DAEMON') && args[0] === 'daemon') {
     profileCheckpoint('cli_daemon_path');
     const {
@@ -659,7 +659,7 @@ export async function main(
     process.exit(0);
   }
 
-  // Fast-path for `claude environment-runner`: headless BYOC runner.
+  // Fast-path for `nyxclaude environment-runner`: headless BYOC runner.
   // feature() must stay inline for build-time dead code elimination.
   if (feature('BYOC_ENVIRONMENT_RUNNER') && args[0] === 'environment-runner') {
     profileCheckpoint('cli_environment_runner_path');
@@ -670,7 +670,7 @@ export async function main(
     return;
   }
 
-  // Fast-path for `claude self-hosted-runner`: headless self-hosted-runner
+  // Fast-path for `nyxclaude self-hosted-runner`: headless self-hosted-runner
   // targeting the SelfHostedRunnerWorkerService API (register + poll; poll IS
   // heartbeat). feature() must stay inline for build-time dead code elimination.
   if (feature('SELF_HOSTED_RUNNER') && args[0] === 'self-hosted-runner') {
@@ -719,7 +719,7 @@ export async function main(
   // --bare: set SIMPLE early so gates fire during module eval / commander
   // option building (not just inside the action handler).
   if (args.includes('--bare')) {
-    process.env.CLAUDE_CODE_SIMPLE = '1';
+    process.env.NYXCLAUDE_SIMPLE = '1';
   }
 
   // No special flags detected, load and run the full CLI

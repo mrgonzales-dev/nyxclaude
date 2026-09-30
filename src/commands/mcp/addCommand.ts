@@ -103,7 +103,7 @@ export function registerMcpAddCommand(mcp: Command): void {
         // XAA fail-fast: validate at add-time, not auth-time.
         if (options.xaa && !isXaaEnabled()) {
           cliError(
-            'Error: --xaa requires CLAUDE_CODE_ENABLE_XAA=1 in your environment',
+            'Error: --xaa requires NYXCLAUDE_ENABLE_XAA=1 in your environment',
           )
         }
         const xaa = Boolean(options.xaa)
@@ -132,7 +132,7 @@ export function registerMcpAddCommand(mcp: Command): void {
           actualCommand.endsWith('/sse') ||
           actualCommand.endsWith('/mcp')
 
-        logEvent('tengu_mcp_add', {
+        logEvent('nyxclaude_mcp_add', {
           type: transport as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           scope:
             scope as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

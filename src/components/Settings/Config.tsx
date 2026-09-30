@@ -37,7 +37,6 @@ import { Byline } from '../design-system/Byline.js';
 import { useTabHeaderFocus } from '../design-system/Tabs.js';
 import { useIsInsideModal } from '../../context/modalContext.js';
 import { SearchBox } from '../SearchBox.js';
-import { isSupportedTerminal, hasAccessToIDEExtensionDiffFeature } from '../../utils/ide.js';
 import { getInitialSettings, getSettingsForSource, updateSettingsForSource } from '../../utils/settings/settings.js';
 import { getUserMsgOptIn, setUserMsgOptIn } from '../../bootstrap/state.js';
 import { DEFAULT_OUTPUT_STYLE_NAME } from 'src/constants/outputStyles.js';
@@ -199,8 +198,7 @@ export function Config({
   React.useEffect(() => {
     onIsSearchModeChange?.(ownsEsc);
   }, [ownsEsc, onIsSearchModeChange]);
-  const isConnectedToIde = hasAccessToIDEExtensionDiffFeature(context.options.mcpClients);
-  const isFileCheckpointingAvailable = !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING);
+  const isFileCheckpointingAvailable = !isEnvTruthy(process.env.NYXCLAUDE_DISABLE_FILE_CHECKPOINTING);
   const memoryFiles = React.use(getMemoryFiles(true)) as MemoryFileInfo[];
   function getPendingExternalIncludesScope(): 'User' | 'Project' | null {
     const cfg = getCurrentProjectConfig();
@@ -215,7 +213,7 @@ export function Config({
   const autoUpdaterDisabledReason = getAutoUpdaterDisabledReason();
   function onChangeMainModelConfig(value: string | null): void {
     const previousModel = mainLoopModel;
-    logEvent('tengu_config_model_changed', {
+    logEvent('nyxclaude_config_model_changed', {
       from_model: previousModel as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       to_model: value as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
     });
@@ -290,7 +288,7 @@ export function Config({
         ...getGlobalConfig(),
         autoCompactEnabled
       });
-      logEvent('tengu_auto_compact_setting_changed', {
+      logEvent('nyxclaude_auto_compact_setting_changed', {
         enabled: autoCompactEnabled
       });
     }
@@ -310,7 +308,7 @@ export function Config({
         ...getGlobalConfig(),
         maxMessagesCompactionThreshold: normalizedThreshold
       });
-      logEvent('tengu_max_messages_compaction_threshold_changed', {
+      logEvent('nyxclaude_max_messages_compaction_threshold_changed', {
         threshold: normalizedThreshold as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
     }
@@ -333,7 +331,7 @@ export function Config({
         ...getGlobalConfig(),
         compactTailTurns
       });
-      logEvent('tengu_compact_tail_turns_changed', {
+      logEvent('nyxclaude_compact_tail_turns_changed', {
         value: compactTailTurnsValue as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
     }
@@ -351,7 +349,7 @@ export function Config({
         ...getGlobalConfig(),
         toolHistoryCompressionEnabled
       });
-      logEvent('tengu_tool_history_compression_setting_changed', {
+      logEvent('nyxclaude_tool_history_compression_setting_changed', {
         enabled: toolHistoryCompressionEnabled
       });
     }
@@ -376,7 +374,7 @@ export function Config({
       } catch (error) {
         logError(`Failed to refresh context collapse state: ${error}`);
       }
-      logEvent('tengu_context_collapse_setting_changed', {
+      logEvent('nyxclaude_context_collapse_setting_changed', {
         enabled: contextCollapseEnabled
       });
     }
@@ -396,7 +394,7 @@ export function Config({
         ...getGlobalConfig(),
         showCacheStats
       });
-      logEvent('tengu_show_cache_stats_setting_changed', {
+      logEvent('nyxclaude_show_cache_stats_setting_changed', {
         mode: showCacheStats as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
     }
@@ -414,7 +412,7 @@ export function Config({
         ...prev_3,
         spinnerTipsEnabled
       }));
-      logEvent('tengu_tips_setting_changed', {
+      logEvent('nyxclaude_tips_setting_changed', {
         enabled: spinnerTipsEnabled
       });
     }
@@ -439,7 +437,7 @@ export function Config({
           prefersReducedMotion
         }
       }));
-      logEvent('tengu_reduce_motion_setting_changed', {
+      logEvent('nyxclaude_reduce_motion_setting_changed', {
         enabled: prefersReducedMotion
       });
     }
@@ -456,7 +454,7 @@ export function Config({
       updateSettingsForSource('userSettings', {
         alwaysThinkingEnabled: enabled ? undefined : false
       });
-      logEvent('tengu_thinking_toggled', {
+      logEvent('nyxclaude_thinking_toggled', {
         enabled
       });
     }
@@ -495,7 +493,7 @@ export function Config({
         }));
       }
     }
-  }] : []), ...(getFeatureValue_CACHED_MAY_BE_STALE('tengu_chomp_inflection', false) ? [{
+  }] : []), ...(getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_chomp_inflection', false) ? [{
     id: 'promptSuggestionEnabled',
     label: 'Prompt suggestions',
     value: promptSuggestionEnabled,
@@ -524,7 +522,7 @@ export function Config({
         ...getGlobalConfig(),
         fileCheckpointingEnabled: enabled_3
       });
-      logEvent('tengu_file_history_snapshots_setting_changed', {
+      logEvent('nyxclaude_file_history_snapshots_setting_changed', {
         enabled: enabled_3
       });
     }
@@ -548,7 +546,7 @@ export function Config({
         ...getGlobalConfig(),
         terminalProgressBarEnabled
       });
-      logEvent('tengu_terminal_progress_bar_setting_changed', {
+      logEvent('nyxclaude_terminal_progress_bar_setting_changed', {
         enabled: terminalProgressBarEnabled
       });
     }
@@ -566,11 +564,11 @@ export function Config({
         ...getGlobalConfig(),
         defaultStatusLineEnabled
       });
-      logEvent('tengu_default_status_line_setting_changed', {
+      logEvent('nyxclaude_default_status_line_setting_changed', {
         enabled: defaultStatusLineEnabled
       });
     }
-  }, ...(getFeatureValue_CACHED_MAY_BE_STALE('tengu_terminal_sidebar', false) ? [{
+  }, ...(getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_terminal_sidebar', false) ? [{
     id: 'showStatusInTerminalTab',
     label: 'Show status in terminal tab',
     value: globalConfig.showStatusInTerminalTab ?? false,
@@ -584,7 +582,7 @@ export function Config({
         ...getGlobalConfig(),
         showStatusInTerminalTab
       });
-      logEvent('tengu_terminal_tab_status_setting_changed', {
+      logEvent('nyxclaude_terminal_tab_status_setting_changed', {
         enabled: showStatusInTerminalTab
       });
     }
@@ -602,7 +600,7 @@ export function Config({
         ...getGlobalConfig(),
         showTurnDuration
       });
-      logEvent('tengu_show_turn_duration_setting_changed', {
+      logEvent('nyxclaude_show_turn_duration_setting_changed', {
         enabled: showTurnDuration
       });
     }
@@ -643,7 +641,7 @@ export function Config({
         ...prev_13,
         defaultPermissionMode: mode
       }));
-      logEvent('tengu_config_changed', {
+      logEvent('nyxclaude_config_changed', {
         setting: 'defaultPermissionMode' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         value: mode as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -693,7 +691,7 @@ export function Config({
         ...getGlobalConfig(),
         respectGitignore
       });
-      logEvent('tengu_respect_gitignore_setting_changed', {
+      logEvent('nyxclaude_respect_gitignore_setting_changed', {
         enabled: respectGitignore
       });
     }
@@ -711,7 +709,7 @@ export function Config({
         ...getGlobalConfig(),
         copyFullResponse
       });
-      logEvent('tengu_config_changed', {
+      logEvent('nyxclaude_config_changed', {
         setting: 'copyFullResponse' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         value: String(copyFullResponse) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -733,7 +731,7 @@ export function Config({
         ...getGlobalConfig(),
         copyOnSelect
       });
-      logEvent('tengu_config_changed', {
+      logEvent('nyxclaude_config_changed', {
         setting: 'copyOnSelect' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         value: String(copyOnSelect) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -752,7 +750,7 @@ export function Config({
         ...getGlobalConfig(),
         flickerFreeMode
       });
-      logEvent('tengu_config_changed', {
+      logEvent('nyxclaude_config_changed', {
         setting: 'flickerFreeMode' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         value: String(flickerFreeMode) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -881,7 +879,7 @@ export function Config({
         ...prev_19,
         'Default view': selected
       }));
-      logEvent('tengu_default_view_setting_changed', {
+      logEvent('nyxclaude_default_view_setting_changed', {
         value: (defaultView ?? 'unset') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
     }
@@ -907,7 +905,7 @@ export function Config({
         ...getGlobalConfig(),
         editorMode: value_1 as GlobalConfig['editorMode']
       });
-      logEvent('tengu_editor_mode_changed', {
+      logEvent('nyxclaude_editor_mode_changed', {
         mode: value_1 as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         source: 'config_panel' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -929,7 +927,7 @@ export function Config({
         ...getGlobalConfig(),
         prStatusFooterEnabled: enabled_4
       });
-      logEvent('tengu_pr_status_footer_setting_changed', {
+      logEvent('nyxclaude_pr_status_footer_setting_changed', {
         enabled: enabled_4
       });
     }
@@ -939,65 +937,7 @@ export function Config({
     value: mainLoopModel === null ? 'Default (recommended)' : mainLoopModel,
     type: 'managedEnum' as const,
     onChange: onChangeMainModelConfig
-  }, ...(isConnectedToIde ? [{
-    id: 'diffTool',
-    label: 'Diff tool',
-    value: globalConfig.diffTool ?? 'auto',
-    options: ['terminal', 'auto'],
-    type: 'enum' as const,
-    onChange(diffTool: string) {
-      saveGlobalConfig(current_15 => ({
-        ...current_15,
-        diffTool: diffTool as GlobalConfig['diffTool']
-      }));
-      setGlobalConfig({
-        ...getGlobalConfig(),
-        diffTool: diffTool as GlobalConfig['diffTool']
-      });
-      logEvent('tengu_diff_tool_changed', {
-        tool: diffTool as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-        source: 'config_panel' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
-      });
-    }
-  }] : []), ...(!isSupportedTerminal() ? [{
-    id: 'autoConnectIde',
-    label: 'Auto-connect to IDE (external terminal)',
-    value: globalConfig.autoConnectIde ?? false,
-    type: 'boolean' as const,
-    onChange(autoConnectIde: boolean) {
-      saveGlobalConfig(current_16 => ({
-        ...current_16,
-        autoConnectIde
-      }));
-      setGlobalConfig({
-        ...getGlobalConfig(),
-        autoConnectIde
-      });
-      logEvent('tengu_auto_connect_ide_changed', {
-        enabled: autoConnectIde,
-        source: 'config_panel' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
-      });
-    }
-  }] : []), ...(isSupportedTerminal() ? [{
-    id: 'autoInstallIdeExtension',
-    label: 'Auto-install IDE extension',
-    value: globalConfig.autoInstallIdeExtension ?? true,
-    type: 'boolean' as const,
-    onChange(autoInstallIdeExtension: boolean) {
-      saveGlobalConfig(current_17 => ({
-        ...current_17,
-        autoInstallIdeExtension
-      }));
-      setGlobalConfig({
-        ...getGlobalConfig(),
-        autoInstallIdeExtension
-      });
-      logEvent('tengu_auto_install_ide_extension_changed', {
-        enabled: autoInstallIdeExtension,
-        source: 'config_panel' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
-      });
-    }
-  }] : []),
+  },
   // Teammate mode (only shown when agent swarms are enabled)
   ...(isAgentSwarmsEnabled() ? (() => {
     const cliOverride = getCliTeammateModeOverride();
@@ -1022,7 +962,7 @@ export function Config({
           ...getGlobalConfig(),
           teammateMode: mode_0
         });
-        logEvent('tengu_teammate_mode_changed', {
+        logEvent('nyxclaude_teammate_mode_changed', {
           mode: mode_0 as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
         });
       }
@@ -1197,7 +1137,7 @@ export function Config({
     // Log any changes that were made
     // TODO: Make these proper messages
     const formattedChanges: string[] = Object.entries(changes).map(([key, value_2]) => {
-      logEvent('tengu_config_changed', {
+      logEvent('nyxclaude_config_changed', {
         key: key as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         value: value_2 as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -1211,7 +1151,7 @@ export function Config({
     const currentUsingCustomKey = Boolean(effectiveApiKey && globalConfig.customApiKeyResponses?.approved?.includes(normalizeApiKeyForConfig(effectiveApiKey)));
     if (initialUsingCustomKey !== currentUsingCustomKey) {
       formattedChanges.push(`${currentUsingCustomKey ? 'Enabled' : 'Disabled'} custom API key`);
-      logEvent('tengu_config_changed', {
+      logEvent('nyxclaude_config_changed', {
         key: 'env.ANTHROPIC_API_KEY' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         value: currentUsingCustomKey as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
@@ -1233,12 +1173,6 @@ export function Config({
     }
     if (globalConfig.diffTool !== initialConfig.current.diffTool) {
       formattedChanges.push(`Set diff tool to ${chalk.bold(globalConfig.diffTool)}`);
-    }
-    if (globalConfig.autoConnectIde !== initialConfig.current.autoConnectIde) {
-      formattedChanges.push(`${globalConfig.autoConnectIde ? 'Enabled' : 'Disabled'} auto-connect to IDE`);
-    }
-    if (globalConfig.autoInstallIdeExtension !== initialConfig.current.autoInstallIdeExtension) {
-      formattedChanges.push(`${globalConfig.autoInstallIdeExtension ? 'Enabled' : 'Disabled'} auto-install IDE extension`);
     }
     if (globalConfig.autoCompactEnabled !== initialConfig.current.autoCompactEnabled) {
       formattedChanges.push(`${globalConfig.autoCompactEnabled ? 'Enabled' : 'Disabled'} auto-compact`);
@@ -1482,7 +1416,7 @@ export function Config({
           autoUpdatesChannel: 'latest',
           minimumVersion: undefined
         }));
-        logEvent('tengu_autoupdate_channel_changed', {
+        logEvent('nyxclaude_autoupdate_channel_changed', {
           channel: 'latest' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
         });
       }
@@ -1636,7 +1570,7 @@ export function Config({
           ...prev_25,
           teammateDefaultModel: teammateModelDisplayString(model_1)
         }));
-        logEvent('tengu_teammate_default_model_changed', {
+        logEvent('nyxclaude_teammate_default_model_changed', {
           model: model_1 as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
         });
       }} onCancel={() => {
@@ -1671,7 +1605,7 @@ export function Config({
         updateSettingsForSource('localSettings', {
           outputStyle: style
         });
-        void logEvent('tengu_output_style_changed', {
+        void logEvent('nyxclaude_output_style_changed', {
           style: (style ?? DEFAULT_OUTPUT_STYLE_NAME) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           source: 'config_panel' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           settings_source: 'localSettings' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
@@ -1697,7 +1631,7 @@ export function Config({
         updateSettingsForSource('userSettings', {
           language
         });
-        void logEvent('tengu_language_changed', {
+        void logEvent('nyxclaude_language_changed', {
           language: (language ?? 'default') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           source: 'config_panel' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
         });
@@ -1750,7 +1684,7 @@ export function Config({
           autoUpdatesChannel: channel as 'latest' | 'stable',
           minimumVersion: undefined
         }));
-        logEvent('tengu_autoupdate_enabled', {
+        logEvent('nyxclaude_autoupdate_enabled', {
           channel: channel as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
         });
       }} />}
@@ -1778,7 +1712,7 @@ export function Config({
         ...prev_27,
         ...newSettings
       }));
-      logEvent('tengu_autoupdate_channel_changed', {
+      logEvent('nyxclaude_autoupdate_channel_changed', {
         channel: 'stable' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         minimum_version_set: choice === 'stay'
       });

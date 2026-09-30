@@ -36,19 +36,19 @@ import {
 
 const ENV_KEYS = [
   'CI',
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_MISTRAL',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_MISTRAL',
   'OPENAI_BASE_URL',
   'OPENAI_API_KEY',
   'OPENAI_MODEL',
   'GEMINI_MODEL',
   'MISTRAL_MODEL',
   'ANTHROPIC_MODEL',
-  'CLAUDE_MODEL',
+  'NYXCLAUDE_MODEL',
   'NVIDIA_NIM',
   'MINIMAX_API_KEY',
   'XAI_API_KEY',
@@ -100,14 +100,14 @@ afterEach(() => {
 })
 
 function setupOpenAIMode(baseUrl: string, model: string): void {
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = baseUrl
   process.env.OPENAI_MODEL = model
   process.env.OPENAI_API_KEY = 'test-key'
 }
 
 describe('printStartupScreen logo', () => {
-  test('renders CLAUDE with a D-shaped D instead of an O-shaped block', () => {
+  test('renders NYX with a D-shaped D instead of an O-shaped block', () => {
     ;(globalThis as Record<string, unknown>).MACRO = { VERSION: 'test-version' }
     Object.defineProperty(process.stdout, 'isTTY', {
       configurable: true,
@@ -305,15 +305,15 @@ describe('detectProvider — modelOverride from --model flag', () => {
     expect(result.model).toContain('opus')
   })
 
-  test('modelOverride takes priority over CLAUDE_MODEL env var', () => {
-    process.env.CLAUDE_MODEL = 'claude-haiku-4-5-20251001'
+  test('modelOverride takes priority over NYXCLAUDE_MODEL env var', () => {
+    process.env.NYXCLAUDE_MODEL = 'claude-haiku-4-5-20251001'
     const result = detectProvider('claude-opus-4-6')
     expect(result.name).toBe('Anthropic')
     expect(result.model).toContain('opus')
   })
 
   test('modelOverride works for OpenAI provider', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_API_KEY = 'test-key'
     process.env.OPENAI_MODEL = 'gpt-4o'
     const result = detectProvider('gpt-4-turbo')
@@ -321,20 +321,20 @@ describe('detectProvider — modelOverride from --model flag', () => {
   })
 
   test('modelOverride works for Gemini provider', () => {
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
     const result = detectProvider('gemini-2.5-pro')
     expect(result.name).toBe('Google AI / Gemini')
     expect(result.model).toBe('gemini-2.5-pro')
   })
 
   test('modelOverride works for Mistral provider', () => {
-    process.env.CLAUDE_CODE_USE_MISTRAL = '1'
+    process.env.NYXCLAUDE_USE_MISTRAL = '1'
     const result = detectProvider('mistral-large-latest')
     expect(result.model).toBe('mistral-large-latest')
   })
 
   test('modelOverride works for GitHub provider', () => {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     const result = detectProvider('gpt-4o')
     expect(result.model).toContain('gpt-4o')
   })

@@ -244,7 +244,7 @@ export const call: LocalCommandCall = async (args) => {
   const modelOverride = parts.find((p) => !p.startsWith('--')) || undefined
   const modelStr = modelOverride ?? getMainLoopModel()
   const request = resolveProviderRequest({ model: modelStr })
-  const isGithub = isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)
+  const isGithub = isEnvTruthy(process.env.NYXCLAUDE_USE_GITHUB)
 
   // Resolve API key the same way the active provider path does.
   if (isGithub) {

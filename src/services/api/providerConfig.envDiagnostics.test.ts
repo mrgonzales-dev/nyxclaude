@@ -8,9 +8,9 @@ type DebugSpy = ReturnType<
 >
 
 const originalEnv = {
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
-  CLAUDE_CODE_USE_GEMINI: process.env.CLAUDE_CODE_USE_GEMINI,
-  CLAUDE_CODE_USE_MISTRAL: process.env.CLAUDE_CODE_USE_MISTRAL,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
+  NYXCLAUDE_USE_GEMINI: process.env.NYXCLAUDE_USE_GEMINI,
+  NYXCLAUDE_USE_MISTRAL: process.env.NYXCLAUDE_USE_MISTRAL,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   OPENAI_MODEL: process.env.OPENAI_MODEL,
   OPENAI_API_BASE: process.env.OPENAI_API_BASE,
@@ -35,9 +35,9 @@ beforeEach(async () => {
 
 afterEach(() => {
   try {
-    restoreEnv('CLAUDE_CODE_USE_OPENAI', originalEnv.CLAUDE_CODE_USE_OPENAI)
-    restoreEnv('CLAUDE_CODE_USE_GEMINI', originalEnv.CLAUDE_CODE_USE_GEMINI)
-    restoreEnv('CLAUDE_CODE_USE_MISTRAL', originalEnv.CLAUDE_CODE_USE_MISTRAL)
+    restoreEnv('NYXCLAUDE_USE_OPENAI', originalEnv.NYXCLAUDE_USE_OPENAI)
+    restoreEnv('NYXCLAUDE_USE_GEMINI', originalEnv.NYXCLAUDE_USE_GEMINI)
+    restoreEnv('NYXCLAUDE_USE_MISTRAL', originalEnv.NYXCLAUDE_USE_MISTRAL)
     restoreEnv('OPENAI_BASE_URL', originalEnv.OPENAI_BASE_URL)
     restoreEnv('OPENAI_MODEL', originalEnv.OPENAI_MODEL)
     restoreEnv('OPENAI_API_BASE', originalEnv.OPENAI_API_BASE)
@@ -55,7 +55,7 @@ afterEach(() => {
 test('logs a warning when OPENAI_BASE_URL is literal undefined', async () => {
   const debugSpy = await mockDebugLogging()
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'undefined'
   process.env.OPENAI_MODEL = 'gpt-4o'
   delete process.env.OPENAI_API_BASE
@@ -80,8 +80,8 @@ test('logs a warning when OPENAI_BASE_URL is literal undefined', async () => {
 test('does not warn for OPENAI_API_BASE when OPENAI_BASE_URL is active', async () => {
   const debugSpy = await mockDebugLogging()
 
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_USE_MISTRAL
   process.env.OPENAI_BASE_URL = 'http://127.0.0.1:11434/v1'
   process.env.OPENAI_MODEL = 'qwen2.5-coder:7b'
   process.env.OPENAI_API_BASE = 'undefined'
@@ -105,8 +105,8 @@ test('does not warn for OPENAI_API_BASE when OPENAI_BASE_URL is active', async (
 test('uses OPENAI_API_BASE as fallback in mistral mode when MISTRAL_BASE_URL is unset', async () => {
   const debugSpy = await mockDebugLogging()
 
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  process.env.CLAUDE_CODE_USE_MISTRAL = '1'
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  process.env.NYXCLAUDE_USE_MISTRAL = '1'
   delete process.env.MISTRAL_BASE_URL
   process.env.MISTRAL_MODEL = 'mistral-medium-latest'
   process.env.OPENAI_API_BASE = 'http://127.0.0.1:11434/v1'
@@ -123,9 +123,9 @@ test('uses OPENAI_API_BASE as fallback in mistral mode when MISTRAL_BASE_URL is 
 test('uses descriptor-backed Gemini default model when GEMINI_MODEL is unset', async () => {
   await mockDebugLogging()
 
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  process.env.CLAUDE_CODE_USE_GEMINI = '1'
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  process.env.NYXCLAUDE_USE_GEMINI = '1'
   delete process.env.GEMINI_MODEL
   delete process.env.GEMINI_BASE_URL
   delete process.env.OPENAI_MODEL

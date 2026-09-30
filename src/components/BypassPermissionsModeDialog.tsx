@@ -24,7 +24,7 @@ export function BypassPermissionsModeDialog({
   onCancel,
 }: Props) {
   React.useEffect(() => {
-    logEvent('tengu_bypass_permissions_mode_dialog_shown', {})
+    logEvent('nyxclaude_bypass_permissions_mode_dialog_shown', {})
   }, [])
 
   const handleDecline = React.useCallback(() => {
@@ -46,7 +46,7 @@ export function BypassPermissionsModeDialog({
   const handleChange = React.useCallback(
     (value: 'accept' | 'decline') => {
       if (value === 'accept') {
-        logEvent('tengu_bypass_permissions_mode_dialog_accept', {})
+        logEvent('nyxclaude_bypass_permissions_mode_dialog_accept', {})
         onAccept()
         return
       }

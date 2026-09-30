@@ -37,10 +37,10 @@ async function writePluginAgent(
   filename: string,
   frontmatter: string,
 ): Promise<void> {
-  await mkdir(join(pluginRoot, '.claude-plugin'), { recursive: true })
+  await mkdir(join(pluginRoot, '.nyxclaude-plugin'), { recursive: true })
   await mkdir(join(pluginRoot, 'agents'), { recursive: true })
   await writeFile(
-    join(pluginRoot, '.claude-plugin', 'plugin.json'),
+    join(pluginRoot, '.nyxclaude-plugin', 'plugin.json'),
     JSON.stringify({ name: 'step-limit-plugin', version: '0.0.0' }),
   )
   await writeFile(
@@ -87,10 +87,10 @@ describe('loadPluginAgents', () => {
 
   test('loads maxSteps from plugin manifest agent file paths', async () => {
     const pluginRoot = join(tempDir, 'manifest-plugin')
-    await mkdir(join(pluginRoot, '.claude-plugin'), { recursive: true })
+    await mkdir(join(pluginRoot, '.nyxclaude-plugin'), { recursive: true })
     await mkdir(join(pluginRoot, 'custom-agents'), { recursive: true })
     await writeFile(
-      join(pluginRoot, '.claude-plugin', 'plugin.json'),
+      join(pluginRoot, '.nyxclaude-plugin', 'plugin.json'),
       JSON.stringify({
         name: 'manifest-step-limit-plugin',
         version: '0.0.0',

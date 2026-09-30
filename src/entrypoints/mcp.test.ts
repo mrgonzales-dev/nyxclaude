@@ -10,7 +10,7 @@ import {
 await acquireSharedMutationLock('entrypoints/mcp.test.ts')
 
 const originalDisableExperimentalBetas =
-  process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS
+  process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS
 
 // Mock the MCP client service to control the tools and connections returned
 const mockGetMcpToolsCommandsAndResources = mock(async (onConnectionAttempt: any) => {})
@@ -28,9 +28,9 @@ afterAll(() => {
   try {
     mock.restore()
     if (originalDisableExperimentalBetas === undefined) {
-      delete process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS
+      delete process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS
     } else {
-      process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS =
+      process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS =
         originalDisableExperimentalBetas
     }
   } finally {

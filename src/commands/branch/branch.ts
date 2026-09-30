@@ -261,7 +261,7 @@ async function createFork(
 
   // Content-replacement entries for the original session. These record which
   // tool_result blocks were replaced with previews by the per-message budget.
-  // Without them in the fork JSONL, `claude -r {forkId}` reconstructs state
+  // Without them in the fork JSONL, `nyxnyxclaude -r {forkId}` reconstructs state
   // with an empty replacements Map → previously-replaced results are classified
   // as FROZEN and sent as full content (prompt cache miss + permanent overage).
   // sessionId must be rewritten since loadTranscriptFile keys lookup by the
@@ -489,7 +489,7 @@ export async function call(
     const branchConfirmation = `Branched conversation "${title}" from ${sourceSessionId} to ${sessionId}.`
     const filesystemCaveat =
       'Files remain in the same working tree; this is conversation branching, not filesystem isolation.'
-    const originalResumeHint = `To resume the original: claude -r ${sourceSessionId}`
+    const originalResumeHint = `To resume the original: nyxclaude -r ${sourceSessionId}`
 
     if (context.resume) {
       try {
@@ -497,7 +497,7 @@ export async function call(
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Unknown error occurred'
-        logEvent('tengu_conversation_fork_switch_failed', {
+        logEvent('nyxclaude_conversation_fork_switch_failed', {
           message_count: serializedMessages.length,
           has_custom_title: usedCustomTitle,
         })
@@ -514,7 +514,7 @@ export async function call(
         return null
       }
 
-      logEvent('tengu_conversation_forked', {
+      logEvent('nyxclaude_conversation_forked', {
         message_count: serializedMessages.length,
         has_custom_title: usedCustomTitle,
       })
@@ -529,7 +529,7 @@ export async function call(
       )
     } else {
       // Fallback if resume not available
-      logEvent('tengu_conversation_forked', {
+      logEvent('nyxclaude_conversation_forked', {
         message_count: serializedMessages.length,
         has_custom_title: usedCustomTitle,
       })

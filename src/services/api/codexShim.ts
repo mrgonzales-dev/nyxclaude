@@ -1,4 +1,4 @@
-import { APIError } from '@anthropic-ai/sdk'
+import { APIError } from 'src/types/api.js'
 import { buildAnthropicUsageFromRawUsage } from './cacheMetrics.js'
 import { compressToolHistory } from './compressToolHistory.js'
 import { fetchWithProxyRetry } from './fetchWithProxyRetry.js'
@@ -189,7 +189,7 @@ function convertToolResultToText(content: unknown): string {
     // ToolSearch results are tool_reference blocks with no text payload. On
     // the Anthropic wire the API expands them server-side; here we render
     // them as text — the full schema arrives in the next request's tools
-    // array (see the discovered-tools filter in claude.ts).
+    // array (see the discovered-tools filter in modelApi.ts).
     if (block?.type === 'tool_reference' && typeof block.tool_name === 'string') {
       chunks.push(`Tool "${block.tool_name}" is now loaded and available to call.`)
       continue
@@ -503,7 +503,7 @@ export function convertToolsToResponsesTools(
   tools: Array<{ name?: string; description?: string; input_schema?: Record<string, unknown> }>,
 ): ResponsesTool[] {
   // Note: ToolSearch (the deferral discovery tool) must reach the wire as a
-  // regular function — claude.ts already removes it when tool search is off.
+  // regular function — modelApi.ts already removes it when tool search is off.
   return tools
     .filter(tool => tool.name)
     .map(tool => {

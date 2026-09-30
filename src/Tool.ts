@@ -1,7 +1,7 @@
 import type {
   ToolResultBlockParam,
   ToolUseBlockParam,
-} from '@anthropic-ai/sdk/resources/index.mjs'
+} from 'src/types/api.js'
 import type {
   ElicitRequestURLParams,
   ElicitResult,
@@ -502,7 +502,7 @@ export type Tool<
   /**
    * When true, enables strict mode for this tool, which causes the API to
    * more strictly adhere to tool instructions and parameter schemas.
-   * Only applied when the tengu_tool_pear is enabled.
+   * Only applied when the nyxclaude_tool_pear is enabled.
    */
   readonly strict?: boolean
 

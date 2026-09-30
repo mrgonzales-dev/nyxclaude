@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle';
-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs';
+import type { ToolResultBlockParam } from 'src/types/api.js';
 import { copyFile, stat as fsStat, link, unlink } from 'fs/promises';
 import { createReadStream, createWriteStream } from 'fs';
 import { pipeline } from 'stream/promises';
@@ -18,7 +18,7 @@ import type { AgentId } from '../../types/ids.js';
 import type { AssistantMessage } from '../../types/message.js';
 import { parseForSecurity } from '../../utils/bash/ast.js';
 import { splitCommand_DEPRECATED, splitCommandWithOperators } from '../../utils/bash/commands.js';
-import { extractClaudeCodeHints, extractClaudeCodeHintsFromPreview, type ClaudeCodeHint } from '../../utils/claudeCodeHints.js';
+import { extractCodeHints, extractCodeHintsFromPreview, type CodeHint } from '../../utils/codeHints.js';
 import { detectCodeIndexingFromCommand } from '../../utils/codeIndexing.js';
 import { isEnvTruthy } from '../../utils/envUtils.js';
 import { isENOENT, ShellError, toError } from '../../utils/errors.js';
@@ -227,7 +227,7 @@ const DISALLOWED_AUTO_BACKGROUND_COMMANDS = ['sleep' // Sleep should run in fore
 // Check if background tasks are disabled at module load time
 const isBackgroundTasksDisabled =
 // eslint-disable-next-line custom-rules/no-process-env-top-level -- Intentional: schema must be defined at module load
-isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS);
+isEnvTruthy(process.env.NYXCLAUDE_DISABLE_BACKGROUND_TASKS);
 const fullInputSchema = lazySchema(() => z.strictObject({
   command: z.string().describe('The command to execute'),
   timeout: semanticNumber(z.number().optional()).describe(`Optional timeout in milliseconds (max ${getMaxTimeoutMs()})`),
@@ -336,7 +336,7 @@ export async function persistShellOutputFile(
   taskId: string,
   maxSize: number = MAX_PERSISTED_SHELL_OUTPUT_SIZE,
   command: string = '',
-): Promise<{ path: string; size: number; truncated: boolean; preview?: string; previewStrategy?: PreviewStrategy; previewHints?: ClaudeCodeHint[] } | null> {
+): Promise<{ path: string; size: number; truncated: boolean; preview?: string; previewStrategy?: PreviewStrategy; previewHints?: CodeHint[] } | null> {
   try {
     const fileStat = await fsStat(sourcePath);
     const size = fileStat.size;
@@ -383,7 +383,7 @@ export async function persistShellOutputFile(
       return undefined;
     });
     const previewExtraction = previewResult
-      ? extractClaudeCodeHintsFromPreview(previewResult, command)
+      ? extractCodeHintsFromPreview(previewResult, command)
       : undefined;
     return {
       path: dest,
@@ -481,7 +481,7 @@ export function detectBlockedSleepPattern(command: string): string | null {
 /**
  * Checks if a command contains tools that shouldn't run in sandbox
  * This includes:
- * - Dynamic config-based disabled commands and substrings (tengu_sandbox_disabled_commands)
+ * - Dynamic config-based disabled commands and substrings (nyxclaude_sandbox_disabled_commands)
  * - User-configured commands from settings.json (sandbox.excludedCommands)
  *
  * User-configured commands support the same pattern syntax as permission rules:
@@ -642,7 +642,7 @@ export const BashTool = buildTool({
     // `new RegExp` per call. userFacingName runs per-render for every bash
     // message in history; with ~50 msgs + one slow-to-tokenize command, this
     // exceeds the shimmer tick → transition abort → infinite retry (#21605).
-    return isEnvTruthy(process.env.CLAUDE_CODE_BASH_SANDBOX_SHOW_INDICATOR) && shouldUseSandboxForPresentation(input) ? 'SandboxedBash' : 'Bash';
+    return isEnvTruthy(process.env.NYXCLAUDE_BASH_SANDBOX_SHOW_INDICATOR) && shouldUseSandboxForPresentation(input) ? 'SandboxedBash' : 'Bash';
   },
   getToolUseSummary(input) {
     if (!input?.command) {
@@ -860,7 +860,7 @@ export const BashTool = buildTool({
 
       // Check for git index.lock error (stderr is in stdout now)
       if (result.stdout && result.stdout.includes(".git/index.lock': File exists")) {
-        logEvent('tengu_git_index_lock_error', {});
+        logEvent('nyxclaude_git_index_lock_error', {});
       }
       if (!preventCwdChanges) {
         const appState = getAppState();
@@ -914,7 +914,7 @@ export const BashTool = buildTool({
         // the truncated chunk and has no signal that the rest exists. The
         // persist step is identical to the success-path block below; both
         // sites resolve the same `result.outputFilePath` / outputTaskId.
-        const errorExtraction = extractClaudeCodeHints(
+        const errorExtraction = extractCodeHints(
           outputWithSbFailures,
           input.command,
         )
@@ -976,7 +976,7 @@ export const BashTool = buildTool({
     let persistedOutputSize: number | undefined;
     let persistedOutputPreview: string | undefined;
     let persistedOutputPreviewStrategy: PreviewStrategy | undefined;
-    let persistedOutputPreviewHints: ClaudeCodeHint[] = [];
+    let persistedOutputPreviewHints: CodeHint[] = [];
     let persistedOutputTruncated: boolean | undefined;
     if (result.outputFilePath && result.outputTaskId) {
       const persisted = await persistShellOutputFile(
@@ -995,7 +995,7 @@ export const BashTool = buildTool({
       }
     }
     const commandType = input.command.split(' ')[0];
-    logEvent('tengu_bash_tool_command_executed', {
+    logEvent('nyxclaude_bash_tool_command_executed', {
       command_type: commandType as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       stdout_length: stdout.length,
       stderr_length: 0,
@@ -1013,7 +1013,7 @@ export const BashTool = buildTool({
     // Log code indexing tool usage
     const codeIndexingTool = detectCodeIndexingFromCommand(input.command);
     if (codeIndexingTool) {
-      logEvent('tengu_code_indexing_tool_used', {
+      logEvent('nyxclaude_code_indexing_tool_used', {
         tool: codeIndexingTool as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         source: 'cli' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         success: result.code === 0
@@ -1022,12 +1022,12 @@ export const BashTool = buildTool({
     let strippedStdout = stripEmptyLines(stdout);
 
     // Nyxclaude hints protocol: CLIs/SDKs gated on CLAUDECODE=1 emit a
-    // `<claude-code-hint />` tag to stderr (merged into stdout here). Scan,
-    // record for useClaudeCodeHintRecommendation to surface, then strip
+    // `<code-hint />` tag to stderr (merged into stdout here). Scan,
+    // record for useCodeHintRecommendation to surface, then strip
     // so the model never sees the tag — a zero-token side channel.
     // Stripping runs unconditionally (subagent output must stay clean too);
     // only the dialog recording is main-thread-only.
-    const extracted = extractClaudeCodeHints(strippedStdout, input.command);
+    const extracted = extractCodeHints(strippedStdout, input.command);
     strippedStdout = extracted.stripped;
     if (isMainThread && extracted.hints.length > 0) {
       for (const hint of extracted.hints) maybeRecordPluginHint(hint);
@@ -1235,7 +1235,7 @@ async function* runShellCommand({
   // Only background commands that are allowed to be auto-backgrounded (not sleep, etc.)
   if (shellCommand.onTimeout && shouldAutoBackground) {
     shellCommand.onTimeout(backgroundFn => {
-      startBackgrounding('tengu_bash_command_timeout_backgrounded', backgroundFn);
+      startBackgrounding('nyxclaude_bash_command_timeout_backgrounded', backgroundFn);
     });
   }
 
@@ -1246,7 +1246,7 @@ async function* runShellCommand({
     setTimeout(() => {
       if (shellCommand.status === 'running' && backgroundShellId === undefined) {
         assistantAutoBackgrounded = true;
-        startBackgrounding('tengu_bash_command_assistant_auto_backgrounded');
+        startBackgrounding('nyxclaude_bash_command_assistant_auto_backgrounded');
       }
     }, ASSISTANT_BLOCKING_BUDGET_MS).unref();
   }
@@ -1257,7 +1257,7 @@ async function* runShellCommand({
   // Skip if background tasks are disabled - run in foreground instead
   if (run_in_background === true && !isBackgroundTasksDisabled) {
     const shellId = await spawnBackgroundTask();
-    logEvent('tengu_bash_command_explicitly_backgrounded', {
+    logEvent('nyxclaude_bash_command_explicitly_backgrounded', {
       command_type: getCommandTypeForLogging(command)
     });
     return {

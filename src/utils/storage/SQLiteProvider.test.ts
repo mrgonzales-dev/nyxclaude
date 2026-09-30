@@ -10,13 +10,13 @@ import { mkdtempSync, rmSync, existsSync, renameSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { acquireEnvMutex, releaseEnvMutex } from '../../entrypoints/sdk/shared.js'
-import { getProjectsDir, setClaudeConfigHomeDirForTesting } from '../envUtils.js'
+import { getProjectsDir, setNyxclaudeConfigHomeDirForTesting } from '../envUtils.js'
 import { getFsImplementation, setFsImplementation } from '../fsOperations.js'
 import { sanitizePath } from '../sessionStoragePortable.js'
 import { SQLiteProvider } from './SQLiteProvider.js'
 
 describe('SQLite Storage Layer', () => {
-  const originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const originalConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const originalCwd = process.cwd()
   const originalFs = getFsImplementation()
   const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-sqlite-'))
@@ -89,8 +89,8 @@ describe('SQLite Storage Layer', () => {
       ...originalFs,
       cwd: () => workspaceDir,
     })
-    process.env.CLAUDE_CONFIG_DIR = configDir
-    setClaudeConfigHomeDirForTesting(configDir)
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
+    setNyxclaudeConfigHomeDirForTesting(configDir)
     resetGlobalGraph()
   })
 
@@ -99,13 +99,13 @@ describe('SQLite Storage Layer', () => {
       resetGlobalGraph()
       clearMemoryOnly()
       if (originalConfigDir === undefined) {
-        delete process.env.CLAUDE_CONFIG_DIR
+        delete process.env.NYXCLAUDE_CONFIG_DIR
       } else {
-        process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+        process.env.NYXCLAUDE_CONFIG_DIR = originalConfigDir
       }
       process.chdir(originalCwd)
       setFsImplementation(originalFs)
-      setClaudeConfigHomeDirForTesting(undefined)
+      setNyxclaudeConfigHomeDirForTesting(undefined)
       if (workspaceDir) {
         removeDirWithRetry(workspaceDir)
         workspaceDir = ''

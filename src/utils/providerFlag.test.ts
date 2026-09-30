@@ -15,13 +15,13 @@ import {
 } from './providerFlag.js'
 
 const ENV_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
   'OPENAI_BASE_URL',
   'OPENAI_API_BASE',
   'OPENAI_API_KEY',
@@ -49,7 +49,7 @@ const ENV_KEYS = [
   'ANTHROPIC_BASE_URL',
   'ANTHROPIC_API_KEY',
   'ANTHROPIC_AUTH_TOKEN',
-  'ANTHROPIC_CUSTOM_HEADERS',
+  'NYXCLAUDE_CUSTOM_HEADERS',
   'USER_TYPE',
 ]
 
@@ -64,13 +64,13 @@ beforeEach(async () => {
 })
 
 const RESET_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
   'OPENAI_BASE_URL',
   'OPENAI_API_BASE',
   'OPENAI_API_KEY',
@@ -98,7 +98,7 @@ const RESET_KEYS = [
   'ANTHROPIC_BASE_URL',
   'ANTHROPIC_API_KEY',
   'ANTHROPIC_AUTH_TOKEN',
-  'ANTHROPIC_CUSTOM_HEADERS',
+  'NYXCLAUDE_CUSTOM_HEADERS',
   'USER_TYPE',
 ] as const
 
@@ -158,8 +158,8 @@ describe('applyProviderFlag - anthropic', () => {
   test('sets no env vars for anthropic (default)', () => {
     const result = applyProviderFlag('anthropic', [])
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBeUndefined()
   })
 
   test('clears a previously selected custom Anthropic endpoint', () => {
@@ -167,7 +167,7 @@ describe('applyProviderFlag - anthropic', () => {
     process.env.ANTHROPIC_MODEL = 'proxy-model'
     process.env.ANTHROPIC_API_KEY = 'proxy-api-key'
     process.env.ANTHROPIC_AUTH_TOKEN = 'proxy-token'
-    process.env.ANTHROPIC_CUSTOM_HEADERS = 'x-tenant: example'
+    process.env.NYXCLAUDE_CUSTOM_HEADERS = 'x-tenant: example'
 
     const result = applyProviderFlag('anthropic', [])
 
@@ -176,7 +176,7 @@ describe('applyProviderFlag - anthropic', () => {
     expect(process.env.ANTHROPIC_MODEL).toBeUndefined()
     expect(process.env.ANTHROPIC_API_KEY).toBeUndefined()
     expect(process.env.ANTHROPIC_AUTH_TOKEN).toBeUndefined()
-    expect(process.env.ANTHROPIC_CUSTOM_HEADERS).toBeUndefined()
+    expect(process.env.NYXCLAUDE_CUSTOM_HEADERS).toBeUndefined()
   })
 
   test('preserves a first-party Anthropic API key', () => {
@@ -221,7 +221,7 @@ describe('applyProviderFlag - custom Anthropic-compatible', () => {
     process.env.ANTHROPIC_BASE_URL = 'https://proxy.example/v1'
     process.env.ANTHROPIC_AUTH_TOKEN = 'proxy-token'
     process.env.ANTHROPIC_API_KEY = 'stale-anthropic-key'
-    process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+    process.env.NYXCLAUDE_USE_FOUNDRY = '1'
     process.env.OPENAI_BASE_URL = 'https://stale.example/v1'
     process.env.OPENAI_API_BASE = 'https://stale.example/v1'
     process.env.OPENAI_API_FORMAT = 'responses'
@@ -232,8 +232,8 @@ describe('applyProviderFlag - custom Anthropic-compatible', () => {
     const result = applyProviderFlag('custom-anthropic', ['--model', 'proxy-model'])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_FOUNDRY).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_FOUNDRY).toBeUndefined()
     expect(process.env.OPENAI_MODEL).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
     expect(process.env.OPENAI_API_BASE).toBeUndefined()
@@ -275,10 +275,10 @@ describe('VALID_PROVIDERS', () => {
 })
 
 describe('applyProviderFlag - openai', () => {
-  test('sets CLAUDE_CODE_USE_OPENAI=1', () => {
+  test('sets NYXCLAUDE_USE_OPENAI=1', () => {
     const result = applyProviderFlag('openai', [])
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
   })
 
   test('sets OPENAI_MODEL when --model is provided', () => {
@@ -292,7 +292,7 @@ describe('applyProviderFlag - cloudflare', () => {
     process.env.CLOUDFLARE_API_TOKEN = 'cf-token'
     const result = applyProviderFlag('cloudflare', [])
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     // The descriptor default contains an unresolved `<ACCOUNT_ID>` placeholder;
     // it must not be installed verbatim as a broken endpoint.
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
@@ -402,10 +402,10 @@ describe('applyProviderFlag - cloudflare', () => {
 })
 
 describe('applyProviderFlag - gemini', () => {
-  test('sets CLAUDE_CODE_USE_GEMINI=1', () => {
+  test('sets NYXCLAUDE_USE_GEMINI=1', () => {
     const result = applyProviderFlag('gemini', [])
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GEMINI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GEMINI).toBe('1')
   })
 
   test('sets GEMINI_MODEL when --model is provided', () => {
@@ -415,37 +415,37 @@ describe('applyProviderFlag - gemini', () => {
 })
 
 describe('applyProviderFlag - github', () => {
-  test('sets CLAUDE_CODE_USE_GITHUB=1', () => {
+  test('sets NYXCLAUDE_USE_GITHUB=1', () => {
     const result = applyProviderFlag('github', [])
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_GITHUB).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_GITHUB).toBe('1')
   })
 })
 
 describe('applyProviderFlag - bedrock', () => {
-  test('sets CLAUDE_CODE_USE_BEDROCK=1', () => {
+  test('sets NYXCLAUDE_USE_BEDROCK=1', () => {
     const result = applyProviderFlag('bedrock', [])
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_BEDROCK).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_BEDROCK).toBe('1')
   })
 })
 
 describe('applyProviderFlag - vertex', () => {
-  test('sets CLAUDE_CODE_USE_VERTEX=1', () => {
+  test('sets NYXCLAUDE_USE_VERTEX=1', () => {
     const result = applyProviderFlag('vertex', [])
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_VERTEX).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_VERTEX).toBe('1')
   })
 })
 
 describe('applyProviderFlag - ollama', () => {
-  test('sets CLAUDE_CODE_USE_OPENAI=1 with Ollama defaults when unset', () => {
+  test('sets NYXCLAUDE_USE_OPENAI=1 with Ollama defaults when unset', () => {
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_API_KEY
 
     const result = applyProviderFlag('ollama', [])
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL!).toBe('http://localhost:11434/v1')
     expect(process.env.OPENAI_API_KEY!).toBe('ollama')
   })
@@ -485,7 +485,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('deepseek', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.deepseek.com/v1')
     expect(process.env.OPENAI_MODEL).toBe('deepseek-v4-pro')
   })
@@ -494,7 +494,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('openrouter', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://openrouter.ai/api/v1')
   })
 
@@ -504,7 +504,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('openrouter', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('http://proxy.local:8080/v1')
   })
 
@@ -515,7 +515,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('gitlawb-opengateway', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
     expect(process.env.OPENAI_API_BASE).toBe('http://proxy.local:8080/v1')
     expect(process.env.OPENAI_API_KEY).toBe('fake-ogw-key')
@@ -527,7 +527,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('gitlawb-opengateway', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://opengateway.gitlawb.com/v1')
     expect(process.env.OPENAI_API_BASE).toBe('undefined')
   })
@@ -540,7 +540,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('gitlawb-opengateway', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://opengateway.gitlawb.com/v1')
     expect(process.env.OPENGATEWAY_API_KEY).toBe('fake-ogw-key')
     expect(process.env.OPENAI_API_KEY).toBe('fake-ogw-key')
@@ -553,7 +553,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('gitlawb-opengateway', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:8181/v1')
   })
 
@@ -564,7 +564,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('gitlawb-opengateway', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:8181/v1')
     expect(process.env.OPENAI_API_KEY).toBe('fake-ogw-key')
   })
@@ -577,7 +577,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('gitlawb-opengateway', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:8181/v1')
     expect(process.env.OPENAI_API_KEY).toBe('fake-ogw-key')
   })
@@ -590,7 +590,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('gitlawb-opengateway', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('http://localhost:8181/v1')
     expect(process.env.OPENAI_API_KEY).toBe('fake-openai-fallback')
   })
@@ -617,7 +617,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('openrouter', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://openrouter.ai/api/v1')
     expect(process.env.OPENAI_API_KEY).toBeUndefined()
     expect(process.env.OPENGATEWAY_API_KEY).toBe('fake-ogw-key')
@@ -630,7 +630,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('openrouter', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://openrouter.ai/api/v1')
     expect(process.env.OPENGATEWAY_API_KEY).toBe('fake-ogw-key')
   })
@@ -641,7 +641,7 @@ describe('applyProviderFlag - descriptor-backed openai-compatible routes', () =>
     const result = applyProviderFlag('openrouter', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.NVIDIA_NIM).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBe('https://openrouter.ai/api/v1')
   })
@@ -730,7 +730,7 @@ describe('applyProviderFlag - minimax', () => {
     const result = applyProviderFlag('minimax', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBeUndefined()
     expect(process.env.ANTHROPIC_BASE_URL).toBe('https://api.minimax.io/anthropic')
     expect(process.env.ANTHROPIC_MODEL).toBe('MiniMax-M3')
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
@@ -745,7 +745,7 @@ describe('applyProviderFlag - nvidia-nim', () => {
     const result = applyProviderFlag('nvidia-nim', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.NVIDIA_NIM).toBe('1')
     expect(process.env.OPENAI_API_KEY).toBe('nvidia-live-key')
     expect(process.env.OPENAI_BASE_URL).toBe('https://integrate.api.nvidia.com/v1')
@@ -757,7 +757,7 @@ describe('applyProviderFlag - zai', () => {
     const result = applyProviderFlag('zai', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.z.ai/api/coding/paas/v4')
     expect(process.env.OPENAI_MODEL).toBe('glm-5.2')
   })
@@ -770,7 +770,7 @@ describe('applyProviderFlag - longcat', () => {
     const result = applyProviderFlag('longcat', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.longcat.chat/openai/v1')
     expect(process.env.OPENAI_MODEL).toBe('LongCat-2.0')
     expect(process.env.OPENAI_API_KEY).toBe('longcat-secret-key')
@@ -832,7 +832,7 @@ describe('applyProviderFlag - xiaomi-mimo', () => {
     const result = applyProviderFlag('xiaomi-mimo', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.xiaomimimo.com/v1')
     expect(process.env.OPENAI_MODEL).toBe('mimo-v2.5-pro')
     expect(process.env.OPENAI_API_KEY).toBe('mimo-secret-key')
@@ -852,7 +852,7 @@ describe('applyProviderFlag - xiaomi-mimo-token', () => {
     const result = applyProviderFlag('xiaomi-mimo-token', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe(
       'https://token-plan-sgp.xiaomimimo.com/v1',
     )
@@ -866,7 +866,7 @@ describe('applyProviderFlag - xiaomi-mimo-token', () => {
     const result = applyProviderFlag('xiaomi-mimo-token', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe(
       'https://token-plan-sgp.xiaomimimo.com/v1',
     )
@@ -886,7 +886,7 @@ describe('applyProviderFlag - venice', () => {
     const result = applyProviderFlag('venice', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.venice.ai/api/v1')
     expect(process.env.OPENAI_MODEL).toBe('venice-uncensored')
     expect(process.env.OPENAI_API_KEY).toBe('venice-secret-key')
@@ -900,7 +900,7 @@ describe('applyProviderFlag - atlas-cloud', () => {
     const result = applyProviderFlag('atlas-cloud', [])
 
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL).toBe('https://api.atlascloud.ai/v1')
     expect(process.env.OPENAI_MODEL).toBe('deepseek-ai/deepseek-v4-pro')
     expect(process.env.OPENAI_API_KEY).toBe('atlas-secret-key')
@@ -969,13 +969,13 @@ describe('applyProviderFlag - atlas-cloud', () => {
 })
 
 describe('applyProviderFlag - xai', () => {
-  test('sets CLAUDE_CODE_USE_OPENAI=1 with xAI defaults when unset', () => {
+  test('sets NYXCLAUDE_USE_OPENAI=1 with xAI defaults when unset', () => {
     delete process.env.OPENAI_BASE_URL
     delete process.env.OPENAI_API_KEY
 
     const result = applyProviderFlag('xai', [])
     expect(result.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL as string | undefined).toBe('https://api.x.ai/v1')
     expect(process.env.OPENAI_MODEL).toBe('grok-4.3')
   })
@@ -1025,7 +1025,7 @@ describe('applyProviderFlagFromArgs', () => {
     ])
 
     expect(result?.error).toBeUndefined()
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_BASE_URL!).toBe('http://localhost:11434/v1')
     expect(process.env.OPENAI_API_KEY!).toBe('ollama')
     expect(process.env.OPENAI_MODEL).toBe('qwen2.5:3b')
@@ -1121,31 +1121,31 @@ describe('applyModelFlagFromArgs', () => {
   })
 
   test('is a no-op when --provider is also present (handled by applyProviderFlagFromArgs)', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     applyModelFlagFromArgs(['--provider', 'openai', '--model', 'gpt-4o'])
     expect(process.env.OPENAI_MODEL).toBeUndefined()
   })
 
-  test('sets OPENAI_MODEL when CLAUDE_CODE_USE_OPENAI is active', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  test('sets OPENAI_MODEL when NYXCLAUDE_USE_OPENAI is active', () => {
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     applyModelFlagFromArgs(['--model', 'gpt-4o-mini'])
     expect(process.env.OPENAI_MODEL).toBe('gpt-4o-mini')
   })
 
-  test('sets GEMINI_MODEL when CLAUDE_CODE_USE_GEMINI is active', () => {
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+  test('sets GEMINI_MODEL when NYXCLAUDE_USE_GEMINI is active', () => {
+    process.env.NYXCLAUDE_USE_GEMINI = '1'
     applyModelFlagFromArgs(['--model', 'gemini-2.0-flash'])
     expect(process.env.GEMINI_MODEL).toBe('gemini-2.0-flash')
   })
 
-  test('sets MISTRAL_MODEL when CLAUDE_CODE_USE_MISTRAL is active', () => {
-    process.env.CLAUDE_CODE_USE_MISTRAL = '1'
+  test('sets MISTRAL_MODEL when NYXCLAUDE_USE_MISTRAL is active', () => {
+    process.env.NYXCLAUDE_USE_MISTRAL = '1'
     applyModelFlagFromArgs(['--model', 'devstral-latest'])
     expect(process.env.MISTRAL_MODEL).toBe('devstral-latest')
   })
 
-  test('sets OPENAI_MODEL when CLAUDE_CODE_USE_GITHUB is active', () => {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+  test('sets OPENAI_MODEL when NYXCLAUDE_USE_GITHUB is active', () => {
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     applyModelFlagFromArgs(['--model', 'gpt-4.1'])
     expect(process.env.OPENAI_MODEL).toBe('gpt-4.1')
   })
@@ -1156,14 +1156,14 @@ describe('applyModelFlagFromArgs', () => {
   })
 
   test('overrides an existing *_MODEL value (saved profile override)', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_MODEL = 'gpt-4o'
     applyModelFlagFromArgs(['--model', 'gpt-4o-mini'])
     expect(process.env.OPENAI_MODEL).toBe('gpt-4o-mini')
   })
 
   test('accepts --model value containing colons (ollama tag syntax)', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     applyModelFlagFromArgs(['--model', 'qwen2.5-coder:14b'])
     expect(process.env.OPENAI_MODEL).toBe('qwen2.5-coder:14b')
   })

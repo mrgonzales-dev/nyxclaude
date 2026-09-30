@@ -47,10 +47,10 @@ async function runSkillsList(args: string[]): Promise<{
       cwd: projectDir,
       env: {
         ...process.env,
-        CLAUDE_CODE_USE_OPENAI: '1',
+        NYXCLAUDE_USE_OPENAI: '1',
         OPENAI_BASE_URL: 'https://api.openai.com/v1',
         OPENAI_API_KEY: '',
-        CLAUDE_CONFIG_DIR: configDir,
+        NYXCLAUDE_CONFIG_DIR: configDir,
         HOME: homeDir,
         NYXCLAUDE_DISABLE_EARLY_INPUT: '1',
       },

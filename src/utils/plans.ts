@@ -28,7 +28,7 @@ const MAX_SLUG_RETRIES = 10
 export function getDefaultPlansDirectory({
   configDirEnv = resolveConfigDirEnv({
     nyxClaudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
-    legacyConfigDir: process.env.CLAUDE_CONFIG_DIR,
+    legacyConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
   }),
   homeDir = homedir(),
 }: {

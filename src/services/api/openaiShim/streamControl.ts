@@ -137,7 +137,7 @@ export async function readWithIdleTimeout(
  * Parses an Anthropic Messages SSE response while applying the same abort,
  * reader-cancellation, and idle-timeout policy used by converted streams.
  */
-export async function* anthropicSsePassthrough<T extends object>(
+export async function* ssePassthrough<T extends object>(
   response: Response,
   signal: AbortSignal | undefined,
   logForDebugging: (message: string, options?: { level?: 'error' }) => void,

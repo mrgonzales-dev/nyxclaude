@@ -1,5 +1,5 @@
 /**
- * Adapter layer that wraps @anthropic-ai/sandbox-runtime with Nyxclaude CLI-specific integrations.
+ * Adapter layer that wraps sandbox-runtime with Nyxclaude CLI-specific integrations.
  * This file provides the bridge between the external sandbox-runtime package and Nyxclaude CLI's
  * settings system, tool integration, and additional features.
  */
@@ -256,8 +256,8 @@ export function convertToSandboxRuntimeConfig(
   const originalCwd = getOriginalCwd()
   denyWrite.push(...getLegacyClaudeConfigDenyWritePaths(originalCwd))
   denyWrite.push(...getLegacyClaudeConfigDenyWritePaths(homedir()))
-  if (process.env.CLAUDE_CONFIG_DIR) {
-    denyWrite.push(resolve(process.env.CLAUDE_CONFIG_DIR))
+  if (process.env.NYXCLAUDE_CONFIG_DIR) {
+    denyWrite.push(resolve(process.env.NYXCLAUDE_CONFIG_DIR))
   }
   if (cwd !== originalCwd) {
     denyWrite.push(...getCurrentCwdSettingsDenyWritePaths(cwd))
@@ -413,13 +413,13 @@ let settingsSubscriptionCleanup: (() => void) | undefined
 let worktreeMainRepoPath: string | null | undefined
 
 // Bare-repo files at cwd that didn't exist at config time and should be
-// scrubbed if they appear after a sandboxed command. See anthropics/claude-code#29316.
+// scrubbed if they appear after a sandboxed command. See nyxclaude/nyxclaude#29316.
 const bareGitRepoScrubPaths: string[] = []
 
 /**
  * Delete bare-repo files planted at cwd during a sandboxed command, before
  * Nyxclaude's unsandboxed git calls can see them. See the SECURITY block above
- * bareGitRepoFiles. anthropics/claude-code#29316.
+ * bareGitRepoFiles. nyxclaude/nyxclaude#29316.
  */
 function scrubBareGitRepoFiles(): void {
   for (const p of bareGitRepoScrubPaths) {

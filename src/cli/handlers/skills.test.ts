@@ -196,7 +196,7 @@ test('formats skills list as an aligned human table', () => {
       ),
       skill(
         'update-config',
-        'Use this skill to configure the Claude Code harness via settings.json. Automated behaviors require hooks.',
+        'Use this skill to configure the Nyxclaude harness via settings.json. Automated behaviors require hooks.',
         'projectSettings',
       ),
     ],
@@ -209,7 +209,7 @@ test('formats skills list as an aligned human table', () => {
   assert.doesNotMatch(output, /source: bundled \| trust:/)
   assert.doesNotMatch(output, /\bbundled\b/)
   assert.match(output, /batch\s+enabled\s+Research and plan/)
-  assert.match(output, /update-config\s+enabled\s+Configure the Claude Code harness via/)
+  assert.match(output, /update-config\s+enabled\s+Configure the Nyxclaude harness via/)
 })
 
 test('omits source column while preserving installed rows', () => {
@@ -762,7 +762,7 @@ test.serial('removes only the targeted project skill directory', async () => {
   }
 })
 
-test.serial('does not remove legacy project skills from .claude directories', async () => {
+test.serial('does not remove legacy project skills from legacy directories', async () => {
   await acquireSharedMutationLock('skillsRemoveHandler')
   const originalFs = getFsImplementation()
   try {
@@ -779,7 +779,7 @@ test.serial('does not remove legacy project skills from .claude directories', as
     await withTempDir(async tempDir => {
       const cwd = join(tempDir, 'project')
       const targetName = 'legacy-remove-skill'
-      const target = join(cwd, '.claude', 'skills', targetName)
+      const target = join(cwd, '.nyxclaude/skills', targetName)
       const originalSettingsState = enableUserAndProjectSettingSources()
       mkdirSync(target, { recursive: true })
       writeFileSync(

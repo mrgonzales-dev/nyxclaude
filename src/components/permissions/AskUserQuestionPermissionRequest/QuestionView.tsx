@@ -6,7 +6,6 @@ import { useAppState } from '../../../state/AppState.js';
 import type { Question, QuestionOption } from '../../../tools/AskUserQuestionTool/AskUserQuestionTool.js';
 import type { PastedContent } from '../../../utils/config.js';
 import { getExternalEditor } from '../../../utils/editor.js';
-import { toIDEDisplayName } from '../../../utils/ide.js';
 import type { ImageDimensions } from '../../../utils/imageResizer.js';
 import { editPromptInEditor } from '../../../utils/promptEditor.js';
 import { type OptionWithDescription, Select, SelectMulti } from '../../CustomSelect/index.js';
@@ -16,6 +15,10 @@ import { PermissionRequestTitle } from '../PermissionRequestTitle.js';
 import { PreviewQuestionView } from './PreviewQuestionView.js';
 import { QuestionNavigationBar } from './QuestionNavigationBar.js';
 import type { QuestionState } from './use-multiple-choice-state.js';
+const editorDisplayName = (cmd: string) => {
+  const base = cmd.split('/').pop() ?? cmd;
+  return base.charAt(0).toUpperCase() + base.slice(1);
+};
 type Props = {
   question: Question;
   questions: Question[];
@@ -34,7 +37,7 @@ type Props = {
   onSubmit: () => void;
   onTabPrev?: () => void;
   onTabNext?: () => void;
-  onRespondToClaude: () => void;
+  onRespondToAgent: () => void;
   onFinishPlanInterview: () => void;
   onImagePaste?: (base64Image: string, mediaType?: string, filename?: string, dimensions?: ImageDimensions, sourcePath?: string) => void;
   onRemoveImage?: (id: number) => void;
@@ -58,7 +61,7 @@ export function QuestionView(t0) {
     onSubmit,
     onTabPrev,
     onTabNext,
-    onRespondToClaude,
+    onRespondToAgent,
     onFinishPlanInterview,
     onImagePaste,
     pastedContents,
@@ -72,7 +75,7 @@ export function QuestionView(t0) {
   let t2;
   if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
     const editor = getExternalEditor();
-    t2 = editor ? toIDEDisplayName(editor) : null;
+    t2 = editor ? editorDisplayName(editor) : null;
     $[0] = t2;
   } else {
     t2 = $[0];
@@ -140,7 +143,7 @@ export function QuestionView(t0) {
       if (key.return) {
         event.stopImmediatePropagation();
         if (footerIndex === 0) {
-          onRespondToClaude();
+          onRespondToAgent();
         } else {
           onFinishPlanInterview();
         }
@@ -231,8 +234,8 @@ export function QuestionView(t0) {
   const hasAnyPreview = !question.multiSelect && question.options.some(_temp3);
   if (hasAnyPreview) {
     let t8;
-    if ($[30] !== answers || $[31] !== currentQuestionIndex || $[32] !== hideSubmitTab || $[33] !== minContentHeight || $[34] !== minContentWidth || $[35] !== onAnswer || $[36] !== onCancel || $[37] !== onFinishPlanInterview || $[38] !== onRespondToClaude || $[39] !== onTabNext || $[40] !== onTabPrev || $[41] !== onTextInputFocus || $[42] !== onUpdateQuestionState || $[43] !== question || $[44] !== questionStates || $[45] !== questions) {
-      t8 = <PreviewQuestionView question={question} questions={questions} currentQuestionIndex={currentQuestionIndex} answers={answers} questionStates={questionStates} hideSubmitTab={hideSubmitTab} minContentHeight={minContentHeight} minContentWidth={minContentWidth} onUpdateQuestionState={onUpdateQuestionState} onAnswer={onAnswer} onTextInputFocus={onTextInputFocus} onCancel={onCancel} onTabPrev={onTabPrev} onTabNext={onTabNext} onRespondToClaude={onRespondToClaude} onFinishPlanInterview={onFinishPlanInterview} />;
+    if ($[30] !== answers || $[31] !== currentQuestionIndex || $[32] !== hideSubmitTab || $[33] !== minContentHeight || $[34] !== minContentWidth || $[35] !== onAnswer || $[36] !== onCancel || $[37] !== onFinishPlanInterview || $[38] !== onRespondToAgent || $[39] !== onTabNext || $[40] !== onTabPrev || $[41] !== onTextInputFocus || $[42] !== onUpdateQuestionState || $[43] !== question || $[44] !== questionStates || $[45] !== questions) {
+      t8 = <PreviewQuestionView question={question} questions={questions} currentQuestionIndex={currentQuestionIndex} answers={answers} questionStates={questionStates} hideSubmitTab={hideSubmitTab} minContentHeight={minContentHeight} minContentWidth={minContentWidth} onUpdateQuestionState={onUpdateQuestionState} onAnswer={onAnswer} onTextInputFocus={onTextInputFocus} onCancel={onCancel} onTabPrev={onTabPrev} onTabNext={onTabNext} onRespondToAgent={onRespondToAgent} onFinishPlanInterview={onFinishPlanInterview} />;
       $[30] = answers;
       $[31] = currentQuestionIndex;
       $[32] = hideSubmitTab;
@@ -241,7 +244,7 @@ export function QuestionView(t0) {
       $[35] = onAnswer;
       $[36] = onCancel;
       $[37] = onFinishPlanInterview;
-      $[38] = onRespondToClaude;
+      $[38] = onRespondToAgent;
       $[39] = onTabNext;
       $[40] = onTabPrev;
       $[41] = onTextInputFocus;

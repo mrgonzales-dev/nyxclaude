@@ -4,7 +4,7 @@ import {
   releaseSharedMutationLock,
 } from '../test/sharedMutationLock.js'
 
-const originalSimple = process.env.CLAUDE_CODE_SIMPLE
+const originalSimple = process.env.NYXCLAUDE_SIMPLE
 
 type GithubModelsCredentialsModule =
   typeof import('./githubModelsCredentials.js')
@@ -24,9 +24,9 @@ beforeEach(async () => {
 afterEach(() => {
   try {
     if (originalSimple === undefined) {
-      delete process.env.CLAUDE_CODE_SIMPLE
+      delete process.env.NYXCLAUDE_SIMPLE
     } else {
-      process.env.CLAUDE_CODE_SIMPLE = originalSimple
+      process.env.NYXCLAUDE_SIMPLE = originalSimple
     }
   } finally {
     releaseSharedMutationLock()
@@ -38,7 +38,7 @@ describe('readGithubModelsToken', () => {
     const { readGithubModelsToken } =
       await importFreshGithubModelsCredentials('read-bare-mode')
 
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.NYXCLAUDE_SIMPLE = '1'
     expect(readGithubModelsToken()).toBeUndefined()
   })
 })
@@ -48,7 +48,7 @@ describe('saveGithubModelsToken / clearGithubModelsToken', () => {
     const { saveGithubModelsToken } =
       await importFreshGithubModelsCredentials('save-bare-mode')
 
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.NYXCLAUDE_SIMPLE = '1'
     const r = saveGithubModelsToken('abc')
     expect(r.success).toBe(false)
     expect(r.warning).toContain('Bare mode')
@@ -58,7 +58,7 @@ describe('saveGithubModelsToken / clearGithubModelsToken', () => {
     const { clearGithubModelsToken } =
       await importFreshGithubModelsCredentials('clear-bare-mode')
 
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.NYXCLAUDE_SIMPLE = '1'
     expect(clearGithubModelsToken().success).toBe(true)
   })
 })

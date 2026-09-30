@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import { APIUserAbortError } from '@anthropic-ai/sdk'
+import { APIUserAbortError } from 'src/types/api.js'
 import type { z } from 'zod/v4'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -422,7 +422,7 @@ const SAFE_ENV_VARS = new Set([
  * similarly controls which cluster kubectl talks to. These are convenience
  * strippings for internal power users who accept the risk.
  *
- * Based on analysis of 30 days of tengu_internal_bash_tool_use_permission_request events.
+ * Based on analysis of 30 days of nyxclaude_internal_bash_tool_use_permission_request events.
  */
 const ANT_ONLY_SAFE_ENV_VARS = new Set([
   // Kubernetes and container config (config file pointers, not execution)
@@ -1208,7 +1208,7 @@ export async function checkCommandAndSuggestRules(
   // validators (backslash-escaped operators, etc.) would only add FPs.
   if (
     !astParseSucceeded &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK)
+    !isEnvTruthy(process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK)
   ) {
     const safetyResult = await bashCommandIsSafeAsync(input.command)
 
@@ -1761,7 +1761,7 @@ export async function bashToolHasPermission(
       type: 'other' as const,
       reason: astResult.reason,
     }
-    logEvent('tengu_bash_ast_too_complex', {
+    logEvent('nyxclaude_bash_ast_too_complex', {
       nodeTypeId: nodeTypeId(astResult.nodeType),
     })
     return {
@@ -2098,7 +2098,7 @@ export async function bashToolHasPermission(
   // same question: "can splitCommand be trusted on this input?"
   if (
     astSubcommands === null &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK)
+    !isEnvTruthy(process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK)
   ) {
     const originalCommandSafetyResult = await bashCommandIsSafeAsync(
       input.command,
@@ -2382,7 +2382,7 @@ export async function bashToolHasPermission(
   let hasPossibleCommandInjection = false
   if (
     astSubcommands === null &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK)
+    !isEnvTruthy(process.env.NYXCLAUDE_DISABLE_COMMAND_INJECTION_CHECK)
   ) {
     // CC-643: Batch divergence telemetry into a single logEvent. The per-sub
     // logEvent was the hot-path syscall driver (each call → /proc/self/stat
@@ -2398,7 +2398,7 @@ export async function bashToolHasPermission(
       r => r.behavior !== 'passthrough',
     )
     if (divergenceCount > 0) {
-      logEvent('tengu_tree_sitter_security_divergence', {
+      logEvent('nyxclaude_tree_sitter_security_divergence', {
         quoteContextDivergence: true,
         count: divergenceCount,
       })

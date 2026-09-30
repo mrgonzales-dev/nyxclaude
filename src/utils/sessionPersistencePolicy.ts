@@ -13,6 +13,6 @@ export function shouldSkipSessionPersistence(): boolean {
     (process.env.NODE_ENV || 'development') === 'test' ||
     getSettings_DEPRECATED()?.cleanupPeriodDays === 0 ||
     isSessionPersistenceDisabled() ||
-    isEnvTruthy(process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY)
+    isEnvTruthy(process.env.NYXCLAUDE_SKIP_PROMPT_HISTORY)
   )
 }

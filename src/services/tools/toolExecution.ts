@@ -3,7 +3,7 @@ import type {
   ContentBlockParam,
   ToolResultBlockParam,
   ToolUseBlock,
-} from '@anthropic-ai/sdk/resources/index.mjs'
+} from 'src/types/api.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
@@ -346,9 +346,7 @@ export type McpServerType =
   | 'http'
   | 'ws'
   | 'sdk'
-  | 'sse-ide'
-  | 'ws-ide'
-  | 'claudeai-proxy'
+  | 'remote-proxy'
   | undefined
 
 function findMcpServerConnection(
@@ -365,7 +363,7 @@ function findMcpServerConnection(
   }
 
   // mcpInfo.serverName is normalized (e.g., "claude_ai_Slack"), but client.name
-  // is the original name (e.g., "claude.ai Slack"). Normalize both for comparison.
+  // is the original name (e.g., "web console Slack"). Normalize both for comparison.
   return mcpClients.find(
     client => normalizeNameForMCP(client.name) === mcpInfo.serverName,
   )
@@ -440,7 +438,7 @@ export async function* runToolUse(
   if (!tool) {
     const sanitizedToolName = sanitizeToolNameForAnalytics(toolName)
     logForDebugging(`Unknown tool ${toolName}: ${toolUse.id}`)
-    logEvent('tengu_tool_use_error', {
+    logEvent('nyxclaude_tool_use_error', {
       error:
         `No such tool available: ${sanitizedToolName}` as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       toolName: sanitizedToolName,
@@ -490,7 +488,7 @@ export async function* runToolUse(
     logForDebugging(`Doom loop detected for ${toolName} (${doomLoop.count} consecutive identical calls)`)
     // Observability for tuning: a burst of these against varied tools would
     // indicate false positives (e.g. legitimate polling), not stuck agents.
-    logEvent('tengu_doom_loop_blocked', {
+    logEvent('nyxclaude_doom_loop_blocked', {
       toolName: sanitizeToolNameForAnalytics(
         toolName,
       ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -519,7 +517,7 @@ export async function* runToolUse(
       const abortMessage = getAlreadyAbortedToolResultMessage(
         toolUseContext.abortController.signal.reason,
       )
-      logEvent('tengu_tool_use_cancelled', {
+      logEvent('nyxclaude_tool_use_cancelled', {
         toolName: sanitizeToolNameForAnalytics(tool.name),
         toolUseID:
           toolUse.id as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -625,7 +623,7 @@ function streamedCheckPermissionsAndCallTool(
     mcpServerType,
     mcpServerBaseUrl,
     progress => {
-      logEvent('tengu_tool_use_progress', {
+      logEvent('nyxclaude_tool_use_progress', {
         messageID:
           messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         toolName: sanitizeToolNameForAnalytics(tool.name),
@@ -677,7 +675,7 @@ function streamedCheckPermissionsAndCallTool(
 
 /**
  * Appended to Zod errors when a deferred tool wasn't in the discovered-tool
- * set — re-runs the claude.ts schema-filter scan dispatch-time to detect the
+ * set — re-runs the modelApi.ts schema-filter scan dispatch-time to detect the
  * mismatch. The raw Zod error ("expected array, got string") doesn't tell the
  * model to re-load the tool; this hint does. Null if the schema was sent.
  */
@@ -686,7 +684,7 @@ export function buildSchemaNotSentHint(
   messages: Message[],
   tools: readonly { name: string }[],
 ): string | null {
-  // Optimistic gating — reconstructing claude.ts's full useToolSearch
+  // Optimistic gating — reconstructing modelApi.ts's full useToolSearch
   // computation is fragile. These two gates prevent pointing at a ToolSearch
   // that isn't callable; occasional misfires (Haiku, tst-auto below threshold)
   // cost one extra round-trip on an already-failing path.
@@ -809,7 +807,7 @@ export async function checkPermissionsAndCallTool(
       toolUseContext.options.tools,
     )
     if (schemaHint) {
-      logEvent('tengu_deferred_tool_schema_not_sent', {
+      logEvent('nyxclaude_deferred_tool_schema_not_sent', {
         toolName: sanitizeToolNameForAnalytics(tool.name),
         isMcp: tool.isMcp ?? false,
       })
@@ -819,7 +817,7 @@ export async function checkPermissionsAndCallTool(
     logForDebugging(
       `${tool.name} tool input error: ${errorContent.slice(0, 200)}`,
     )
-    logEvent('tengu_tool_use_error', {
+    logEvent('nyxclaude_tool_use_error', {
       error:
         'InputValidationError' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       errorDetails: errorContent.slice(
@@ -952,7 +950,7 @@ export async function checkPermissionsAndCallTool(
     logForDebugging(
       `${tool.name} tool validation error: ${isValidCall.message?.slice(0, 200)}`,
     )
-    logEvent('tengu_tool_use_error', {
+    logEvent('nyxclaude_tool_use_error', {
       messageID:
         messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       toolName: sanitizeToolNameForAnalytics(tool.name),
@@ -1264,7 +1262,7 @@ export async function checkPermissionsAndCallTool(
       }
     }
 
-    logEvent('tengu_tool_use_can_use_tool_rejected', {
+    logEvent('nyxclaude_tool_use_can_use_tool_rejected', {
       messageID:
         messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       toolName: sanitizeToolNameForAnalytics(tool.name),
@@ -1369,7 +1367,7 @@ export async function checkPermissionsAndCallTool(
 
     return resultingMessages
   }
-  logEvent('tengu_tool_use_can_use_tool_allowed', {
+  logEvent('nyxclaude_tool_use_can_use_tool_allowed', {
     messageID:
       messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     toolName: sanitizeToolNameForAnalytics(tool.name),
@@ -1553,7 +1551,7 @@ export async function checkPermissionsAndCallTool(
       }
     }
 
-    logEvent('tengu_tool_use_success', {
+    logEvent('nyxclaude_tool_use_success', {
       messageID:
         messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       toolName: sanitizeToolNameForAnalytics(tool.name),
@@ -1870,7 +1868,7 @@ export async function checkPermissionsAndCallTool(
       if (!(error instanceof ShellError)) {
         logError(error)
       }
-      logEvent('tengu_tool_use_error', {
+      logEvent('nyxclaude_tool_use_error', {
         messageID:
           messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         toolName: sanitizeToolNameForAnalytics(tool.name),

@@ -14,9 +14,9 @@ type QueryHaikuArgs = {
   }
 }
 
-let queryHaikuCalls: QueryHaikuArgs[] = []
-let queryHaikuText = ''
-let queryHaikuImpl: (args: QueryHaikuArgs) => Promise<unknown>
+let querySmallModelCalls: QueryHaikuArgs[] = []
+let querySmallModelText = ''
+let querySmallModelImpl: (args: QueryHaikuArgs) => Promise<unknown>
 let structuredOutputsSupported = true
 let apiProvider = 'firstParty'
 let smallFastModel = 'claude-haiku-4-5'
@@ -69,10 +69,10 @@ async function importSubject() {
       analyticsEvents.push({ name, metadata })
     },
   }))
-  mock.module('../services/api/claude.js', () => ({
-    queryHaiku: async (args: QueryHaikuArgs) => {
-      queryHaikuCalls.push(args)
-      return queryHaikuImpl(args)
+  mock.module('../services/api/modelApi.js', () => ({
+    querySmallModel: async (args: QueryHaikuArgs) => {
+      querySmallModelCalls.push(args)
+      return querySmallModelImpl(args)
     },
   }))
   mock.module('./betas.js', () => ({
@@ -140,9 +140,9 @@ async function importSubject() {
 
 beforeEach(() => {
   mock.restore()
-  queryHaikuCalls = []
-  queryHaikuText = '{"title":"Fix login button on mobile"}'
-  queryHaikuImpl = async () => assistantText(queryHaikuText)
+  querySmallModelCalls = []
+  querySmallModelText = '{"title":"Fix login button on mobile"}'
+  querySmallModelImpl = async () => assistantText(querySmallModelText)
   structuredOutputsSupported = true
   apiProvider = 'firstParty'
   smallFastModel = 'claude-haiku-4-5'
@@ -167,8 +167,8 @@ describe('generateSessionTitle', () => {
     )
 
     expect(title).toBe('Fix login button on mobile')
-    expect(queryHaikuCalls).toHaveLength(1)
-    const call = queryHaikuCalls[0]!
+    expect(querySmallModelCalls).toHaveLength(1)
+    const call = querySmallModelCalls[0]!
     expect(call.outputFormat).toEqual(
       expect.objectContaining({ type: 'json_schema' }),
     )
@@ -181,14 +181,14 @@ describe('generateSessionTitle', () => {
     expect(call.options.enablePromptCaching).toBe(false)
     expect(call.options.skipCacheWrite).toBe(true)
     expect(analyticsEvents).toContainEqual({
-      name: 'tengu_session_title_generated',
+      name: 'nyxclaude_session_title_generated',
       metadata: { success: true },
     })
   }, COLD_MODULE_IMPORT_TEST_TIMEOUT_MS)
 
   test('falls back when title generation times out', async () => {
     forcedCombinedTimeoutMs = 1
-    queryHaikuImpl = async ({ signal }) => rejectWhenAborted(signal)
+    querySmallModelImpl = async ({ signal }) => rejectWhenAborted(signal)
 
     const { generateSessionTitle } = await importSubject()
     const title = await generateSessionTitle(
@@ -198,9 +198,9 @@ describe('generateSessionTitle', () => {
 
     expect(title).toBe('Nyxclaude')
     expect(combinedAbortTimeouts).toEqual([12_000])
-    expect(queryHaikuCalls).toHaveLength(1)
-    expect(queryHaikuCalls[0]!.signal.aborted).toBe(true)
-    expect((queryHaikuCalls[0]!.signal.reason as DOMException).name).toBe(
+    expect(querySmallModelCalls).toHaveLength(1)
+    expect(querySmallModelCalls[0]!.signal.aborted).toBe(true)
+    expect((querySmallModelCalls[0]!.signal.reason as DOMException).name).toBe(
       'TimeoutError',
     )
     expect(debugMessages.at(-1)?.message).toContain(
@@ -208,13 +208,13 @@ describe('generateSessionTitle', () => {
     )
     expect(debugMessages.at(-1)?.message).toContain('error_name=TimeoutError')
     expect(analyticsEvents).toContainEqual({
-      name: 'tengu_session_title_generated',
+      name: 'nyxclaude_session_title_generated',
       metadata: { success: false },
     })
   })
 
   test('falls back when the title query returns an API error message', async () => {
-    queryHaikuImpl = async () => ({
+    querySmallModelImpl = async () => ({
       isApiErrorMessage: true,
       message: {
         content: [{ type: 'text', text: 'API Error: 400 provider error' }],
@@ -232,13 +232,13 @@ describe('generateSessionTitle', () => {
       'parse_failure=query_error',
     )
     expect(analyticsEvents).toContainEqual({
-      name: 'tengu_session_title_generated',
+      name: 'nyxclaude_session_title_generated',
       metadata: { success: false },
     })
   })
 
   test('propagates caller aborts to the internal title signal', async () => {
-    queryHaikuImpl = async ({ signal }) => rejectWhenAborted(signal)
+    querySmallModelImpl = async ({ signal }) => rejectWhenAborted(signal)
 
     const { generateSessionTitle } = await importSubject()
     const callerAbort = new AbortController()
@@ -247,21 +247,21 @@ describe('generateSessionTitle', () => {
       callerAbort.signal,
     )
 
-    expect(queryHaikuCalls).toHaveLength(1)
-    expect(queryHaikuCalls[0]!.signal).not.toBe(callerAbort.signal)
+    expect(querySmallModelCalls).toHaveLength(1)
+    expect(querySmallModelCalls[0]!.signal).not.toBe(callerAbort.signal)
 
     const reason = new Error('caller cancelled')
     callerAbort.abort(reason)
 
     await expect(titlePromise).resolves.toBe('Nyxclaude')
-    expect(queryHaikuCalls[0]!.signal.aborted).toBe(true)
-    expect(queryHaikuCalls[0]!.signal.reason).toBe(reason)
+    expect(querySmallModelCalls[0]!.signal.aborted).toBe(true)
+    expect(querySmallModelCalls[0]!.signal.reason).toBe(reason)
     expect(debugMessages.at(-1)?.message).toContain(
       'parse_failure=query_error',
     )
     expect(debugMessages.at(-1)?.message).toContain('error_name=Error')
     expect(analyticsEvents).toContainEqual({
-      name: 'tengu_session_title_generated',
+      name: 'nyxclaude_session_title_generated',
       metadata: { success: false },
     })
   })
@@ -270,7 +270,7 @@ describe('generateSessionTitle', () => {
     structuredOutputsSupported = false
     apiProvider = 'openai'
     smallFastModel = 'glm-5.1'
-    queryHaikuText = ''
+    querySmallModelText = ''
 
     const { generateSessionTitle } = await importSubject()
     const title = await generateSessionTitle(
@@ -279,22 +279,22 @@ describe('generateSessionTitle', () => {
     )
 
     expect(title).toBe('Nyxclaude')
-    expect(queryHaikuCalls).toHaveLength(1)
-    expect(queryHaikuCalls[0]!.outputFormat).toBeUndefined()
+    expect(querySmallModelCalls).toHaveLength(1)
+    expect(querySmallModelCalls[0]!.outputFormat).toBeUndefined()
     expect(debugMessages).toContainEqual({
       message:
         'generateSessionTitle task=generate_session_title provider=openai model=glm-5.1 response_length=0 parse_failure=empty_response fallback=default',
       level: 'warn',
     })
     expect(analyticsEvents).toContainEqual({
-      name: 'tengu_session_title_generated',
+      name: 'nyxclaude_session_title_generated',
       metadata: { success: false },
     })
   })
 
   test('extracts an embedded JSON title from provider prose', async () => {
     structuredOutputsSupported = false
-    queryHaikuText =
+    querySmallModelText =
       'Here is the title:\n{"title":"Refactor API client errors"}\nDone.'
 
     const { generateSessionTitle } = await importSubject()
@@ -305,14 +305,14 @@ describe('generateSessionTitle', () => {
 
     expect(title).toBe('Refactor API client errors')
     expect(analyticsEvents.at(-1)).toEqual({
-      name: 'tengu_session_title_generated',
+      name: 'nyxclaude_session_title_generated',
       metadata: { success: true },
     })
   })
 
   test('falls back from malformed JSON to a short clean line', async () => {
     structuredOutputsSupported = false
-    queryHaikuText = 'Fix login button on mobile\n\nThis is the concise title.'
+    querySmallModelText = 'Fix login button on mobile\n\nThis is the concise title.'
 
     const { generateSessionTitle } = await importSubject()
     const title = await generateSessionTitle(
@@ -325,7 +325,7 @@ describe('generateSessionTitle', () => {
 
   test('skips provider intro lines before short-line title candidates', async () => {
     structuredOutputsSupported = false
-    queryHaikuText =
+    querySmallModelText =
       'Here are some title ideas:\nFix login button on mobile\nPossible titles:'
 
     const { generateSessionTitle } = await importSubject()
@@ -339,7 +339,7 @@ describe('generateSessionTitle', () => {
 
   test('cleans title labels from short-line fallback output', async () => {
     structuredOutputsSupported = false
-    queryHaikuText = 'Title: Debug failing CI tests'
+    querySmallModelText = 'Title: Debug failing CI tests'
 
     const { generateSessionTitle } = await importSubject()
     const title = await generateSessionTitle(
@@ -352,7 +352,7 @@ describe('generateSessionTitle', () => {
 
   test('extracts a quoted title-like string', async () => {
     structuredOutputsSupported = false
-    queryHaikuText = 'The title should be "Debug failing CI tests".'
+    querySmallModelText = 'The title should be "Debug failing CI tests".'
 
     const { generateSessionTitle } = await importSubject()
     const title = await generateSessionTitle(
@@ -364,7 +364,7 @@ describe('generateSessionTitle', () => {
   })
 
   test('strips terminal control sequences from structured titles', async () => {
-    queryHaikuText = JSON.stringify({
+    querySmallModelText = JSON.stringify({
       title: '\x1b]8;;https://example.invalid\x07Click\x1b]8;;\x07',
     })
 
@@ -379,7 +379,7 @@ describe('generateSessionTitle', () => {
 
   test('strips ANSI escape sequences from short-line fallback output', async () => {
     structuredOutputsSupported = false
-    queryHaikuText = '\x1b[31mDebug failing CI tests\x1b[0m'
+    querySmallModelText = '\x1b[31mDebug failing CI tests\x1b[0m'
 
     const { generateSessionTitle } = await importSubject()
     const title = await generateSessionTitle(
@@ -402,7 +402,7 @@ describe('generateSessionTitle', () => {
 
   test('preserves prompt-fallback signal for empty provider output', async () => {
     structuredOutputsSupported = false
-    queryHaikuText = ''
+    querySmallModelText = ''
 
     const { generateSessionTitle, titleOrNullForPromptFallback } =
       await importSubject()
@@ -417,7 +417,7 @@ describe('generateSessionTitle', () => {
 
   test('lets persistence callers skip the generic default title', async () => {
     forcedCombinedTimeoutMs = 1
-    queryHaikuImpl = async ({ signal }) => rejectWhenAborted(signal)
+    querySmallModelImpl = async ({ signal }) => rejectWhenAborted(signal)
 
     const { generateSessionTitle, titleOrNullForPromptFallback } =
       await importSubject()
@@ -432,7 +432,7 @@ describe('generateSessionTitle', () => {
   })
 
   test('falls back when terminal sequence stripping leaves no title text', async () => {
-    queryHaikuText = JSON.stringify({
+    querySmallModelText = JSON.stringify({
       title: '\x1b]8;;https://example.invalid\x07\x1b]8;;\x07',
     })
 
@@ -447,7 +447,7 @@ describe('generateSessionTitle', () => {
 
   test('rejects huge unusable responses safely', async () => {
     structuredOutputsSupported = false
-    queryHaikuText = 'word '.repeat(5_000)
+    querySmallModelText = 'word '.repeat(5_000)
 
     const { generateSessionTitle } = await importSubject()
     const title = await generateSessionTitle(
@@ -464,7 +464,7 @@ describe('generateSessionTitle', () => {
 
   test('rejects obvious assistant prose', async () => {
     structuredOutputsSupported = false
-    queryHaikuText = "I'll start by looking through the codebase."
+    querySmallModelText = "I'll start by looking through the codebase."
 
     const { generateSessionTitle } = await importSubject()
     const title = await generateSessionTitle(
@@ -478,7 +478,7 @@ describe('generateSessionTitle', () => {
   test('logs actual provider and model metadata when the title query throws', async () => {
     apiProvider = 'openai'
     smallFastModel = 'glm-5.1'
-    queryHaikuImpl = async () => {
+    querySmallModelImpl = async () => {
       throw new Error('provider rejected schema')
     }
 
@@ -495,7 +495,7 @@ describe('generateSessionTitle', () => {
       level: 'warn',
     })
     expect(analyticsEvents).toContainEqual({
-      name: 'tengu_session_title_generated',
+      name: 'nyxclaude_session_title_generated',
       metadata: { success: false },
     })
   })

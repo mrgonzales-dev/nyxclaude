@@ -11,18 +11,18 @@ import type { ToolUseContext } from '../Tool.js'
 // Routing env vars are cleared so getAPIProvider() resolves to 'firstParty'
 // (its default), isolating the gating decisions to the tool-use context.
 const ROUTING_ENV_VARS = [
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_GITHUB',
-  'CLAUDE_CODE_USE_MISTRAL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED',
-  'CLAUDE_CODE_PROVIDER_PROFILE_ENV_APPLIED_ID',
+  'NYXCLAUDE_USE_GEMINI',
+  'NYXCLAUDE_USE_GITHUB',
+  'NYXCLAUDE_USE_MISTRAL',
+  'NYXCLAUDE_USE_BEDROCK',
+  'NYXCLAUDE_USE_VERTEX',
+  'NYXCLAUDE_USE_FOUNDRY',
+  'NYXCLAUDE_USE_OPENAI',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED',
+  'NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED_ID',
   'NVIDIA_NIM',
   'LONGCAT_API_KEY',
-  'CLAUDE_CODE_EFFORT_LEVEL',
+  'NYXCLAUDE_EFFORT_LEVEL',
 ]
 
 const savedEnv: Record<string, string | undefined> = {}
@@ -92,20 +92,20 @@ describe('getUltracodePermissionAttachment', () => {
     ).toEqual([])
   })
 
-  test('omits when CLAUDE_CODE_EFFORT_LEVEL overrides session ultracode with a different value', () => {
+  test('omits when NYXCLAUDE_EFFORT_LEVEL overrides session ultracode with a different value', () => {
     // env override wins over app state for the API effort, so the permission
     // must not fire for a turn the API actually runs at high.
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'high'
+    process.env.NYXCLAUDE_EFFORT_LEVEL = 'high'
     expect(getUltracodePermissionAttachment(makeContext({}))).toEqual([])
   })
 
-  test('omits when CLAUDE_CODE_EFFORT_LEVEL=auto clears the session ultracode', () => {
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'auto'
+  test('omits when NYXCLAUDE_EFFORT_LEVEL=auto clears the session ultracode', () => {
+    process.env.NYXCLAUDE_EFFORT_LEVEL = 'auto'
     expect(getUltracodePermissionAttachment(makeContext({}))).toEqual([])
   })
 
-  test('emits when CLAUDE_CODE_EFFORT_LEVEL=ultracode even if app state differs', () => {
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'ultracode'
+  test('emits when NYXCLAUDE_EFFORT_LEVEL=ultracode even if app state differs', () => {
+    process.env.NYXCLAUDE_EFFORT_LEVEL = 'ultracode'
     expect(
       getUltracodePermissionAttachment(makeContext({ effortValue: 'high' })),
     ).toEqual([{ type: 'ultracode_mode' }])

@@ -26,8 +26,8 @@ const SYNC_START = '\x1B[?2026h'
 const SYNC_END = '\x1B[?2026l'
 
 const ORIGINAL_ENV = {
-  CLAUDE_CODE_SIMPLE: process.env.CLAUDE_CODE_SIMPLE,
-  CLAUDE_CODE_USE_GITHUB: process.env.CLAUDE_CODE_USE_GITHUB,
+  NYXCLAUDE_SIMPLE: process.env.NYXCLAUDE_SIMPLE,
+  NYXCLAUDE_USE_GITHUB: process.env.NYXCLAUDE_USE_GITHUB,
   GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   GH_TOKEN: process.env.GH_TOKEN,
   AIMLAPI_EMAIL: process.env.AIMLAPI_EMAIL,
@@ -407,7 +407,7 @@ function mockProviderManagerDependencies(
 
   mock.module('../utils/githubModelsCredentials.js', () => ({
     clearGithubModelsToken: () => ({ success: true }),
-    GITHUB_MODELS_HYDRATED_ENV_MARKER: 'CLAUDE_CODE_GITHUB_TOKEN_HYDRATED',
+    GITHUB_MODELS_HYDRATED_ENV_MARKER: 'NYXCLAUDE_GITHUB_TOKEN_HYDRATED',
     hydrateGithubModelsTokenFromSecureStorage: () => {},
     readGithubModelsToken: githubSyncRead,
     readGithubModelsTokenAsync: githubAsyncRead,
@@ -594,7 +594,7 @@ afterEach(() => {
 })
 
 test('ProviderManager resolves GitHub virtual provider from async storage without sync reads in render flow', async () => {
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -624,7 +624,7 @@ test('ProviderManager resolves GitHub virtual provider from async storage withou
 })
 
 test('ProviderManager avoids first-frame false negative while stored-token lookup is pending', async () => {
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -1170,7 +1170,7 @@ test('ProviderManager saves MiniMax preset with Anthropic-compatible endpoint an
   }
 })
 
-test('ProviderManager edit flow keeps MiniMax on Anthropic-compatible provider path', async () => {
+test('ProviderManager edit flow keeps MiniMax on provider-compatible provider path', async () => {
   const minimaxProfile = {
     id: 'provider_minimax',
     provider: 'minimax',
@@ -1473,7 +1473,7 @@ test('ProviderManager skips advanced fields for legacy Kimi Code profiles', asyn
 })
 
 test('ProviderManager first-run Ollama preset auto-detects installed models', async () => {
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -1602,7 +1602,7 @@ test('ProviderManager preserves the Ollama readiness message when the probe is u
 })
 
 test('ProviderManager first-run Atomic Chat preset auto-detects loaded models', async () => {
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -1688,8 +1688,8 @@ test('ProviderManager first-run Atomic Chat preset auto-detects loaded models', 
 })
 
 test('ProviderManager first-run Codex OAuth switches the current session after login completes', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -1790,8 +1790,8 @@ test('ProviderManager first-run Codex OAuth switches the current session after l
 })
 
 test('ProviderManager Codex OAuth waiting state masks the paste field and delegates a good callback', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
   delete process.env.SSH_CONNECTION
@@ -1859,8 +1859,8 @@ test('ProviderManager Codex OAuth waiting state masks the paste field and delega
 })
 
 test('ProviderManager Codex OAuth waiting state shows the SSH banner and surfaces a bad-callback error', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
   process.env.SSH_CONNECTION = '10.0.0.1 22 10.0.0.2 22'
@@ -1927,8 +1927,8 @@ test('ProviderManager Codex OAuth waiting state shows the SSH banner and surface
 })
 
 test('ProviderManager first-run Codex OAuth surfaces credential storage warnings', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -2017,8 +2017,8 @@ test('ProviderManager first-run Codex OAuth surfaces credential storage warnings
 })
 
 test('ProviderManager first-run Codex OAuth reports next-startup fallback when session activation fails', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -2110,8 +2110,8 @@ test('ProviderManager first-run Codex OAuth reports next-startup fallback when s
 })
 
 test('ProviderManager does not hijack a manual Codex profile when OAuth credentials are not yet linked', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -2211,8 +2211,8 @@ test('ProviderManager does not hijack a manual Codex profile when OAuth credenti
 })
 
 test('ProviderManager keeps Codex OAuth as next-startup only when activating the session fails from the menu', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -2287,8 +2287,8 @@ test('ProviderManager keeps Codex OAuth as next-startup only when activating the
 })
 
 test('ProviderManager activating a multi-model provider sets the session model to the primary model', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -2369,8 +2369,8 @@ test('ProviderManager activating a multi-model provider sets the session model t
 })
 
 test('ProviderManager editing an active multi-model provider keeps app state on the primary model', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -2510,8 +2510,8 @@ test('ProviderManager editing an active multi-model provider keeps app state on 
 })
 
 test('ProviderManager set-active list uses descriptor-backed provider type labels', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -2563,8 +2563,8 @@ test('ProviderManager set-active list uses descriptor-backed provider type label
 })
 
 test('ProviderManager resolves Codex OAuth state from async storage without sync reads in render flow', async () => {
-  delete process.env.CLAUDE_CODE_SIMPLE
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  delete process.env.NYXCLAUDE_SIMPLE
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -2598,8 +2598,8 @@ test('ProviderManager resolves Codex OAuth state from async storage without sync
 })
 
 test('ProviderManager hides Codex OAuth setup in bare mode', async () => {
-  process.env.CLAUDE_CODE_SIMPLE = '1'
-  delete process.env.CLAUDE_CODE_USE_GITHUB
+  process.env.NYXCLAUDE_SIMPLE = '1'
+  delete process.env.NYXCLAUDE_USE_GITHUB
   delete process.env.GITHUB_TOKEN
   delete process.env.GH_TOKEN
 
@@ -2633,21 +2633,21 @@ test('ProviderManager deleting the GitHub provider reverts the hydrated credenti
   // token proves the delete path shares that cleanup rather than the old
   // partial version.
   const envKeys = [
-    'CLAUDE_CODE_USE_GITHUB',
+    'NYXCLAUDE_USE_GITHUB',
     'GITHUB_TOKEN',
     'GITHUB_COPILOT_KEY',
     'GH_TOKEN',
-    'CLAUDE_CODE_SIMPLE',
+    'NYXCLAUDE_SIMPLE',
   ]
   const envSnapshot = new Map(envKeys.map(key => [key, process.env[key]] as const))
   let mounted: Awaited<ReturnType<typeof mountProviderManager>> | undefined
 
   try {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.NYXCLAUDE_USE_GITHUB = '1'
     delete process.env.GITHUB_TOKEN
     delete process.env.GITHUB_COPILOT_KEY
     delete process.env.GH_TOKEN
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.NYXCLAUDE_SIMPLE
 
     const realProviderProfiles = await import('../utils/providerProfiles.js')
 
@@ -2672,7 +2672,7 @@ test('ProviderManager deleting the GitHub provider reverts the hydrated credenti
     mock.module('../utils/githubModelsCredentials.js', () => ({
       clearGithubModelsToken: () => ({ success: true }),
       clearHydratedGithubModelsTokenFromEnv,
-      GITHUB_MODELS_HYDRATED_ENV_MARKER: 'CLAUDE_CODE_GITHUB_TOKEN_HYDRATED',
+      GITHUB_MODELS_HYDRATED_ENV_MARKER: 'NYXCLAUDE_GITHUB_TOKEN_HYDRATED',
       hydrateGithubModelsTokenFromSecureStorage: () => {},
       readGithubModelsToken: () => storedToken,
       readGithubModelsTokenAsync: async () => storedToken,

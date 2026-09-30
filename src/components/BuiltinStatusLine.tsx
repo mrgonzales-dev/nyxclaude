@@ -7,8 +7,8 @@ import { useMainLoopModel } from '../hooks/useMainLoopModel.js';
 import type { ReadonlySettings } from '../hooks/useSettings.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { Box, Text } from '../ink.js';
-import { getRawUtilization } from '../services/claudeAiLimits.js';
-import { useClaudeAiLimits } from '../services/claudeAiLimitsHook.js';
+import { getRawUtilization } from '../services/limits.js';
+import { useLimits } from '../services/limitsHook.js';
 import { useAppState } from '../state/AppState.js';
 import type { Message } from '../types/message.js';
 import { getGlobalConfig } from '../utils/config.js';
@@ -184,7 +184,7 @@ function BuiltinStatusLineInner({
   // AppState-sourced model — same source as API requests (see StatusLine).
   const mainLoopModel = useMainLoopModel();
   // Subscribe to rate-limit header updates so the segment stays fresh.
-  useClaudeAiLimits();
+  useLimits();
   const {
     columns
   } = useTerminalSize();

@@ -1,4 +1,4 @@
-import type { ClientOptions } from '@anthropic-ai/sdk'
+import type { ClientOptions } from 'src/types/api.js'
 
 export function getLastApiRequests(): Array<{
   timestamp: string

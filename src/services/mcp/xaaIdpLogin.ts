@@ -1,5 +1,5 @@
 // ponytail: XAA IdP login removed — enterprise MCP auth feature.
-// Gated by CLAUDE_CODE_ENABLE_XAA env var which defaults to false.
+// Gated by NYXCLAUDE_ENABLE_XAA env var which defaults to false.
 export function isXaaEnabled(): boolean {
   return false
 }

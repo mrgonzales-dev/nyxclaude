@@ -65,8 +65,8 @@ test('uses mapped models when live discovery returns entries', () => {
 
 test('local OpenAI bootstrap falls back when route discovery has only static models', async () => {
   const envKeys = [
-    'ANTHROPIC_CUSTOM_HEADERS',
-    'CLAUDE_CODE_USE_OPENAI',
+    'NYXCLAUDE_CUSTOM_HEADERS',
+    'NYXCLAUDE_USE_OPENAI',
     'HICAP_API_KEY',
     'OPENAI_API_KEY',
     'OPENAI_API_KEYS',
@@ -78,13 +78,13 @@ test('local OpenAI bootstrap falls back when route discovery has only static mod
   )
 
   try {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://api.hicap.ai/v1'
     process.env.OPENAI_MODEL = 'claude-opus-4.8'
     process.env.HICAP_API_KEY = 'sk-hicap-test'
     delete process.env.OPENAI_API_KEY
     delete process.env.OPENAI_API_KEYS
-    delete process.env.ANTHROPIC_CUSTOM_HEADERS
+    delete process.env.NYXCLAUDE_CUSTOM_HEADERS
 
     const discovered: RouteDiscoveryResult = {
       routeId: 'hicap',
@@ -156,9 +156,9 @@ test('local OpenAI bootstrap falls back when route discovery has only static mod
 
 test('AIMLAPI discovery omits credentials on the public /models route', async () => {
   const envKeys = [
-    'ANTHROPIC_CUSTOM_HEADERS',
-    'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC',
-    'CLAUDE_CODE_USE_OPENAI',
+    'NYXCLAUDE_CUSTOM_HEADERS',
+    'NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC',
+    'NYXCLAUDE_USE_OPENAI',
     'AIMLAPI_API_KEY',
     'OPENAI_API_KEY',
     'OPENAI_API_KEYS',
@@ -170,12 +170,12 @@ test('AIMLAPI discovery omits credentials on the public /models route', async ()
   )
 
   try {
-    delete process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    delete process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC
+    process.env.NYXCLAUDE_USE_OPENAI = '1'
     process.env.OPENAI_BASE_URL = 'https://api.aimlapi.com/v1'
     process.env.OPENAI_MODEL = 'gpt-4o'
     process.env.AIMLAPI_API_KEY = 'sk-aimlapi-test'
-    process.env.ANTHROPIC_CUSTOM_HEADERS =
+    process.env.NYXCLAUDE_CUSTOM_HEADERS =
       'Authorization: Bearer leaked; X-API-Key: leaked-key'
     delete process.env.OPENAI_API_KEY
     delete process.env.OPENAI_API_KEYS

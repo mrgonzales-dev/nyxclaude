@@ -1,10 +1,10 @@
 import { expect, test } from 'bun:test'
 
 import {
-  CLAUDE_AI_BASE_URL,
-  CLAUDE_AI_LOCAL_BASE_URL,
-  CLAUDE_AI_STAGING_BASE_URL,
-  getClaudeAiBaseUrl,
+  REMOTE_BASE_URL,
+  REMOTE_LOCAL_BASE_URL,
+  REMOTE_STAGING_BASE_URL,
+  getRemoteBaseUrl,
   isRemoteSessionLocal,
   isRemoteSessionStaging,
 } from './product.js'
@@ -24,7 +24,7 @@ test('isRemoteSessionLocal: does not match `localhost` in a production URL path 
   // Regression: the old `ingressUrl.includes('localhost')` check would route
   // these production URLs to http://localhost:4000.
   expect(
-    isRemoteSessionLocal(undefined, 'https://claude.ai/code/x?ref=localhost'),
+    isRemoteSessionLocal(undefined, 'https://web console/code/x?ref=localhost'),
   ).toBe(false)
   expect(
     isRemoteSessionLocal(undefined, 'https://localhost.attacker.example.com'),
@@ -55,7 +55,7 @@ test('isRemoteSessionStaging: matches the real staging ingress/API hosts', () =>
     ),
   ).toBe(true)
   expect(
-    isRemoteSessionStaging(undefined, 'https://claude-ai.staging.ant.dev'),
+    isRemoteSessionStaging(undefined, 'https://remote.staging.example.com'),
   ).toBe(true)
   expect(
     isRemoteSessionStaging(undefined, 'https://platform.staging.ant.dev'),
@@ -71,10 +71,10 @@ test('isRemoteSessionStaging: does not match unrelated hosts carrying a `staging
   // production URLs to the staging endpoint; a generic dot-label match would
   // still over-match `foo.staging.example.com`.
   expect(
-    isRemoteSessionStaging(undefined, 'https://claude.ai/code/x?ref=staging'),
+    isRemoteSessionStaging(undefined, 'https://web console/code/x?ref=staging'),
   ).toBe(false)
   expect(
-    isRemoteSessionStaging(undefined, 'https://staging-cdn-claude.example.com'),
+    isRemoteSessionStaging(undefined, 'https://staging-cdn-remote.example.com'),
   ).toBe(false)
   expect(
     isRemoteSessionStaging(
@@ -93,26 +93,26 @@ test('isRemoteSessionStaging: false for missing or malformed ingress URL', () =>
   expect(isRemoteSessionStaging(undefined, 'not a url')).toBe(false)
 })
 
-// --- getClaudeAiBaseUrl routing ---
+// --- getRemoteBaseUrl routing ---
 
-test('getClaudeAiBaseUrl: production URL with `localhost`/`staging` substrings routes to prod', () => {
+test('getRemoteBaseUrl: production URL with `localhost`/`staging` substrings routes to prod', () => {
   expect(
-    getClaudeAiBaseUrl(undefined, 'https://claude.ai/code/x?ref=localhost'),
-  ).toBe(CLAUDE_AI_BASE_URL)
+    getRemoteBaseUrl(undefined, 'https://web console/code/x?ref=localhost'),
+  ).toBe(REMOTE_BASE_URL)
   expect(
-    getClaudeAiBaseUrl(undefined, 'https://claude.ai/code/x?ref=staging'),
-  ).toBe(CLAUDE_AI_BASE_URL)
+    getRemoteBaseUrl(undefined, 'https://web console/code/x?ref=staging'),
+  ).toBe(REMOTE_BASE_URL)
 })
 
-test('getClaudeAiBaseUrl: routes real local/staging ingress hosts correctly', () => {
-  expect(getClaudeAiBaseUrl(undefined, 'http://localhost:4000')).toBe(
-    CLAUDE_AI_LOCAL_BASE_URL,
+test('getRemoteBaseUrl: routes real local/staging ingress hosts correctly', () => {
+  expect(getRemoteBaseUrl(undefined, 'http://localhost:4000')).toBe(
+    REMOTE_LOCAL_BASE_URL,
   )
   expect(
-    getClaudeAiBaseUrl(undefined, 'https://claude-ai.staging.ant.dev'),
-  ).toBe(CLAUDE_AI_STAGING_BASE_URL)
+    getRemoteBaseUrl(undefined, 'https://remote.staging.example.com'),
+  ).toBe(REMOTE_STAGING_BASE_URL)
 })
 
-test('getClaudeAiBaseUrl: defaults to production with no hints', () => {
-  expect(getClaudeAiBaseUrl(undefined, undefined)).toBe(CLAUDE_AI_BASE_URL)
+test('getRemoteBaseUrl: defaults to production with no hints', () => {
+  expect(getRemoteBaseUrl(undefined, undefined)).toBe(REMOTE_BASE_URL)
 })

@@ -3,7 +3,7 @@
  *
  * Registers the `claude-cli://` custom URI scheme with the OS,
  * so that clicking a `claude-cli://` link in a browser (or any app) will
- * invoke `claude --handle-uri <url>`.
+ * invoke `nyxclaude --handle-uri <url>`.
  *
  * Platform details:
  *   macOS  — Creates a minimal .app trampoline in ~/Applications with
@@ -22,7 +22,7 @@ import {
   logEvent,
 } from 'src/services/analytics/index.js'
 import { logForDebugging } from '../debug.js'
-import { getClaudeConfigHomeDir } from '../envUtils.js'
+import { getNyxclaudeConfigHomeDir } from '../envUtils.js'
 import { getErrnoCode } from '../errors.js'
 import { execFileNoThrow } from '../execFileNoThrow.js'
 import { getInitialSettings } from '../settings/settings.js'
@@ -305,7 +305,7 @@ export async function ensureDeepLinkProtocolRegistered(): Promise<void> {
   if (getInitialSettings().disableDeepLinkRegistration === 'disable') {
     return
   }
-  if (!getFeatureValue_CACHED_MAY_BE_STALE('tengu_lodestone_enabled', false)) {
+  if (!getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_lodestone_enabled', false)) {
     return
   }
 
@@ -319,7 +319,7 @@ export async function ensureDeepLinkProtocolRegistered(): Promise<void> {
   // doesn't generate a failure event on every startup. Marker lives in
   // ~/.nyxclaude (per-machine, not synced) rather than ~/.nyxclaude.json (can sync).
   const failureMarkerPath = path.join(
-    getClaudeConfigHomeDir(),
+    getNyxclaudeConfigHomeDir(),
     '.deep-link-register-failed',
   )
   try {
@@ -333,12 +333,12 @@ export async function ensureDeepLinkProtocolRegistered(): Promise<void> {
 
   try {
     await registerProtocolHandler(claudePath)
-    logEvent('tengu_deep_link_registered', { success: true })
+    logEvent('nyxclaude_deep_link_registered', { success: true })
     logForDebugging('Auto-registered claude-cli:// deep link protocol handler')
     await fs.rm(failureMarkerPath, { force: true }).catch(() => {})
   } catch (error) {
     const code = getErrnoCode(error)
-    logEvent('tengu_deep_link_registered', {
+    logEvent('nyxclaude_deep_link_registered', {
       success: false,
       error_code:
         code as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ToolResultBlockParam } from 'src/types/api.js'
 import type { QuerySource } from '../../constants/querySource.js'
 import type { ToolUseContext } from '../../Tool.js'
 import type { Message } from '../../types/message.js'
@@ -352,7 +352,7 @@ export function maybeTimeBasedMicrocompact(
     return null
   }
 
-  logEvent('tengu_time_based_microcompact', {
+  logEvent('nyxclaude_time_based_microcompact', {
     gapMinutes: Math.round(gapMinutes),
     gapThresholdMinutes: config.gapThresholdMinutes,
     toolsCleared: clearSet.size,

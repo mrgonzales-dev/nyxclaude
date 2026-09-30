@@ -1,7 +1,7 @@
 import { isEnvTruthy } from '../../../utils/envUtils.js'
 
 export function isGithubModelsMode(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)
+  return isEnvTruthy(process.env.NYXCLAUDE_USE_GITHUB)
 }
 
 export function filterAnthropicHeaders(

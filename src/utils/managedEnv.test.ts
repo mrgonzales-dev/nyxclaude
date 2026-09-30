@@ -20,7 +20,7 @@ import {
 import { applyConfigEnvironmentVariables } from './managedEnv.js'
 
 const ENV_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
+  'NYXCLAUDE_USE_OPENAI',
   'OPENAI_API_KEY',
   'OPENAI_BASE_URL',
   'OPENAI_MODEL',
@@ -90,7 +90,7 @@ function writeTempEnvFile(content: string): string {
 describe('applyConfigEnvironmentVariables', () => {
   it('restores remembered provider env-file values after full settings env merge', () => {
     const filePath = writeTempEnvFile([
-      'CLAUDE_CODE_USE_OPENAI=1',
+      'NYXCLAUDE_USE_OPENAI=1',
       'OPENAI_API_KEY=file-key',
       'OPENAI_BASE_URL=https://file.example/v1',
       'OPENAI_MODEL=file-model',
@@ -100,7 +100,7 @@ describe('applyConfigEnvironmentVariables', () => {
     saveGlobalConfig(current => ({
       ...current,
       env: {
-        CLAUDE_CODE_USE_OPENAI: '1',
+        NYXCLAUDE_USE_OPENAI: '1',
         OPENAI_API_KEY: 'settings-key',
         OPENAI_BASE_URL: 'https://settings.example/v1',
         OPENAI_MODEL: 'settings-model',
@@ -109,7 +109,7 @@ describe('applyConfigEnvironmentVariables', () => {
 
     applyConfigEnvironmentVariables()
 
-    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBe('1')
+    expect(process.env.NYXCLAUDE_USE_OPENAI).toBe('1')
     expect(process.env.OPENAI_API_KEY).toBe('file-key')
     expect(process.env.OPENAI_BASE_URL).toBe('https://file.example/v1')
     expect(process.env.OPENAI_MODEL).toBe('file-model')

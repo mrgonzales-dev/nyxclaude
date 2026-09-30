@@ -15,7 +15,7 @@ import { resolveModelRuntimeLimits } from '../../integrations/runtimeMetadata.js
 import { parseCredentialList } from '../../services/api/credentialPool.js'
 import type { CapabilityFlags, ModelCatalogEntry } from '../../integrations/descriptors.js'
 import type { ScopedMcpServerConfig } from '../../services/mcp/types.js'
-import { getClaudeCodeMcpConfigs } from '../../services/mcp/config.js'
+import { getNyxclaudeMcpConfigs } from '../../services/mcp/config.js'
 import {
   resolveProviderRequest,
   resolveRuntimeCodexCredentials,
@@ -348,7 +348,7 @@ function getKnownCredentialSourceNames(routeId: string): Set<string> {
 function resolveDiagnosticProviderContext(
   env: NodeJS.ProcessEnv,
 ): DiagnosticProviderContext {
-  if (isTruthy(env.CLAUDE_CODE_USE_OPENAI)) {
+  if (isTruthy(env.NYXCLAUDE_USE_OPENAI)) {
     const request = resolveProviderRequest({ processEnv: env })
     if (request.transport === 'codex_responses') {
       return {
@@ -376,7 +376,7 @@ function resolveDiagnosticProviderContext(
     limitsModel: model,
     catalogRouteId: routeId,
     baseUrl: resolveProviderBaseUrl(routeId, env),
-    ...(isTruthy(env.CLAUDE_CODE_USE_OPENAI) && env.OPENAI_API_FORMAT
+    ...(isTruthy(env.NYXCLAUDE_USE_OPENAI) && env.OPENAI_API_FORMAT
       ? { apiFormat: env.OPENAI_API_FORMAT }
       : {}),
     credential: getCredentialSummary(routeId, env),
@@ -487,7 +487,7 @@ async function getMcpSummary(
 ): Promise<IssueReport['mcp']> {
   if (servers) return summarizeMcpServers(servers)
   try {
-    const result = await getClaudeCodeMcpConfigs()
+    const result = await getNyxclaudeMcpConfigs()
     return summarizeMcpServers(result.servers)
   } catch {
     return { serverCount: 0, transports: {} }

@@ -8,14 +8,14 @@ import {
   acquireSharedMutationLock,
   releaseSharedMutationLock,
 } from '../../test/sharedMutationLock.js'
-import { setClaudeConfigHomeDirForTesting } from '../../utils/envUtils.js'
+import { setNyxclaudeConfigHomeDirForTesting } from '../../utils/envUtils.js'
 
-// CLAUDE_CODE_SIMPLE puts utils that touch secure storage into a no-op
+// NYXCLAUDE_SIMPLE puts utils that touch secure storage into a no-op
 // "bare" mode — clearXaiCredentials() succeeds without touching the
 // keychain, so the test can assert the rest of the cleanup independently.
 const SAVED_ENV = {
-  CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
-  CLAUDE_CODE_SIMPLE: process.env.CLAUDE_CODE_SIMPLE,
+  NYXCLAUDE_CONFIG_DIR: process.env.NYXCLAUDE_CONFIG_DIR,
+  NYXCLAUDE_SIMPLE: process.env.NYXCLAUDE_SIMPLE,
 }
 
 let tempConfigDir = ''
@@ -27,30 +27,30 @@ beforeEach(async () => {
   tempConfigDir = mkdtempSync(join(tmpdir(), 'nyxclaude-xai-cli-config-'))
   tempCwd = mkdtempSync(join(tmpdir(), 'nyxclaude-xai-cli-cwd-'))
   process.chdir(tempCwd)
-  process.env.CLAUDE_CONFIG_DIR = tempConfigDir
-  process.env.CLAUDE_CODE_SIMPLE = '1'
+  process.env.NYXCLAUDE_CONFIG_DIR = tempConfigDir
+  process.env.NYXCLAUDE_SIMPLE = '1'
   // Other test files (SQLiteProvider, knowledgeGraph, …) call
-  // setClaudeConfigHomeDirForTesting and may leak the override. Pin it
+  // setNyxclaudeConfigHomeDirForTesting and may leak the override. Pin it
   // to our temp dir so clearPersistedXaiOAuthProfile's path resolution
   // lands on the file we just wrote.
-  setClaudeConfigHomeDirForTesting(tempConfigDir)
+  setNyxclaudeConfigHomeDirForTesting(tempConfigDir)
 })
 
 afterEach(() => {
   try {
-    setClaudeConfigHomeDirForTesting(undefined)
+    setNyxclaudeConfigHomeDirForTesting(undefined)
     process.chdir(originalCwd)
     rmSync(tempConfigDir, { recursive: true, force: true })
     rmSync(tempCwd, { recursive: true, force: true })
-    if (SAVED_ENV.CLAUDE_CONFIG_DIR === undefined) {
-      delete process.env.CLAUDE_CONFIG_DIR
+    if (SAVED_ENV.NYXCLAUDE_CONFIG_DIR === undefined) {
+      delete process.env.NYXCLAUDE_CONFIG_DIR
     } else {
-      process.env.CLAUDE_CONFIG_DIR = SAVED_ENV.CLAUDE_CONFIG_DIR
+      process.env.NYXCLAUDE_CONFIG_DIR = SAVED_ENV.NYXCLAUDE_CONFIG_DIR
     }
-    if (SAVED_ENV.CLAUDE_CODE_SIMPLE === undefined) {
-      delete process.env.CLAUDE_CODE_SIMPLE
+    if (SAVED_ENV.NYXCLAUDE_SIMPLE === undefined) {
+      delete process.env.NYXCLAUDE_SIMPLE
     } else {
-      process.env.CLAUDE_CODE_SIMPLE = SAVED_ENV.CLAUDE_CODE_SIMPLE
+      process.env.NYXCLAUDE_SIMPLE = SAVED_ENV.NYXCLAUDE_SIMPLE
     }
   } finally {
     releaseSharedMutationLock()
@@ -82,7 +82,7 @@ async function freshHandlerModules() {
   //
   // `clearPersistedXaiOAuthProfile` is wrapped to pin the configDir to
   // our temp dir — other test files run in parallel and call
-  // `setClaudeConfigHomeDirForTesting`, so the default-path resolution
+  // `setNyxclaudeConfigHomeDirForTesting`, so the default-path resolution
   // inside the real helper can't be trusted in the broader suite. The
   // production code still calls it with no args (default path); this
   // wrapper only fences the test.

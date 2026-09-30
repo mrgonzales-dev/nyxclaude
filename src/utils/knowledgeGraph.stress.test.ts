@@ -12,11 +12,11 @@ import { mkdtempSync, rmSync, existsSync } from 'fs'
 import { tmpdir } from 'os'
 import { dirname, join } from 'path'
 import { acquireEnvMutex, releaseEnvMutex } from '../entrypoints/sdk/shared.js'
-import { setClaudeConfigHomeDirForTesting } from './envUtils.js'
+import { setNyxclaudeConfigHomeDirForTesting } from './envUtils.js'
 import { getFsImplementation } from './fsOperations.js'
 
 describe('KnowledgeGraph Phase 1 Stress & Edge Cases', () => {
-  const originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const originalConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
   const originalOrama = process.env.NYXCLAUDE_KNOWLEDGE_ORAMA
   let configDir: string | undefined
 
@@ -47,9 +47,9 @@ describe('KnowledgeGraph Phase 1 Stress & Edge Cases', () => {
   beforeEach(async () => {
     await acquireEnvMutex()
     configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-stress-'))
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.NYXCLAUDE_CONFIG_DIR = configDir
     process.env.NYXCLAUDE_KNOWLEDGE_ORAMA = '1'
-    setClaudeConfigHomeDirForTesting(configDir)
+    setNyxclaudeConfigHomeDirForTesting(configDir)
     resetGlobalGraph()
   })
 
@@ -58,16 +58,16 @@ describe('KnowledgeGraph Phase 1 Stress & Edge Cases', () => {
       resetGlobalGraph()
       clearMemoryOnly()
       if (originalConfigDir === undefined) {
-        delete process.env.CLAUDE_CONFIG_DIR
+        delete process.env.NYXCLAUDE_CONFIG_DIR
       } else {
-        process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+        process.env.NYXCLAUDE_CONFIG_DIR = originalConfigDir
       }
       if (originalOrama === undefined) {
         delete process.env.NYXCLAUDE_KNOWLEDGE_ORAMA
       } else {
         process.env.NYXCLAUDE_KNOWLEDGE_ORAMA = originalOrama
       }
-      setClaudeConfigHomeDirForTesting(undefined)
+      setNyxclaudeConfigHomeDirForTesting(undefined)
     } finally {
       const dirToRemove = configDir
       configDir = undefined

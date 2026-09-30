@@ -10,8 +10,8 @@
 // Usage: bun run worktree.agentBase.fixture.ts <cfgDir> <repoDir> <name>
 // Prints { worktreePath } as JSON on stdout.
 import {
-  getClaudeConfigHomeDir,
-  setClaudeConfigHomeDirForTesting,
+  getNyxclaudeConfigHomeDir,
+  setNyxclaudeConfigHomeDirForTesting,
 } from './envUtils.js'
 import { createAgentWorktree } from './worktree.js'
 
@@ -22,8 +22,8 @@ if (!cfgDir || !repoDir || !name) {
   process.exit(2)
 }
 
-setClaudeConfigHomeDirForTesting(cfgDir)
-getClaudeConfigHomeDir.cache?.clear?.()
+setNyxclaudeConfigHomeDirForTesting(cfgDir)
+getNyxclaudeConfigHomeDir.cache?.clear?.()
 
 const result = await createAgentWorktree(name, { cwd: repoDir })
 process.stdout.write(JSON.stringify({ worktreePath: result.worktreePath }))

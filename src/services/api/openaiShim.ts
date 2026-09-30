@@ -9,7 +9,7 @@
  * Together, Groq, Fireworks, DeepSeek, Mistral, and any OpenAI-compatible API.
  *
  * Environment variables:
- *   CLAUDE_CODE_USE_OPENAI=1          — enable this provider
+ *   NYXCLAUDE_USE_OPENAI=1          — enable this provider
  *   OPENAI_API_KEY=sk-...             — API key (optional for local models)
  *   OPENAI_API_KEYS=sk-a,sk-b         — optional comma-separated key pool for rotation
  *   OPENAI_AUTH_HEADER=api-key        — optional custom auth header name
@@ -26,7 +26,7 @@
  *   NYXCLAUDE_SMART_ROUTING_STRONG=<key> — agentModels key or model id for strong turns
  *
  * GitHub Copilot API (api.githubcopilot.com), OpenAI-compatible:
- *   CLAUDE_CODE_USE_GITHUB=1         — enable GitHub inference (no need for USE_OPENAI)
+ *   NYXCLAUDE_USE_GITHUB=1         — enable GitHub inference (no need for USE_OPENAI)
  *   GITHUB_TOKEN or GH_TOKEN         — Copilot API token (mapped to Bearer auth)
  *   OPENAI_MODEL                     — optional; use github:copilot or openai/gpt-4.1 style IDs
  *
@@ -36,13 +36,13 @@
  *                                     would not otherwise match (for example inference.ml.azure.com)
  */
 
-import { APIError } from '@anthropic-ai/sdk'
+import { APIError } from 'src/types/api.js'
 import {
   readCodexCredentialsAsync,
   refreshCodexAccessTokenIfNeeded,
 } from '../../utils/codexCredentials.js'
 import { logForDebugging } from '../../utils/debug.js'
-import { anthropicSsePassthrough as parseAnthropicSsePassthrough, createReaderCanceller, createStreamAbortError, getStreamIdleTimeoutMs, readWithIdleTimeout, StreamIdleTimeoutError, StreamStallBudgetExceededError, throwIfStreamAborted } from './openaiShim/streamControl.js'
+import { ssePassthrough as parseAnthropicSsePassthrough, createReaderCanceller, createStreamAbortError, getStreamIdleTimeoutMs, readWithIdleTimeout, StreamIdleTimeoutError, StreamStallBudgetExceededError, throwIfStreamAborted } from './openaiShim/streamControl.js'
 export { getStreamIdleTimeoutMs, StreamStallBudgetExceededError } from './openaiShim/streamControl.js'
 import { isBareMode, isEnvTruthy } from '../../utils/envUtils.js'
 import {
@@ -698,7 +698,7 @@ function requestBodyContainsImages(
 
 function isGeminiMode(): boolean {
   return (
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_GEMINI) ||
+    isEnvTruthy(process.env.NYXCLAUDE_USE_GEMINI) ||
     hasGeminiApiHost(process.env.OPENAI_BASE_URL)
   )
 }
@@ -709,7 +709,7 @@ function hydrateOpenAIShimCompatibilityEnv(
   // Provider selection, base URL defaults, and model defaults now flow
   // through resolveProviderRequest(). The shim still needs a few legacy
   // credential aliases because downstream auth/header paths read OPENAI_*.
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GEMINI)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_GEMINI)) {
     const geminiApiKey =
       processEnv.GEMINI_API_KEY ?? processEnv.GOOGLE_API_KEY
     if (geminiApiKey && !processEnv.OPENAI_API_KEY) {
@@ -718,14 +718,14 @@ function hydrateOpenAIShimCompatibilityEnv(
     return
   }
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_MISTRAL)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_MISTRAL)) {
     if (processEnv.MISTRAL_API_KEY && !processEnv.OPENAI_API_KEY) {
       processEnv.OPENAI_API_KEY = processEnv.MISTRAL_API_KEY
     }
     return
   }
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB)) {
+  if (isEnvTruthy(processEnv.NYXCLAUDE_USE_GITHUB)) {
     processEnv.OPENAI_API_KEY =
       processEnv.GITHUB_COPILOT_KEY ??
       processEnv.OPENAI_API_KEY ??
@@ -1128,7 +1128,7 @@ export function parseXmlToolCalls(text: string, allowHy3 = false): {
  * The response events are already in AnthropicStreamEvent format —
  * we just parse the SSE frames and yield them directly.
  */
-async function* anthropicSsePassthrough(
+async function* ssePassthrough(
   response: Response,
   _model: string,
   signal?: AbortSignal,
@@ -1712,7 +1712,7 @@ async function* openaiStreamToAnthropic(
   // sends one chunk every 89s would keep resetting the idle timer and hang
   // for up to QueryGuard's 30-min hard max. This budget catches slowly dying
   // streams and falls back to non-streaming mode.
-  // Mirrors the stall detection on the Anthropic native path (claude.ts:2232)
+  // Mirrors the stall detection on the Anthropic native path (modelApi.ts:2232)
   // but adds the cumulative budget abort that the Anthropic path lacks.
   const STALL_THRESHOLD_MS = 30_000
   const STALL_BUDGET_MS = 60_000
@@ -2539,7 +2539,7 @@ class OpenAIShimStream {
   private generator?: AsyncGenerator<AnthropicStreamEvent>
   private cleanupCombinedSignal?: () => void
   private cleanupPreIterationAbort?: () => void
-  // The controller property is checked by claude.ts to distinguish streams from error messages
+  // The controller property is checked by modelApi.ts to distinguish streams from error messages
   controller = new AbortController()
 
   constructor(
@@ -2702,7 +2702,7 @@ class OpenAIShimMessages {
             )
               ? codexStreamToAnthropic(response, request.resolvedModel, streamSignal)
               : isMessagesStream
-                ? anthropicSsePassthrough(response, request.resolvedModel, streamSignal)
+                ? ssePassthrough(response, request.resolvedModel, streamSignal)
                 : isGeminiStream
                   ? geminiSseToAnthropic(response, request.resolvedModel, streamSignal)
                   : openaiStreamToAnthropic(response, request.resolvedModel, streamSignal, isLikelyOllamaEndpoint(request.baseUrl), response.url || undefined, minPromptTokens),
@@ -2979,7 +2979,7 @@ class OpenAIShimMessages {
     const effectiveTransport = shimConfig.endpointPath === '/responses'
       ? 'responses'
       : shimConfig.endpointPath === '/messages'
-        ? 'anthropic_messages'
+        ? 'provider_messages'
         : shimConfig.endpointPath?.startsWith('/models/gemini-')
           ? 'gemini'
           : request.transport
@@ -3876,7 +3876,7 @@ class OpenAIShimMessages {
       const payload =
         useNativeOllamaChat ? buildOllamaChatBody()
           : effectiveTransport === 'responses' || effectiveTransport === 'responses_compat' ? buildResponsesBody()
-          : effectiveTransport === 'anthropic_messages' ? buildAnthropicMessagesBody()
+          : effectiveTransport === 'provider_messages' ? buildAnthropicMessagesBody()
           : effectiveTransport === 'gemini' ? buildGeminiBody()
           : body
       // NYXCLAUDE: debug log to see what's sent to omniroute
@@ -4263,7 +4263,7 @@ class OpenAIShimMessages {
       }
 
       const hasToolsPayload =
-        effectiveTransport === 'responses' || effectiveTransport === 'responses_compat' || effectiveTransport === 'anthropic_messages' || effectiveTransport === 'gemini'
+        effectiveTransport === 'responses' || effectiveTransport === 'responses_compat' || effectiveTransport === 'provider_messages' || effectiveTransport === 'gemini'
           ? Array.isArray(params.tools) && params.tools.length > 0
           : Array.isArray(body.tools) && body.tools.length > 0
 

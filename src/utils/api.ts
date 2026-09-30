@@ -1,8 +1,8 @@
-import type Anthropic from '@anthropic-ai/sdk'
+import { type Anthropic } from 'src/types/api.js'
 import type {
   BetaTool,
   BetaToolUnion,
-} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+} from 'src/types/api.js'
 import { createHash } from 'crypto'
 import { SYSTEM_PROMPT_DYNAMIC_BOUNDARY } from 'src/constants/prompts.js'
 import { getSystemContext, getUserContext } from 'src/context.js'
@@ -185,7 +185,7 @@ export async function toolToAPISchema(
 ): Promise<BetaToolUnion> {
   // Session-stable base schema: name, description, input_schema, strict,
   // eager_input_streaming. These are computed once per session and cached to
-  // prevent mid-session GrowthBook flips (tengu_tool_pear, tengu_fgts) or
+  // prevent mid-session GrowthBook flips (nyxclaude_tool_pear, nyxclaude_fgts) or
   // tool.prompt() drift from churning the serialized tool array bytes.
   // See toolSchemaCache.ts for rationale.
   //
@@ -202,7 +202,7 @@ export async function toolToAPISchema(
   let base = cache.get(cacheKey)
   if (!base) {
     const strictToolsEnabled =
-      checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_tool_pear')
+      checkStatsigFeatureGate_CACHED_MAY_BE_STALE('nyxclaude_tool_pear')
     // Use tool's JSON schema directly if provided, otherwise convert Zod schema
     let input_schema = (
       'inputJSONSchema' in tool && tool.inputJSONSchema
@@ -249,8 +249,8 @@ export async function toolToAPISchema(
     if (
       getAPIProvider() === 'firstParty' &&
       isFirstPartyAnthropicBaseUrl() &&
-      (getFeatureValue_CACHED_MAY_BE_STALE('tengu_fgts', false) ||
-        isEnvTruthy(process.env.CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING))
+      (getFeatureValue_CACHED_MAY_BE_STALE('nyxclaude_fgts', false) ||
+        isEnvTruthy(process.env.NYXCLAUDE_ENABLE_FINE_GRAINED_TOOL_STREAMING))
     ) {
       base.eager_input_streaming = true
     }
@@ -279,7 +279,7 @@ export async function toolToAPISchema(
     schema.cache_control = options.cacheControl
   }
 
-  // CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS is the kill switch for beta API
+  // NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS is the kill switch for beta API
   // shapes. Proxy gateways (ANTHROPIC_BASE_URL → LiteLLM → Bedrock) reject
   // fields like defer_loading with "Extra inputs are not permitted". The gates
   // above each field are scattered and not all provider-aware, so this strips
@@ -289,8 +289,8 @@ export async function toolToAPISchema(
   // standard prompt caching (Bedrock/Vertex supported); the beta sub-fields
   // (scope, ttl) are already gated upstream by shouldIncludeFirstPartyOnlyBetas
   // which independently respects this kill switch.
-  // github.com/anthropics/claude-code/issues/20031
-  if (isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS)) {
+  // github.com/nyxclaude/nyxclaude/issues/20031
+  if (isEnvTruthy(process.env.NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS)) {
     const allowed = new Set([
       'name',
       'description',
@@ -320,7 +320,7 @@ function logStripOnce(stripped: string[]): void {
   if (loggedStrip) return
   loggedStrip = true
   logForDebugging(
-    `[betas] Stripped from tool schemas: [${stripped.join(', ')}] (CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1)`,
+    `[betas] Stripped from tool schemas: [${stripped.join(', ')}] (NYXCLAUDE_DISABLE_EXPERIMENTAL_BETAS=1)`,
   )
 }
 
@@ -331,7 +331,7 @@ function logStripOnce(stripped: string[]): void {
 export function logAPIPrefix(systemPrompt: SystemPrompt): void {
   const [firstSyspromptBlock] = splitSysPromptPrefix(systemPrompt)
   const firstSystemPrompt = firstSyspromptBlock?.text
-  logEvent('tengu_sysprompt_block', {
+  logEvent('nyxclaude_sysprompt_block', {
     snippet: firstSystemPrompt?.slice(
       0,
       20,
@@ -374,7 +374,7 @@ export function splitSysPromptPrefix(
 ): SystemPromptBlock[] {
   const useGlobalCacheFeature = shouldUseGlobalCacheScope()
   if (useGlobalCacheFeature && options?.skipGlobalCacheForSystemPrompt) {
-    logEvent('tengu_sysprompt_using_tool_based_cache', {
+    logEvent('nyxclaude_sysprompt_using_tool_based_cache', {
       promptBlockCount: systemPrompt.length,
     })
 
@@ -445,7 +445,7 @@ export function splitSysPromptPrefix(
       const dynamicJoined = dynamicBlocks.join('\n\n')
       if (dynamicJoined) result.push({ text: dynamicJoined, cacheScope: null })
 
-      logEvent('tengu_sysprompt_boundary_found', {
+      logEvent('nyxclaude_sysprompt_boundary_found', {
         blockCount: result.length,
         staticBlockLength: staticJoined.length,
         dynamicBlockLength: dynamicJoined.length,
@@ -453,7 +453,7 @@ export function splitSysPromptPrefix(
 
       return result
     } else {
-      logEvent('tengu_sysprompt_missing_boundary_marker', {
+      logEvent('nyxclaude_sysprompt_missing_boundary_marker', {
         promptBlockCount: systemPrompt.length,
       })
     }
@@ -607,7 +607,7 @@ export async function logContextMetrics(
     nonMcpToolsTokens += roughTokenCountEstimation(jsonStringify(schema))
   }
 
-  logEvent('tengu_context_size', {
+  logEvent('nyxclaude_context_size', {
     git_status_size: gitStatusSize,
     agents_md_size: agentsMdSize,
     total_context_size: totalContextSize,
@@ -654,10 +654,10 @@ export function normalizeToolInput<T extends Tool>(
 
       // Logging for commands that are only echoing a string. This is to help us understand how often  Nyxclaude talks via bash
       if (/^echo\s+["']?[^|&;><]*["']?$/i.test(normalizedCommand.trim())) {
-        logEvent('tengu_bash_tool_simple_echo', {})
+        logEvent('nyxclaude_bash_tool_simple_echo', {})
       }
 
-      // Check for run_in_background (may not exist in schema if CLAUDE_CODE_DISABLE_BACKGROUND_TASKS is set)
+      // Check for run_in_background (may not exist in schema if NYXCLAUDE_DISABLE_BACKGROUND_TASKS is set)
       const run_in_background =
         'run_in_background' in parsed ? parsed.run_in_background : undefined
 

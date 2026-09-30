@@ -7,9 +7,9 @@ import {
 
 const originalAxiosGet = axios.get
 const originalEnv = {
-  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC:
-    process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,
-  CLAUDE_CODE_USE_OPENAI: process.env.CLAUDE_CODE_USE_OPENAI,
+  NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC:
+    process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC,
+  NYXCLAUDE_USE_OPENAI: process.env.NYXCLAUDE_USE_OPENAI,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_API_KEYS: process.env.OPENAI_API_KEYS,
@@ -28,12 +28,12 @@ function clearCompetingProviderEnv(): void {
   for (const key of [
     'ANTHROPIC_BASE_URL',
     'CHATGPT_ACCOUNT_ID',
-    'CLAUDE_CODE_USE_BEDROCK',
-    'CLAUDE_CODE_USE_FOUNDRY',
-    'CLAUDE_CODE_USE_GEMINI',
-    'CLAUDE_CODE_USE_GITHUB',
-    'CLAUDE_CODE_USE_MISTRAL',
-    'CLAUDE_CODE_USE_VERTEX',
+    'NYXCLAUDE_USE_BEDROCK',
+    'NYXCLAUDE_USE_FOUNDRY',
+    'NYXCLAUDE_USE_GEMINI',
+    'NYXCLAUDE_USE_GITHUB',
+    'NYXCLAUDE_USE_MISTRAL',
+    'NYXCLAUDE_USE_VERTEX',
     'CODEX_ACCOUNT_ID',
     'CODEX_API_KEY',
     'CODEX_CREDENTIAL_SOURCE',
@@ -69,10 +69,10 @@ afterEach(() => {
     mock.restore()
     axios.get = originalAxiosGet
     restoreEnv(
-      'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC',
-      originalEnv.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,
+      'NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC',
+      originalEnv.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC,
     )
-    restoreEnv('CLAUDE_CODE_USE_OPENAI', originalEnv.CLAUDE_CODE_USE_OPENAI)
+    restoreEnv('NYXCLAUDE_USE_OPENAI', originalEnv.NYXCLAUDE_USE_OPENAI)
     restoreEnv('OPENAI_BASE_URL', originalEnv.OPENAI_BASE_URL)
     restoreEnv('OPENAI_API_KEY', originalEnv.OPENAI_API_KEY)
     restoreEnv('OPENAI_API_KEYS', originalEnv.OPENAI_API_KEYS)
@@ -83,8 +83,8 @@ afterEach(() => {
 })
 
 test('skips legacy OpenAI-compatible model discovery when nonessential traffic is disabled', async () => {
-  process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC = '1'
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'http://localhost:1234/v1'
   process.env.OPENAI_MODEL = 'local-model'
 
@@ -102,8 +102,8 @@ test('skips legacy OpenAI-compatible model discovery when nonessential traffic i
 })
 
 test('legacy OpenAI-compatible model discovery falls back to singular key for unusable pooled credentials', async () => {
-  delete process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://custom.example/v1'
   process.env.OPENAI_API_KEYS = 'sk-openai-a,SUA_CHAVE'
   process.env.OPENAI_API_KEY = 'sk-openai-single'
@@ -133,8 +133,8 @@ test('legacy OpenAI-compatible model discovery falls back to singular key for un
 })
 
 test('legacy OpenAI-compatible model discovery uses the first pooled credential', async () => {
-  delete process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://custom.example/v1'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
   delete process.env.OPENAI_API_KEY
@@ -165,8 +165,8 @@ test('legacy OpenAI-compatible model discovery uses the first pooled credential'
 })
 
 test('legacy OpenAI-compatible model discovery ignores placeholder singular key when pool is usable', async () => {
-  delete process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
-  process.env.CLAUDE_CODE_USE_OPENAI = '1'
+  delete process.env.NYXCLAUDE_DISABLE_NONESSENTIAL_TRAFFIC
+  process.env.NYXCLAUDE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = 'https://custom.example/v1'
   process.env.OPENAI_API_KEYS = 'key-a,key-b'
   process.env.OPENAI_API_KEY = 'SUA_CHAVE'

@@ -28,16 +28,16 @@ beforeEach(async () => {
   await acquireSharedMutationLock('services/api/client.optionalRuntime.test.ts')
   process.env = { ...originalEnv }
   ;(globalThis as Record<string, unknown>).MACRO = { VERSION: 'test-version' }
-  delete process.env.CLAUDE_CODE_USE_OPENAI
-  delete process.env.CLAUDE_CODE_USE_GEMINI
-  delete process.env.CLAUDE_CODE_USE_GITHUB
-  delete process.env.CLAUDE_CODE_USE_MISTRAL
-  delete process.env.CLAUDE_CODE_USE_BEDROCK
-  delete process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH
-  delete process.env.CLAUDE_CODE_USE_FOUNDRY
-  delete process.env.CLAUDE_CODE_SKIP_FOUNDRY_AUTH
-  delete process.env.CLAUDE_CODE_USE_VERTEX
-  delete process.env.CLAUDE_CODE_SKIP_VERTEX_AUTH
+  delete process.env.NYXCLAUDE_USE_OPENAI
+  delete process.env.NYXCLAUDE_USE_GEMINI
+  delete process.env.NYXCLAUDE_USE_GITHUB
+  delete process.env.NYXCLAUDE_USE_MISTRAL
+  delete process.env.NYXCLAUDE_USE_BEDROCK
+  delete process.env.NYXCLAUDE_SKIP_BEDROCK_AUTH
+  delete process.env.NYXCLAUDE_USE_FOUNDRY
+  delete process.env.NYXCLAUDE_SKIP_FOUNDRY_AUTH
+  delete process.env.NYXCLAUDE_USE_VERTEX
+  delete process.env.NYXCLAUDE_SKIP_VERTEX_AUTH
   delete process.env.ANTHROPIC_API_KEY
   delete process.env.ANTHROPIC_AUTH_TOKEN
   delete process.env.ANTHROPIC_FOUNDRY_API_KEY
@@ -54,8 +54,8 @@ afterEach(() => {
 })
 
 test('Bedrock reports the missing provider SDK through the optional runtime helper', async () => {
-  process.env.CLAUDE_CODE_USE_BEDROCK = '1'
-  process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH = '1'
+  process.env.NYXCLAUDE_USE_BEDROCK = '1'
+  process.env.NYXCLAUDE_SKIP_BEDROCK_AUTH = '1'
 
   const importOptionalRuntimeModule = mock(async (specifier: string, feature: string) => {
     throw friendlyMissing(specifier, feature)
@@ -73,8 +73,8 @@ test('Bedrock reports the missing provider SDK through the optional runtime help
 })
 
 test('Foundry skip-auth does not load Azure identity', async () => {
-  process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
-  process.env.CLAUDE_CODE_SKIP_FOUNDRY_AUTH = '1'
+  process.env.NYXCLAUDE_USE_FOUNDRY = '1'
+  process.env.NYXCLAUDE_SKIP_FOUNDRY_AUTH = '1'
 
   const importOptionalRuntimeModule = mock(async (specifier: string, feature: string) => {
     if (specifier === '@azure/identity') {
@@ -105,7 +105,7 @@ test('Foundry skip-auth does not load Azure identity', async () => {
 })
 
 test('Foundry real-auth branch reports missing Azure identity through the optional runtime helper', async () => {
-  process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+  process.env.NYXCLAUDE_USE_FOUNDRY = '1'
 
   const importOptionalRuntimeModule = mock(async (specifier: string, feature: string) => {
     if (specifier === '@anthropic-ai/foundry-sdk') {
@@ -130,8 +130,8 @@ test('Foundry real-auth branch reports missing Azure identity through the option
 })
 
 test('Vertex skip-auth branch does not load google-auth-library', async () => {
-  process.env.CLAUDE_CODE_USE_VERTEX = '1'
-  process.env.CLAUDE_CODE_SKIP_VERTEX_AUTH = '1'
+  process.env.NYXCLAUDE_USE_VERTEX = '1'
+  process.env.NYXCLAUDE_SKIP_VERTEX_AUTH = '1'
 
   const importOptionalRuntimeModule = mock(async (specifier: string, feature: string) => {
     throw friendlyMissing(specifier, feature)

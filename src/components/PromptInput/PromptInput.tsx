@@ -1,15 +1,12 @@
 import { feature } from 'bun:bundle';
 import chalk from 'chalk';
-import * as path from 'path';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useNotifications } from 'src/context/notifications.js';
 import { useCommandQueue } from 'src/hooks/useCommandQueue.js';
-import { type IDEAtMentioned, useIdeAtMentioned } from 'src/hooks/useIdeAtMentioned.js';
 import { type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS, logEvent } from 'src/services/analytics/index.js';
 import { type AppState, useAppState, useAppStateStore, useSetAppState } from 'src/state/AppState.js';
 import type { FooterItem } from 'src/state/AppStateStore.js';
-import { getCwd } from 'src/utils/cwd.js';
 import { isQueuedCommandEditable, popAllEditable } from 'src/utils/messageQueueManager.js';
 import { stripVTControlCharacters as stripAnsi } from 'node:util';
 import { FastModePicker } from '../../commands/fast/fast.js';
@@ -23,7 +20,6 @@ import type { VerificationStatus } from '../../hooks/useApiKeyVerification.js';
 import { type HistoryMode, useArrowKeyHistory } from '../../hooks/useArrowKeyHistory.js';
 import { useDoublePress } from '../../hooks/useDoublePress.js';
 import { useHistorySearch } from '../../hooks/useHistorySearch.js';
-import type { IDESelection } from '../../hooks/useIdeSelection.js';
 import { useInputBuffer } from '../../hooks/useInputBuffer.js';
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js';
 import { usePromptSuggestion } from '../../hooks/usePromptSuggestion.js';
@@ -122,7 +118,6 @@ import { useSwarmBanner } from './useSwarmBanner.js';
 import { isNonSpacePrintable, isVimModeEnabled } from './utils.js';
 type Props = {
   debug: boolean;
-  ideSelection: IDESelection | undefined;
   toolPermissionContext: ToolPermissionContext;
   setToolPermissionContext: (ctx: ToolPermissionContext) => void;
   apiKeyStatus: VerificationStatus;
@@ -192,7 +187,6 @@ const PROMPT_FOOTER_LINES = 5;
 const MIN_INPUT_VIEWPORT_LINES = 3;
 function PromptInput({
   debug,
-  ideSelection,
   toolPermissionContext,
   setToolPermissionContext,
   apiKeyStatus,
@@ -858,7 +852,7 @@ function PromptInput({
   });
   const onChange = useCallback((value: string) => {
     if (value === '?') {
-      logEvent('tengu_help_toggled', {});
+      logEvent('nyxclaude_help_toggled', {});
       setHelpOpen(v => !v);
       return;
     }
@@ -1090,7 +1084,7 @@ function PromptInput({
     // Route input to viewed agent (in-process teammate or named local_agent).
     const activeAgent = getActiveAgentForInput(store.getState());
     if (activeAgent.type !== 'leader' && onAgentSubmit) {
-      logEvent('tengu_transcript_input_to_teammate', {});
+      logEvent('nyxclaude_transcript_input_to_teammate', {});
       await onAgentSubmit(inputParam, activeAgent.task, {
         setCursorOffset,
         clearBuffer,
@@ -1154,7 +1148,7 @@ function PromptInput({
     }));
   }
   function onImagePaste(image: string, mediaType?: string, filename?: string, dimensions?: ImageDimensions, sourcePath?: string) {
-    logEvent('tengu_paste_image', {});
+    logEvent('nyxclaude_paste_image', {});
     onModeChange('prompt');
     const pasteId = nextPasteIdRef.current++;
     const newContent: PastedContent = {
@@ -1310,25 +1304,6 @@ function PromptInput({
     return true;
   }, [trackAndSetInput, onModeChange, input, cursorOffset, setPastedContents]);
 
-  // Insert the at-mentioned reference (the file and, optionally, a line range) when
-  // we receive an at-mentioned notification the IDE.
-  const onIdeAtMentioned = function (atMentioned: IDEAtMentioned) {
-    logEvent('tengu_ext_at_mentioned', {});
-    let atMentionedText: string;
-    const relativePath = path.relative(getCwd(), atMentioned.filePath);
-    if (atMentioned.lineStart && atMentioned.lineEnd) {
-      atMentionedText = atMentioned.lineStart === atMentioned.lineEnd ? `@${relativePath}#L${atMentioned.lineStart} ` : `@${relativePath}#L${atMentioned.lineStart}-${atMentioned.lineEnd} `;
-    } else {
-      atMentionedText = `@${relativePath} `;
-    }
-    const cursorChar = input[cursorOffset - 1] ?? ' ';
-    if (!/\s/.test(cursorChar)) {
-      atMentionedText = ` ${atMentionedText}`;
-    }
-    insertTextAtCursor(atMentionedText);
-  };
-  useIdeAtMentioned(mcpClients, onIdeAtMentioned);
-
   // Handler for chat:undo - undo last edit
   const handleUndo = useCallback(() => {
     if (canUndo) {
@@ -1351,7 +1326,7 @@ function PromptInput({
 
   // Handler for chat:externalEditor - edit in $EDITOR
   const handleExternalEditor = useCallback(async () => {
-    logEvent('tengu_external_editor_used', {});
+    logEvent('nyxclaude_external_editor_used', {});
     setIsExternalEditorActive(true);
     try {
       // Pass pastedContents to expand collapsed text references
@@ -1441,7 +1416,7 @@ function PromptInput({
   // Handler for chat:cycleMode - cycle through permission modes
   const handleCycleMode = useCallback(() => {
     const applyModeChange = (nextMode: PermissionMode, preparedContext: ToolPermissionContext) => {
-      logEvent('tengu_mode_cycle', {
+      logEvent('nyxclaude_mode_cycle', {
         to: nextMode as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       });
 
@@ -1478,7 +1453,7 @@ function PromptInput({
       // Pass undefined for teamContext (unused but kept for API compatibility)
       const nextMode = getNextPermissionMode(teammateContext, undefined);
       const applyTeammateModeChange = async () => {
-        logEvent('tengu_mode_cycle', {
+        logEvent('nyxclaude_mode_cycle', {
           to: nextMode as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
         });
         const teammateTaskId = viewingAgentTaskId;
@@ -1599,7 +1574,7 @@ function PromptInput({
     if (feature('TRANSCRIPT_CLASSIFIER')) {
       if (showAutoModeOptIn || autoModeOptInTimeoutRef.current) {
         if (showAutoModeOptIn) {
-          logEvent('tengu_auto_mode_opt_in_dialog_decline', {});
+          logEvent('nyxclaude_auto_mode_opt_in_dialog_decline', {});
         }
         setShowAutoModeOptIn(false);
         if (autoModeOptInTimeoutRef.current) {
@@ -2070,7 +2045,7 @@ function PromptInput({
       priority: 'immediate',
       timeoutMs: 3000
     });
-    logEvent('tengu_model_picker_hotkey', {
+    logEvent('nyxclaude_model_picker_hotkey', {
       model: model as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
     });
   }, [setAppState, addNotification, isFastMode]);
@@ -2113,7 +2088,7 @@ function PromptInput({
       thinkingEnabled: enabled
     }));
     setShowThinkingToggle(false);
-    logEvent('tengu_thinking_toggled_hotkey', {
+    logEvent('nyxclaude_thinking_toggled_hotkey', {
       enabled
     });
     addNotification({
@@ -2293,7 +2268,7 @@ function PromptInput({
             {textInputElement}
           </Box>
         </Box>}
-      <PromptInputFooter apiKeyStatus={apiKeyStatus} debug={debug} exitMessage={exitMessage} vimMode={isVimModeEnabled() ? vimMode : undefined} mode={mode} autoUpdaterResult={autoUpdaterResult} isAutoUpdating={isAutoUpdating} verbose={verbose} onAutoUpdaterResult={onAutoUpdaterResult} onChangeIsUpdating={setIsAutoUpdating} suggestions={suggestions} selectedSuggestion={selectedSuggestion} maxColumnWidth={maxColumnWidth} toolPermissionContext={effectiveToolPermissionContext} helpOpen={helpOpen} suppressHint={input.length > 0} isLoading={isLoading} tasksSelected={tasksSelected} teamsSelected={teamsSelected} bridgeSelected={bridgeSelected} tmuxSelected={tmuxSelected} teammateFooterIndex={teammateFooterIndex} ideSelection={ideSelection} mcpClients={mcpClients} isPasting={isPasting} isInputWrapped={isInputWrapped} messages={messages} isSearching={isSearchingHistory} historyQuery={historyQuery} setHistoryQuery={setHistoryQuery} historyFailedMatch={historyFailedMatch} onOpenTasksDialog={isFullscreenEnvEnabled() ? handleOpenTasksDialog : undefined} />
+      <PromptInputFooter apiKeyStatus={apiKeyStatus} debug={debug} exitMessage={exitMessage} vimMode={isVimModeEnabled() ? vimMode : undefined} mode={mode} autoUpdaterResult={autoUpdaterResult} isAutoUpdating={isAutoUpdating} verbose={verbose} onAutoUpdaterResult={onAutoUpdaterResult} onChangeIsUpdating={setIsAutoUpdating} suggestions={suggestions} selectedSuggestion={selectedSuggestion} maxColumnWidth={maxColumnWidth} toolPermissionContext={effectiveToolPermissionContext} helpOpen={helpOpen} suppressHint={input.length > 0} isLoading={isLoading} tasksSelected={tasksSelected} teamsSelected={teamsSelected} bridgeSelected={bridgeSelected} tmuxSelected={tmuxSelected} teammateFooterIndex={teammateFooterIndex} mcpClients={mcpClients} isPasting={isPasting} isInputWrapped={isInputWrapped} messages={messages} isSearching={isSearchingHistory} historyQuery={historyQuery} setHistoryQuery={setHistoryQuery} historyFailedMatch={historyFailedMatch} onOpenTasksDialog={isFullscreenEnvEnabled() ? handleOpenTasksDialog : undefined} />
       {isFullscreenEnvEnabled() ? null : autoModeOptInDialog}
       {isFullscreenEnvEnabled() ?
     // position=absolute takes zero layout height so the spinner
@@ -2313,7 +2288,7 @@ function PromptInput({
     // initial-check effect from re-firing on every slash-completion
     // toggle (PR#22413).
     <Box position="absolute" marginTop={briefOwnsGap ? -2 : -1} height={suggestions.length === 0 && !showAutoModeOptIn && !isConfirmingDangerousMode ? 1 : 0} width="100%" paddingLeft={2} paddingRight={1} flexDirection="column" justifyContent="flex-end" overflow="hidden">
-          <Notifications apiKeyStatus={apiKeyStatus} autoUpdaterResult={autoUpdaterResult} debug={debug} isAutoUpdating={isAutoUpdating} verbose={verbose} messages={messages} onAutoUpdaterResult={onAutoUpdaterResult} onChangeIsUpdating={setIsAutoUpdating} ideSelection={ideSelection} mcpClients={mcpClients} isInputWrapped={isInputWrapped} />
+          <Notifications apiKeyStatus={apiKeyStatus} autoUpdaterResult={autoUpdaterResult} debug={debug} isAutoUpdating={isAutoUpdating} verbose={verbose} messages={messages} onAutoUpdaterResult={onAutoUpdaterResult} onChangeIsUpdating={setIsAutoUpdating} mcpClients={mcpClients} isInputWrapped={isInputWrapped} />
         </Box> : null}
     </Box>;
 }

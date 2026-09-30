@@ -22,7 +22,7 @@
  * target form), but as new exchanges age a truncated block into the old tier
  * it still upgrades to a stub — carrying the pre-truncation length recovered
  * from the marker. That idempotence-without-staleness matters because
- * claude.ts also calls this for Anthropic-native transports when prompt
+ * modelApi.ts also calls this for Anthropic-native transports when prompt
  * caching is inactive — layered call sites must not re-mangle output, yet
  * aging blocks must keep shrinking.
  */
@@ -337,7 +337,7 @@ function isAlreadyCleared(block: ToolResultBlock): boolean {
 }
 
 // Output of buildStub / truncateBlock from a previous pass. Idempotency across
-// layered call sites (claude.ts + the shim can both run this) is TIER-AWARE,
+// layered call sites (modelApi.ts + the shim can both run this) is TIER-AWARE,
 // not a blanket skip: a stub is the terminal form and is never re-stubbed
 // (that would replace `→ 45000 chars omitted` with a misleading `→ 58 chars
 // omitted`), and a truncated block is left alone only while it is still in

@@ -1,4 +1,4 @@
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { ContentBlockParam } from 'src/types/api.js'
 import type { UUID } from 'crypto'
 import type { CanUseToolFn } from '../hooks/useCanUseTool.js'
 import type { CompactionResult } from '../services/compact/compact.js'
@@ -6,7 +6,6 @@ import type { ScopedMcpServerConfig } from '../services/mcp/types.js'
 import type { ToolUseContext } from '../Tool.js'
 import type { AgentDefinition } from '../tools/AgentTool/loadAgentsDir.js'
 import type { EffortValue } from '../utils/effort.js'
-import type { IDEExtensionInstallationStatus, IdeType } from '../utils/ide.js'
 import type { SettingSource } from '../utils/settings/constants.js'
 import type { HooksSettings } from '../utils/settings/types.js'
 import type { ThemeName } from '../utils/theme.js'
@@ -104,14 +103,12 @@ export type LocalJSXCommandContext = ToolUseContext & {
   setMessages: (updater: (prev: Message[]) => Message[]) => void
   options: {
     dynamicMcpConfig?: Record<string, ScopedMcpServerConfig>
-    ideInstallationStatus: IDEExtensionInstallationStatus | null
     theme: ThemeName
   }
   onChangeAPIKey: () => void
   onChangeDynamicMcpConfig?: (
     config: Record<string, ScopedMcpServerConfig>,
   ) => void
-  onInstallIDEExtension?: (ide: IdeType) => void
   setActiveSessionAgent?: (agent: AgentDefinition) => void
   resume?: (
     sessionId: UUID,
@@ -185,14 +182,14 @@ type LocalJSXCommand = {
  * Commands with `availability` are only shown if the user matches at least one
  * of the listed auth types. See meetsAvailabilityRequirement() in commands.ts.
  *
- * Example: `availability: ['claude-ai', 'console']` shows the command to
- * claude.ai subscribers and direct Console API key users (api.anthropic.com),
+ * Example: `availability: ['remote', 'console']` shows the command to
+ * web console subscribers and direct Console API key users (api.anthropic.com),
  * but hides it from Bedrock/Vertex/Foundry users and custom base URL users.
  */
 export type CommandAvailability =
-  // claude.ai OAuth subscriber (Pro/Max/Team/Enterprise via claude.ai)
-  | 'claude-ai'
-  // Console API key user (direct api.anthropic.com, not via claude.ai OAuth)
+  // web console OAuth subscriber (Pro/Max/Team/Enterprise via web console)
+  | 'remote'
+  // Console API key user (direct api.anthropic.com, not via web console OAuth)
   | 'console'
 
 export type CommandBase = {

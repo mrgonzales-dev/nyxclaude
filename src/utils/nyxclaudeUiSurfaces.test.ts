@@ -6,7 +6,7 @@ import {
   releaseSharedMutationLock,
 } from '../test/sharedMutationLock.js'
 
-import { isInGlobalClaudeFolder } from '../components/permissions/FilePermissionDialog/permissionOptions.tsx'
+import { isInGlobalNyxclaudeFolder } from '../components/permissions/FilePermissionDialog/permissionOptions.tsx'
 import { getDisplayPath } from './file.ts'
 import { getDefaultPermissionModeOptions } from './permissions/defaultPermissionModeOptions.ts'
 import {
@@ -16,22 +16,22 @@ import {
 } from './permissions/filesystem.ts'
 import { getValidationTip } from './settings/validationTips.ts'
 
-const originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+const originalConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
 const originalNyxclaudeConfigDir = process.env.NYXCLAUDE_CONFIG_DIR
 
 beforeEach(async () => {
   await acquireSharedMutationLock('nyxclaudeUiSurfaces.test.ts')
   mock.restore()
-  delete process.env.CLAUDE_CONFIG_DIR
+  delete process.env.NYXCLAUDE_CONFIG_DIR
   delete process.env.NYXCLAUDE_CONFIG_DIR
 })
 
 afterEach(() => {
   try {
     if (originalConfigDir === undefined) {
-      delete process.env.CLAUDE_CONFIG_DIR
+      delete process.env.NYXCLAUDE_CONFIG_DIR
     } else {
-      process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+      process.env.NYXCLAUDE_CONFIG_DIR = originalConfigDir
     }
     if (originalNyxclaudeConfigDir === undefined) {
       delete process.env.NYXCLAUDE_CONFIG_DIR
@@ -83,7 +83,7 @@ describe('Nyxclaude settings path surfaces', () => {
   test('permission save destinations point user settings to configured NYXCLAUDE_CONFIG_DIR', async () => {
     const customConfigDir = join(homedir(), 'custom-nyxclaude')
     process.env.NYXCLAUDE_CONFIG_DIR = customConfigDir
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
     const { optionForPermissionSaveDestination } = await import(
       '../components/permissions/rules/AddPermissionRules.tsx'
     )
@@ -98,7 +98,7 @@ describe('Nyxclaude settings path surfaces', () => {
   test('skills help surfaces point user skills to configured NYXCLAUDE_CONFIG_DIR', async () => {
     const customConfigDir = join(homedir(), 'custom-nyxclaude')
     process.env.NYXCLAUDE_CONFIG_DIR = customConfigDir
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
     const { getEmptySkillsMenuMessage } = await import(
       '../components/skills/SkillsMenu.tsx'
     )
@@ -133,23 +133,23 @@ describe('Nyxclaude settings path surfaces', () => {
 
   test('permission dialog treats ~/.nyxclaude as the global Claude folder', () => {
     process.env.NYXCLAUDE_CONFIG_DIR = join(homedir(), '.nyxclaude')
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
 
     expect(
-      isInGlobalClaudeFolder(
+      isInGlobalNyxclaudeFolder(
         join(homedir(), '.nyxclaude', 'settings.json'),
       ),
     ).toBe(true)
     expect(
-      isInGlobalClaudeFolder(join(homedir(), '.claude', 'settings.json')),
+      isInGlobalNyxclaudeFolder(join(homedir(), '.claude', 'settings.json')),
     ).toBe(false)
   })
 
-  test('permission dialog does not treat arbitrary CLAUDE_CONFIG_DIR as the global Claude folder', () => {
-    process.env.CLAUDE_CONFIG_DIR = join(homedir(), 'custom-nyxclaude')
+  test('permission dialog does not treat arbitrary NYXCLAUDE_CONFIG_DIR as the global Claude folder', () => {
+    process.env.NYXCLAUDE_CONFIG_DIR = join(homedir(), 'custom-nyxclaude')
 
     expect(
-      isInGlobalClaudeFolder(
+      isInGlobalNyxclaudeFolder(
         join(homedir(), 'custom-nyxclaude', 'settings.json'),
       ),
     ).toBe(false)
@@ -157,7 +157,7 @@ describe('Nyxclaude settings path surfaces', () => {
 
   test('global skill scope recognizes ~/.nyxclaude skills only', () => {
     process.env.NYXCLAUDE_CONFIG_DIR = join(homedir(), '.nyxclaude')
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.NYXCLAUDE_CONFIG_DIR
 
     expect(
       getClaudeSkillScope(
@@ -175,8 +175,8 @@ describe('Nyxclaude settings path surfaces', () => {
     ).toBeNull()
   })
 
-  test('global skill scope does not emit fixed rules for arbitrary CLAUDE_CONFIG_DIR skills', () => {
-    process.env.CLAUDE_CONFIG_DIR = join(homedir(), 'custom-nyxclaude')
+  test('global skill scope does not emit fixed rules for arbitrary NYXCLAUDE_CONFIG_DIR skills', () => {
+    process.env.NYXCLAUDE_CONFIG_DIR = join(homedir(), 'custom-nyxclaude')
 
     expect(
       getClaudeSkillScope(

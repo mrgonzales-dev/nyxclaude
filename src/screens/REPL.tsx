@@ -53,7 +53,7 @@ import { isLocalAgentTask, queuePendingMessage, appendMessageToLocalAgent, type 
 import { registerLeaderToolUseConfirmQueue, unregisterLeaderToolUseConfirmQueue, registerLeaderSetToolPermissionContext, unregisterLeaderSetToolPermissionContext } from '../utils/swarm/leaderPermissionBridge.js';
 import { useLogMessages } from '../hooks/useLogMessages.js';
 import { useReplBridge } from '../hooks/useReplBridge.js';
-import { type Command, type CommandResultDisplay, type ResumeEntrypoint, getCommandName, isCommandEnabled } from '../commands.js';
+import { type Command, type CommandResultDisplay, type ResumeEntrypoint, findCommand, getCommandName, isCommandEnabled } from '../commands.js';
 import type { PromptInputMode, QueuedCommand, VimMode } from '../types/textInputTypes.js';
 import { MessageSelector } from '../components/MessageSelector.js';
 import { selectableUserMessagesFilter, messagesAfterAreOnlySynthetic } from '../utils/messageFilters.js';
@@ -4419,6 +4419,36 @@ export function REPL({
   // Props for GlobalKeybindingHandlers component (rendered inside KeybindingSetup)
   const virtualScrollActive = isFullscreenEnvEnabled() && !disableVirtualScroll;
 
+  // Open the /diff dialog from a keybinding (ctrl+\). Reuses the same
+  // local-jsx command path as typed /diff — see processSlashCommand.tsx
+  // for the typed-input equivalent. No-op while a local-jsx dialog is
+  // already showing to avoid stacking; the dialog's own dismiss key
+  // (diff:dismiss) is how users close it.
+  const handleOpenDiff = useCallback(() => {
+    if (localJSXCommandRef.current?.jsx) return;
+    const cmd = findCommand('diff', commands);
+    if (!cmd || cmd.type !== 'local-jsx') return;
+    const ctx = getToolUseContext(messagesRef.current, [], new AbortController(), mainLoopModel);
+    let doneWasCalled = false;
+    const onDone = (): void => {
+      doneWasCalled = true;
+      setToolJSX({
+        jsx: null,
+        shouldHidePromptInput: false,
+        clearLocalJSX: true
+      });
+    };
+    void cmd.load().then(mod => mod.call(onDone, ctx, '')).then(jsx => {
+      if (!jsx || doneWasCalled) return;
+      setToolJSX({
+        jsx,
+        shouldHidePromptInput: true,
+        showSpinner: false,
+        isLocalJSXCommand: true
+      });
+    }).catch(e => logError(e));
+  }, [commands, mainLoopModel, getToolUseContext, setToolJSX]);
+
   // Transcript search state. Hooks must be unconditional so they live here
   // (not inside the `if (screen === 'transcript')` branch below); isActive
   // gates the useInput. Query persists across bar open/close so n/N keep
@@ -4597,7 +4627,8 @@ export function REPL({
     // doesn't stopPropagation, so without this gate transcript:exit
     // would fire on the same Esc that cancels the bar (child registers
     // first, fires first, bubbles).
-    searchBarOpen: searchOpen
+    searchBarOpen: searchOpen,
+    onOpenDiff: handleOpenDiff
   };
 
   // Use frozen lengths to slice arrays, avoiding memory overhead of cloning

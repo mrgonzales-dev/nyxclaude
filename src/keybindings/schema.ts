@@ -71,6 +71,7 @@ export const KEYBINDING_ACTIONS = [
   'app:toggleTeammatePreview',
   'app:toggleTerminal',
   'app:redraw',
+  'app:openDiff',
   'app:globalSearch',
   'app:quickOpen',
   // History navigation

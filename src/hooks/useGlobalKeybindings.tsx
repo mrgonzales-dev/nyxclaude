@@ -24,6 +24,7 @@ type Props = {
   onExitTranscript?: () => void;
   virtualScrollActive?: boolean;
   searchBarOpen?: boolean;
+  onOpenDiff?: () => void;
 };
 
 /**
@@ -42,7 +43,8 @@ export function GlobalKeybindingHandlers({
   onEnterTranscript,
   onExitTranscript,
   virtualScrollActive,
-  searchBarOpen = false
+  searchBarOpen = false,
+  onOpenDiff
 }: Props): null {
   const expandedView = useAppState(s => s.expandedView);
   const setAppState = useSetAppState();
@@ -226,6 +228,12 @@ export function GlobalKeybindingHandlers({
     instances.get(process.stdout)?.forceRedraw();
   }, []);
   useKeybinding('app:redraw', handleRedraw, {
+    context: 'Global'
+  });
+
+  // Open the diff dialog (ctrl+\). Reuses the same /diff local-jsx command
+  // path as typed input — see handleOpenDiff in REPL.tsx.
+  useKeybinding('app:openDiff', () => onOpenDiff?.(), {
     context: 'Global'
   });
 

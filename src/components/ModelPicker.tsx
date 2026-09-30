@@ -434,26 +434,25 @@ export function ModelPicker(props: Props) {
 
       <Box flexDirection="column" marginBottom={1}>
         <Box flexDirection="column">
-          {filteredOptions.length > 0 ? (
-            <Select
-              defaultValue={initialFocusValue}
-              defaultFocusValue={initialFocusValue}
-              options={filteredOptions}
-              onChange={handleSelect}
-              onFocus={handleFocus}
-              onCancel={
-                searchQuery
-                  ? () => setSearchQuery('')
-                  : onCancel ?? (() => {})
-              }
-              visibleOptionCount={visibleCount}
-              highlightText={searchQuery}
-              onSearchInput={handleSearchInput}
-              onSearchBackspace={handleSearchBackspace}
-              disableSelection="numeric"
-              hideIndexes
-            />
-          ) : (
+          <Select
+            defaultValue={initialFocusValue}
+            defaultFocusValue={initialFocusValue}
+            options={filteredOptions}
+            onChange={handleSelect}
+            onFocus={handleFocus}
+            onCancel={
+              searchQuery
+                ? () => setSearchQuery('')
+                : onCancel ?? (() => {})
+            }
+            visibleOptionCount={visibleCount}
+            highlightText={searchQuery}
+            onSearchInput={handleSearchInput}
+            onSearchBackspace={handleSearchBackspace}
+            disableSelection="numeric"
+            hideIndexes
+          />
+          {filteredOptions.length === 0 && (
             <Box paddingLeft={3} paddingY={1}>
               <Text dimColor={true}>
                 No models match "{searchQuery}". Press Esc to clear.

@@ -213,10 +213,12 @@ function getCustomSonnetOption(): ModelOption | undefined {
 // with the new model's label and description. These appear in the /model picker.
 function getSonnet46Option(): ModelOption {
   const is3P = getAPIProvider() !== 'firstParty'
+  const modelId = is3P ? getModelStrings().sonnet46 : 'sonnet'
+  const base = `Sonnet 4.6 · Best for everyday tasks${is3P ? '' : ` · ${formatModelPricing(COST_TIER_3_15)}`}`
   return {
-    value: is3P ? getModelStrings().sonnet46 : 'sonnet',
+    value: modelId,
     label: 'Sonnet',
-    description: `Sonnet 4.6 · Best for everyday tasks${is3P ? '' : ` · ${formatModelPricing(COST_TIER_3_15)}`}`,
+    description: enrichDescription(modelId, base),
     descriptionForModel:
       'Sonnet 4.6 - best for everyday tasks. Generally recommended for most coding tasks',
   }
@@ -320,10 +322,12 @@ function getCustomHaikuOption(): ModelOption | undefined {
 
 function getHaiku45Option(): ModelOption {
   const is3P = getAPIProvider() !== 'firstParty'
+  const modelId = is3P ? getModelStrings().haiku45 : 'haiku'
+  const base = `Haiku 4.5 · Fastest for quick answers${is3P ? '' : ` · ${formatModelPricing(COST_HAIKU_45)}`}`
   return {
-    value: 'haiku',
+    value: modelId,
     label: 'Haiku',
-    description: `Haiku 4.5 · Fastest for quick answers${is3P ? '' : ` · ${formatModelPricing(COST_HAIKU_45)}`}`,
+    description: enrichDescription(modelId, base),
     descriptionForModel:
       'Haiku 4.5 - fastest for quick answers. Lower cost but less capable than Sonnet 4.6.',
   }
@@ -331,10 +335,12 @@ function getHaiku45Option(): ModelOption {
 
 function getHaiku35Option(): ModelOption {
   const is3P = getAPIProvider() !== 'firstParty'
+  const modelId = is3P ? getModelStrings().haiku35 : 'haiku'
+  const base = `Haiku 3.5 for simple tasks${is3P ? '' : ` · ${formatModelPricing(COST_HAIKU_35)}`}`
   return {
-    value: 'haiku',
+    value: modelId,
     label: 'Haiku',
-    description: `Haiku 3.5 for simple tasks${is3P ? '' : ` · ${formatModelPricing(COST_HAIKU_35)}`}`,
+    description: enrichDescription(modelId, base),
     descriptionForModel:
       'Haiku 3.5 - faster and lower cost, but less capable than Sonnet. Use for simple tasks.',
   }
@@ -495,14 +501,101 @@ function getCodexModelOptions(): ModelOption[] {
 // @[MODEL LAUNCH]: Update the model picker lists below to include/reorder options for the new model.
 // Each user tier (ant, Max/Team Premium, Pro/Team Standard/Enterprise, PAYG 1P, PAYG 3P) has its own list.
 
-import { getAllCopilotModels } from './copilotModels.js'
+import {
+  getAllModelsDevCatalogModels,
+  getCapabilityDescriptionFragment,
+} from './modelsDevCatalog.js'
+
+/**
+ * Append a capability fragment (e.g. ` · Reasoning · 200K context`) to a
+ * hardcoded picker description when the models.dev catalog has matching
+ * metadata. Returns the description unchanged when the catalog has nothing for
+ * this id, so the picker still works on a cold start before the first fetch
+ * resolves.
+ */
+function enrichDescription(
+  modelId: string,
+  baseDescription: string,
+): string {
+  const fragment = getCapabilityDescriptionFragment(modelId)
+  if (!fragment) return baseDescription
+  return `${baseDescription} · ${fragment}`
+}
 
 function getCopilotModelOptions(): ModelOption[] {
-  return getAllCopilotModels().map(m => ({
-    value: m.id,
-    label: m.name,
-    description: `${m.family}${m.reasoning ? ' · Reasoning' : ''}${m.tool_call ? ' · Tool call' : ''} · ${Math.round(m.limit.context / 1000)}K context`,
-  }))
+  const catalogModels = getAllModelsDevCatalogModels()
+  if (catalogModels.length === 0) {
+    // Cold start before the first catalog fetch resolves: surface a small
+    // built-in baseline so the picker isn't empty. These entries mirror the
+    // subset of Copilot models that have shipped in the harness for several
+    // releases; once the catalog lands on disk they replace this fallback.
+    return [
+      {
+        value: 'gpt-4o',
+        label: 'GPT-4o',
+        description: 'gpt · Tool call',
+      },
+      {
+        value: 'gpt-4.1',
+        label: 'GPT-4.1',
+        description: 'gpt · Tool call',
+      },
+      {
+        value: 'gpt-5.5',
+        label: 'GPT-5.5',
+        description: 'gpt · Reasoning · Tool call',
+      },
+      {
+        value: 'gpt-5.4',
+        label: 'GPT-5.4',
+        description: 'gpt · Reasoning · Tool call',
+      },
+      {
+        value: 'gpt-5.3-codex',
+        label: 'GPT-5.3 Codex',
+        description: 'gpt-codex · Reasoning · Tool call',
+      },
+      {
+        value: 'gpt-5.2',
+        label: 'GPT-5.2',
+        description: 'gpt · Reasoning · Tool call',
+      },
+      {
+        value: 'claude-opus-4.6',
+        label: 'Claude Opus 4.6',
+        description: 'claude-opus · Reasoning · Tool call',
+      },
+      {
+        value: 'claude-sonnet-4.6',
+        label: 'Claude Sonnet 4.6',
+        description: 'claude-sonnet · Reasoning · Tool call',
+      },
+      {
+        value: 'claude-haiku-4.5',
+        label: 'Claude Haiku 4.5',
+        description: 'claude-haiku · Reasoning · Tool call',
+      },
+      {
+        value: 'gemini-3.1-pro-preview',
+        label: 'Gemini 3.1 Pro Preview',
+        description: 'gemini-pro · Reasoning · Tool call',
+      },
+      {
+        value: 'grok-code-fast-1',
+        label: 'Grok Code Fast 1',
+        description: 'grok · Reasoning · Tool call',
+      },
+    ]
+  }
+  return catalogModels.map(m => {
+    const fragment = getCapabilityDescriptionFragment(m.id)
+    const tail = fragment ? ` · ${fragment}` : ''
+    return {
+      value: m.id,
+      label: m.name,
+      description: `${m.family}${tail}`,
+    }
+  })
 }
 
 function getModelOptionsBase(fastMode = false): ModelOption[] {

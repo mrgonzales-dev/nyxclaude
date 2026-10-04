@@ -106,6 +106,24 @@ export const CONTINUATION_SIGNALS = buildContinuationSignals()
 
 export const COMPLETION_MARKERS = /\b(done|finished|completed|complete|summary|that's all|that is all|all set|hope this helps|let me know if|no issues|lgtm)\b/i
 
+/**
+ * Post-tool stall check: does the final text of a text-only end_turn look
+ * conclusively finished? Conclusive means it addresses the user (ends with
+ * '?') or contains a completion marker in the last 120 chars. Anything else
+ * after a tool round-trip is treated as a mid-work stall — small models
+ * routinely end turns with transitional prose ("Moving on to the executor.")
+ * that matches no CONTINUATION_SIGNALS pattern.
+ *
+ * Residual gaps (accepted): stall text that itself ends on a marker word or
+ * '?' still counts as conclusive — indistinguishable from a real ending.
+ */
+export function isInconclusiveEndTurnText(text: string): boolean {
+  const trimmed = text.trim()
+  if (trimmed.endsWith('?')) return false
+  const lateText = trimmed.slice(-120).toLowerCase()
+  return !COMPLETION_MARKERS.test(lateText)
+}
+
 export type ContinuationResult = {
   shouldNudge: boolean
   reason?: 'possible_truncation' | 'continuation_signal'

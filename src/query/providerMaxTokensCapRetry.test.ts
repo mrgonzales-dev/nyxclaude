@@ -200,7 +200,10 @@ test('keeps provider maximum output token cap for follow-up calls after tool use
       return
     }
 
-    yield createAssistantMessage({ content: 'ok after tool' })
+    // 'done' keeps this text-only end_turn conclusive — an inconclusive
+    // post-tool response gets nudged into extra model calls by the
+    // inconclusive-end_turn recovery path (unrelated to this test).
+    yield createAssistantMessage({ content: 'done after tool' })
   }
 
   const messages = await collect(makeParams(callModel, [echoTool]))

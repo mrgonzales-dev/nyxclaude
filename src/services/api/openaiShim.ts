@@ -1553,7 +1553,6 @@ async function* openaiStreamToAnthropic(
     }
   >()
   let hasEmittedContentStart = false
-  let hasEmittedAnyContent = false
   let hasEmittedThinkingStart = false
   let hasClosedThinking = false
   const thinkFilter = createThinkTagFilter()
@@ -1752,7 +1751,6 @@ async function* openaiStreamToAnthropic(
         content_block: { type: 'text', text: '' },
       }
       hasEmittedContentStart = true
-      hasEmittedAnyContent = true
     }
 
     const visible = thinkFilter.feed(text)
@@ -2503,9 +2501,21 @@ async function* openaiStreamToAnthropic(
   // any content or tool calls). This happens with some models when the tool
   // descriptions trigger a refusal or confusion. Surface it as an error so
   // the user sees what happened instead of silent empty output.
+  //
+  // "Empty" = zero content blocks of any kind: no closed block
+  // (contentBlockIndex === 0) and no block left open (hasEmittedContentStart /
+  // hasEmittedThinkingStart). Checking block state rather than
+  // hasEmittedAnyContent matters because several paths open text blocks
+  // manually without it — the Ollama buffer flush, XML/raw tool-call
+  // fallbacks, and the safety-filter/length notices above — so a visible
+  // response could otherwise get the error appended after real content.
+  // A thinking-only end_turn is likewise not empty; the query loop's
+  // inconclusive-end_turn nudge handles those stalls.
   if (
     lastStopReason === 'end_turn' &&
-    !hasEmittedAnyContent &&
+    contentBlockIndex === 0 &&
+    !hasEmittedContentStart &&
+    !hasEmittedThinkingStart &&
     activeToolCalls.size === 0
   ) {
     yield {

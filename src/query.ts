@@ -61,7 +61,10 @@ import {
   getMessagesAfterCompactBoundary,
   createToolUseSummaryMessage,
 } from './utils/messages.js'
-import { analyzeContinuationIntent } from './utils/continuation.js'
+import {
+  analyzeContinuationIntent,
+  isInconclusiveEndTurnText,
+} from './utils/continuation.js'
 import { EMPTY_RESPONSE_ERROR_TEXT } from './services/api/openaiShim.js'
 import { generateToolUseSummary } from './services/toolUseSummary/toolUseSummaryGenerator.js'
 import { prependUserContext, appendSystemContext } from './utils/api.js'
@@ -206,6 +209,7 @@ function* yieldMissingToolResultBlocks(
 const MAX_OUTPUT_TOKENS_RECOVERY_LIMIT = 3
 const MAX_CONTINUATION_NUDGES = 20
 const MAX_EMPTY_RESPONSE_PROCEEDS = 3
+const MAX_INCONCLUSIVE_END_TURN_NUDGES = 3
 
 type AgentStepLimitConfig = {
   maxSteps: number
@@ -534,6 +538,11 @@ type State = {
   // Capped at MAX_EMPTY_RESPONSE_PROCEEDS to prevent infinite loops
   // when the model keeps returning empty responses.
   emptyResponseProceedCount: number
+  // Count of inconclusive-end_turn nudges since the last tool round-trip.
+  // Capped at MAX_INCONCLUSIVE_END_TURN_NUDGES — a genuinely-finished model
+  // whose final text has no completion marker also lands here, so the cap
+  // must stay small even though the target is mid-work stalls.
+  inconclusiveEndTurnNudgeCount: number
   // Why the previous iteration continued. Undefined on first iteration.
   // Lets tests assert recovery paths fired without inspecting message contents.
   transition: Continue | undefined
@@ -620,6 +629,7 @@ async function* queryLoop(
     turnCount: 1,
     continuationNudgeCount: 0,
     emptyResponseProceedCount: 0,
+    inconclusiveEndTurnNudgeCount: 0,
     pendingToolUseSummary: undefined,
     transition: undefined,
     agentStepLimit: normalizeAgentStepLimit(params.agentStepLimit),
@@ -1891,6 +1901,7 @@ async function* queryLoop(
               turnCount,
               continuationNudgeCount: state.continuationNudgeCount,
               emptyResponseProceedCount: state.emptyResponseProceedCount,
+              inconclusiveEndTurnNudgeCount: state.inconclusiveEndTurnNudgeCount,
               agentStepLimit,
               transition: {
                 reason: 'collapse_drain_retry',
@@ -1938,6 +1949,7 @@ async function* queryLoop(
           turnCount,
           continuationNudgeCount: state.continuationNudgeCount,
           emptyResponseProceedCount: state.emptyResponseProceedCount,
+          inconclusiveEndTurnNudgeCount: state.inconclusiveEndTurnNudgeCount,
           agentStepLimit,
           transition: { reason: 'context_overflow_compact_retry' },
         }
@@ -1984,6 +1996,7 @@ async function* queryLoop(
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
             emptyResponseProceedCount: state.emptyResponseProceedCount,
+            inconclusiveEndTurnNudgeCount: state.inconclusiveEndTurnNudgeCount,
             agentStepLimit,
             transition: {
               reason: 'provider_max_tokens_retry',
@@ -2033,6 +2046,7 @@ async function* queryLoop(
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
             emptyResponseProceedCount: state.emptyResponseProceedCount,
+            inconclusiveEndTurnNudgeCount: state.inconclusiveEndTurnNudgeCount,
             agentStepLimit,
             transition: { reason: 'max_output_tokens_escalate' },
           }
@@ -2066,6 +2080,7 @@ async function* queryLoop(
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
             emptyResponseProceedCount: state.emptyResponseProceedCount,
+            inconclusiveEndTurnNudgeCount: state.inconclusiveEndTurnNudgeCount,
             agentStepLimit,
             transition: {
               reason: 'max_output_tokens_recovery',
@@ -2147,6 +2162,7 @@ async function* queryLoop(
               turnCount,
               continuationNudgeCount: state.continuationNudgeCount,
               emptyResponseProceedCount: state.emptyResponseProceedCount,
+              inconclusiveEndTurnNudgeCount: state.inconclusiveEndTurnNudgeCount,
               agentStepLimit,
               transition: { reason: 'provider_fallback_retry' },
             }
@@ -2223,6 +2239,7 @@ async function* queryLoop(
               turnCount,
               continuationNudgeCount: state.continuationNudgeCount,
               emptyResponseProceedCount: state.emptyResponseProceedCount + 1,
+              inconclusiveEndTurnNudgeCount: state.inconclusiveEndTurnNudgeCount,
               agentStepLimit,
               transition: { reason: 'empty_response_proceed' },
             }
@@ -2276,6 +2293,7 @@ async function* queryLoop(
           turnCount,
           continuationNudgeCount: state.continuationNudgeCount,
           emptyResponseProceedCount: state.emptyResponseProceedCount,
+          inconclusiveEndTurnNudgeCount: state.inconclusiveEndTurnNudgeCount,
           agentStepLimit,
           transition: { reason: 'stop_hook_blocking' },
         }
@@ -2317,6 +2335,7 @@ async function* queryLoop(
             turnCount,
             continuationNudgeCount: state.continuationNudgeCount,
             emptyResponseProceedCount: state.emptyResponseProceedCount,
+            inconclusiveEndTurnNudgeCount: state.inconclusiveEndTurnNudgeCount,
             agentStepLimit,
             transition: { reason: 'token_budget_continuation' },
           }
@@ -2364,13 +2383,66 @@ async function* queryLoop(
             lastText,
           )
 
-          if (shouldNudge) {
-            logForDebugging(
-              `Continuation nudge triggered (${state.continuationNudgeCount + 1}/${MAX_CONTINUATION_NUDGES}): ${nudgeReason} detected in "${lastText.slice(-120)}" without tool calls`,
-            )
+          // Inconclusive end_turn: the model ended the turn with text-only
+          // output that is not conclusively final (no completion marker, not
+          // a question for the user). Small models routinely end turns after
+          // tool results with transitional prose that matches none of the
+          // continuation signals above, which silently halts the run — treat
+          // it as a stall and nudge. Sharing this guarded block means the
+          // MAX_CONTINUATION_NUDGES cap above also bounds this path once
+          // exhausted; the dedicated counter below applies a tighter cap.
+          //
+          // Guards:
+          // - Interactive main-thread sources only (same predicate as the
+          //   empty-response auto-proceed above). Nudging a subagent or
+          //   forked flow (compact, session_memory, hook_agent, ...) would
+          //   replace its real final report with "task is done" boilerplate,
+          //   and empty responses are legitimate terminal signals there.
+          // - turnCount > 1 for non-empty text: turnCount starts at 1 and
+          //   only increments on tool round-trips, so this means at least
+          //   one tool execution completed this turn. First-response text
+          //   with no prior tools is a legitimate plain-chat answer.
+          //   Empty text is degenerate at any turnCount and always
+          //   qualifies — thinking-only, whitespace-only, or other non-text
+          //   blocks (redacted_thinking, server tool results) all land here.
+          // - Skip the sole EMPTY_RESPONSE_ERROR_TEXT shape — the
+          //   auto-proceed path above owns it, including after its cap.
+          // - Skip zero-content-block messages — a legitimately empty
+          //   end_turn (e.g. the turn after a structured-output tool call).
+          const textBlockCount = lastAssistant.message.content.filter(
+            b => b.type === 'text',
+          ).length
+          const isInteractiveSource =
+            querySource === 'sdk' ||
+            (typeof querySource === 'string' &&
+              querySource.startsWith('repl_main_thread'))
+          const isSoleEmptyResponseError =
+            textBlockCount === 1 &&
+            lastText === EMPTY_RESPONSE_ERROR_TEXT.toLowerCase()
+          const inconclusiveEndTurn =
+            !shouldNudge &&
+            isInteractiveSource &&
+            lastAssistant.message.content.length > 0 &&
+            !isSoleEmptyResponseError &&
+            state.inconclusiveEndTurnNudgeCount <
+              MAX_INCONCLUSIVE_END_TURN_NUDGES &&
+            (lastText.trim() === '' ||
+              (turnCount > 1 && isInconclusiveEndTurnText(lastText)))
+
+          if (shouldNudge || inconclusiveEndTurn) {
+            if (shouldNudge) {
+              logForDebugging(
+                `Continuation nudge triggered (${state.continuationNudgeCount + 1}/${MAX_CONTINUATION_NUDGES}): ${nudgeReason} detected in "${lastText.slice(-120)}" without tool calls`,
+              )
+            } else {
+              logForDebugging(
+                `Inconclusive end_turn nudge triggered (${state.inconclusiveEndTurnNudgeCount + 1}/${MAX_INCONCLUSIVE_END_TURN_NUDGES}): non-final text-only end_turn after tool use: "${lastText.slice(-120)}"`,
+              )
+            }
             const nudge = createUserMessage({
-              content:
-                'Continue with the task. If you were interrupted, resume your thought. Otherwise, use the appropriate tools to proceed to the next step.',
+              content: inconclusiveEndTurn
+                ? 'Continue with the task. If you were interrupted, resume your thought. Otherwise, use the appropriate tools to proceed to the next step. If the task is already finished, state that explicitly.'
+                : 'Continue with the task. If you were interrupted, resume your thought. Otherwise, use the appropriate tools to proceed to the next step.',
               isMeta: true,
             })
             const next: State = {
@@ -2385,10 +2457,18 @@ async function* queryLoop(
               pendingToolUseSummary: undefined,
               stopHookActive: undefined,
               turnCount,
-              continuationNudgeCount: state.continuationNudgeCount + 1,
+              continuationNudgeCount:
+                state.continuationNudgeCount + (inconclusiveEndTurn ? 0 : 1),
               emptyResponseProceedCount: state.emptyResponseProceedCount,
+              inconclusiveEndTurnNudgeCount:
+                state.inconclusiveEndTurnNudgeCount +
+                (inconclusiveEndTurn ? 1 : 0),
               agentStepLimit,
-              transition: { reason: 'continuation_nudge' },
+              transition: {
+                reason: inconclusiveEndTurn
+                  ? 'inconclusive_end_turn_nudge'
+                  : 'continuation_nudge',
+              },
             }
             state = next
             continue
@@ -2943,6 +3023,7 @@ async function* queryLoop(
       hasAttemptedProviderFallback: false,
       continuationNudgeCount: 0,
       emptyResponseProceedCount: 0,
+      inconclusiveEndTurnNudgeCount: 0,
       pendingToolUseSummary: nextPendingToolUseSummary,
       maxOutputTokensOverride: undefined,
       providerMaxOutputTokensCap,

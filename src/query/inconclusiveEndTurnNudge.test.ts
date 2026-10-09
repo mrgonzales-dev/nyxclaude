@@ -258,6 +258,65 @@ test('caps inconclusive nudges at 3 per stall site', async () => {
   expect(countNudges(requests)).toBe(3)
 })
 
+test('does not nudge a done-declaration followed by an option menu', async () => {
+  // Observed loop: a verbose finish (done-declaration + trailing numbered
+  // option menu) has no completion marker in the last 120 chars, so the
+  // old logic nudged "state that explicitly" and the model re-stated
+  // "the task is finished" — 3 more times, until the cap.
+  const requests: QueryParams['messages'][] = []
+  let callCount = 0
+  const callModel: QueryDeps['callModel'] = async function* ({ messages }) {
+    requests.push(messages)
+    callCount += 1
+    if (callCount === 1) {
+      yield toolUseMessage
+      return
+    }
+    yield createAssistantMessage({
+      content:
+        'The task is finished.\n\n' +
+        'Both files match the pre-guard commit.\n\n' +
+        'To move forward, pick one:\n' +
+        '1. Restore the guarded version from the /tmp backups.\n' +
+        '2. Design a new guard before input.\n' +
+        '3. Leave both files as they are now.',
+    })
+  }
+
+  await collect(makeParams(callModel, [echoTool]))
+
+  expect(callCount).toBe(2)
+  expect(countNudges(requests)).toBe(0)
+})
+
+test('does not nudge a done-declaration buried in a verbose tail', async () => {
+  // Declaration >120 chars from the end — exercises the 500-char
+  // FINALITY_DECLARATIONS window rather than the handoff signals.
+  const requests: QueryParams['messages'][] = []
+  let callCount = 0
+  const callModel: QueryDeps['callModel'] = async function* ({ messages }) {
+    requests.push(messages)
+    callCount += 1
+    if (callCount === 1) {
+      yield toolUseMessage
+      return
+    }
+    yield createAssistantMessage({
+      content:
+        'The task is finished. ' +
+        'Both blade files equal the pre-guard commit byte-for-byte, ' +
+        'and no guard symbol remains in either view. ' +
+        'Verification ran twice with identical results. ' +
+        'Backups remain in /tmp for reference purposes only now.',
+    })
+  }
+
+  await collect(makeParams(callModel, [echoTool]))
+
+  expect(callCount).toBe(2)
+  expect(countNudges(requests)).toBe(0)
+})
+
 test('does not stack inconclusive nudges on the empty-response error shape', async () => {
   const requests: QueryParams['messages'][] = []
   let callCount = 0

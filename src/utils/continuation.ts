@@ -106,20 +106,54 @@ export const CONTINUATION_SIGNALS = buildContinuationSignals()
 
 export const COMPLETION_MARKERS = /\b(done|finished|completed|complete|summary|that's all|that is all|all set|hope this helps|let me know if|no issues|lgtm)\b/i
 
+// Explicit done-declarations. Verbose endings — status tables, option
+// menus, summary sections — bury these beyond the 120-char marker window,
+// so they get a wider tail. Stall prose never declares the task finished.
+const FINALITY_DECLARATIONS = [
+  /\b(the |this |that )?(tasks?|work|changes?|implementations?|fix(?:es)?|requests?|everything)\s+(is|are|was|has been|have been)\s+(already |now |fully )?(done|finished|complet(?:e|ed))\b/i,
+  /\bnothing (?:is |was )(left|remaining)\b/i,
+  /\bnothing (?:is |was )?(?:left|remaining|else)(?: remains?)? to (?:do|process|address|change|fix)\b/i,
+]
+
+// Decision handoffs to the user — option menus and waiting-statements.
+// Only meaningful at the tail: the same words mid-work ("I'll pick one
+// and go", "the server is awaiting input on stdin") are not a handoff,
+// so each pattern requires a user-directed shape — a list introducer,
+// a "you", or a bare reply instruction.
+const USER_HANDOFF_SIGNALS = [
+  /\b(pick|choose) (one|an option|which)\s*(:|\bbelow\b)/i,
+  /\b(let me know|tell me)\s+(which|what)\b[^.]{0,40}\byou\b/i,
+  /\bawaiting your\b[^.]{0,20}\b(instructions?|input)\b/i,
+  /\bawaiting (?:next |further )?instructions?\b/i,
+  /\b(reply|respond) with\b[^.]{0,30}\b(number|option)s?\b/i,
+  /\b(please advise|your call|up to you)\b/i,
+]
+
+const FINALITY_TAIL_CHARS = 500
+const HANDOFF_TAIL_CHARS = 250
+
 /**
  * Post-tool stall check: does the final text of a text-only end_turn look
  * conclusively finished? Conclusive means it addresses the user (ends with
- * '?') or contains a completion marker in the last 120 chars. Anything else
- * after a tool round-trip is treated as a mid-work stall — small models
- * routinely end turns with transitional prose ("Moving on to the executor.")
- * that matches no CONTINUATION_SIGNALS pattern.
+ * '?'), contains a completion marker in the last 120 chars, declares the
+ * task done in the last FINALITY_TAIL_CHARS, or hands the decision back to
+ * the user in the last HANDOFF_TAIL_CHARS. Anything else after a tool
+ * round-trip is treated as a mid-work stall — small models routinely end
+ * turns with transitional prose ("Moving on to the executor.") that
+ * matches no CONTINUATION_SIGNALS pattern.
  *
  * Residual gaps (accepted): stall text that itself ends on a marker word or
- * '?' still counts as conclusive — indistinguishable from a real ending.
+ * '?' still counts as conclusive — indistinguishable from a real ending. A
+ * mid-enumeration declaration like "the first task is complete" buried in
+ * a long tail can also read as final.
  */
 export function isInconclusiveEndTurnText(text: string): boolean {
   const trimmed = text.trim()
   if (trimmed.endsWith('?')) return false
+  const tail = trimmed.slice(-FINALITY_TAIL_CHARS)
+  if (FINALITY_DECLARATIONS.some(re => re.test(tail))) return false
+  const handoffTail = trimmed.slice(-HANDOFF_TAIL_CHARS)
+  if (USER_HANDOFF_SIGNALS.some(re => re.test(handoffTail))) return false
   const lateText = trimmed.slice(-120).toLowerCase()
   return !COMPLETION_MARKERS.test(lateText)
 }

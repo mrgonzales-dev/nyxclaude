@@ -796,12 +796,12 @@ function hasImageBlock(
 function contentSize(
   content: NonNullable<ToolResultBlockParam['content']>,
 ): number {
-  if (typeof content === 'string') return content.length
-  // Sum text-block lengths directly. Slightly under-counts vs serialized
-  // (no JSON framing), but the budget is a rough token heuristic anyway.
-  // Avoids allocating a content-sized string every enforcement pass.
+  if (typeof content === 'string') return Buffer.byteLength(content, 'utf8')
+  // Sum UTF-8 byte lengths to match MAX_TOOL_RESULT_BYTES units.
+  // Slightly under-counts vs serialized (no JSON framing), but the budget
+  // is a rough token heuristic anyway.
   return content.reduce(
-    (sum, b) => sum + (b.type === 'text' ? b.text.length : 0),
+    (sum, b) => sum + (b.type === 'text' ? Buffer.byteLength(b.text, 'utf8') : 0),
     0,
   )
 }

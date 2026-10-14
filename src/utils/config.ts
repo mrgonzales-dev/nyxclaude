@@ -592,6 +592,9 @@ export type GlobalConfig = {
   // Speculation configuration (internal-only)
   speculationEnabled?: boolean // Whether speculation is enabled (default: true)
 
+  // Fasttalk mode: force 1-5 sentence replies, toggled via /fasttalk.
+  fastTalkEnabled?: boolean
+
 
   // Client data for server-side experiments (fetched during bootstrap).
   clientDataCache?: Record<string, unknown> | null

@@ -34,6 +34,7 @@ import { isFullscreenEnvEnabled } from '../../utils/fullscreen.js';
 import { isXtermJs } from '../../ink/terminal.js';
 import { useHasSelection, useSelection } from '../../ink/hooks/use-selection.js';
 import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js';
+import { isFastTalkEnabled } from '../../utils/fastTalk.js';
 import { getPlatform } from '../../utils/platform.js';
 import { PrBadge } from '../PrBadge.js';
 import { resolveRegularFooterActive, resolveVisibleTransientFooterMessage } from './footerVisibility.js';
@@ -374,6 +375,7 @@ function ModeIndicator({
   // Build parts array - exclude BackgroundTaskStatus when we have teammate pills
   // (teammate pills get their own row)
   const parts = [
+  ...(isFastTalkEnabled() ? [<Text color="fastMode" key="fasttalk">↯ fasttalk</Text>] : []),
   // Remote session indicator
   ...(remoteSessionUrl ? [<Link url={remoteSessionUrl} key="remote">
             <Text color="ide">{figures.circleDouble} remote</Text>

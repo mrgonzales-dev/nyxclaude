@@ -61,6 +61,7 @@ import { TICK_TAG } from './xml.js'
 import { logForDebugging } from '../utils/debug.js'
 import { loadMemoryPrompt } from '../utils/memoryStubs.js'
 import { isMcpInstructionsDeltaEnabled } from '../utils/mcpInstructionsDelta.js'
+import { getFastTalkSection } from '../utils/fastTalk.js'
 
 // Dead code elimination: conditional imports for feature-gated modules
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -494,6 +495,11 @@ ${CYBER_RISK_INSTRUCTION}`,
     ),
     systemPromptSection('output_style', () =>
       getOutputStyleSection(outputStyleConfig),
+    ),
+    DANGEROUS_uncachedSystemPromptSection(
+      'fasttalk',
+      () => getFastTalkSection(),
+      'toggled mid-session via /fasttalk',
     ),
     // When delta enabled, instructions are announced via persisted
     // mcp_instructions_delta attachments (attachments.ts) instead of this

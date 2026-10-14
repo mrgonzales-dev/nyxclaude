@@ -44,7 +44,7 @@ import type { AgentDefinition } from './tools/AgentTool/loadAgentsDir.js'
 import { SYNTHETIC_OUTPUT_TOOL_NAME } from './tools/SyntheticOutputTool/SyntheticOutputTool.js'
 import type { Message } from './types/message.js'
 import type { OrphanedPermission } from './types/textInputTypes.js'
-import { createAbortController } from './utils/abortController.js'
+import { createAbortController, createChildAbortController } from './utils/abortController.js'
 import { validateArrayOf, assertNonEmptyString, assertObject, assertFunction } from './utils/validation.js'
 import { invalidateRemovedToolSchemas } from './utils/toolSchemaCache.js'
 import type { AttributionState } from './utils/commitAttribution.js'
@@ -188,6 +188,7 @@ export class QueryEngine {
   private config: QueryEngineConfig
   private mutableMessages: Message[]
   private abortController: AbortController
+  private readonly parentAbortController?: AbortController
   private permissionDenials: SDKPermissionDenial[]
   private totalUsage: NonNullableUsage
   private hasHandledOrphanedPermission = false
@@ -204,6 +205,7 @@ export class QueryEngine {
   constructor(config: QueryEngineConfig) {
     this.config = config
     this.mutableMessages = config.initialMessages ?? []
+    this.parentAbortController = config.abortController
     this.abortController = config.abortController ?? createAbortController()
     this.permissionDenials = []
     this.readFileState = config.readFileCache
@@ -240,6 +242,22 @@ export class QueryEngine {
     } = this.config
 
     this.discoveredSkillNames.clear()
+    // Fresh turn-scoped controller: interrupt() aborts the current turn only.
+    // Without this, AbortSignal.aborted is sticky and the next submitMessage()
+    // would inherit an aborted signal. Abort the prior child to detach its
+    // parent listener (prevents handler accumulation over many turns).
+    try {
+      if (!this.abortController.signal.aborted) {
+        this.abortController.abort()
+      }
+    } catch {
+      // Abort must never break turn start.
+    }
+    if (this.parentAbortController && !this.parentAbortController.signal.aborted) {
+      this.abortController = createChildAbortController(this.parentAbortController)
+    } else {
+      this.abortController = createAbortController()
+    }
     setCwd(cwd)
     const persistSession = !isSessionPersistenceDisabled()
     const startTime = Date.now()

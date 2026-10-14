@@ -37,28 +37,22 @@ function hashSingleMessage(message: Message): Buffer {
 }
 
 /**
- * XOR two 32-byte hash buffers.
- * This is the combining function for the rolling hash:
- *   newHash = oldHash XOR hash(newMessage)
- * XOR is fast and, combined with a message counter, produces a
- * unique cache key per distinct message sequence.
+ * Combine previous rolling hash with a message hash (order-sensitive).
+ * newHash = sha256(prev || msgHash)
+ * Chained, so [A,B] != [B,A] and [A,A] != []. Preserves O(new) appends.
  */
-function xorHash(a: Buffer, b: Buffer): Buffer {
-  const out = Buffer.alloc(32)
-  for (let i = 0; i < 32; i++) {
-    out[i] = a[i] ^ b[i]
-  }
-  return out
+function combineHash(prev: Buffer, msgHash: Buffer): Buffer {
+  return createHash('sha256').update(prev).update(msgHash).digest()
 }
 
 /**
- * Compute a rolling hash from scratch by XOR-ing individual message hashes.
+ * Compute a rolling hash from scratch by chaining individual message hashes.
  * Used on cache miss / full recompute — the incremental path avoids this.
  */
 function computeRollingHash(messages: readonly Message[]): Buffer {
-  let hash: Buffer = Buffer.alloc(32) // all-zeros = identity for XOR
+  let hash: Buffer = Buffer.alloc(32) // all-zeros = initial chaining value
   for (const msg of messages) {
-    hash = xorHash(hash, hashSingleMessage(msg))
+    hash = combineHash(hash, hashSingleMessage(msg))
   }
   return hash
 }
@@ -69,7 +63,7 @@ function computeRollingHash(messages: readonly Message[]): Buffer {
 export class IncrementalTokenCounter {
   private lastMessageCount = 0
   private lastTokenCount = 0
-  /** Rolling XOR hash of all messages seen so far — the cache key. */
+  /** Rolling chained hash of all messages seen so far — the cache key. */
   private lastRollingHash: Buffer = Buffer.alloc(32)
   /** Reference to the last messages array for O(1) same-array fast path. */
   private lastMessagesRef: readonly Message[] | null = null
@@ -124,7 +118,7 @@ export class IncrementalTokenCounter {
 
     // Incremental path: messages appended and auto-invalidate enabled.
     // Verify prefix via reference equality (cheap O(n) pointer compares, no
-    // hashing), then hash ONLY the new messages and XOR-combine.
+    // hashing), then hash ONLY the new messages and chain-combine.
     if (
       this.config.autoInvalidate &&
       messages.length > this.lastMessageCount &&
@@ -139,11 +133,11 @@ export class IncrementalTokenCounter {
       }
 
       if (prefixUnchanged) {
-        // Hash only new messages and combine with existing rolling hash:
-        //   newHash = oldHash XOR hash(newMessage)
+        // Hash only new messages and chain with existing rolling hash:
+        //   newHash = sha256(...sha256(oldHash || hash(newMsg)))
         let newHash = this.lastRollingHash
         for (let i = this.lastMessageCount; i < messages.length; i++) {
-          newHash = xorHash(newHash, hashSingleMessage(messages[i]))
+          newHash = combineHash(newHash, hashSingleMessage(messages[i]))
         }
         this.lastRollingHash = newHash
 

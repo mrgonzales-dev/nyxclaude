@@ -3192,7 +3192,10 @@ export function updateUsage(
       partUsage.cache_read_input_tokens > 0
         ? partUsage.cache_read_input_tokens
         : usage.cache_read_input_tokens,
-    output_tokens: partUsage.output_tokens ?? usage.output_tokens,
+    output_tokens:
+      partUsage.output_tokens !== null && partUsage.output_tokens > 0
+        ? partUsage.output_tokens
+        : usage.output_tokens,
     server_tool_use: {
       web_search_requests:
         partUsage.server_tool_use?.web_search_requests ??

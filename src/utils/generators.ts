@@ -46,6 +46,7 @@ export async function* all<A>(
   }
   const waiting = [...generators]
   const promises = new Set<Promise<QueuedGenerator<A>>>()
+  const active = new Set<AsyncGenerator<A, void>>(generators)
 
   // Start initial batch up to concurrency cap
   while (promises.size < concurrencyCap && waiting.length > 0) {
@@ -53,21 +54,47 @@ export async function* all<A>(
     promises.add(next(gen))
   }
 
-  while (promises.size > 0) {
-    const { done, value, generator, promise } = await Promise.race(promises)
-    promises.delete(promise)
+  try {
+    while (promises.size > 0) {
+      const { done, value, generator, promise } = await Promise.race(promises)
+      promises.delete(promise)
 
-    if (!done) {
-      promises.add(next(generator))
-      // TODO: Clean this up
-      if (value !== undefined) {
-        yield value
+      if (!done) {
+        promises.add(next(generator))
+        // TODO: Clean this up
+        if (value !== undefined) {
+          yield value
+        }
+      } else {
+        active.delete(generator)
+        if (waiting.length > 0) {
+          // Start a new generator when one finishes
+          const nextGen = waiting.shift()!
+          promises.add(next(nextGen))
+        }
       }
-    } else if (waiting.length > 0) {
-      // Start a new generator when one finishes
-      const nextGen = waiting.shift()!
-      promises.add(next(nextGen))
     }
+  } finally {
+    // Settle losers: a throw or early break leaves pending next() promises.
+    // Suppress later rejections so a loser cannot cause unhandled rejection
+    // after Promise.race has settled.
+    for (const p of promises) {
+      p.catch(() => {})
+    }
+    // Settle losers: a throw or early break leaves pending next() promises.
+    // .return() queues behind the pending next() and may hang, so do not
+    // await it — fire-and-forget with rejection suppression to avoid masking
+    // the original error.
+    for (const gen of active) {
+      try {
+        void gen.return(undefined as never)?.catch?.(() => {})
+      } catch {
+        // Sync throw from return() must not mask original error.
+      }
+    }
+    active.clear()
+    promises.clear()
+    waiting.length = 0
   }
 }
 

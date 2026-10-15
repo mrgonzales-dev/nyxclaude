@@ -20,7 +20,7 @@ The system prompt is engineered to produce focused, correct, no-nonsense output.
 - **YAGNI first.** Before writing code: does this need to exist? Does it already exist? Does the stdlib do it? Can it be one line? Only then write the minimum that works.
 - **Root cause, not symptom.** Reproduce, minimize, hypothesize, instrument, fix, write a regression test. Never guess-and-patch.
 - **Red-green-refactor.** Write a failing test, make it pass with minimal code, then refactor.
-- **ASD-STE100 tone.** Short, direct sentences. Active voice only. No hedging, no filler, no corporate phrasing. Flat and factual.
+- **ASD-STE100 tone.** Short, direct sentences. No hedging, no filler, no corporate phrasing. Flat and factual.
 - **Faithful reporting.** If tests fail, say so. If you didn't verify, say that. Never manufacture a green result.
 - **Measure twice, cut once.** Local reversible actions are free. Destructive, hard-to-reverse, or shared-state actions require confirmation every time.
 - **Security-aware.** Completes normal engineering and authorized security work freely. Refuses only requests that concretely seek harm.
@@ -29,7 +29,7 @@ The system prompt is engineered to produce focused, correct, no-nonsense output.
 
 - **Multi-provider.** `/provider` wizard configures any OpenAI-compatible endpoint — OpenAI, Ollama, Gemini, DeepSeek, OpenRouter, custom. Profiles persist and load on restart.
 - **Tool arsenal.** Bash, file read/write/edit, glob, grep, web search, web fetch, MCP tools, LSP integration, notebook editing, task management, subagents.
-- **Slash commands.** `/commit`, `/compact`, `/review`, `/plan`, `/diff`, `/doctor`, `/provider`, `/model`, `/theme`, `/skills`, `/mcp`, `/wiki`, and more.
+- **Slash commands.** `/commit`, `/compact`, `/review`, `/plan`, `/diff`, `/doctor`, `/provider`, `/model`, `/theme`, `/skills`, `/mcp`, `/wiki`, `/fasttalk` (terse 1-5 sentence replies), and more.
 - **Bundled skills.** `/debug` (session diagnostics), `/simplify` (code review for reuse/quality), `/batch` (parallel worktree agents), `/loop` (scheduled prompts), `/pdf` (document generation), `/update-config` (settings/hooks), `/keybindings-help`.
 - **Custom skills.** Drop a `SKILL.md` into `.nyxclaude/skills/` or `~/.nyxclaude/skills/` — the harness loads them automatically.
 - **Context management.** Automatic compaction near context limits. `/compact` for manual control. Context visualization via `/ctx_viz`.

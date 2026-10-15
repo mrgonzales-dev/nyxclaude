@@ -9,7 +9,7 @@ export function WelcomeV2() {
       {WORDMARK.map((line, i) => (
         <Text key={i} color="brandShimmer">{line}</Text>
       ))}
-      <Text dimColor> AI harness · omniroute </Text>
+      <Text dimColor> Fast Agent Harness by GonzDEV </Text>
     </Box>
   );
 }

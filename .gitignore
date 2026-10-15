@@ -4,3 +4,6 @@ dist/
 .nyxclaude/
 AGENTS.md
 .devin/
+
+graphify-out/
+.codex/

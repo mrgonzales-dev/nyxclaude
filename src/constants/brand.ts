@@ -9,7 +9,7 @@
 
 export const BRAND_NAME = 'nyxclaude'
 
-export const BRAND_TAGLINE = 'AI harness · omniroute'
+export const BRAND_TAGLINE = 'Fast Agent Harness by GonzDEV'
 
 /** cyan (#00bcb4) in the rgb() form required by theme consumers. */
 export const BRAND_ACCENT_RGB = 'rgb(0,188,180)'

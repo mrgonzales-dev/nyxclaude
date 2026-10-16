@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import React from 'react'
 
 import { getAdditionalModelOptionsCacheScope } from '../../services/api/providerConfig.js'
+import { _clearRouteResolutionCache } from '../../integrations/routeMetadata.js'
 import {
   acquireSharedMutationLock,
   releaseSharedMutationLock,
@@ -210,6 +211,7 @@ afterEach(() => {
   try {
     mock.restore()
     resetSettingsCache()
+    _clearRouteResolutionCache()
     settingsForTest = {}
     restoreEnv('NYXCLAUDE_USE_OPENAI', originalEnv.NYXCLAUDE_USE_OPENAI)
     restoreEnv('NYXCLAUDE_USE_GEMINI', originalEnv.NYXCLAUDE_USE_GEMINI)
@@ -402,6 +404,7 @@ test('opens the model picker without awaiting local model discovery refresh', as
   delete process.env.OPENAI_API_BASE
   process.env.OPENAI_BASE_URL = 'http://127.0.0.1:8080/v1'
   process.env.OPENAI_MODEL = 'qwen2.5-coder-7b-instruct'
+  _clearRouteResolutionCache()
 
   const discoverOpenAICompatibleModelOptions = mock(
     async () => {
@@ -1326,12 +1329,10 @@ test('/model applies auto provider surface for single-model descriptor profiles'
   }
 })
 
-test('/model discovery override still surfaces inactive-profile switch options (#1119)', async () => {
-  // Regression for #1164 [P2]: descriptor/legacy discovery contexts pass an
-  // optionsOverride built from the active profile's route models only. Because
-  // the picker uses `optionsOverride ?? getModelOptions()`, the unified switcher
-  // for other configured profiles must be re-appended to the override, or it
-  // disappears entirely for provider-profile discovery paths.
+test('/model discovery override hides inactive-profile switch options', async () => {
+  // The picker is filtered to the active provider's models only. Descriptor/
+  // legacy discovery contexts pass an optionsOverride built from the active
+  // profile's route models; cross-profile switch entries must NOT be appended.
   const activeProfile = {
     id: 'openrouter-profile',
     name: 'OpenRouter',
@@ -1383,14 +1384,7 @@ test('/model discovery override still surfaces inactive-profile switch options (
     const switchOptions = override.filter(
       opt => opt.switchToProfileId !== undefined,
     )
-    expect(switchOptions.map(opt => opt.switchToProfileId)).toContain(
-      'kimi-profile',
-    )
-    expect(
-      switchOptions.some(
-        opt => opt.value === encodeSwitchProfileValue('kimi-profile', 'kimi-k2'),
-      ),
-    ).toBe(true)
+    expect(switchOptions).toHaveLength(0)
     // The active profile's own route model is still present as a normal option.
     expect(
       override.some(opt => opt.value === activeProfile.model),

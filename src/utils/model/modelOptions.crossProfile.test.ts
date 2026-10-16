@@ -389,7 +389,7 @@ test('getInactiveProviderProfileOptions: explodes multi-model profiles into one 
   ])
 })
 
-test('getModelOptionsBase: 3P path includes inactive profile options when env applied', async () => {
+test('getModelOptionsBase: 3P path excludes inactive profile options when env applied', async () => {
   const active = buildProviderProfileFixture({
     id: 'profile_active',
     name: 'Active',
@@ -406,7 +406,7 @@ test('getModelOptionsBase: 3P path includes inactive profile options when env ap
   const previousFlag = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
   process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
   try {
-    const { getModelOptions, parseSwitchProfileValue } =
+    const { getModelOptions } =
       await importFreshModelOptionsModule({
         getProviderProfiles: () => [active, inactive],
         getActiveProviderProfile: () => active,
@@ -417,13 +417,7 @@ test('getModelOptionsBase: 3P path includes inactive profile options when env ap
 
     const options = getModelOptions(false)
     const switchOptions = options.filter(o => o.switchToProfileId !== undefined)
-    expect(switchOptions.length).toBeGreaterThan(0)
-    expect(switchOptions[0]?.switchToProfileId).toBe('profile_inactive')
-    const parsed = parseSwitchProfileValue(switchOptions[0]!.value)
-    expect(parsed).toEqual({
-      profileId: 'profile_inactive',
-      model: 'glm-5.1',
-    })
+    expect(switchOptions).toHaveLength(0)
   } finally {
     if (previousFlag === undefined) {
       delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
@@ -433,12 +427,7 @@ test('getModelOptionsBase: 3P path includes inactive profile options when env ap
   }
 })
 
-test('getModelOptionsBase: local OpenAI-compatible scope still appends inactive profile options', async () => {
-  // Regression for #1164: when the active profile is a local OpenAI-compatible
-  // endpoint (Ollama, lm-studio, etc.), the scope-based early return used to
-  // skip the inactive-profile compute and the cross-profile switcher
-  // disappeared from `/model`. Now the inactive options are hoisted above the
-  // early return and forwarded in this branch too.
+test('getModelOptionsBase: local OpenAI-compatible scope excludes inactive profile options', async () => {
   const active = buildProviderProfileFixture({
     id: 'profile_local',
     name: 'Local Ollama',
@@ -454,12 +443,9 @@ test('getModelOptionsBase: local OpenAI-compatible scope still appends inactive 
 
   const previousFlag = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
   process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  // Force the local OpenAI-compatible branch by pinning the scope getter to
-  // an `openai:` value (via the gated override installed at module load, which
-  // keeps the rest of providerConfig real so it can't leak into other suites).
   activeCacheScopeOverride = 'openai:http://localhost:11434/v1'
   try {
-    const { getModelOptions, parseSwitchProfileValue } =
+    const { getModelOptions } =
       await importFreshModelOptionsModule({
         getProviderProfiles: () => [active, inactive],
         getActiveProviderProfile: () => active,
@@ -470,13 +456,7 @@ test('getModelOptionsBase: local OpenAI-compatible scope still appends inactive 
 
     const options = getModelOptions(false)
     const switchOptions = options.filter(o => o.switchToProfileId !== undefined)
-    expect(switchOptions.length).toBeGreaterThan(0)
-    expect(switchOptions[0]?.switchToProfileId).toBe('profile_remote')
-    const parsed = parseSwitchProfileValue(switchOptions[0]!.value)
-    expect(parsed).toEqual({
-      profileId: 'profile_remote',
-      model: 'glm-5.1',
-    })
+    expect(switchOptions).toHaveLength(0)
   } finally {
     if (previousFlag === undefined) {
       delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
@@ -486,12 +466,7 @@ test('getModelOptionsBase: local OpenAI-compatible scope still appends inactive 
   }
 })
 
-test('getModelOptionsBase: active Ollama profile still surfaces inactive profile options', async () => {
-  // Regression for #1164: the `isOllamaProvider()` early return ran before the
-  // inactive-profile compute, so a user whose active profile is a local Ollama
-  // endpoint only saw the Ollama models and lost the cross-profile switcher,
-  // forcing the exact `/provider` round-trip this PR removes. The inactive
-  // options are now hoisted above the Ollama branch and appended to its returns.
+test('getModelOptionsBase: active Ollama profile excludes inactive profile options', async () => {
   const active = buildProviderProfileFixture({
     id: 'profile_ollama',
     name: 'Local Ollama',
@@ -507,15 +482,13 @@ test('getModelOptionsBase: active Ollama profile still surfaces inactive profile
 
   const previousFlag = process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
   process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
-  // Force the Ollama branch with a non-empty cached-model list so it takes the
-  // `[default, ...ollamaModels, ...inactiveProfileOptions]` return path.
   activeOllamaOverride = {
     cachedModels: [
       { value: 'llama3.2', label: 'llama3.2', description: 'Local Ollama' },
     ],
   }
   try {
-    const { getModelOptions, parseSwitchProfileValue } =
+    const { getModelOptions } =
       await importFreshModelOptionsModule({
         getProviderProfiles: () => [active, inactive],
         getActiveProviderProfile: () => active,
@@ -525,14 +498,9 @@ test('getModelOptionsBase: active Ollama profile still surfaces inactive profile
       })
 
     const options = getModelOptions(false)
-    // The Ollama model is still present...
     expect(options.some(o => o.value === 'llama3.2')).toBe(true)
-    // ...and the inactive profile now appears as a switch option.
     const switchOptions = options.filter(o => o.switchToProfileId !== undefined)
-    expect(switchOptions.length).toBeGreaterThan(0)
-    expect(switchOptions[0]?.switchToProfileId).toBe('profile_remote')
-    const parsed = parseSwitchProfileValue(switchOptions[0]!.value)
-    expect(parsed).toEqual({ profileId: 'profile_remote', model: 'glm-5.1' })
+    expect(switchOptions).toHaveLength(0)
   } finally {
     if (previousFlag === undefined) {
       delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
@@ -570,35 +538,23 @@ test('getModelOptionsBase: 3P path omits inactive profile options when env NOT a
   }
 })
 
-test('getModelOptions: allowlist filters cross-profile options by the decoded target model', async () => {
-  // Regression for #1119: filterModelOptionsByAllowlist must evaluate the
-  // allowlist against the decoded target model (parseSwitchProfileValue(value).model),
-  // not the raw `__switch_profile__:<id>:<model>` wrapper. An allowed cross-profile
-  // model must stay; a denied one must drop. Uses this suite's per-test isolated
-  // settings cache (set below, reset in afterEach) rather than the shared cache
-  // that made the earlier version flaky.
+test('getModelOptions: picker options carry no switch markers regardless of allowlist', async () => {
+  // The picker no longer surfaces cross-profile switch entries at all, so
+  // filterModelOptionsByAllowlist never sees a `switchToProfileId` marker in
+  // getModelOptions output.
   const active = buildProviderProfileFixture({
     id: 'profile_active',
     name: 'Active',
     baseUrl: 'https://api.kimi.com/coding/',
     model: 'kimi-k2.6',
   })
-  const allowedInactive = buildProviderProfileFixture({
-    id: 'profile_allowed',
+  const inactive = buildProviderProfileFixture({
+    id: 'profile_inactive',
     name: 'GLM',
     baseUrl: 'https://api.z.ai/api/anthropic',
     model: 'glm-5.1',
   })
-  const deniedInactive = buildProviderProfileFixture({
-    id: 'profile_denied',
-    name: 'Blocked',
-    baseUrl: 'https://blocked.example/v1',
-    model: 'blocked-model',
-  })
 
-  // Only glm-5.1 (and the active model) are permitted; blocked-model is not.
-  // Drive the allowlist through the gated getSettings_DEPRECATED override so it
-  // is immune to sibling suites that mock the settings module process-wide.
   activeSettingsOverride = {
     availableModels: ['kimi-k2.6', 'glm-5.1'],
   } as SettingsJson
@@ -607,21 +563,17 @@ test('getModelOptions: allowlist filters cross-profile options by the decoded ta
   process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED = '1'
   try {
     const { getModelOptions } = await importFreshModelOptionsModule({
-      getProviderProfiles: () => [active, allowedInactive, deniedInactive],
+      getProviderProfiles: () => [active, inactive],
       getActiveProviderProfile: () => active,
       getProfileModelOptions: profile => [
         { value: profile.model, label: profile.model, description: profile.name },
       ],
     })
 
-    const switchTargets = getModelOptions(false)
-      .filter(o => o.switchToProfileId !== undefined)
-      .map(o => o.switchToProfileId)
-
-    // Allowed cross-profile model kept; denied one filtered out by the decoded
-    // (not the encoded) model id.
-    expect(switchTargets).toContain('profile_allowed')
-    expect(switchTargets).not.toContain('profile_denied')
+    const switchTargets = getModelOptions(false).filter(
+      o => o.switchToProfileId !== undefined,
+    )
+    expect(switchTargets).toHaveLength(0)
   } finally {
     if (previousFlag === undefined) {
       delete process.env.NYXCLAUDE_PROVIDER_PROFILE_ENV_APPLIED
@@ -631,9 +583,8 @@ test('getModelOptions: allowlist filters cross-profile options by the decoded ta
   }
 })
 
-// Shared fixtures for the "other provider branches also append inactive
-// profiles" cases (#1164 [P2]). Each branch previously returned before the
-// inactive-profile options were appended, dropping the cross-profile switcher.
+// Shared fixtures for the per-provider picker tests. Each provider branch
+// must surface only its own models and exclude cross-profile switch entries.
 function activeAndInactivePair() {
   const active = buildProviderProfileFixture({
     id: 'profile_active',
@@ -663,7 +614,7 @@ async function withProfileEnvApplied(run: () => Promise<void>) {
   }
 }
 
-test('getModelOptionsBase: GitHub Copilot branch appends inactive profile options', async () => {
+test('getModelOptionsBase: GitHub Copilot branch excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   activeApiProviderOverride = 'github'
   await withProfileEnvApplied(async () => {
@@ -677,13 +628,11 @@ test('getModelOptionsBase: GitHub Copilot branch appends inactive profile option
     const switchOptions = getModelOptions(false).filter(
       o => o.switchToProfileId !== undefined,
     )
-    expect(switchOptions.map(o => o.switchToProfileId)).toContain(
-      'profile_remote',
-    )
+    expect(switchOptions).toHaveLength(0)
   })
 })
 
-test('getModelOptionsBase: NVIDIA NIM catalog branch appends inactive profile options', async () => {
+test('getModelOptionsBase: NVIDIA NIM catalog branch excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   activeNvidiaOverride = {
     cachedModels: [
@@ -699,17 +648,14 @@ test('getModelOptionsBase: NVIDIA NIM catalog branch appends inactive profile op
       ],
     })
     const options = getModelOptions(false)
-    // Catalog model still present, and the inactive switcher restored.
     expect(options.some(o => o.value === 'nvidia/model')).toBe(true)
     expect(
-      options
-        .filter(o => o.switchToProfileId !== undefined)
-        .map(o => o.switchToProfileId),
-    ).toContain('profile_remote')
+      options.filter(o => o.switchToProfileId !== undefined),
+    ).toHaveLength(0)
   })
 })
 
-test('getModelOptionsBase: Claude subscriber branch appends inactive profile options', async () => {
+test('getModelOptionsBase: Claude subscriber branch excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   activeSubscriberOverride = {} // Pro/standard tier
   await withProfileEnvApplied(async () => {
@@ -721,14 +667,12 @@ test('getModelOptionsBase: Claude subscriber branch appends inactive profile opt
       ],
     })
     expect(
-      getModelOptions(false)
-        .filter(o => o.switchToProfileId !== undefined)
-        .map(o => o.switchToProfileId),
-    ).toContain('profile_remote')
+      getModelOptions(false).filter(o => o.switchToProfileId !== undefined),
+    ).toHaveLength(0)
   })
 })
 
-test('getModelOptionsBase: MiniMax catalog branch appends inactive profile options', async () => {
+test('getModelOptionsBase: MiniMax catalog branch excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   activeMiniMaxOverride = {
     cachedModels: [
@@ -746,14 +690,12 @@ test('getModelOptionsBase: MiniMax catalog branch appends inactive profile optio
     const options = getModelOptions(false)
     expect(options.some(o => o.value === 'MiniMax-M2.7')).toBe(true)
     expect(
-      options
-        .filter(o => o.switchToProfileId !== undefined)
-        .map(o => o.switchToProfileId),
-    ).toContain('profile_remote')
+      options.filter(o => o.switchToProfileId !== undefined),
+    ).toHaveLength(0)
   })
 })
 
-test('getModelOptionsBase: Xiaomi MiMo catalog branch appends inactive profile options', async () => {
+test('getModelOptionsBase: Xiaomi MiMo catalog branch excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   activeXiaomiOverride = {
     cachedModels: [
@@ -771,14 +713,12 @@ test('getModelOptionsBase: Xiaomi MiMo catalog branch appends inactive profile o
     const options = getModelOptions(false)
     expect(options.some(o => o.value === 'mimo-v2.5-pro')).toBe(true)
     expect(
-      options
-        .filter(o => o.switchToProfileId !== undefined)
-        .map(o => o.switchToProfileId),
-    ).toContain('profile_remote')
+      options.filter(o => o.switchToProfileId !== undefined),
+    ).toHaveLength(0)
   })
 })
 
-test('getModelOptionsBase: ant branch appends inactive profile options', async () => {
+test('getModelOptionsBase: ant branch excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   const prevUserType = process.env.USER_TYPE
   process.env.USER_TYPE = 'ant'
@@ -792,10 +732,8 @@ test('getModelOptionsBase: ant branch appends inactive profile options', async (
         ],
       })
       expect(
-        getModelOptions(false)
-          .filter(o => o.switchToProfileId !== undefined)
-          .map(o => o.switchToProfileId),
-      ).toContain('profile_remote')
+        getModelOptions(false).filter(o => o.switchToProfileId !== undefined),
+      ).toHaveLength(0)
     })
   } finally {
     if (prevUserType === undefined) delete process.env.USER_TYPE
@@ -803,11 +741,7 @@ test('getModelOptionsBase: ant branch appends inactive profile options', async (
   }
 })
 
-test('getModelOptionsBase: Max/Team Premium subscriber branch appends inactive profile options', async () => {
-  // The Pro/standard subscriber branch is covered above; this locks the
-  // separate Max / Team Premium early return (isMaxSubscriber ||
-  // isTeamPremiumSubscriber), which builds its own premiumOptions array and
-  // must push ...inactiveProfileOptions before returning.
+test('getModelOptionsBase: Max/Team Premium subscriber branch excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   activeSubscriberOverride = { max: true }
   await withProfileEnvApplied(async () => {
@@ -819,17 +753,12 @@ test('getModelOptionsBase: Max/Team Premium subscriber branch appends inactive p
       ],
     })
     expect(
-      getModelOptions(false)
-        .filter(o => o.switchToProfileId !== undefined)
-        .map(o => o.switchToProfileId),
-    ).toContain('profile_remote')
+      getModelOptions(false).filter(o => o.switchToProfileId !== undefined),
+    ).toHaveLength(0)
   })
 })
 
-test('getModelOptionsBase: NVIDIA NIM empty-catalog fallback still appends inactive profile options', async () => {
-  // The catalog branch above exercises the non-empty return; this locks the
-  // `[defaultOption, ...inactiveProfileOptions]` fallback taken when the cached
-  // catalog is empty, which previously dropped the inactive switch options.
+test('getModelOptionsBase: NVIDIA NIM empty-catalog fallback excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   activeNvidiaOverride = { cachedModels: [] }
   await withProfileEnvApplied(async () => {
@@ -841,17 +770,14 @@ test('getModelOptionsBase: NVIDIA NIM empty-catalog fallback still appends inact
       ],
     })
     const options = getModelOptions(false)
-    // No catalog model surfaced, but the inactive switcher is still restored.
     expect(options.some(o => o.value === 'nvidia/model')).toBe(false)
     expect(
-      options
-        .filter(o => o.switchToProfileId !== undefined)
-        .map(o => o.switchToProfileId),
-    ).toContain('profile_remote')
+      options.filter(o => o.switchToProfileId !== undefined),
+    ).toHaveLength(0)
   })
 })
 
-test('getModelOptionsBase: MiniMax empty-catalog fallback still appends inactive profile options', async () => {
+test('getModelOptionsBase: MiniMax empty-catalog fallback excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   activeMiniMaxOverride = { cachedModels: [] }
   await withProfileEnvApplied(async () => {
@@ -863,14 +789,12 @@ test('getModelOptionsBase: MiniMax empty-catalog fallback still appends inactive
       ],
     })
     expect(
-      getModelOptions(false)
-        .filter(o => o.switchToProfileId !== undefined)
-        .map(o => o.switchToProfileId),
-    ).toContain('profile_remote')
+      getModelOptions(false).filter(o => o.switchToProfileId !== undefined),
+    ).toHaveLength(0)
   })
 })
 
-test('getModelOptionsBase: Xiaomi MiMo empty-catalog fallback still appends inactive profile options', async () => {
+test('getModelOptionsBase: Xiaomi MiMo empty-catalog fallback excludes inactive profile options', async () => {
   const { active, inactive } = activeAndInactivePair()
   activeXiaomiOverride = { cachedModels: [] }
   await withProfileEnvApplied(async () => {
@@ -882,10 +806,8 @@ test('getModelOptionsBase: Xiaomi MiMo empty-catalog fallback still appends inac
       ],
     })
     expect(
-      getModelOptions(false)
-        .filter(o => o.switchToProfileId !== undefined)
-        .map(o => o.switchToProfileId),
-    ).toContain('profile_remote')
+      getModelOptions(false).filter(o => o.switchToProfileId !== undefined),
+    ).toHaveLength(0)
   })
 })
 

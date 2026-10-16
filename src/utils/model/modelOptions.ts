@@ -774,6 +774,7 @@ function getModelOptionsBase(fastMode = false): ModelOption[] {
         sourceOptions,
         activeRouteCatalogOptions,
       ),
+      ...profileModelOptions,
     ]
   }
 

@@ -10,6 +10,7 @@ import {
 } from '../integrations/routeMetadata.js'
 import { getCanonicalName } from './model/model.js'
 import { getModelCapability } from './model/modelCapabilities.js'
+import { getModelCapability as getModelsDevCapability } from './model/modelsDevCatalog.js'
 import { resolveAntModel } from './model/antModels.js'
 import { getActiveProviderProfile } from './providerProfiles.js'
 
@@ -266,6 +267,13 @@ export function getContextWindowForModel(
     })
     if (resolvedRuntimeLimits.contextWindow !== undefined) {
       return resolvedRuntimeLimits.contextWindow
+    }
+    // Consult live models.dev metadata before falling back to the hardcoded
+    // default, so unknown OpenAI-compatible models get their real context
+    // window when available (cached after startup prefetch).
+    const modelsDevCap = getModelsDevCapability(model)
+    if (modelsDevCap?.context && modelsDevCap.context > 0) {
+      return modelsDevCap.context
     }
     warnUnknownIntegrationRuntimeLimits(model)
     return OPENAI_FALLBACK_CONTEXT_WINDOW

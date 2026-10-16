@@ -97,4 +97,87 @@ describe('isInconclusiveEndTurnText', () => {
     // first — it runs upstream of isInconclusiveEndTurnText in query.ts.
     expect(analyzeContinuationIntent(transcript).shouldNudge).toBe(false)
   })
+
+  test('imperative confirmation requests are conclusive', () => {
+    // The reported incident: "Confirm and I'll write it." was judged a stall,
+    // the hidden "continue" nudge overrode the model's own confirmation gate.
+    expect(isInconclusiveEndTurnText("Confirm and I'll write it.")).toBe(false)
+    expect(isInconclusiveEndTurnText('Once you confirm, I will apply the migration.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Once confirmed, I\'ll proceed.')).toBe(false)
+    expect(isInconclusiveEndTurnText("I'll start once you approve.")).toBe(false)
+    expect(isInconclusiveEndTurnText('Awaiting your approval.')).toBe(false)
+    expect(isInconclusiveEndTurnText('I need your confirmation first.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Say the word and I will proceed.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Say yes to proceed.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Give me the go-ahead.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Want me to proceed with option 1.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Shall I merge the branches.')).toBe(false)
+    expect(isInconclusiveEndTurnText("Reply with 'yes' to confirm.")).toBe(false)
+    expect(isInconclusiveEndTurnText("Let me know when you're ready.")).toBe(false)
+  })
+
+  test('self-directed confirm narration mid-work is still inconclusive', () => {
+    // Past-tense/modal "confirmed ... I'll" is work narration declaring
+    // intent — exactly the stall shape the nudge exists to rescue.
+    expect(
+      isInconclusiveEndTurnText("To confirm the schema I'll rerun the query."),
+    ).toBe(true)
+    expect(isInconclusiveEndTurnText("I'll confirm the diff is clean.")).toBe(true)
+    expect(
+      isInconclusiveEndTurnText(
+        "I've confirmed the schema is valid, and I'll write the migration next.",
+      ),
+    ).toBe(true)
+    expect(
+      isInconclusiveEndTurnText(
+        "I can confirm the tests pass, and I'll fix the remaining two.",
+      ),
+    ).toBe(true)
+    expect(
+      isInconclusiveEndTurnText("Confirmed the diagnosis — I'll continue with the next file."),
+    ).toBe(true)
+    expect(
+      isInconclusiveEndTurnText("I'll confirm the diff is clean, then I'll proceed."),
+    ).toBe(true)
+  })
+
+  test('descriptive say-when/say-yes text is still inconclusive', () => {
+    expect(
+      isInconclusiveEndTurnText('The docs say when retries happen.'),
+    ).toBe(true)
+    expect(
+      isInconclusiveEndTurnText('The script will say yes to all prompts.'),
+    ).toBe(true)
+  })
+
+  test('exact echo of the synthetic tool-results placeholder is conclusive', () => {
+    // Some models parrot the shim's '[Tool results received]' alternation
+    // filler. An exact echo is harness noise — end the turn rather than
+    // nudging it into work.
+    expect(isInconclusiveEndTurnText('[Tool results received]')).toBe(false)
+    expect(isInconclusiveEndTurnText('  [Tool results received]\n')).toBe(false)
+    expect(isInconclusiveEndTurnText('[Tool results received].')).toBe(false)
+  })
+})
+
+describe('analyzeContinuationIntent', () => {
+  test('confirmation requests never nudge, even without terminal punctuation', () => {
+    // Without a final '.', "i'll write" matches a continuation signal — the
+    // handoff tail must override it.
+    expect(analyzeContinuationIntent("Confirm and I'll write it").shouldNudge).toBe(false)
+    expect(analyzeContinuationIntent("Say the word and I'll start writing").shouldNudge).toBe(false)
+    expect(analyzeContinuationIntent('Awaiting your approval').shouldNudge).toBe(false)
+  })
+
+  test('truncated handoff text still nudges as possible truncation', () => {
+    // Structural cut-off wins over the handoff tail — the model was cut off.
+    expect(
+      analyzeContinuationIntent("Confirm and I'll write it, starting with").shouldNudge,
+    ).toBe(true)
+  })
+
+  test('plain transitional text still nudges', () => {
+    expect(analyzeContinuationIntent('Now creating the migration').shouldNudge).toBe(true)
+    expect(analyzeContinuationIntent('Next I will apply the changes').shouldNudge).toBe(true)
+  })
 })

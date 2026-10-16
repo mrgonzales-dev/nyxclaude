@@ -1,3 +1,5 @@
+import { TOOL_RESULTS_RECEIVED_MESSAGE } from '../../../constants/messages.js'
+
 export type OpenAIContentPart =
   | { type: 'text'; text: string }
   | { type: 'image_url'; image_url: { url: string } }
@@ -262,7 +264,7 @@ export function convertMessages(
   for (const msg of result) {
     const prev = coalesced[coalesced.length - 1]
     if (prev?.role === 'tool' && msg.role === 'user') {
-      coalesced.push({ role: 'assistant', content: '[Tool results received]' })
+      coalesced.push({ role: 'assistant', content: TOOL_RESULTS_RECEIVED_MESSAGE })
     }
     const last = coalesced[coalesced.length - 1]
     if (!last || last.role !== msg.role || msg.role === 'tool' || msg.role === 'system') {

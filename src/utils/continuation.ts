@@ -1,3 +1,4 @@
+import { TOOL_RESULTS_RECEIVED_MESSAGE } from '../constants/messages.js'
 import { tokenCountWithEstimation } from './tokens.js'
 
 /**
@@ -115,18 +116,37 @@ const FINALITY_DECLARATIONS = [
   /\bnothing (?:is |was )?(?:left|remaining|else)(?: remains?)? to (?:do|process|address|change|fix)\b/i,
 ]
 
-// Decision handoffs to the user — option menus and waiting-statements.
-// Only meaningful at the tail: the same words mid-work ("I'll pick one
-// and go", "the server is awaiting input on stdin") are not a handoff,
-// so each pattern requires a user-directed shape — a list introducer,
-// a "you", or a bare reply instruction.
+// Decision handoffs to the user — option menus, waiting-statements, and
+// confirmation requests. Only meaningful at the tail: the same words
+// mid-work ("I'll pick one and go", "the server is awaiting input on
+// stdin") are not a handoff, so each pattern requires a user-directed
+// shape — a list introducer, a "you", or a bare reply instruction.
 const USER_HANDOFF_SIGNALS = [
   /\b(pick|choose) (one|an option|which)\s*(:|\bbelow\b)/i,
-  /\b(let me know|tell me)\s+(which|what)\b[^.]{0,40}\byou\b/i,
+  /\b(let me know|tell me)\s+(which|what|when|if|whether)\b[^.]{0,40}\byou\b/i,
   /\bawaiting your\b[^.]{0,20}\b(instructions?|input)\b/i,
   /\bawaiting (?:next |further )?instructions?\b/i,
-  /\b(reply|respond) with\b[^.]{0,30}\b(number|option)s?\b/i,
+  /\b(reply|respond) with\b[^.]{0,30}\b(number|option|yes|go|the word)s?\b/i,
   /\b(please advise|your call|up to you)\b/i,
+  // Approval requests — imperative shape (no trailing '?'), still a stop:
+  // "Confirm and I'll write it.", "Once you confirm I'll proceed.",
+  // "I'll start once you approve." The lookbehind excludes self-directed
+  // narration ("To confirm the schema I'll rerun it.", "I can confirm the
+  // tests pass, and I'll fix the rest"), and the noun/past-tense forms
+  // require the conditional frame so reports like "I've confirmed X, and
+  // I'll Y" don't read as requests.
+  /(?<!\b(?:to|i|we|can|could|will|would|should|shall|may|might|must|have|has|had|just|already|'ll|'ve|me|let|help)\s+)\bconfirm\b[^.?!]{0,80}\bi(?:'ll| will| shall| can| would| should)\b/i,
+  /\b(?:once|if|when|after|upon)\s+(?:(?:you|your)\s+)?confirm(?:ed|ation)?\b[^.?!]{0,80}\bi(?:'ll| will| shall| can| would)\b/i,
+  /\bi(?:'ll| will| shall| can| would)\b[^.?!]{0,80}\b(?:you confirm|you approve|your (?:confirmation|approval|go[- ]?ahead|sign[- ]?off))\b/i,
+  /\b(?:just )?say the word\b/i,
+  // "say yes/go/when" needs a following 'and'/'to' and no modal prefix —
+  // descriptive mentions ("the script will say yes to all prompts") are
+  // work narration, not a user prompt.
+  /(?<!\b(?:will|would|can|could|shall|should|may|might|must|to|do|does|did)\s+)\bsay (?:yes|go|when)\b[^.?!]{0,40}\b(?:and|to)\b/i,
+  /\bgive me the (?:go[- ]?ahead|green light)\b/i,
+  /\byour (?:go[- ]?ahead|confirmation|approval|sign[- ]?off)\b/i,
+  /\b(?:want|would you like)\s+(?:me|us)\s+to\b/i,
+  /\bshall\s+(?:i|we)\b/i,
 ]
 
 const FINALITY_TAIL_CHARS = 500
@@ -149,6 +169,14 @@ const HANDOFF_TAIL_CHARS = 250
  */
 export function isInconclusiveEndTurnText(text: string): boolean {
   const trimmed = text.trim()
+  // Exact echo of the shim's synthetic alternation placeholder — harness
+  // noise, not a stall. End the turn rather than nudging noise into work.
+  // Case-insensitive and punctuation-tolerant: callers lowercase the text
+  // before this check, and near-echoes gain a trailing '.'.
+  if (
+    trimmed.toLowerCase().replace(/[.!?\s]+$/, '') ===
+    TOOL_RESULTS_RECEIVED_MESSAGE.toLowerCase()
+  ) return false
   if (trimmed.endsWith('?')) return false
   const tail = trimmed.slice(-FINALITY_TAIL_CHARS)
   if (FINALITY_DECLARATIONS.some(re => re.test(tail))) return false
@@ -205,6 +233,13 @@ export function analyzeContinuationIntent(
   if (hasUnclosedCodeBlock || hasUnclosedPair || hasUnfinishedSuffix) {
     // Structural cut-offs always trigger a nudge, even if "done" was said earlier.
     return { shouldNudge: true, reason: 'possible_truncation' }
+  }
+
+  // A tail that hands the decision to the user ("Confirm and I'll write
+  // it.", "Say the word") is a stop, not a stall — never nudge past it,
+  // even when it also carries a continuation-shaped clause ("i'll write").
+  if (USER_HANDOFF_SIGNALS.some(re => re.test(lastText.slice(-HANDOFF_TAIL_CHARS)))) {
+    return { shouldNudge: false }
   }
 
   // 2. Late Intent-based signals (Overriding earlier completion markers)

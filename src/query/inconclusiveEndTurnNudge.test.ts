@@ -332,3 +332,51 @@ test('does not stack inconclusive nudges on the empty-response error shape', asy
   expect(callCount).toBe(4)
   expect(countNudges(requests)).toBe(0)
 })
+
+test('does not nudge a confirmation request after tool use', async () => {
+  // Regression: a reply ending "Confirm and I'll write it." was judged an
+  // inconclusive stall, so the hidden "continue" nudge overrode the model's
+  // own confirmation gate — it kept working instead of waiting for the user.
+  const requests: QueryParams['messages'][] = []
+  let callCount = 0
+  const callModel: QueryDeps['callModel'] = async function* ({ messages }) {
+    requests.push(messages)
+    callCount += 1
+    if (callCount === 1) {
+      yield toolUseMessage
+      return
+    }
+    yield createAssistantMessage({
+      content:
+        'One new migration adds the missing columns and marks the two ' +
+        "batch=0 migrations as run. Confirm and I'll write it.",
+    })
+  }
+
+  await collect(makeParams(callModel, [echoTool]))
+
+  expect(callCount).toBe(2)
+  expect(countNudges(requests)).toBe(0)
+})
+
+test('does not nudge an exact echo of the tool-results placeholder', async () => {
+  // Models sometimes parrot the shim's synthetic '[Tool results received]'
+  // alternation filler verbatim. That echo carries no user signal — the
+  // turn must end, not nudge the noise into more work.
+  const requests: QueryParams['messages'][] = []
+  let callCount = 0
+  const callModel: QueryDeps['callModel'] = async function* ({ messages }) {
+    requests.push(messages)
+    callCount += 1
+    if (callCount === 1) {
+      yield toolUseMessage
+      return
+    }
+    yield createAssistantMessage({ content: '[Tool results received]' })
+  }
+
+  await collect(makeParams(callModel, [echoTool]))
+
+  expect(callCount).toBe(2)
+  expect(countNudges(requests)).toBe(0)
+})

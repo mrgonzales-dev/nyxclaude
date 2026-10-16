@@ -157,8 +157,13 @@ export function CancelRequestHandler(props: CancelRequestHandlerProps): null {
   // returns to main thread. Otherwise just handleCancel. Must NOT claim
   // ctrl+c when main is idle at the prompt — that blocks the copy-selection
   // handler and double-press-to-exit from ever seeing the keypress.
+  // Also must NOT claim ctrl+c while the input has text: the first press
+  // should clear the input (handled by useTextInput's double-press ctrl+c)
+  // rather than interrupting a running task. Once empty, the next press
+  // cancels as usual.
   const isCtrlCActive =
     isContextActive &&
+    !inputValue &&
     (canCancelRunningTask || hasQueuedCommands || isViewingTeammate)
 
   useKeybinding('chat:cancel', handleCancel, {

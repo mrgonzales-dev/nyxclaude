@@ -2,10 +2,10 @@ import { defineGateway } from '../define.js'
 import { ZAI_GLM_OPENAI_SHIM } from '../transport/zaiGlmShim.js'
 
 export default defineGateway({
-  id: '',
-  label: 'Unknown',
+  id: 'gitlawb-opengateway',
+  label: 'Opengateway',
   category: 'aggregating',
-  defaultBaseUrl: '',
+  defaultBaseUrl: 'https://opengateway.gitlawb.com/v1',
   defaultModel: 'mimo-v2.5-pro',
   supportsModelRouting: true,
   vendorId: 'openai',
@@ -24,7 +24,7 @@ export default defineGateway({
       'OPENGATEWAY_API_KEY is required to use this gateway.\n' +
       'Set it as OPENGATEWAY_API_KEY (or OPENAI_API_KEYS / OPENAI_API_KEY when OPENAI_BASE_URL points at the gateway).',
     routing: {
-      matchBaseUrlHosts: ['', 'opengateway.fly.dev'],
+      matchBaseUrlHosts: ['opengateway.gitlawb.com', 'opengateway.fly.dev'],
     },
   },
   transportConfig: {
@@ -46,11 +46,11 @@ export default defineGateway({
     },
   },
   preset: {
-    id: '',
-    description: 'Unknown - (API key required)',
+    id: 'gitlawb-opengateway',
+    description: 'Gitlawb Opengateway - (API key required)',
     apiKeyEnvVars: ['OPENGATEWAY_API_KEY'],
-    label: 'Unknown',
-    name: 'Unknown',
+    label: 'Gitlawb Opengateway',
+    name: 'Gitlawb Opengateway',
     badge: {
       text: 'Recommended',
       color: 'success',
@@ -58,7 +58,7 @@ export default defineGateway({
     vendorId: 'openai',
     modelEnvVars: ['OPENAI_MODEL'],
     baseUrlEnvVars: ['OPENGATEWAY_BASE_URL', 'OPENAI_BASE_URL'],
-    fallbackBaseUrl: '',
+    fallbackBaseUrl: 'https://opengateway.gitlawb.com/v1',
     fallbackModel: 'mimo-v2.5-pro',
   },
   catalog: {

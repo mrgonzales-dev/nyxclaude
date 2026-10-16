@@ -1099,7 +1099,7 @@ export function buildCompatibilityProcessEnv(options: {
 }
 
 export function isDefaultStartupProviderEnv(env: NodeJS.ProcessEnv): boolean {
-  return env[DEFAULT_STARTUP_PROVIDER_ENV_VAR] === 'opengateway'
+  return env[DEFAULT_STARTUP_PROVIDER_ENV_VAR] === 'gitlawb-opengateway'
 }
 
 export function buildCodexOAuthProfileEnv(
@@ -2223,13 +2223,13 @@ export async function buildStartupEnvFromProfile(options?: {
       compatibilityMode: 'openai',
       profileEnv: {
         OPENAI_BASE_URL:
-          getRouteDefaultBaseUrl('opengateway') ??
-          '',
+          getRouteDefaultBaseUrl('gitlawb-opengateway') ??
+          'https://opengateway.gitlawb.com/v1',
         OPENAI_MODEL:
-          getRouteDefaultModel('opengateway') ?? 'mimo-v2.5-pro',
+          getRouteDefaultModel('gitlawb-opengateway') ?? 'mimo-v2.5-pro',
       },
     })
-    env[DEFAULT_STARTUP_PROVIDER_ENV_VAR] = 'opengateway'
+    env[DEFAULT_STARTUP_PROVIDER_ENV_VAR] = 'gitlawb-opengateway'
     return env
   }
 

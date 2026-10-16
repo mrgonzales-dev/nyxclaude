@@ -53,7 +53,7 @@ export type DetectedProviderKind =
   | 'longcat'
   | 'ollama'
   | 'lm-studio'
-  | 'opengateway'
+  | 'gitlawb-opengateway'
 
 export type DetectedProvider = {
   kind: DetectedProviderKind
@@ -314,7 +314,7 @@ export async function detectLocalService(options?: {
  * Orchestrator: env scan first (sync, free), then local-service probes
  * (async, ~1-2s worst case) only if nothing was found in env.
  */
-const OPENGATEWAY_DEFAULT_BASE_URL = ''
+const OPENGATEWAY_DEFAULT_BASE_URL = 'https://opengateway.gitlawb.com/v1'
 const OPENGATEWAY_DEFAULT_MODEL = 'mimo-v2.5-pro'
 
 function normalizeOpengatewayBaseUrl(baseUrl: string): string {
@@ -323,7 +323,8 @@ function normalizeOpengatewayBaseUrl(baseUrl: string): string {
     const hostname = parsed.hostname.toLowerCase()
     const path = parsed.pathname.replace(/\/+$/, '').toLowerCase()
     if (
-      (hostname === '' || hostname === 'opengateway.fly.dev') &&
+      (hostname === 'opengateway.gitlawb.com' ||
+        hostname === 'opengateway.fly.dev') &&
       (path === '/v1/xiaomi-mimo' || path === '/v1/gmi-cloud')
     ) {
       parsed.pathname = '/v1'
@@ -354,7 +355,7 @@ function defaultOpengatewayProvider(env: EnvLike): DetectedProvider | null {
     (typeof env.OPENGATEWAY_BASE_URL === 'string' && env.OPENGATEWAY_BASE_URL.trim()) ||
     OPENGATEWAY_DEFAULT_BASE_URL
   return {
-    kind: 'opengateway',
+    kind: 'gitlawb-opengateway',
     source:
       'Opengateway (API key required)',
     baseUrl: normalizeOpengatewayBaseUrl(baseUrl),

@@ -328,7 +328,7 @@ export function applyProviderFlag(
                       opengatewayApiKey !== undefined &&
                       opengatewayApiKey.length > 0 &&
                       process.env.OPENAI_API_KEY === opengatewayApiKey
-                    ? 'opengateway'
+                    ? 'gitlawb-opengateway'
                     : process.env.OPENAI_API_KEY !== undefined &&
                         process.env.OPENAI_API_KEY === process.env.CLOUDFLARE_API_TOKEN
                       ? 'cloudflare'
@@ -487,7 +487,7 @@ export function applyProviderFlag(
       }
       break
 
-    case 'opengateway':
+    case 'gitlawb-opengateway':
       process.env.NYXCLAUDE_USE_OPENAI = '1'
       if (process.env.OPENGATEWAY_BASE_URL?.trim()) {
         process.env.OPENAI_BASE_URL = process.env.OPENGATEWAY_BASE_URL.trim()

@@ -9,14 +9,14 @@ import type { ProviderPresetManifestEntry } from '../descriptors.js'
 
 export const PROVIDER_PRESET_MANIFEST = [
   {
-    "preset": "",
+    "preset": "gitlawb-opengateway",
     "routeKind": "gateway",
-    "routeId": "",
+    "routeId": "gitlawb-opengateway",
     "vendorId": "openai",
-    "gatewayId": "",
-    "description": "Unknown - (API key required)",
-    "label": "Unknown",
-    "name": "Unknown",
+    "gatewayId": "gitlawb-opengateway",
+    "description": "Gitlawb Opengateway - (API key required)",
+    "label": "Gitlawb Opengateway",
+    "name": "Gitlawb Opengateway",
     "apiKeyEnvVars": [
       "OPENGATEWAY_API_KEY"
     ],
@@ -27,7 +27,7 @@ export const PROVIDER_PRESET_MANIFEST = [
     "modelEnvVars": [
       "OPENAI_MODEL"
     ],
-    "fallbackBaseUrl": "",
+    "fallbackBaseUrl": "https://opengateway.gitlawb.com/v1",
     "fallbackModel": "mimo-v2.5-pro",
     "badge": {
       "text": "Recommended",
@@ -514,7 +514,7 @@ export const PROVIDER_PRESET_MANIFEST = [
 ] as const satisfies readonly ProviderPresetManifestEntry[]
 export type ProviderPreset = (typeof PROVIDER_PRESET_MANIFEST)[number]['preset']
 export const ORDERED_PROVIDER_PRESETS = [
-  "",
+  "gitlawb-opengateway",
   "aimlapi",
   "anthropic",
   "dashscope-cn",

@@ -19,7 +19,8 @@
  *
  * Timeout:
  *   The guard uses an idle timeout for stuck work, bounded leases for active
- *   local/API work, and a hard maximum query lifetime that always wins.
+ *   local/API work, and an optional hard maximum query lifetime
+ *   (NYXCLAUDE_QUERY_HARD_MAX_MS) that always wins when configured.
  *
  * Usage with React:
  *   const queryGuard = useRef(new QueryGuard()).current
@@ -43,6 +44,8 @@ export type { QueryGuardTimeoutReason } from './queryLifecycle.js'
 
 export const DEFAULT_QUERY_IDLE_TIMEOUT_MS = 30 * 60 * 1000 // 30 minutes
 export const DEFAULT_QUERY_HARD_MAX_MS = 60 * 60 * 1000 // 1 hour
+// Fallback cap for bounded work when no query hard max is configured.
+export const DEFAULT_LEASE_CAP_MS = 24 * 60 * 60 * 1000 // 24 hours
 export const DEFAULT_TOOL_LEASE_GRACE_MS = 5_000
 
 /**
@@ -51,7 +54,7 @@ export const DEFAULT_TOOL_LEASE_GRACE_MS = 5_000
  * `owner` identifies the subsystem taking the lease, `id` identifies the
  * specific operation, `timeoutMs` is measured from lease acquisition, and
  * `hardCapMs` is an optional lease-local upper bound that is still capped by
- * the current query's remaining hard-maximum budget.
+ * the current query's remaining hard-maximum budget (when one is configured).
  */
 export type QueryGuardLeaseInput = {
   /** Subsystem taking the lease, used for diagnostics and unique lease ids. */
@@ -131,7 +134,8 @@ export class QueryGuard {
   private _getActiveOperations: (() => QueryActiveOperationSnapshot) | null =
     null
   private readonly _idleTimeoutMs: number
-  private readonly _hardMaxQueryMs: number
+  /** Query lifetime cap in ms, or null when no hard maximum is configured. */
+  private readonly _hardMaxQueryMs: number | null
   private readonly _toolLeaseGraceMs: number
 
   constructor(options: QueryGuardOptions = {}) {
@@ -139,10 +143,12 @@ export class QueryGuard {
       options.idleTimeoutMs,
       DEFAULT_QUERY_IDLE_TIMEOUT_MS,
     )
-    this._hardMaxQueryMs = positiveOrDefault(
-      options.hardMaxQueryMs,
-      DEFAULT_QUERY_HARD_MAX_MS,
-    )
+    this._hardMaxQueryMs =
+      typeof options.hardMaxQueryMs === 'number' &&
+      Number.isFinite(options.hardMaxQueryMs) &&
+      options.hardMaxQueryMs > 0
+        ? options.hardMaxQueryMs
+        : null
     this._toolLeaseGraceMs = Math.max(
       0,
       positiveOrDefault(options.toolLeaseGraceMs, DEFAULT_TOOL_LEASE_GRACE_MS),
@@ -291,9 +297,12 @@ export class QueryGuard {
       Number.isFinite(input.hardCapMs) &&
       input.hardCapMs > 0
         ? input.hardCapMs
-        : this._hardMaxQueryMs
+        : (this._hardMaxQueryMs ?? DEFAULT_LEASE_CAP_MS)
     const queryHardDeadlineAt = this._getHardMaxDeadlineAt(now)
-    const queryRemainingMs = Math.max(0, queryHardDeadlineAt - now)
+    const queryRemainingMs =
+      queryHardDeadlineAt === null
+        ? leaseHardCapMs
+        : Math.max(0, queryHardDeadlineAt - now)
     const effectiveHardCapMs = Math.min(leaseHardCapMs, queryRemainingMs)
     const leaseDeadlineAt =
       leaseTimeoutMs === undefined
@@ -483,7 +492,7 @@ export class QueryGuard {
   /**
    * Start a watchdog timer. Stuck work aborts after the idle timeout, active
    * bounded work can continue while its lease is valid, and the hard maximum
-   * aborts the query regardless of activity.
+   * (when configured) aborts the query regardless of activity.
    */
   private _startTimeout(): void {
     this._scheduleTimeout()
@@ -551,7 +560,8 @@ export class QueryGuard {
       : 0
   }
 
-  private _getHardMaxDeadlineAt(now: number): number {
+  private _getHardMaxDeadlineAt(now: number): number | null {
+    if (this._hardMaxQueryMs === null) return null
     return (
       this._queryStartedAt +
       this._hardMaxQueryMs +
@@ -562,7 +572,8 @@ export class QueryGuard {
 
   private _getTimeoutReason(now: number): QueryGuardTimeoutReason | null {
     const isSuspended = this._suspendCount > 0
-    if (!isSuspended && now >= this._getHardMaxDeadlineAt(now)) {
+    const hardMaxDeadlineAt = this._getHardMaxDeadlineAt(now)
+    if (!isSuspended && hardMaxDeadlineAt !== null && now >= hardMaxDeadlineAt) {
       return 'hard_max'
     }
 
@@ -589,7 +600,7 @@ export class QueryGuard {
     reason: QueryGuardTimeoutReason,
     now: number,
   ): number {
-    if (reason === 'hard_max') return this._hardMaxQueryMs
+    if (reason === 'hard_max') return this._hardMaxQueryMs ?? 0
     if (reason === 'idle') return this._idleTimeoutMs
 
     const expiredLease = [...this._activeLeases.values()].find(
@@ -603,7 +614,10 @@ export class QueryGuard {
     if (this._status !== 'running') return null
 
     const isSuspended = this._suspendCount > 0
-    const deadlines = isSuspended ? [] : [this._getHardMaxDeadlineAt(now)]
+    const hardMaxDeadlineAt = isSuspended
+      ? null
+      : this._getHardMaxDeadlineAt(now)
+    const deadlines = hardMaxDeadlineAt === null ? [] : [hardMaxDeadlineAt]
     const leaseDeadlines = [...this._activeLeases.values()]
       .map(lease => lease.deadlineAt)
       .filter(deadline => deadline > now)

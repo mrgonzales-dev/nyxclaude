@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { DEFAULT_QUERY_HARD_MAX_MS } from './QueryGuard.js'
+import { DEFAULT_LEASE_CAP_MS } from './QueryGuard.js'
 import {
   getDefaultBashTimeoutMs,
   getEffectiveBashTimeoutMs,
@@ -16,19 +16,19 @@ describe('bash timeout helpers', () => {
     expect(getEffectiveBashTimeoutMs(900_000, env)).toBe(300_000)
   })
 
-  test('configured defaults and max values cannot exceed the query hard cap', () => {
+  test('configured defaults and max values cannot exceed the lease cap', () => {
     const env = {
-      BASH_DEFAULT_TIMEOUT_MS: String(DEFAULT_QUERY_HARD_MAX_MS * 2),
-      BASH_MAX_TIMEOUT_MS: String(DEFAULT_QUERY_HARD_MAX_MS * 3),
+      BASH_DEFAULT_TIMEOUT_MS: String(DEFAULT_LEASE_CAP_MS * 2),
+      BASH_MAX_TIMEOUT_MS: String(DEFAULT_LEASE_CAP_MS * 3),
     }
 
-    expect(getDefaultBashTimeoutMs(env)).toBe(DEFAULT_QUERY_HARD_MAX_MS)
-    expect(getMaxBashTimeoutMs(env)).toBe(DEFAULT_QUERY_HARD_MAX_MS)
-    expect(getEffectiveBashTimeoutMs(DEFAULT_QUERY_HARD_MAX_MS * 4, env)).toBe(
-      DEFAULT_QUERY_HARD_MAX_MS,
+    expect(getDefaultBashTimeoutMs(env)).toBe(DEFAULT_LEASE_CAP_MS)
+    expect(getMaxBashTimeoutMs(env)).toBe(DEFAULT_LEASE_CAP_MS)
+    expect(getEffectiveBashTimeoutMs(DEFAULT_LEASE_CAP_MS * 4, env)).toBe(
+      DEFAULT_LEASE_CAP_MS,
     )
     expect(getEffectiveBashTimeoutMs(undefined, env)).toBe(
-      DEFAULT_QUERY_HARD_MAX_MS,
+      DEFAULT_LEASE_CAP_MS,
     )
   })
 

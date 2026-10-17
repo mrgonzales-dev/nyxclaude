@@ -347,6 +347,33 @@ describe('QueryGuard', () => {
     )
   })
 
+  test('no hard maximum is applied by default', () => {
+    vi.useFakeTimers()
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const onTimeout = vi.fn()
+    const guard = new QueryGuard({ idleTimeoutMs: 100 })
+    guard.setTimeoutHandler(onTimeout)
+    const gen = guard.tryStart()!
+
+    // Stay ahead of the idle timeout with activity.
+    for (let elapsed = 0; elapsed < DEFAULT_QUERY_HARD_MAX_MS; elapsed += 50) {
+      guard.registerActivity('api_stream', gen)
+      vi.advanceTimersByTime(50)
+    }
+    for (let elapsed = 0; elapsed < DEFAULT_QUERY_HARD_MAX_MS; elapsed += 50) {
+      guard.registerActivity('api_stream', gen)
+      vi.advanceTimersByTime(50)
+    }
+    guard.registerActivity('api_stream', gen)
+    vi.advanceTimersByTime(50)
+
+    expect(guard.isActive).toBe(true)
+    expect(onTimeout).not.toHaveBeenCalledWith(
+      expect.objectContaining({ reason: 'hard_max' }),
+    )
+    guard.forceEnd()
+  })
+
   test('larger hard maximum does not abort at the default hard max boundary', () => {
     vi.useFakeTimers()
     vi.spyOn(console, 'error').mockImplementation(() => {})

@@ -91,6 +91,7 @@ export const DANGEROUS_DIRECTORIES = [
   '.idea',
   '.nyxclaude',
   '.claude',
+  '.agents',
 ] as const
 
 /**
@@ -124,6 +125,10 @@ export function getClaudeSkillScope(
     {
       dir: expandPath(join(getOriginalCwd(), '.nyxclaude', 'skills')),
       prefix: '/.nyxclaude/skills/',
+    },
+    {
+      dir: expandPath(join(getOriginalCwd(), '.agents', 'skills')),
+      prefix: '/.agents/skills/',
     },
     {
       dir: expandPath(join(homedir(), '.nyxclaude', 'skills')),
@@ -227,7 +232,9 @@ export function isClaudeSettingsPath(filePath: string): boolean {
     normalizedPath.endsWith(`${sep}.nyxclaude${sep}settings.json`) ||
     normalizedPath.endsWith(`${sep}.nyxclaude${sep}settings.local.json`) ||
     normalizedPath.endsWith(`${sep}.claude${sep}settings.json`) ||
-    normalizedPath.endsWith(`${sep}.claude${sep}settings.local.json`)
+    normalizedPath.endsWith(`${sep}.claude${sep}settings.local.json`) ||
+    normalizedPath.endsWith(`${sep}.agents${sep}settings.json`) ||
+    normalizedPath.endsWith(`${sep}.agents${sep}settings.local.json`)
   ) {
     // Include .nyxclaude and legacy .claude settings even for other projects.
     // This is write-safety classification only; config loading does not read
@@ -247,18 +254,21 @@ function isClaudeConfigFilePath(filePath: string): boolean {
     return true
   }
 
-  // Check if file is within .nyxclaude/commands or .nyxclaude/agents directories
-  // using proper path segment validation (not string matching with includes())
-  // pathInWorkingPath now handles case-insensitive comparison to prevent bypasses
-  const commandsDir = join(getOriginalCwd(), '.nyxclaude', 'commands')
-  const agentsDir = join(getOriginalCwd(), '.nyxclaude', 'agents')
-  const skillsDir = join(getOriginalCwd(), '.nyxclaude', 'skills')
+  // Check if file is within .nyxclaude/{commands,agents,skills} or
+  // .agents/{commands,agents,skills} directories using proper path segment
+  // validation (not string matching with includes()). pathInWorkingPath now
+  // handles case-insensitive comparison to prevent bypasses.
+  const cwd = getOriginalCwd()
+  const candidateDirs = [
+    join(cwd, '.nyxclaude', 'commands'),
+    join(cwd, '.nyxclaude', 'agents'),
+    join(cwd, '.nyxclaude', 'skills'),
+    join(cwd, '.agents', 'commands'),
+    join(cwd, '.agents', 'agents'),
+    join(cwd, '.agents', 'skills'),
+  ]
 
-  return (
-    pathInWorkingPath(filePath, commandsDir) ||
-    pathInWorkingPath(filePath, agentsDir) ||
-    pathInWorkingPath(filePath, skillsDir)
-  )
+  return candidateDirs.some(dir => pathInWorkingPath(filePath, dir))
 }
 
 // Check if file is the plan file for the current session

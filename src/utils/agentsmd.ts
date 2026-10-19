@@ -3,7 +3,7 @@
  *
  * 1. Managed memory (eg. /etc/nyxclaude/AGENTS.md) - Global instructions for all users
  * 2. User memory (~/.nyxclaude/AGENTS.md) - Private global instructions for all projects
- * 3. Project memory (AGENTS.md, plus .nyxclaude/AGENTS.md and .nyxclaude/rules/*.md in project roots) - Instructions checked into the codebase
+ * 3. Project memory (AGENTS.md, plus .nyxclaude/AGENTS.md, .agents/AGENTS.md, and .nyxclaude/rules/*.md and .agents/rules/*.md in project roots) - Instructions checked into the codebase
  * 4. Local memory (AGENTS.local.md in project roots) - Private project-specific instructions
  *
  * Files are loaded in reverse order of priority, i.e. the latest files are highest priority
@@ -80,6 +80,7 @@ import {
   getProjectInstructionFilePath,
   isProjectInstructionFileName,
 } from './projectInstructions.js'
+import { PROJECT_CONFIG_DIR_NAMES } from './markdownConfigLoader.js'
 import { isSettingSourceEnabled } from './settings/constants.js'
 import { getInitialSettings } from './settings/settings.js'
 
@@ -923,28 +924,32 @@ export const _getMemoryFilesOriginal = memoize(
           )),
         )
 
-        // Try reading .nyxclaude/AGENTS.md (Project)
-        const dotNyxclaudePath = join(dir, '.nyxclaude', 'AGENTS.md')
-        result.push(
-          ...(await processMemoryFile(
-            dotNyxclaudePath,
-            'Project',
-            processedPaths,
-            includeExternal,
-          )),
-        )
+        // Try reading <configDir>/AGENTS.md (Project) for each project config dir
+        for (const configDirName of PROJECT_CONFIG_DIR_NAMES) {
+          const dotConfigPath = join(dir, configDirName, 'AGENTS.md')
+          result.push(
+            ...(await processMemoryFile(
+              dotConfigPath,
+              'Project',
+              processedPaths,
+              includeExternal,
+            )),
+          )
+        }
 
-        // Try reading .nyxclaude/rules/*.md files (Project)
-        const rulesDir = join(dir, '.nyxclaude', 'rules')
-        result.push(
-          ...(await processMdRules({
-            rulesDir,
-            type: 'Project',
-            processedPaths,
-            includeExternal,
-            conditionalRule: false,
-          })),
-        )
+        // Try reading <configDir>/rules/*.md files (Project)
+        for (const configDirName of PROJECT_CONFIG_DIR_NAMES) {
+          const rulesDir = join(dir, configDirName, 'rules')
+          result.push(
+            ...(await processMdRules({
+              rulesDir,
+              type: 'Project',
+              processedPaths,
+              includeExternal,
+              conditionalRule: false,
+            })),
+          )
+        }
       }
 
       // Try reading AGENTS.local.md (Local) - only if localSettings is enabled
@@ -983,28 +988,32 @@ export const _getMemoryFilesOriginal = memoize(
           )),
         )
 
-        // Try reading .nyxclaude/AGENTS.md from the additional directory
-        const dotNyxclaudePath = join(dir, '.nyxclaude', 'AGENTS.md')
-        result.push(
-          ...(await processMemoryFile(
-            dotNyxclaudePath,
-            'Project',
-            processedPaths,
-            includeExternal,
-          )),
-        )
+        // Try reading <configDir>/AGENTS.md from the additional directory
+        for (const configDirName of PROJECT_CONFIG_DIR_NAMES) {
+          const dotConfigPath = join(dir, configDirName, 'AGENTS.md')
+          result.push(
+            ...(await processMemoryFile(
+              dotConfigPath,
+              'Project',
+              processedPaths,
+              includeExternal,
+            )),
+          )
+        }
 
-        // Try reading .nyxclaude/rules/*.md files from the additional directory
-        const rulesDir = join(dir, '.nyxclaude', 'rules')
-        result.push(
-          ...(await processMdRules({
-            rulesDir,
-            type: 'Project',
-            processedPaths,
-            includeExternal,
-            conditionalRule: false,
-          })),
-        )
+        // Try reading <configDir>/rules/*.md files from the additional directory
+        for (const configDirName of PROJECT_CONFIG_DIR_NAMES) {
+          const rulesDir = join(dir, configDirName, 'rules')
+          result.push(
+            ...(await processMdRules({
+              rulesDir,
+              type: 'Project',
+              processedPaths,
+              includeExternal,
+              conditionalRule: false,
+            })),
+          )
+        }
       }
     }
 
@@ -1290,7 +1299,7 @@ export async function getMemoryFilesForNestedDirectory(
 ): Promise<MemoryFileInfo[]> {
   const result: MemoryFileInfo[] = []
 
-  // Process project memory files (AGENTS.md, plus .nyxclaude/AGENTS.md)
+  // Process project memory files (AGENTS.md, plus <configDir>/AGENTS.md)
   if (isSettingSourceEnabled('projectSettings')) {
     const projectPath = getProjectInstructionFilePath(
       dir,
@@ -1304,15 +1313,17 @@ export async function getMemoryFilesForNestedDirectory(
         false,
       )),
     )
-    const dotNyxclaudePath = join(dir, '.nyxclaude', 'AGENTS.md')
-    result.push(
-      ...(await processMemoryFile(
-        dotNyxclaudePath,
-        'Project',
-        processedPaths,
-        false,
-      )),
-    )
+    for (const configDirName of PROJECT_CONFIG_DIR_NAMES) {
+      const dotConfigPath = join(dir, configDirName, 'AGENTS.md')
+      result.push(
+        ...(await processMemoryFile(
+          dotConfigPath,
+          'Project',
+          processedPaths,
+          false,
+        )),
+      )
+    }
   }
 
   // Process local memory file (AGENTS.local.md)
@@ -1323,35 +1334,37 @@ export async function getMemoryFilesForNestedDirectory(
     )
   }
 
-  const rulesDir = join(dir, '.nyxclaude', 'rules')
+  for (const configDirName of PROJECT_CONFIG_DIR_NAMES) {
+    const rulesDir = join(dir, configDirName, 'rules')
 
-  // Process project unconditional .nyxclaude/rules/*.md files, which were not eagerly loaded
-  // Use a separate processedPaths set to avoid marking conditional rule files as processed
-  const unconditionalProcessedPaths = new Set(processedPaths)
-  result.push(
-    ...(await processMdRules({
-      rulesDir,
-      type: 'Project',
-      processedPaths: unconditionalProcessedPaths,
-      includeExternal: false,
-      conditionalRule: false,
-    })),
-  )
+    // Process project unconditional <configDir>/rules/*.md files, which were not eagerly loaded
+    // Use a separate processedPaths set to avoid marking conditional rule files as processed
+    const unconditionalProcessedPaths = new Set(processedPaths)
+    result.push(
+      ...(await processMdRules({
+        rulesDir,
+        type: 'Project',
+        processedPaths: unconditionalProcessedPaths,
+        includeExternal: false,
+        conditionalRule: false,
+      })),
+    )
 
-  // Process project conditional .nyxclaude/rules/*.md files
-  result.push(
-    ...(await processConditionedMdRules(
-      targetPath,
-      rulesDir,
-      'Project',
-      processedPaths,
-      false,
-    )),
-  )
+    // Process project conditional <configDir>/rules/*.md files
+    result.push(
+      ...(await processConditionedMdRules(
+        targetPath,
+        rulesDir,
+        'Project',
+        processedPaths,
+        false,
+      )),
+    )
 
-  // processedPaths must be seeded with unconditional paths for subsequent directories
-  for (const path of unconditionalProcessedPaths) {
-    processedPaths.add(path)
+    // processedPaths must be seeded with unconditional paths for subsequent directories
+    for (const path of unconditionalProcessedPaths) {
+      processedPaths.add(path)
+    }
   }
 
   return result
@@ -1371,14 +1384,20 @@ export async function getConditionalRulesForCwdLevelDirectory(
   targetPath: string,
   processedPaths: Set<string>,
 ): Promise<MemoryFileInfo[]> {
-  const rulesDir = join(dir, '.nyxclaude', 'rules')
-  return processConditionedMdRules(
-    targetPath,
-    rulesDir,
-    'Project',
-    processedPaths,
-    false,
-  )
+  const result: MemoryFileInfo[] = []
+  for (const configDirName of PROJECT_CONFIG_DIR_NAMES) {
+    const rulesDir = join(dir, configDirName, 'rules')
+    result.push(
+      ...(await processConditionedMdRules(
+        targetPath,
+        rulesDir,
+        'Project',
+        processedPaths,
+        false,
+      )),
+    )
+  }
+  return result
 }
 
 /**
@@ -1491,10 +1510,12 @@ export function isMemoryFilePath(filePath: string): boolean {
     return true
   }
 
-  // .md files in .nyxclaude/rules/ directories
+  // .md files in <configDir>/rules/ directories
   if (
     name.endsWith('.md') &&
-    filePath.includes(`${sep}.nyxclaude${sep}rules${sep}`)
+    PROJECT_CONFIG_DIR_NAMES.some(dirName =>
+      filePath.includes(`${sep}${dirName}${sep}rules${sep}`),
+    )
   ) {
     return true
   }

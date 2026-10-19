@@ -167,18 +167,19 @@ export function Doctor(t0: Props) {
     (async () => {
       const userAgentsDir = join(getNyxclaudeConfigHomeDir(), "agents");
       const projectAgentsDir = join(getOriginalCwd(), ".nyxclaude", "agents");
+      const projectAgentsAltDir = join(getOriginalCwd(), ".agents", "agents");
       const {
         activeAgents,
         allAgents,
         failedFiles
       } = agentDefinitions;
-      const [userDirExists, projectDirExists] = await Promise.all([pathExists(userAgentsDir), pathExists(projectAgentsDir)]);
+      const [userDirExists, projectDirExists, projectAltDirExists] = await Promise.all([pathExists(userAgentsDir), pathExists(projectAgentsDir), pathExists(projectAgentsAltDir)]);
       const agentInfoData = {
         activeAgents: activeAgents.map(_temp0),
         userAgentsDir,
         projectAgentsDir,
         userDirExists,
-        projectDirExists,
+        projectDirExists: projectDirExists || projectAltDirExists,
         failedFiles
       };
       setAgentInfo(agentInfoData);

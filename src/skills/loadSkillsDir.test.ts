@@ -363,6 +363,7 @@ test.serial('dynamic discovery checks .nyxclaude skill directories', async () =>
 
     assert.deepEqual(getProjectSkillsPaths(featureDir), [
       join(featureDir, '.nyxclaude', 'skills'),
+      join(featureDir, '.agents', 'skills'),
     ])
   } finally {
     try {

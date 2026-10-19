@@ -151,13 +151,15 @@ function getCurrentCwdSettingsDenyWritePaths(cwd: string): string[] {
   return [
     resolve(cwd, '.nyxclaude', 'settings.json'),
     resolve(cwd, '.nyxclaude', 'settings.local.json'),
+    resolve(cwd, '.agents', 'settings.json'),
+    resolve(cwd, '.agents', 'settings.local.json'),
     resolve(cwd, getRelativeSettingsFilePathForSource('projectSettings')),
     resolve(cwd, getRelativeSettingsFilePathForSource('localSettings')),
   ]
 }
 
 function getLegacyClaudeConfigDenyWritePaths(cwd: string): string[] {
-  return [resolve(cwd, '.nyxclaude')]
+  return [resolve(cwd, '.nyxclaude'), resolve(cwd, '.agents')]
 }
 
 /**

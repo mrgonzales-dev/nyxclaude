@@ -38,7 +38,7 @@ export const CONFIG_DIRECTORIES = [
 
 export type ConfigDirectory = (typeof CONFIG_DIRECTORIES)[number]
 
-export const PROJECT_CONFIG_DIR_NAMES = ['.nyxclaude'] as const
+export const PROJECT_CONFIG_DIR_NAMES = ['.nyxclaude', '.agents'] as const
 
 // Concurrency cap for parallel readFile + parseFrontmatter when loading
 // commands/agents/skills/etc. With unbounded Promise.all, a directory holding

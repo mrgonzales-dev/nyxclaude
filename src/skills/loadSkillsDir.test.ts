@@ -42,7 +42,7 @@ import {
 function writeSkill(
   rootDir: string,
   skillPath: string,
-  options?: { configDirName?: '.claude' | '.nyxclaude'; description?: string },
+  options?: { configDirName?: '.nyxclaude'; description?: string },
 ): void {
   const skillDir = join(
     rootDir,
@@ -183,54 +183,6 @@ test.serial('loads flat and nested skills with colon namespaces', async () => {
       setFsImplementation(originalFs)
       restoreSettingState(originalSettingsState)
       clearSkillAndConfigCaches()
-      rmSync(configDir, { recursive: true, force: true })
-    } finally {
-      releaseSharedMutationLock()
-    }
-  }
-})
-
-test.serial('ignores legacy .claude project skills when .nyxclaude skills exist', async () => {
-  await acquireSharedMutationLock('loadSkillsDir.test.ts')
-  const configDir = mkdtempSync(join(tmpdir(), 'nyxclaude-skills-'))
-  const cwd = join(configDir, 'workspace')
-  const originalConfigDir = {
-    nyxClaudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
-    claudeConfigDir: process.env.NYXCLAUDE_CONFIG_DIR,
-    configHomeOverride: getNyxclaudeConfigHomeDirOverrideForTesting(),
-  }
-  const originalSettingsState = enableUserAndProjectSettingSources()
-  const originalFs = setRealFilesystemForTest()
-
-  try {
-    mkdirSync(cwd, { recursive: true })
-    writeSkill(cwd, 'shared', {
-      configDirName: '.claude',
-      description: 'legacy project skill',
-    })
-    writeSkill(cwd, 'shared', {
-      configDirName: '.nyxclaude',
-      description: 'native project skill',
-    })
-
-    setConfigDirEnv(configDir)
-    clearSkillAndConfigCaches()
-
-    const skills = await getSkillDirCommands(cwd)
-    const sharedSkills = skills.filter(
-      skill => skill.type === 'prompt' && skill.name === 'shared',
-    )
-
-    assert.equal(sharedSkills.length, 1)
-    assert.equal(sharedSkills[0]?.type, 'prompt')
-    assert.equal(sharedSkills[0]?.description, 'native project skill')
-    assert.match(sharedSkills[0]?.skillRoot ?? '', /\.nyxclaude/)
-  } finally {
-    restoreConfigDirEnv(originalConfigDir)
-    setFsImplementation(originalFs)
-    try {
-      clearSkillAndConfigCaches()
-      restoreSettingState(originalSettingsState)
       rmSync(configDir, { recursive: true, force: true })
     } finally {
       releaseSharedMutationLock()

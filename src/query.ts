@@ -121,10 +121,6 @@ import { setActiveProviderProfile, getActiveProviderProfile } from './utils/prov
 import { getPrimaryModel } from './utils/providerModels.js'
 import { recordContentReplacement } from './utils/sessionStorage.js'
 import { handleStopHooks } from './query/stopHooks.js'
-import {
-  createToolFailureLoopGuardState,
-  updateToolFailureLoopGuard,
-} from './query/toolFailureLoopGuard.js'
 import { AGENT_STEP_LIMIT_TOOL_RESULT_PREFIX } from './query/agentStepLimit.js'
 import { buildQueryConfig } from './query/config.js'
 import {
@@ -655,10 +651,6 @@ async function* queryLoop(
   // Request-only context can be invalidated by a full conversation rewrite.
   // Keep it outside the loop so that invalidation survives every retry state.
   let requestOnlyMessages = params.requestOnlyMessages
-  let pendingToolFailureAdvisories: {
-    message: ReturnType<typeof createUserMessage>
-    threshold: number
-  }[] = []
   // Smart-routing decision, pinned once per user turn (transition===undefined)
   // and reused on every continuation pass. Loop-local (not on State) so it
   // survives the State rebuilds at the continue sites for free — mirrors
@@ -669,7 +661,6 @@ async function* queryLoop(
   // model (a model-only route keyed to the old provider) must not be replayed
   // at the new endpoint — KTD6 in the plan.
   let pinnedRouteProviderId: string | undefined = undefined
-  const toolFailureGuardState = createToolFailureLoopGuardState()
 
   // Snapshot immutable env/statsig/session state once at entry. See QueryConfig
   // for what's included and why feature() gates are intentionally excluded.
@@ -765,11 +756,6 @@ async function* queryLoop(
     }
 
     let messagesForQuery = [...getMessagesAfterCompactBoundary(messages)]
-    if (pendingToolFailureAdvisories.length > 0) {
-      messagesForQuery.push(
-        ...pendingToolFailureAdvisories.map(advisory => advisory.message),
-      )
-    }
 
     // Extract facts and update phase from the latest message (user input or tool result)
     if (
@@ -1055,17 +1041,7 @@ async function* queryLoop(
       }
 
       // Continue on with the current query call using the post compact messages
-      messagesForQuery = [
-        ...messagesAfterCompact,
-        ...pendingToolFailureAdvisories
-          .filter(
-            advisory =>
-              !messagesAfterCompact.some(
-                message => message.uuid === advisory.message.uuid,
-              ),
-          )
-          .map(advisory => advisory.message),
-      ]
+      messagesForQuery = [...messagesAfterCompact]
     } else if (
       consecutiveFailures !== undefined ||
       nextRetryAtMs !== undefined ||
@@ -1350,21 +1326,6 @@ async function* queryLoop(
     const toolsForModel = agentStepLimit?.summaryRequested
       ? []
       : toolUseContext.options.tools
-    // The blocking-limit returns above are terminal, so an advisory cannot be
-    // surfaced or retained for a later model turn on those paths.
-    const advisoriesForCurrentRequest = pendingToolFailureAdvisories
-    for (const advisory of advisoriesForCurrentRequest) {
-      logForDebugging(
-        `Tool failure loop guard advisory: threshold=${advisory.threshold} hasToolName=true hasErrorCategory=true`,
-      )
-      logEvent('nyxclaude_tool_failure_loop_guard_advisory', {
-        threshold: advisory.threshold,
-        hasToolName: true,
-        hasErrorCategory: true,
-        queryDepth: queryTracking.depth,
-      })
-    }
-    pendingToolFailureAdvisories = []
     // Once-only guard for the smart-routing routed-error fallback (U4): a
     // simple-routed call that errors retries once on the strong model; a second
     // failure propagates normally rather than re-routing. Intentionally scoped
@@ -2680,36 +2641,6 @@ async function* queryLoop(
       return { reason: 'hook_stopped' }
     }
 
-    const toolFailureLoopDecision = updateToolFailureLoopGuard({
-      state: toolFailureGuardState,
-      toolUseBlocks,
-      toolResults,
-    })
-    if (toolFailureLoopDecision.tripped) {
-      logForDebugging(
-        `Tool failure loop guard tripped: kind=${toolFailureLoopDecision.kind} ` +
-          `threshold=${toolFailureLoopDecision.threshold} ` +
-          `hasToolName=${toolFailureLoopDecision.toolName !== undefined} ` +
-          `hasErrorCategory=${toolFailureLoopDecision.errorCategory !== undefined} ` +
-          `hasPath=${toolFailureLoopDecision.path !== undefined}`,
-      )
-      logEvent('nyxclaude_tool_failure_loop_guard_tripped', {
-        threshold: toolFailureLoopDecision.threshold,
-        isPathTrip: toolFailureLoopDecision.kind === 'path',
-        isSignatureTrip: toolFailureLoopDecision.kind === 'signature',
-        isCategoryTrip: toolFailureLoopDecision.kind === 'category',
-        hasToolName: toolFailureLoopDecision.toolName !== undefined,
-        hasErrorCategory:
-          toolFailureLoopDecision.errorCategory !== undefined,
-        hasPath: toolFailureLoopDecision.path !== undefined,
-        queryDepth: queryTracking.depth,
-      })
-      yield createAssistantAPIErrorMessage({
-        content: toolFailureLoopDecision.message,
-      })
-      return { reason: 'tool_failure_loop' }
-    }
-
     if (shouldRequestAgentStepSummary && nextAgentStepLimit) {
       const summaryRequest =
         createAgentStepLimitSummaryRequest(nextAgentStepLimit)
@@ -2997,18 +2928,6 @@ async function* queryLoop(
         turnCount: nextTurnCount,
       })
       return { reason: 'max_turns', turnCount: nextTurnCount }
-    }
-
-    if (!nextAgentStepLimit?.summaryRequested) {
-      pendingToolFailureAdvisories = (
-        toolFailureLoopDecision.advisories ?? []
-      ).map(advisoryDecision => ({
-        message: createUserMessage({
-          content: advisoryDecision.message,
-          isMeta: true,
-        }),
-        threshold: advisoryDecision.threshold,
-      }))
     }
 
     queryCheckpoint('query_recursive_call')

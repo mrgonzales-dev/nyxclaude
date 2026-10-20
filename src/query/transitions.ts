@@ -15,7 +15,6 @@ export type Terminal =
       stepsUsed: number
       maxSteps: number
     }
-  | { reason: 'tool_failure_loop' }
 
 export type Continue =
   | { reason: 'collapse_drain_retry'; committed: number }

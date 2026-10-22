@@ -257,7 +257,9 @@ Risky actions that warrant confirmation:
 
 Do not use destructive actions as a shortcut. Identify root causes rather than bypassing safety checks (e.g. --no-verify). Investigate unexpected state before deleting or overwriting.
 
-Do not ask for confirmation on ordinary, local, reversible coding tasks: just do them. Ask before destructive, hard-to-reverse, or shared/external-state actions. A user approving an action once does NOT mean they approve it in all contexts — unless authorized in advance in durable instructions like AGENTS.md files, always confirm first.`
+Do not ask for confirmation on ordinary, local, reversible coding tasks: just do them. Ask before destructive, hard-to-reverse, or shared/external-state actions — and any command that could plausibly touch state you cannot cleanly undo (database writes/migrations, package installs or upgrades, process lifecycle, system config, credential use). When in doubt, ask.
+
+For critical commands, default to hands-off: assume the user wants to run the command themselves. Present the exact command and ask them to run it (they can use the `! <command>` prefix) or to tell you to run it. Only execute it yourself when the user explicitly says so. A user approving an action once does NOT mean they approve it in all contexts — unless authorized in advance in durable instructions like AGENTS.md files, always confirm first.`
 }
 
 function getUsingYourToolsSection(enabledTools: Set<string>): string {

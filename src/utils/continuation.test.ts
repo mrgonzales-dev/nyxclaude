@@ -116,6 +116,32 @@ describe('isInconclusiveEndTurnText', () => {
     expect(isInconclusiveEndTurnText("Let me know when you're ready.")).toBe(false)
   })
 
+  test('awaiting/waiting-for handoffs are conclusive', () => {
+    // The reported duplication incident: the model ended turns with
+    // "Awaiting your review." / "Awaiting your directive." — the handoff
+    // list only covered instructions/input, so each ending was judged a
+    // stall and the hidden "continue" nudge produced a duplicate answer.
+    expect(isInconclusiveEndTurnText('Awaiting your review.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Awaiting your feedback.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Awaiting your directive.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Awaiting your call.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Awaiting your reply.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Waiting on your go-ahead.')).toBe(false)
+    expect(isInconclusiveEndTurnText('Waiting for your review.')).toBe(false)
+    // Handoff clause preceding a transition word must still win — the
+    // continuation analyzer sees "proceeding to the next step" in the tail.
+    expect(
+      isInconclusiveEndTurnText(
+        'The task is finished. Commit 8884df8 is pushed to master. The migration file contents are above for your review — awaiting your feedback before proceeding to the next step.',
+      ),
+    ).toBe(false)
+    expect(
+      analyzeContinuationIntent(
+        'the task is finished. commit 8884df8 is pushed to master. the migration file contents are above for your review — awaiting your feedback before proceeding to the next step.',
+      ).shouldNudge,
+    ).toBe(false)
+  })
+
   test('self-directed confirm narration mid-work is still inconclusive', () => {
     // Past-tense/modal "confirmed ... I'll" is work narration declaring
     // intent — exactly the stall shape the nudge exists to rescue.

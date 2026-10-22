@@ -124,8 +124,12 @@ const FINALITY_DECLARATIONS = [
 const USER_HANDOFF_SIGNALS = [
   /\b(pick|choose) (one|an option|which)\s*(:|\bbelow\b)/i,
   /\b(let me know|tell me)\s+(which|what|when|if|whether)\b[^.]{0,40}\byou\b/i,
-  /\bawaiting your\b[^.]{0,20}\b(instructions?|input)\b/i,
+  /\bawaiting your\b[^.]{0,20}\b(instructions?|input|review|feedback|call|directive|reply|response|confirmation|approval|go[- ]?ahead|sign[- ]?off|decision|next steps?|word)\b/i,
   /\bawaiting (?:next |further )?instructions?\b/i,
+  /\b(?:waiting|pending) (?:on|for) your\b[^.]{0,30}\b(review|feedback|call|directive|reply|response|confirmation|approval|go[- ]?ahead|sign[- ]?off|input|instructions?|decision|next steps?|word)\b/i,
+  /\bpending your (?:review|feedback|input|confirmation|approval|decision)\b/i,
+  /\blooking forward to your\b[^.]{0,30}\b(reply|response|feedback|review|input)\b/i,
+  /\bover to you\b/i,
   /\b(reply|respond) with\b[^.]{0,30}\b(number|option|yes|go|the word)s?\b/i,
   /\b(please advise|your call|up to you)\b/i,
   // Approval requests — imperative shape (no trailing '?'), still a stop:

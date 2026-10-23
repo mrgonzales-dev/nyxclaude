@@ -62,6 +62,7 @@ import { logForDebugging } from '../utils/debug.js'
 import { loadMemoryPrompt } from '../utils/memoryStubs.js'
 import { isMcpInstructionsDeltaEnabled } from '../utils/mcpInstructionsDelta.js'
 import { getFastTalkSection } from '../utils/fastTalk.js'
+import { getDefaultSkillsSection } from '../skills/superpowers/index.js'
 
 // Dead code elimination: conditional imports for feature-gated modules
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -493,6 +494,7 @@ ${CYBER_RISK_INSTRUCTION}`,
       getSessionSpecificGuidanceSection(enabledTools, skillToolCommands),
     ),
     systemPromptSection('memory', () => loadMemoryPrompt()),
+    systemPromptSection('default_skills', () => getDefaultSkillsSection()),
     systemPromptSection(`env_info_simple:${model}`, () =>
       computeSimpleEnvInfo(model, additionalWorkingDirectories),
     ),
